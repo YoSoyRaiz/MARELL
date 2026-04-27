@@ -1,7 +1,26 @@
 -- ============================================================
 -- MARELL — Schema completo v1.0
 -- Ejecutar en Supabase SQL Editor (nuevo proyecto)
+-- Idempotente: se puede correr múltiples veces sin error.
 -- ============================================================
+
+-- ── RESET: borra todo si existe (orden inverso por FK) ──────
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists handle_new_user() cascade;
+drop function if exists is_budget_member(uuid) cascade;
+drop function if exists create_default_categories(uuid) cascade;
+
+drop table if exists subtransactions cascade;
+drop table if exists scheduled_transactions cascade;
+drop table if exists transactions cascade;
+drop table if exists payees cascade;
+drop table if exists monthly_assignments cascade;
+drop table if exists categories cascade;
+drop table if exists category_groups cascade;
+drop table if exists accounts cascade;
+drop table if exists budget_members cascade;
+drop table if exists budgets cascade;
+drop table if exists profiles cascade;
 
 -- ── 1. PRESUPUESTOS ──────────────────────────────────────────
 create table budgets (
