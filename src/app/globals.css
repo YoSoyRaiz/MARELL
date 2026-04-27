@@ -1,96 +1,242 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─────────────────────────────────────────────
+   MARELL — Brand Tokens (v1.0, mayo 2024)
+   Single source of truth. Sync con brand guide.
+   ───────────────────────────────────────────── */
 
+@theme {
+  /* Brand surfaces */
+  --color-bg:           #0B0B0C;     /* Carbon Black — base */
+  --color-surface-1:    #161617;     /* Deep Gray — cards */
+  --color-surface-2:    #2A2A2D;     /* Gray — panels */
+  --color-surface-3:    #3A3A3F;     /* Slate — dividers */
+  --color-marell-green: #1F3529;     /* Marell Green — accent surfaces */
+
+  /* Borders (white alphas — work over any surface) */
+  --color-border-1:     rgba(255,255,255,.06);
+  --color-border-2:     rgba(255,255,255,.10);
+  --color-border-3:     rgba(255,255,255,.16);
+
+  /* Type */
+  --color-text:         #F7F7F5;     /* Pure White */
+  --color-text-2:       #C8C8C0;
+  --color-muted:        #8A8A82;
+  --color-muted-2:      #5A5A55;
+
+  /* Brand gradient stops (canon) */
+  --color-brand-1:      #2EC4B6;     /* teal */
+  --color-brand-2:      #3DDC97;     /* green */
+  --color-brand-3:      #8AC926;     /* lime */
+
+  /* Status */
+  --color-success:      #3DDC97;
+  --color-info:         #4DA8FF;
+  --color-warn:         #F5C842;
+  --color-danger:       #FF4F6A;
+  --color-coral:        #FF7A59;
+
+  /* Typography stacks (variables come from next/font) */
+  --font-sans:    var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    var(--font-ibm-plex), ui-monospace, monospace;
+  --font-display: var(--font-varela), ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius scale */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* Shadows tuned for dark surfaces */
+  --shadow-sm:   0 2px 8px rgba(0,0,0,.4);
+  --shadow-md:   0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,.6);
+  --shadow-glow: 0 0 0 1px rgba(61,220,151,.2), 0 8px 24px rgba(46,196,182,.18);
+}
+
+/* Backwards-compatible CSS variables (legacy code uses var(--gradient) etc) */
 :root {
-  /* ── MARELL Brand Colors ── */
   --bg:            #0B0B0C;
   --s1:            #161617;
   --s2:            #2A2A2D;
   --s3:            #3A3A3F;
-  --border:        #ffffff0d;
-  --border2:       #ffffff18;
-  --border3:       #ffffff28;
+  --border:        rgba(255,255,255,.06);
+  --border2:       rgba(255,255,255,.10);
+  --border3:       rgba(255,255,255,.16);
 
-  /* Text */
-  --text:          #F7F7E5;
-  --text2:         #C8C8B0;
-  --muted:         #8A8A78;
-  --muted2:        #5A5A50;
+  --text:          #F7F7F5;
+  --text2:         #C8C8C0;
+  --muted:         #8A8A82;
+  --muted2:        #5A5A55;
 
-  /* Brand gradient */
   --brand-1:       #2EC4B6;
   --brand-2:       #3DDC97;
-  --brand-3:       #BAC926;
-  --gradient:      linear-gradient(135deg, #2EC4B6, #3DDC97);
-  --gradient-full: linear-gradient(135deg, #2EC4B6, #3DDC97, #BAC926);
+  --brand-3:       #8AC926;
+  --gradient:      linear-gradient(135deg, #2EC4B6 0%, #3DDC97 60%, #8AC926 100%);
+  --gradient-soft: linear-gradient(135deg, rgba(46,196,182,.15), rgba(61,220,151,.10), rgba(138,201,38,.08));
+  --gradient-radial: radial-gradient(ellipse at top, rgba(61,220,151,.15), transparent 70%);
 
-  /* Status colors */
   --green:         #3DDC97;
-  --green-dim:     rgba(61,220,151,.12);
   --blue:          #4DA8FF;
-  --blue-dim:      rgba(77,168,255,.12);
   --coral:         #FF7A59;
-  --coral-dim:     rgba(255,122,89,.12);
   --amber:         #F5C842;
-  --amber-dim:     rgba(245,200,66,.12);
   --red:           #FF4F6A;
-  --red-dim:       rgba(255,79,106,.12);
 
-  /* Accent (brand primary action) */
   --accent:        #2EC4B6;
   --accent2:       #3DDC97;
-  --accent-dim:    rgba(46,196,182,.12);
+}
 
-  /* Typography */
-  --ff:            'Inter', sans-serif;
-
-  /* Shadows */
-  --shadow:        0 8px 32px rgba(0,0,0,.6);
-  --shadow-sm:     0 2px 8px rgba(0,0,0,.4);
-  --shadow-card:   0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--ff);
-  overflow-x: hidden;
+  background: #0B0B0C;
+  color: #F7F7F5;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-body { min-height: 100vh; }
+body {
+  min-height: 100vh;
+  background: #0B0B0C;
+  /* Subtle ambient glow at top — mirrors the brand wallpaper */
+  background-image:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(61,220,151,.06), transparent 70%);
+}
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* Typography defaults: tighter tracking on headings */
+h1, h2, h3, h4 { letter-spacing: -0.02em; font-weight: 700; }
+h1 { letter-spacing: -0.03em; }
+
+/* Scrollbar — minimal, brand-tinted */
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 3px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.08);
+  border-radius: 4px;
+  transition: background .2s;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.16); }
 
-input, select, textarea, button { font-family: var(--ff); color: var(--text); }
+/* Selection */
+::selection {
+  background: rgba(61,220,151,.30);
+  color: #F7F7F5;
+}
+
+/* Form defaults — dark on dark */
+input, select, textarea, button {
+  font-family: inherit;
+  color: #F7F7F5;
+}
 
 input, select, textarea {
-  background: var(--s2);
-  border: 1px solid var(--border2);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 0.875rem;
+  background: #161617;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.9375rem;
   outline: none;
-  transition: border-color .15s;
+  transition: border-color .15s, box-shadow .15s;
 }
 
-input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+input::placeholder, textarea::placeholder { color: #5A5A55; }
+
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(61,220,151,.55);
+  box-shadow: 0 0 0 4px rgba(61,220,151,.12);
+}
+
+/* ─── Brand utility classes (used across landing + app) ─── */
 
 .gradient-text {
   background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  /* Render fallback for unsupported envs */
+  color: #3DDC97;
 }
 
-.card {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-card);
+.gradient-bg {
+  background: var(--gradient);
+}
+
+.gradient-border {
+  position: relative;
+  background:
+    linear-gradient(#0B0B0C, #0B0B0C) padding-box,
+    var(--gradient) border-box;
+  border: 1px solid transparent;
+}
+
+/* Card — used by Card primitive and inline */
+.card-base {
+  background: #161617;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  transition: transform .25s cubic-bezier(.4,0,.2,1),
+              border-color .25s,
+              box-shadow .25s;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 4px 12px rgba(0,0,0,.5), 0 12px 32px rgba(0,0,0,.4);
+}
+
+/* Tabular numerals — for any monetary figure */
+.num {
+  font-family: var(--font-ibm-plex), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.01em;
+}
+
+/* Display heading — Varela Round for personality on hero/CTAs */
+.display {
+  font-family: var(--font-varela), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Gradient glow on hover — for primary CTAs */
+.glow-on-hover {
+  position: relative;
+  isolation: isolate;
+}
+.glow-on-hover::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: var(--gradient);
+  filter: blur(18px);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity .25s;
+}
+.glow-on-hover:hover::after { opacity: .55; }
+
+/* Subtle ambient grid (used as section accent backgrounds) */
+.grid-fade {
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 100%);
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
 }
