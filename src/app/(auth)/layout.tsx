@@ -1,14 +1,14 @@
+import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-[400px]">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold tracking-tight gradient-text mb-2">
-            MARELL
-          </h1>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            Clarity in every dollar.
-          </p>
+        <div className="flex justify-center mb-10">
+          <Link href="/" aria-label="MARELL" className="inline-flex">
+            <Logo variant="horizontal" height={32} priority />
+          </Link>
         </div>
         {children}
       </div>
