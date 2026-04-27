@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="w-full max-w-[400px]">
         <div className="flex justify-center mb-10">
           <Link href="/" aria-label="MARELL" className="inline-flex">
-            <Logo variant="horizontal" height={32} priority />
+            <Logo variant="horizontal" height={42} priority />
           </Link>
         </div>
         {children}
