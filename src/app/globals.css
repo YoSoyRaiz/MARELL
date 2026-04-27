@@ -200,6 +200,14 @@
     -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 100%);
             mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 100%);
   }
+
+  @keyframes step-fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-step {
+    animation: step-fade-in .4s cubic-bezier(.25,.46,.45,.94);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
