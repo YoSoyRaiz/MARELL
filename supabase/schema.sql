@@ -170,18 +170,32 @@ create table profiles (
 );
 
 -- Auto-crear perfil al registrarse
-create or replace function handle_new_user()
-returns trigger as $$
+-- Usa search_path explícito y maneja errores para no romper auth.users insert.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
 begin
-  insert into profiles (id, display_name)
+  insert into public.profiles (id, display_name)
   values (new.id, new.raw_user_meta_data->>'display_name');
   return new;
+exception
+  when others then
+    raise warning 'handle_new_user failed for %: % (SQLSTATE: %)', new.id, SQLERRM, SQLSTATE;
+    return new;
 end;
-$$ language plpgsql security definer;
+$$;
+
+-- Permisos para que el trigger funcione bajo supabase_auth_admin
+grant usage on schema public to supabase_auth_admin;
+grant insert, select on public.profiles to supabase_auth_admin;
+grant execute on function public.handle_new_user() to supabase_auth_admin;
 
 create trigger on_auth_user_created
   after insert on auth.users
-  for each row execute function handle_new_user();
+  for each row execute function public.handle_new_user();
 
 
 -- ============================================================

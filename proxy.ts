@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 const PUBLIC_PATHS = ['/login', '/signup', '/']
 const ONBOARDING_PATH = '/onboarding'
 
-export async function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
