@@ -1,26 +1,98 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── MARELL Brand Colors ── */
+  --bg:            #0B0B0C;
+  --s1:            #161617;
+  --s2:            #2A2A2D;
+  --s3:            #3A3A3F;
+  --border:        #ffffff0d;
+  --border2:       #ffffff18;
+  --border3:       #ffffff28;
+
+  /* Text */
+  --text:          #F7F7E5;
+  --text2:         #C8C8B0;
+  --muted:         #8A8A78;
+  --muted2:        #5A5A50;
+
+  /* Brand gradient */
+  --brand-1:       #2EC4B6;
+  --brand-2:       #3DDC97;
+  --brand-3:       #BAC926;
+  --gradient:      linear-gradient(135deg, #2EC4B6, #3DDC97);
+  --gradient-full: linear-gradient(135deg, #2EC4B6, #3DDC97, #BAC926);
+
+  /* Status colors */
+  --green:         #3DDC97;
+  --green-dim:     rgba(61,220,151,.12);
+  --blue:          #4DA8FF;
+  --blue-dim:      rgba(77,168,255,.12);
+  --coral:         #FF7A59;
+  --coral-dim:     rgba(255,122,89,.12);
+  --amber:         #F5C842;
+  --amber-dim:     rgba(245,200,66,.12);
+  --red:           #FF4F6A;
+  --red-dim:       rgba(255,79,106,.12);
+
+  /* Accent (brand primary action) */
+  --accent:        #2EC4B6;
+  --accent2:       #3DDC97;
+  --accent-dim:    rgba(46,196,182,.12);
+
+  /* Typography */
+  --ff:            'Inter', sans-serif;
+
+  /* Shadows */
+  --shadow:        0 8px 32px rgba(0,0,0,.6);
+  --shadow-sm:     0 2px 8px rgba(0,0,0,.4);
+  --shadow-card:   0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ff);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body { min-height: 100vh; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 3px; }
+
+input, select, textarea, button { font-family: var(--ff); color: var(--text); }
+
+input, select, textarea {
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color .15s;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+
+.gradient-text {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
 }
