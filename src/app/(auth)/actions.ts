@@ -1,5 +1,6 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -31,11 +32,19 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   if (passErr) return { error: passErr }
   if (!displayName) return { error: 'El nombre es requerido' }
 
+  const h = await headers()
+  const proto = h.get('x-forwarded-proto') ?? 'https'
+  const host = h.get('x-forwarded-host') ?? h.get('host')
+  const origin = `${proto}://${host}`
+
   const supabase = await createClient()
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { display_name: displayName } },
+    options: {
+      data: { display_name: displayName },
+      emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
+    },
   })
 
   if (error) return { error: error.message }

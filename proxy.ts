@@ -1,10 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-const PUBLIC_PATHS = ['/login', '/signup', '/']
+const PUBLIC_PATHS = ['/login', '/signup', '/auth', '/']
 const ONBOARDING_PATH = '/onboarding'
 
 export default async function proxy(request: NextRequest) {
+  // If Supabase email confirmation lands on the root with ?code=, forward it
+  // to /auth/callback so the code can be exchanged for a session.
+  if (request.nextUrl.pathname === '/' && request.nextUrl.searchParams.has('code')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/callback'
+    return NextResponse.redirect(url)
+  }
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
