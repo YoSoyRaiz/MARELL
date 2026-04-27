@@ -83,9 +83,9 @@ export function LandingFooter() {
   return (
     <footer className="border-t border-white/[0.05] py-16">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)_minmax(0,auto)]">
+        <div className="grid gap-12 lg:grid-cols-6">
           {/* Brand */}
-          <div>
+          <div className="lg:col-span-2">
             <Logo variant="horizontal" height={28} />
             <p className="mt-4 text-sm text-[var(--text2)]">
               Tu dinero. Tu futuro. Bajo control.
@@ -105,7 +105,7 @@ export function LandingFooter() {
           </div>
 
           {/* Columns */}
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-3">
             {columns.map((col) => (
               <div key={col.heading}>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text)]">
@@ -128,7 +128,7 @@ export function LandingFooter() {
           </div>
 
           {/* Language */}
-          <div>
+          <div className="lg:col-span-1 lg:justify-self-end">
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] px-3.5 py-1.5 text-sm font-medium text-[var(--text2)] transition-colors hover:border-white/20 hover:text-[var(--text)]"

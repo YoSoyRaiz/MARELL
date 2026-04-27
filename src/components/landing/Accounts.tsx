@@ -55,7 +55,7 @@ export function LandingAccounts() {
   return (
     <section id="producto" className="relative py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16 lg:items-center">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 lg:items-center">
           {/* Left copy */}
           <div className="max-w-xl">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--success)]">
@@ -106,7 +106,7 @@ export function LandingAccounts() {
               }}
             />
             <div className="rounded-[24px] border border-white/[0.06] bg-[#0E0E0F] p-6 shadow-[0_24px_64px_-12px_rgba(0,0,0,.6)]">
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+              <div className="grid gap-6 lg:grid-cols-2">
                 {/* Accounts list */}
                 <div>
                   <div className="mb-4 flex items-baseline justify-between">

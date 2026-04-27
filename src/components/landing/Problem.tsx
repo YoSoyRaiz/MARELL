@@ -12,7 +12,7 @@ export function LandingProblem() {
   return (
     <section className="relative py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center">
+        <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
           {/* Left: copy */}
           <div className="max-w-xl">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--success)]">

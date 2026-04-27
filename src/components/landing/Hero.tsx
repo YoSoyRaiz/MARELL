@@ -23,7 +23,7 @@ export function LandingHero() {
       <div className="grid-fade absolute inset-0 -z-10" aria-hidden />
 
       <div className="mx-auto max-w-7xl px-6 pb-24 pt-12 lg:pt-16">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10 lg:items-center">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-10 lg:items-center">
           {/* Left: copy */}
           <div className="max-w-xl">
             <h1 className="text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-6xl lg:text-[64px]">

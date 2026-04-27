@@ -2,87 +2,47 @@
 
 /* ─────────────────────────────────────────────
    MARELL — Brand Tokens (v1.0, mayo 2024)
-   Single source of truth. Sync con brand guide.
+   Plain CSS variables. Tailwind 4 keeps its
+   default theme (spacing, breakpoints, etc).
    ───────────────────────────────────────────── */
 
-@theme {
-  /* Brand surfaces */
-  --color-bg:           #0B0B0C;     /* Carbon Black — base */
-  --color-surface-1:    #161617;     /* Deep Gray — cards */
-  --color-surface-2:    #2A2A2D;     /* Gray — panels */
-  --color-surface-3:    #3A3A3F;     /* Slate — dividers */
-  --color-marell-green: #1F3529;     /* Marell Green — accent surfaces */
-
-  /* Borders (white alphas — work over any surface) */
-  --color-border-1:     rgba(255,255,255,.06);
-  --color-border-2:     rgba(255,255,255,.10);
-  --color-border-3:     rgba(255,255,255,.16);
-
-  /* Type */
-  --color-text:         #F7F7F5;     /* Pure White */
-  --color-text-2:       #C8C8C0;
-  --color-muted:        #8A8A82;
-  --color-muted-2:      #5A5A55;
-
-  /* Brand gradient stops (canon) */
-  --color-brand-1:      #2EC4B6;     /* teal */
-  --color-brand-2:      #3DDC97;     /* green */
-  --color-brand-3:      #8AC926;     /* lime */
-
-  /* Status */
-  --color-success:      #3DDC97;
-  --color-info:         #4DA8FF;
-  --color-warn:         #F5C842;
-  --color-danger:       #FF4F6A;
-  --color-coral:        #FF7A59;
-
-  /* Typography stacks (variables come from next/font) */
-  --font-sans:    var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono:    var(--font-ibm-plex), ui-monospace, monospace;
-  --font-display: var(--font-varela), ui-sans-serif, system-ui, sans-serif;
-
-  /* Radius scale */
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-
-  /* Shadows tuned for dark surfaces */
-  --shadow-sm:   0 2px 8px rgba(0,0,0,.4);
-  --shadow-md:   0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
-  --shadow-lg:   0 8px 32px rgba(0,0,0,.6);
-  --shadow-glow: 0 0 0 1px rgba(61,220,151,.2), 0 8px 24px rgba(46,196,182,.18);
-}
-
-/* Backwards-compatible CSS variables (legacy code uses var(--gradient) etc) */
 :root {
-  --bg:            #0B0B0C;
-  --s1:            #161617;
-  --s2:            #2A2A2D;
-  --s3:            #3A3A3F;
+  /* Surfaces */
+  --bg:            #0B0B0C;     /* Carbon Black */
+  --s1:            #161617;     /* Deep Gray — cards */
+  --s2:            #2A2A2D;     /* Gray — panels */
+  --s3:            #3A3A3F;     /* Slate — dividers */
+  --marell-green:  #1F3529;
+
   --border:        rgba(255,255,255,.06);
   --border2:       rgba(255,255,255,.10);
   --border3:       rgba(255,255,255,.16);
 
+  /* Type */
   --text:          #F7F7F5;
   --text2:         #C8C8C0;
   --muted:         #8A8A82;
   --muted2:        #5A5A55;
 
+  /* Brand gradient stops (canon) */
   --brand-1:       #2EC4B6;
   --brand-2:       #3DDC97;
   --brand-3:       #8AC926;
   --gradient:      linear-gradient(135deg, #2EC4B6 0%, #3DDC97 60%, #8AC926 100%);
   --gradient-soft: linear-gradient(135deg, rgba(46,196,182,.15), rgba(61,220,151,.10), rgba(138,201,38,.08));
-  --gradient-radial: radial-gradient(ellipse at top, rgba(61,220,151,.15), transparent 70%);
 
+  /* Status */
+  --success:       #3DDC97;
+  --info:          #4DA8FF;
+  --warn:          #F5C842;
+  --danger:        #FF4F6A;
+  --coral:         #FF7A59;
+
+  /* Aliases (legacy code points at these) */
   --green:         #3DDC97;
   --blue:          #4DA8FF;
-  --coral:         #FF7A59;
   --amber:         #F5C842;
   --red:           #FF4F6A;
-
   --accent:        #2EC4B6;
   --accent2:       #3DDC97;
 }
@@ -96,7 +56,7 @@
 html {
   background: #0B0B0C;
   color: #F7F7F5;
-  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -105,13 +65,12 @@ html {
 body {
   min-height: 100vh;
   background: #0B0B0C;
-  /* Subtle ambient glow at top — mirrors the brand wallpaper */
   background-image:
     radial-gradient(ellipse 60% 40% at 50% 0%, rgba(61,220,151,.06), transparent 70%);
 }
 
-/* Typography defaults: tighter tracking on headings */
-h1, h2, h3, h4 { letter-spacing: -0.02em; font-weight: 700; }
+/* Headings — tighter tracking */
+h1, h2, h3, h4 { letter-spacing: -0.02em; font-weight: 700; line-height: 1.1; }
 h1 { letter-spacing: -0.03em; }
 
 /* Scrollbar — minimal, brand-tinted */
@@ -124,13 +83,12 @@ h1 { letter-spacing: -0.03em; }
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.16); }
 
-/* Selection */
 ::selection {
   background: rgba(61,220,151,.30);
   color: #F7F7F5;
 }
 
-/* Form defaults — dark on dark */
+/* Form defaults */
 input, select, textarea, button {
   font-family: inherit;
   color: #F7F7F5;
@@ -153,14 +111,13 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 4px rgba(61,220,151,.12);
 }
 
-/* ─── Brand utility classes (used across landing + app) ─── */
+/* ─── Brand utility classes ─── */
 
 .gradient-text {
   background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  /* Render fallback for unsupported envs */
   color: #3DDC97;
 }
 
@@ -176,7 +133,6 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid transparent;
 }
 
-/* Card — used by Card primitive and inline */
 .card-base {
   background: #161617;
   border: 1px solid rgba(255,255,255,.06);
@@ -200,7 +156,6 @@ input:focus, select:focus, textarea:focus {
   letter-spacing: -0.01em;
 }
 
-/* Display heading — Varela Round for personality on hero/CTAs */
 .display {
   font-family: var(--font-varela), ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.01em;
@@ -224,16 +179,16 @@ input:focus, select:focus, textarea:focus {
 }
 .glow-on-hover:hover::after { opacity: .55; }
 
-/* Subtle ambient grid (used as section accent backgrounds) */
+/* Subtle ambient grid */
 .grid-fade {
   background-image:
     linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
   background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 100%);
+          mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 100%);
 }
 
-/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .01ms !important;
