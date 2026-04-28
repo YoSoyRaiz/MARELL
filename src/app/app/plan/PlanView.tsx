@@ -1,9 +1,12 @@
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
+import { InlineMoneyEdit } from './InlineMoneyEdit'
+import { AnimatedNumber } from './AnimatedNumber'
+import { updateAssignment } from './actions'
 
 const MONTH_NAMES = [
   'Enero',
@@ -20,11 +23,13 @@ const MONTH_NAMES = [
   'Diciembre',
 ]
 
-const fmtMoney = (n: number, withSign = false) => {
+const fmtMoney = (n: number) => {
   const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const formatted = abs.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
   if (n < -0.005) return `−$${formatted}`
-  if (withSign && n > 0.005) return `+$${formatted}`
   return `$${formatted}`
 }
 
@@ -45,7 +50,6 @@ export interface PlanCategory {
   goal_amount: number | null
   assigned: number
   activity: number
-  available: number
 }
 
 export interface PlanGroup {
@@ -55,24 +59,55 @@ export interface PlanGroup {
 }
 
 interface PlanViewProps {
+  budgetId: string | null
   month: string
-  readyToAssign: number
+  totalCash: number
   groups: PlanGroup[]
-  hasBudget: boolean
 }
 
 type Filter = 'todas' | 'subfondeadas' | 'con-dinero'
 
-export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewProps) {
+export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) {
   const router = useRouter()
-  const [pending, startTransition] = useTransition()
+  const [navPending, startNav] = useTransition()
   const [filter, setFilter] = useState<Filter>('todas')
+  const [overrides, setOverrides] = useState<Record<string, number>>({})
+  const [error, setError] = useState<string | null>(null)
 
   const goToMonth = (next: string) => {
-    startTransition(() => {
+    setOverrides({}) // navigation refetches; clear local overrides
+    startNav(() => {
       router.push(`/app/plan?month=${next}`)
     })
   }
+
+  const getAssigned = useCallback(
+    (cat: PlanCategory) => (overrides[cat.id] !== undefined ? overrides[cat.id] : cat.assigned),
+    [overrides],
+  )
+
+  const handleSave = async (cat: PlanCategory, next: number) => {
+    if (!budgetId) return
+    const previous = getAssigned(cat)
+    setOverrides((p) => ({ ...p, [cat.id]: next }))
+    setError(null)
+    const result = await updateAssignment(budgetId, cat.id, month, next)
+    if ('error' in result && result.error) {
+      // Rollback
+      setOverrides((p) => ({ ...p, [cat.id]: previous }))
+      setError(result.error)
+      window.setTimeout(() => setError(null), 5000)
+    }
+  }
+
+  const totalAssigned = useMemo(
+    () =>
+      groups
+        .flatMap((g) => g.categories)
+        .reduce((s, c) => s + getAssigned(c), 0),
+    [groups, getAssigned],
+  )
+  const readyToAssign = totalCash - totalAssigned
 
   const filteredGroups = useMemo(() => {
     if (filter === 'todas') return groups
@@ -80,16 +115,18 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
       .map((g) => ({
         ...g,
         categories: g.categories.filter((c) => {
+          const assigned = getAssigned(c)
+          const available = assigned + c.activity
           if (filter === 'subfondeadas') {
-            if (c.goal_amount && c.goal_amount > 0) return c.assigned < c.goal_amount
-            return c.available < 0
+            if (c.goal_amount && c.goal_amount > 0) return assigned < c.goal_amount
+            return available < 0
           }
-          if (filter === 'con-dinero') return c.available > 0.005
+          if (filter === 'con-dinero') return available > 0.005
           return true
         }),
       }))
       .filter((g) => g.categories.length > 0)
-  }, [groups, filter])
+  }, [groups, filter, getAssigned])
 
   const isPositive = readyToAssign > 0.005
   const isNegative = readyToAssign < -0.005
@@ -99,7 +136,7 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
   const heroLabelColor = isNegative ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
   const heroAmountColor = isNegative ? 'text-[var(--coral)]' : 'gradient-text'
 
-  if (!hasBudget) {
+  if (!budgetId) {
     return (
       <div className="space-y-4">
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
@@ -116,7 +153,7 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
   }
 
   return (
-    <div className={`space-y-6 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
+    <div className={`space-y-6 transition-opacity duration-200 ${navPending ? 'opacity-60' : ''}`}>
       {/* Header: month nav + title */}
       <div className="space-y-4">
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
@@ -147,6 +184,21 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
         </div>
       </div>
 
+      {/* Error toast */}
+      {error && (
+        <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
+          <AlertCircle
+            size={18}
+            strokeWidth={2}
+            className="text-[var(--coral)] shrink-0 mt-0.5"
+          />
+          <div className="text-[14px] text-[var(--text)] leading-relaxed flex-1">
+            <div className="font-medium">No pudimos guardar el cambio.</div>
+            <div className="text-[var(--text2)] mt-0.5">{error}</div>
+          </div>
+        </div>
+      )}
+
       {/* Ready to Assign hero */}
       <div className={`rounded-2xl border-2 px-6 py-5 transition-colors ${heroBorder}`}>
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -160,25 +212,16 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
               {isNegative
                 ? 'Asignaste de más. Reduce alguna categoría.'
                 : isPositive
-                  ? 'Dale un trabajo a cada peso.'
+                  ? 'Click en cualquier categoría para asignar dinero.'
                   : 'Cada peso tiene su trabajo. ¡Plan en marcha!'}
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div
+            <AnimatedNumber
+              value={readyToAssign}
+              format={fmtMoney}
               className={`text-[34px] sm:text-[42px] font-bold tabular-nums num shrink-0 ${heroAmountColor}`}
-            >
-              {fmtMoney(readyToAssign)}
-            </div>
-            <button
-              type="button"
-              disabled
-              title="Próximamente — la asignación inline llega en P3"
-              className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 inline-flex items-center gap-2 disabled:opacity-60 disabled:pointer-events-none transition-[filter]"
-            >
-              <Sparkles size={14} strokeWidth={2.4} />
-              Asignar
-            </button>
+            />
           </div>
         </div>
       </div>
@@ -222,8 +265,11 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
       {/* Category groups */}
       <div className="space-y-4">
         {filteredGroups.map((g) => {
-          const groupAssigned = g.categories.reduce((s, c) => s + c.assigned, 0)
-          const groupAvailable = g.categories.reduce((s, c) => s + c.available, 0)
+          const groupAssigned = g.categories.reduce((s, c) => s + getAssigned(c), 0)
+          const groupAvailable = g.categories.reduce(
+            (s, c) => s + getAssigned(c) + c.activity,
+            0,
+          )
           return (
             <div
               key={g.id}
@@ -241,12 +287,20 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
                 </div>
                 <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] tabular-nums num">
                   <span>
-                    Asig <span className="text-[var(--text2)] normal-case tracking-normal text-[12px] ml-1">{fmtMoney(groupAssigned)}</span>
+                    Asig{' '}
+                    <span className="text-[var(--text2)] normal-case tracking-normal text-[12px] ml-1">
+                      {fmtMoney(groupAssigned)}
+                    </span>
                   </span>
                   <span>
-                    Disp <span className={`normal-case tracking-normal text-[12px] ml-1 font-semibold ${
-                      groupAvailable < -0.005 ? 'text-[var(--coral)]' : 'text-[var(--text2)]'
-                    }`}>{fmtMoney(groupAvailable)}</span>
+                    Disp{' '}
+                    <span
+                      className={`normal-case tracking-normal text-[12px] ml-1 font-semibold ${
+                        groupAvailable < -0.005 ? 'text-[var(--coral)]' : 'text-[var(--text2)]'
+                      }`}
+                    >
+                      {fmtMoney(groupAvailable)}
+                    </span>
                   </span>
                 </div>
               </div>
@@ -263,10 +317,12 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
               <ul>
                 {g.categories.map((c) => {
                   const Icon = iconForCategoryName(c.name)
+                  const assigned = getAssigned(c)
+                  const available = assigned + c.activity
                   const availableColor =
-                    c.available > 0.005
+                    available > 0.005
                       ? 'gradient-text'
-                      : c.available < -0.005
+                      : available < -0.005
                         ? 'text-[var(--coral)]'
                         : 'text-[var(--muted)]'
                   return (
@@ -287,8 +343,12 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
                           )}
                         </div>
                       </div>
-                      <div className="text-right text-[14px] tabular-nums num text-[var(--text)]">
-                        {fmtMoney(c.assigned)}
+                      <div className="text-right">
+                        <InlineMoneyEdit
+                          value={assigned}
+                          onSave={(next) => handleSave(c, next)}
+                          ariaLabel={`Asignar a ${c.name}`}
+                        />
                       </div>
                       <div className="text-right text-[14px] tabular-nums num text-[var(--muted)]">
                         {c.activity === 0 ? '—' : fmtMoney(c.activity)}
@@ -296,7 +356,7 @@ export function PlanView({ month, readyToAssign, groups, hasBudget }: PlanViewPr
                       <div
                         className={`text-right text-[14px] tabular-nums num font-semibold ${availableColor}`}
                       >
-                        {fmtMoney(c.available)}
+                        {fmtMoney(available)}
                       </div>
                     </li>
                   )

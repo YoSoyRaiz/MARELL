@@ -42,7 +42,7 @@ export default async function PlanPage({
     .maybeSingle()
 
   if (!budget) {
-    return <PlanView month={month} readyToAssign={0} groups={[]} hasBudget={false} />
+    return <PlanView budgetId={null} month={month} totalCash={0} groups={[]} />
   }
 
   const { first, last } = monthBounds(month)
@@ -104,7 +104,6 @@ export default async function PlanPage({
           goal_amount: c.goal_amount === null ? null : Number(c.goal_amount),
           assigned,
           activity,
-          available: assigned + activity, // activity is negative for spending
         }
       })
     return {
@@ -114,20 +113,20 @@ export default async function PlanPage({
     }
   })
 
-  // Ready-to-Assign = sum of cash account balances - total assigned this month
+  // Cash assignable to categories. The wizard's savingsAside flag isn't
+  // persisted yet, so for now treat all checking/savings/cash balances as
+  // assignable. (TODO: persist aside flag on accounts.)
   const cashTypes = ['checking', 'savings', 'cash']
   const totalCash = accountsRaw
     .filter((a) => cashTypes.includes(a.type as string))
     .reduce((s, a) => s + Number(a.balance), 0)
-  const totalAssigned = assignmentsRaw.reduce((s, a) => s + Number(a.assigned), 0)
-  const readyToAssign = totalCash - totalAssigned
 
   return (
     <PlanView
+      budgetId={budget.id as string}
       month={month}
-      readyToAssign={readyToAssign}
+      totalCash={totalCash}
       groups={groups}
-      hasBudget={true}
     />
   )
 }
