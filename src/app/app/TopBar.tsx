@@ -35,40 +35,42 @@ export function TopBar({ displayName, readyToAssign, currency }: TopBarProps) {
           <div className="text-[12px] text-[var(--muted)] mt-0.5">Listo para asignar</div>
         </div>
 
-        {/* Center: Por asignar pill */}
-        <div
-          className={`rounded-2xl border-2 px-4 py-2.5 flex items-center gap-3 shrink-0 transition-colors justify-self-center ${
-            isNegative
-              ? 'border-[var(--coral)]/40 bg-[rgba(255,122,89,0.04)]'
-              : 'border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)]'
-          }`}
-        >
-          <div className="leading-none">
-            <div
-              className={`text-[10px] uppercase tracking-[0.18em] font-semibold ${
-                isNegative ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
-              }`}
-            >
-              Por asignar
-            </div>
-            <div
-              className={`text-[24px] sm:text-[28px] font-bold tabular-nums num leading-none mt-1 ${
-                isNegative
-                  ? 'text-[var(--coral)]'
-                  : isPositive
-                    ? 'gradient-text'
-                    : 'text-[var(--text2)]'
-              }`}
-            >
-              {fmtMoney(readyToAssign, currency)}
+        {/* Center: Por asignar pill (amount only) + Asignar button standalone */}
+        <div className="flex items-center gap-3 justify-self-center">
+          <div
+            className={`rounded-2xl border-2 px-4 py-2.5 shrink-0 transition-colors ${
+              isNegative
+                ? 'border-[var(--coral)]/40 bg-[rgba(255,122,89,0.04)]'
+                : 'border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)]'
+            }`}
+          >
+            <div className="leading-none">
+              <div
+                className={`text-[10px] uppercase tracking-[0.18em] font-semibold ${
+                  isNegative ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
+                }`}
+              >
+                Por asignar
+              </div>
+              <div
+                className={`text-[24px] sm:text-[28px] font-bold tabular-nums num leading-none mt-1 ${
+                  isNegative
+                    ? 'text-[var(--coral)]'
+                    : isPositive
+                      ? 'gradient-text'
+                      : 'text-[var(--text2)]'
+                }`}
+              >
+                {fmtMoney(readyToAssign, currency)}
+              </div>
             </div>
           </div>
           <Link
             href="/app/plan"
-            className="h-10 px-4 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1.5 transition-[filter] shrink-0"
+            className="h-12 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-2xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0"
           >
             Asignar
-            <ArrowRight size={14} strokeWidth={2.4} />
+            <ArrowRight size={16} strokeWidth={2.4} />
           </Link>
         </div>
 
