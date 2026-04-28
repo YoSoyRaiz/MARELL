@@ -31,8 +31,8 @@ export function Sidebar({ displayName, plan }: { displayName: string | null; pla
   return (
     <aside className="w-[240px] shrink-0 border-r border-[var(--border)] bg-[var(--s1)]/60 backdrop-blur-md flex flex-col h-screen sticky top-0">
       {/* Logo */}
-      <div className="px-5 py-6">
-        <Logo height={32} />
+      <div className="px-5 pt-6 pb-[50px]">
+        <Logo height={50} />
       </div>
 
       {/* Nav */}
