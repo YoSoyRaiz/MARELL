@@ -1,8 +1,18 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, Receipt, Trash2, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import {
+  Plus,
+  Receipt,
+  Trash2,
+  ArrowUpRight,
+  ArrowDownRight,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { deleteTransaction } from './actions'
@@ -21,6 +31,46 @@ const formatDate = (iso: string) => {
   const date = new Date(y, m - 1, d)
   const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
   return `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()]}`
+}
+
+const MONTH_NAMES = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+]
+
+const formatMonthLabel = (month: string) => {
+  if (month === 'all') return 'Todas las fechas'
+  const [y, m] = month.split('-').map(Number)
+  return `${MONTH_NAMES[m - 1]} ${y}`
+}
+
+const adjustMonth = (month: string, delta: number) => {
+  if (month === 'all') {
+    // Coming back from "Todas": land on current month
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  }
+  const [y, m] = month.split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+export type FilterType = 'all' | 'income' | 'expense'
+
+export interface FilterState {
+  month: string // YYYY-MM | 'all'
+  type: FilterType
+  q: string
 }
 
 export interface ListTransaction {
@@ -51,6 +101,7 @@ interface Props {
   accounts: AccountOption[]
   categories: CategoryOption[]
   hasBudget: boolean
+  filters: FilterState
 }
 
 const toInitial = (t: ListTransaction): InitialTransaction => ({
@@ -64,12 +115,55 @@ const toInitial = (t: ListTransaction): InitialTransaction => ({
   memo: t.memo,
 })
 
-export function TransactionsClient({ transactions, accounts, categories, hasBudget }: Props) {
+export function TransactionsClient({
+  transactions,
+  accounts,
+  categories,
+  hasBudget,
+  filters,
+}: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [navPending, startNav] = useTransition()
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<ListTransaction | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [, startDelete] = useTransition()
+
+  // Local search input that debounces into the URL
+  const [searchInput, setSearchInput] = useState(filters.q)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Sync local input when the URL changes externally (e.g. browser back)
+  useEffect(() => {
+    setSearchInput(filters.q)
+  }, [filters.q])
+
+  // Debounced push of search input → URL
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    const current = filters.q
+    if (searchInput.trim() === current) return
+    debounceRef.current = setTimeout(() => {
+      pushParams({ q: searchInput.trim() || null })
+    }, 300)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput])
+
+  const pushParams = (updates: Record<string, string | null>) => {
+    const sp = new URLSearchParams(searchParams?.toString() ?? '')
+    for (const [k, v] of Object.entries(updates)) {
+      if (v === null || v === '') sp.delete(k)
+      else sp.set(k, v)
+    }
+    startNav(() => {
+      const qs = sp.toString()
+      router.push(qs ? `/app/transacciones?${qs}` : '/app/transacciones')
+    })
+  }
 
   const handleDelete = (id: string) => {
     if (!window.confirm('¿Eliminar esta transacción? Esto revierte el monto en la cuenta.')) {
@@ -84,10 +178,16 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
   }
 
   const isEmpty = transactions.length === 0
+  const filtersActive = !!filters.q || filters.type !== 'all' || filters.month === 'all'
   const modalOpen = addOpen || editing !== null
   const handleModalClose = () => {
     setAddOpen(false)
     setEditing(null)
+  }
+
+  const clearFilters = () => {
+    setSearchInput('')
+    pushParams({ q: null, type: null, month: null })
   }
 
   return (
@@ -103,9 +203,11 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
               Cada movimiento de tu <span className="gradient-text">dinero</span>.
             </h1>
             <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-              {transactions.length === 0
-                ? 'Aún no has agregado transacciones. Empieza con la primera.'
-                : `${transactions.length} ${transactions.length === 1 ? 'movimiento registrado' : 'movimientos registrados'}. Click en una fila para editar.`}
+              {isEmpty
+                ? filtersActive
+                  ? 'No hay transacciones que coincidan con los filtros actuales.'
+                  : 'Aún no has agregado transacciones. Empieza con la primera.'
+                : `${transactions.length} ${transactions.length === 1 ? 'movimiento' : 'movimientos'}. Click en una fila para editar.`}
             </p>
           </div>
           <button
@@ -119,8 +221,104 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
           </button>
         </div>
 
+        {/* Filter bar */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Search */}
+          <div className="relative flex-1 min-w-[200px] max-w-md">
+            <Search
+              size={14}
+              strokeWidth={2}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none"
+            />
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Buscar por nombre del pagador..."
+              className="w-full !h-10 !pl-10 !pr-10 !text-[13px] !rounded-xl"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => setSearchInput('')}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/[0.06] flex items-center justify-center transition-colors"
+              >
+                <X size={14} strokeWidth={2.2} />
+              </button>
+            )}
+          </div>
+
+          {/* Type pills */}
+          <div className="flex items-center gap-1 p-1 bg-white/[0.04] rounded-xl">
+            {(
+              [
+                { id: 'all', label: 'Todas' },
+                { id: 'income', label: 'Ingresos' },
+                { id: 'expense', label: 'Gastos' },
+              ] as { id: FilterType; label: string }[]
+            ).map((t) => {
+              const active = filters.type === t.id
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => pushParams({ type: t.id === 'all' ? null : t.id })}
+                  className={`h-8 px-3 text-[12px] font-medium rounded-lg transition-colors ${
+                    active
+                      ? 'gradient-bg text-[#0B0B0C]'
+                      : 'text-[var(--text2)] hover:text-[var(--text)]'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Month nav */}
+          <div className="flex items-center gap-1 ml-auto">
+            <button
+              type="button"
+              onClick={() => pushParams({ month: adjustMonth(filters.month, -1) })}
+              aria-label="Mes anterior"
+              className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors"
+            >
+              <ChevronLeft size={16} strokeWidth={2.2} />
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                pushParams({ month: filters.month === 'all' ? null : 'all' })
+              }
+              className="h-9 px-3 text-[13px] font-medium tabular-nums rounded-lg hover:bg-white/[0.04] text-[var(--text)] transition-colors min-w-[140px]"
+            >
+              {formatMonthLabel(filters.month)}
+            </button>
+            <button
+              type="button"
+              onClick={() => pushParams({ month: adjustMonth(filters.month, 1) })}
+              aria-label="Mes siguiente"
+              disabled={filters.month === 'all'}
+              className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <ChevronRight size={16} strokeWidth={2.2} />
+            </button>
+          </div>
+
+          {filtersActive && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-[12px] text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline px-2 transition-colors"
+            >
+              Limpiar filtros
+            </button>
+          )}
+        </div>
+
         {/* Empty state */}
-        {isEmpty && (
+        {isEmpty && !filtersActive && (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-4">
             <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Receipt size={22} strokeWidth={2} />
@@ -144,9 +342,36 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
           </div>
         )}
 
+        {/* Empty filtered state */}
+        {isEmpty && filtersActive && (
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-10 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+              <Search size={20} strokeWidth={2} />
+            </div>
+            <div className="text-[14px] text-[var(--text)] font-medium">
+              Sin resultados
+            </div>
+            <p className="text-[12px] text-[var(--muted)] max-w-sm mx-auto leading-relaxed">
+              No hay transacciones que coincidan con los filtros. Prueba ampliar el rango o
+              limpiar la búsqueda.
+            </p>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1.5 mt-1 h-9 px-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+        )}
+
         {/* List */}
         {!isEmpty && (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+          <div
+            className={`rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden transition-opacity duration-200 ${
+              navPending ? 'opacity-60' : ''
+            }`}
+          >
             <div className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-2.5 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
               <div>Fecha</div>
               <div>Pagado a</div>

@@ -5,9 +5,47 @@ import {
   type ListTransaction,
   type AccountOption,
   type CategoryOption,
+  type FilterState,
 } from './TransactionsClient'
 
-export default async function TransaccionesPage() {
+const currentMonth = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+const monthBounds = (month: string) => {
+  const [y, m] = month.split('-').map(Number)
+  const first = `${y}-${String(m).padStart(2, '0')}-01`
+  const last = new Date(y, m, 0)
+  const lastStr = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(
+    last.getDate(),
+  ).padStart(2, '0')}`
+  return { first, last: lastStr }
+}
+
+const isValidMonth = (s: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
+
+const parseType = (raw: string | undefined): 'all' | 'income' | 'expense' => {
+  if (raw === 'income' || raw === 'expense') return raw
+  return 'all'
+}
+
+const parseMonth = (raw: string | undefined): string => {
+  if (raw === 'all') return 'all'
+  if (raw && isValidMonth(raw)) return raw
+  return currentMonth()
+}
+
+export default async function TransaccionesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string; type?: string; q?: string }>
+}) {
+  const params = await searchParams
+  const month = parseMonth(params.month)
+  const type = parseType(params.type)
+  const q = (params.q ?? '').trim()
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -29,17 +67,41 @@ export default async function TransaccionesPage() {
         accounts={[]}
         categories={[]}
         hasBudget={false}
+        filters={{ month, type, q }}
       />
     )
   }
 
+  // Build the filtered query
+  let txnsQuery = supabase
+    .from('transactions')
+    .select('id, date, payee_name, category_id, account_id, amount, memo, created_at')
+    .eq('budget_id', budget.id)
+
+  if (q) {
+    // Escape PostgREST wildcards from user input. Postgres ilike treats % and _ as wildcards;
+    // since users normally type plain text we just escape them.
+    const escaped = q.replace(/[%_]/g, '\\$&')
+    txnsQuery = txnsQuery.ilike('payee_name', `%${escaped}%`)
+  }
+
+  if (month !== 'all') {
+    const { first, last } = monthBounds(month)
+    txnsQuery = txnsQuery.gte('date', first).lte('date', last)
+  }
+
+  if (type === 'income') {
+    txnsQuery = txnsQuery.gt('amount', 0)
+  } else if (type === 'expense') {
+    txnsQuery = txnsQuery.lt('amount', 0)
+  }
+
+  txnsQuery = txnsQuery
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false })
+
   const [txnsRes, accountsRes, categoriesRes, groupsRes] = await Promise.all([
-    supabase
-      .from('transactions')
-      .select('id, date, payee_name, category_id, account_id, amount, memo')
-      .eq('budget_id', budget.id)
-      .order('date', { ascending: false })
-      .order('created_at', { ascending: false }),
+    txnsQuery,
     supabase
       .from('accounts')
       .select('id, name')
@@ -89,12 +151,15 @@ export default async function TransaccionesPage() {
     memo: (t.memo as string | null) ?? null,
   }))
 
+  const filters: FilterState = { month, type, q }
+
   return (
     <TransactionsClient
       transactions={transactions}
       accounts={accounts}
       categories={categories}
       hasBudget={true}
+      filters={filters}
     />
   )
 }
