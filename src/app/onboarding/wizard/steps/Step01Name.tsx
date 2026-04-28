@@ -10,9 +10,7 @@ export function Step01Name() {
     <div className="space-y-7">
       <div className="space-y-4">
         <h1 className="text-[40px] sm:text-[52px] leading-[1.02] font-bold tracking-tight">
-          Hola <span className="inline-block">👋</span>
-          <br />
-          ¿cómo te <span className="gradient-text">llamamos</span>?
+          ¿Cómo te <span className="gradient-text">llamamos</span>?
         </h1>
         <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">
           Antes que nada, dinos tu nombre. Lo usaremos para personalizar tu plan.

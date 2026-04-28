@@ -12,19 +12,66 @@ export type Household = 'myself' | 'partner' | 'family' | 'roommates'
 export type Housing = 'own' | 'rent' | 'other'
 export type Mortgage = 'yes' | 'no' | 'paid_off'
 
+export type Debt =
+  | 'credit_card'
+  | 'auto'
+  | 'student'
+  | 'personal'
+  | 'medical'
+  | 'bnpl'
+  | 'none'
+
+export type Transport =
+  | 'car'
+  | 'bike'
+  | 'walk'
+  | 'public'
+  | 'rideshare'
+  | 'motorcycle'
+  | 'wheelchair'
+
+export type RegularSpending =
+  | 'groceries'
+  | 'tv_internet'
+  | 'personal_care'
+  | 'clothing'
+  | 'storage'
+
+export type Subscription = 'music' | 'streaming' | 'fitness' | 'other' | 'none'
+
+export type InfrequentExpense = 'credit_card_annual' | 'medical' | 'taxes' | 'none'
+
+export type Goal =
+  | 'emergency_fund'
+  | 'vacation'
+  | 'new_car'
+  | 'new_home'
+  | 'wedding'
+  | 'baby'
+  | 'retirement'
+  | 'none'
+
+export type AdditionalCategory =
+  | 'dining_out'
+  | 'entertainment'
+  | 'hobbies'
+  | 'charity'
+  | 'gifts'
+  | 'home_decor'
+
 export interface OnboardingAnswers {
   name: string
   motivation: Motivation | null
   household: Household | null
   housing: Housing | null
   mortgage: Mortgage | null
-  debts: string[]
-  transport: string[]
-  regularSpending: string[]
-  subscriptions: string[]
-  infrequentExpenses: string[]
-  goals: string[]
-  additionalCategories: string[]
+  debts: Debt[]
+  transport: Transport[]
+  regularSpending: RegularSpending[]
+  subscriptions: Subscription[]
+  infrequentExpenses: InfrequentExpense[]
+  goals: Goal[]
+  additionalCategories: AdditionalCategory[]
 }
 
 export interface StepDef {
@@ -32,6 +79,7 @@ export interface StepDef {
   phase: string
   primaryLabel?: string
   showSkip?: boolean
+  wide?: boolean
   canContinue?: (answers: OnboardingAnswers) => boolean
   Component: ComponentType
 }

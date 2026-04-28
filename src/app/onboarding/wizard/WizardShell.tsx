@@ -1,24 +1,12 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import { useOnboardingStore } from './store'
 import { Logo } from '@/components/ui/Logo'
 import { Button } from '@/components/ui/Button'
 import type { StepDef } from './types'
-
-const ArrowLeft = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 12H5" />
-    <path d="m12 19-7-7 7-7" />
-  </svg>
-)
-
-const ArrowRight = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12h14" />
-    <path d="m12 5 7 7-7 7" />
-  </svg>
-)
 
 export function WizardShell({ steps }: { steps: StepDef[] }) {
   const currentStep = useOnboardingStore((s) => s.currentStep)
@@ -46,25 +34,35 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
         />
       </div>
 
-      {/* Header */}
-      <header className="px-6 py-5">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Logo />
-          <button
-            type="button"
-            onClick={back}
-            disabled={safeIndex === 0}
-            className="text-[13px] text-[var(--muted)] hover:text-[var(--text)] disabled:opacity-30 disabled:pointer-events-none transition-colors flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-          >
-            <ArrowLeft />
-            Atrás
-          </button>
+      {/* Header — back left, logo centered, X right */}
+      <header className="relative px-6 py-5">
+        <button
+          type="button"
+          onClick={back}
+          disabled={safeIndex === 0}
+          aria-label="Atrás"
+          className="absolute left-6 top-1/2 -translate-y-1/2 text-[13px] text-[var(--muted)] hover:text-[var(--text)] disabled:opacity-30 disabled:pointer-events-none transition-colors flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
+        >
+          <ArrowLeft size={14} strokeWidth={2.2} />
+          <span className="hidden sm:inline">Atrás</span>
+        </button>
+
+        <div className="flex justify-center">
+          <Logo height={42} />
         </div>
+
+        <Link
+          href="/"
+          aria-label="Cerrar y volver al inicio"
+          className="absolute right-6 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/[0.05] transition-colors"
+        >
+          <X size={18} strokeWidth={2} />
+        </Link>
       </header>
 
       {/* Main */}
       <main className="flex-1 flex items-start justify-center px-6 pt-6 pb-36">
-        <div className="max-w-2xl w-full">
+        <div className={`${step.wide ? 'max-w-5xl' : 'max-w-2xl'} w-full`}>
           <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)] mb-5">
             {step.phase}
           </div>
@@ -80,7 +78,7 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
 
       {/* Footer */}
       <footer className="fixed bottom-0 left-0 right-0 z-10 pt-16 pb-6 px-6 bg-gradient-to-t from-[var(--bg)] via-[var(--bg)]/90 to-transparent pointer-events-none">
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-4 pointer-events-auto">
+        <div className={`${step.wide ? 'max-w-5xl' : 'max-w-2xl'} mx-auto flex items-center justify-between gap-4 pointer-events-auto`}>
           <span className="text-[12px] text-[var(--muted)] tabular-nums">
             <span className="text-[var(--text2)] font-medium">{safeIndex + 1}</span>
             <span className="text-[var(--muted2)]"> / {total}</span>
@@ -100,7 +98,7 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
               size="lg"
               onClick={next}
               disabled={!canContinue}
-              iconRight={<ArrowRight />}
+              iconRight={<ArrowRight size={16} strokeWidth={2.2} />}
             >
               {step.primaryLabel ?? 'Continuar'}
             </Button>

@@ -36,7 +36,7 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${ibmPlex.variable} ${varelaRound.variable}`}
     >
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }
