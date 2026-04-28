@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { logout } from '../(auth)/actions'
+import { ResetOnboardingButton } from './ResetOnboardingButton'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -48,15 +49,18 @@ export default async function DashboardPage() {
             Hola, {profile?.display_name ?? 'amigo'}
           </p>
         </div>
-        <form action={logout}>
-          <button
-            type="submit"
-            className="text-xs font-medium px-3 py-2 rounded-lg border"
-            style={{ borderColor: 'var(--border2)', color: 'var(--text2)' }}
-          >
-            Cerrar sesión
-          </button>
-        </form>
+        <div className="flex items-center gap-2">
+          <ResetOnboardingButton />
+          <form action={logout}>
+            <button
+              type="submit"
+              className="text-xs font-medium px-3 py-2 rounded-lg border"
+              style={{ borderColor: 'var(--border2)', color: 'var(--text2)' }}
+            >
+              Cerrar sesión
+            </button>
+          </form>
+        </div>
       </header>
 
       <section className="card p-6 mb-6">

@@ -46,8 +46,18 @@ create table accounts (
   id                uuid primary key default gen_random_uuid(),
   budget_id         uuid references budgets on delete cascade,
   name              text not null,
-  type              text not null,
-  -- checking | savings | credit_card | cash | investment | mortgage | other
+  type              text not null check (type in (
+    -- Efectivo
+    'checking', 'savings', 'cash',
+    -- Crédito
+    'credit_card', 'line_of_credit',
+    -- Hipotecas y préstamos
+    'mortgage', 'auto_loan', 'student_loan', 'personal_loan', 'medical_debt', 'other_debt',
+    -- Seguimiento
+    'asset', 'liability',
+    -- Legacy (presupuestos creados antes del wizard nuevo)
+    'investment', 'other'
+  )),
   currency          text not null default 'DOP',
   balance           numeric(14,2) not null default 0,
   credit_limit      numeric(14,2),          -- solo para credit_card
