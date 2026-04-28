@@ -4,7 +4,11 @@ import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, ArrowDownRight, ArrowUpRight, AlertCircle } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
-import { createTransaction, type TransactionType } from './actions'
+import {
+  createTransaction,
+  updateTransaction,
+  type TransactionType,
+} from './actions'
 
 interface Account {
   id: string
@@ -17,11 +21,24 @@ interface CategoryOption {
   group_name: string
 }
 
-interface AddTransactionModalProps {
+export interface InitialTransaction {
+  id: string
+  type: TransactionType
+  date: string
+  accountId: string
+  categoryId: string | null
+  payeeName: string
+  amount: number // positive value (sign is in `type`)
+  memo: string | null
+}
+
+interface TransactionFormModalProps {
   isOpen: boolean
   onClose: () => void
   accounts: Account[]
   categories: CategoryOption[]
+  mode: 'add' | 'edit'
+  initial?: InitialTransaction
 }
 
 const todayLocal = () => {
@@ -29,12 +46,14 @@ const todayLocal = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export function AddTransactionModal({
+export function TransactionFormModal({
   isOpen,
   onClose,
   accounts,
   categories,
-}: AddTransactionModalProps) {
+  mode,
+  initial,
+}: TransactionFormModalProps) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [type, setType] = useState<TransactionType>('expense')
@@ -46,18 +65,28 @@ export function AddTransactionModal({
   const [memo, setMemo] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  // Reset form whenever the modal opens
+  // Pre-fill on open: from `initial` in edit mode, blank in add mode.
   useEffect(() => {
     if (!isOpen) return
-    setType('expense')
-    setDate(todayLocal())
-    setAccountId(accounts[0]?.id ?? '')
-    setCategoryId('')
-    setPayeeName('')
-    setAmount(null)
-    setMemo('')
+    if (mode === 'edit' && initial) {
+      setType(initial.type)
+      setDate(initial.date)
+      setAccountId(initial.accountId)
+      setCategoryId(initial.categoryId ?? '')
+      setPayeeName(initial.payeeName)
+      setAmount(initial.amount)
+      setMemo(initial.memo ?? '')
+    } else {
+      setType('expense')
+      setDate(todayLocal())
+      setAccountId(accounts[0]?.id ?? '')
+      setCategoryId('')
+      setPayeeName('')
+      setAmount(null)
+      setMemo('')
+    }
     setError(null)
-  }, [isOpen, accounts])
+  }, [isOpen, mode, initial, accounts])
 
   // Esc + body scroll lock
   useEffect(() => {
@@ -82,7 +111,6 @@ export function AddTransactionModal({
     amount > 0 &&
     /^\d{4}-\d{2}-\d{2}$/.test(date)
 
-  // Group categories by their group_name
   const groupedCategories = categories.reduce<Record<string, CategoryOption[]>>((acc, c) => {
     const key = c.group_name
     if (!acc[key]) acc[key] = []
@@ -94,7 +122,7 @@ export function AddTransactionModal({
     if (!valid || amount === null) return
     setError(null)
     startTransition(async () => {
-      const result = await createTransaction({
+      const payload = {
         accountId,
         categoryId: categoryId || null,
         date,
@@ -102,7 +130,11 @@ export function AddTransactionModal({
         amount,
         memo,
         type,
-      })
+      }
+      const result =
+        mode === 'edit' && initial
+          ? await updateTransaction({ id: initial.id, ...payload })
+          : await createTransaction(payload)
       if (result && 'error' in result && result.error) {
         setError(result.error)
         return
@@ -111,6 +143,8 @@ export function AddTransactionModal({
       onClose()
     })
   }
+
+  const isEdit = mode === 'edit'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -123,16 +157,24 @@ export function AddTransactionModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="add-tx-title"
+        aria-labelledby="tx-form-title"
         className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
-              Nueva transacción
+              {isEdit ? 'Editar transacción' : 'Nueva transacción'}
             </div>
-            <h2 id="add-tx-title" className="text-[20px] font-bold mt-1 leading-tight tracking-tight">
-              Agrega un <span className="gradient-text">movimiento</span>
+            <h2 id="tx-form-title" className="text-[20px] font-bold mt-1 leading-tight tracking-tight">
+              {isEdit ? (
+                <>
+                  Edita el <span className="gradient-text">movimiento</span>
+                </>
+              ) : (
+                <>
+                  Agrega un <span className="gradient-text">movimiento</span>
+                </>
+              )}
             </h2>
           </div>
           <button
@@ -174,12 +216,10 @@ export function AddTransactionModal({
             </button>
           </div>
 
-          {/* Amount */}
           <Field label="Monto">
             <MoneyInput value={amount} onChange={setAmount} placeholder="0.00" />
           </Field>
 
-          {/* Date */}
           <Field label="Fecha">
             <input
               type="date"
@@ -189,13 +229,8 @@ export function AddTransactionModal({
             />
           </Field>
 
-          {/* Account */}
           <Field label="Cuenta">
-            <NativeSelect
-              value={accountId}
-              onChange={setAccountId}
-              ariaLabel="Cuenta"
-            >
+            <NativeSelect value={accountId} onChange={setAccountId} ariaLabel="Cuenta">
               {accounts.length === 0 ? (
                 <option value="" disabled>
                   Sin cuentas
@@ -210,25 +245,23 @@ export function AddTransactionModal({
             </NativeSelect>
           </Field>
 
-          {/* Payee */}
           <Field label={type === 'income' ? 'Recibido de' : 'Pagado a'}>
             <input
               type="text"
               value={payeeName}
               onChange={(e) => setPayeeName(e.target.value)}
-              placeholder={type === 'income' ? 'Salario, freelance, etc.' : 'Supermercado Nacional, etc.'}
+              placeholder={
+                type === 'income'
+                  ? 'Salario, freelance, etc.'
+                  : 'Supermercado Nacional, etc.'
+              }
               maxLength={80}
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
           </Field>
 
-          {/* Category */}
           <Field label="Categoría" hint="opcional">
-            <NativeSelect
-              value={categoryId}
-              onChange={setCategoryId}
-              ariaLabel="Categoría"
-            >
+            <NativeSelect value={categoryId} onChange={setCategoryId} ariaLabel="Categoría">
               <option value="">Sin categoría</option>
               {Object.entries(groupedCategories).map(([groupName, cats]) => (
                 <optgroup key={groupName} label={groupName}>
@@ -242,7 +275,6 @@ export function AddTransactionModal({
             </NativeSelect>
           </Field>
 
-          {/* Memo */}
           <Field label="Memo" hint="opcional">
             <textarea
               value={memo}
@@ -282,6 +314,8 @@ export function AddTransactionModal({
                 <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-[#0B0B0C]/30 border-t-[#0B0B0C] animate-spin" />
                 Guardando...
               </>
+            ) : isEdit ? (
+              'Guardar cambios'
             ) : (
               'Agregar'
             )}

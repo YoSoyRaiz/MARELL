@@ -86,6 +86,118 @@ export async function createTransaction(input: CreateTransactionInput) {
   return { success: true as const }
 }
 
+export interface UpdateTransactionInput extends CreateTransactionInput {
+  id: string
+}
+
+export async function updateTransaction(input: UpdateTransactionInput) {
+  if (!input.id) return { error: 'ID requerido' }
+  if (!input.accountId) return { error: 'Cuenta requerida' }
+  if (!isValidDate(input.date)) return { error: 'Fecha inválida' }
+  if (!input.payeeName.trim()) return { error: 'Pagado a requerido' }
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    return { error: 'Monto inválido' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Fetch the existing transaction (to know how to roll back the balance).
+  const { data: existing } = await supabase
+    .from('transactions')
+    .select('id, account_id, amount, budget_id')
+    .eq('id', input.id)
+    .single()
+  if (!existing) return { error: 'Transacción no encontrada' }
+
+  // Verify ownership through the budget.
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', existing.budget_id)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  // The new account must belong to the same budget.
+  const { data: newAccount } = await supabase
+    .from('accounts')
+    .select('id, budget_id, balance')
+    .eq('id', input.accountId)
+    .single()
+  if (!newAccount || newAccount.budget_id !== existing.budget_id) {
+    return { error: 'Cuenta inválida' }
+  }
+
+  // Optional category must belong to the budget.
+  if (input.categoryId) {
+    const { data: cat } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('id', input.categoryId)
+      .eq('budget_id', budget.id)
+      .single()
+    if (!cat) return { error: 'Categoría no encontrada' }
+  }
+
+  const oldSignedAmount = Number(existing.amount)
+  const newSignedAmount =
+    input.type === 'income' ? Math.abs(input.amount) : -Math.abs(input.amount)
+
+  const accountChanged = existing.account_id !== input.accountId
+
+  // Update the transaction row first; if it fails, no balance changes happen.
+  const { error: updateErr } = await supabase
+    .from('transactions')
+    .update({
+      account_id: input.accountId,
+      category_id: input.categoryId,
+      date: input.date,
+      payee_name: input.payeeName.trim(),
+      memo: input.memo?.trim() || null,
+      amount: newSignedAmount,
+    })
+    .eq('id', input.id)
+  if (updateErr) return { error: updateErr.message }
+
+  if (accountChanged) {
+    // Roll back the original account.
+    const { data: oldAccount } = await supabase
+      .from('accounts')
+      .select('balance')
+      .eq('id', existing.account_id)
+      .single()
+    if (oldAccount) {
+      const rolledBack =
+        Math.round((Number(oldAccount.balance) - oldSignedAmount) * 100) / 100
+      await supabase
+        .from('accounts')
+        .update({ balance: rolledBack })
+        .eq('id', existing.account_id)
+    }
+    // Apply the new amount to the new account.
+    const applied = Math.round((Number(newAccount.balance) + newSignedAmount) * 100) / 100
+    await supabase
+      .from('accounts')
+      .update({ balance: applied })
+      .eq('id', input.accountId)
+  } else {
+    // Same account: just apply the net delta.
+    const delta = newSignedAmount - oldSignedAmount
+    const applied = Math.round((Number(newAccount.balance) + delta) * 100) / 100
+    await supabase
+      .from('accounts')
+      .update({ balance: applied })
+      .eq('id', input.accountId)
+  }
+
+  revalidatePath('/app', 'layout')
+  return { success: true as const }
+}
+
 export async function deleteTransaction(transactionId: string) {
   const supabase = await createClient()
   const {

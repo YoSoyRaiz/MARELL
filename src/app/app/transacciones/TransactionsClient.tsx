@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Receipt, Trash2, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
-import { AddTransactionModal } from './AddTransactionModal'
+import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { deleteTransaction } from './actions'
 
 const fmtMoney = (n: number) => {
@@ -17,7 +17,6 @@ const fmtMoney = (n: number) => {
 }
 
 const formatDate = (iso: string) => {
-  // YYYY-MM-DD → DD MMM
   const [y, m, d] = iso.split('-').map(Number)
   const date = new Date(y, m - 1, d)
   const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
@@ -54,9 +53,21 @@ interface Props {
   hasBudget: boolean
 }
 
+const toInitial = (t: ListTransaction): InitialTransaction => ({
+  id: t.id,
+  type: t.amount >= 0 ? 'income' : 'expense',
+  date: t.date,
+  accountId: t.account_id,
+  categoryId: t.category_id,
+  payeeName: t.payee_name ?? '',
+  amount: Math.abs(t.amount),
+  memo: t.memo,
+})
+
 export function TransactionsClient({ transactions, accounts, categories, hasBudget }: Props) {
   const router = useRouter()
-  const [modalOpen, setModalOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
+  const [editing, setEditing] = useState<ListTransaction | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [, startDelete] = useTransition()
 
@@ -73,6 +84,11 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
   }
 
   const isEmpty = transactions.length === 0
+  const modalOpen = addOpen || editing !== null
+  const handleModalClose = () => {
+    setAddOpen(false)
+    setEditing(null)
+  }
 
   return (
     <>
@@ -89,12 +105,12 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
             <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
               {transactions.length === 0
                 ? 'Aún no has agregado transacciones. Empieza con la primera.'
-                : `${transactions.length} ${transactions.length === 1 ? 'movimiento registrado' : 'movimientos registrados'}.`}
+                : `${transactions.length} ${transactions.length === 1 ? 'movimiento registrado' : 'movimientos registrados'}. Click en una fila para editar.`}
             </p>
           </div>
           <button
             type="button"
-            onClick={() => setModalOpen(true)}
+            onClick={() => setAddOpen(true)}
             disabled={!hasBudget || accounts.length === 0}
             className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none"
           >
@@ -118,7 +134,7 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
             </p>
             <button
               type="button"
-              onClick={() => setModalOpen(true)}
+              onClick={() => setAddOpen(true)}
               disabled={!hasBudget || accounts.length === 0}
               className="inline-flex items-center gap-1.5 mt-2 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
             >
@@ -131,7 +147,6 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
         {/* List */}
         {!isEmpty && (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
-            {/* Column headers */}
             <div className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-2.5 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
               <div>Fecha</div>
               <div>Pagado a</div>
@@ -149,7 +164,8 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
                 return (
                   <li
                     key={t.id}
-                    className={`grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.02] transition-colors ${dimmed}`}
+                    onClick={() => setEditing(t)}
+                    className={`grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer ${dimmed}`}
                   >
                     <div className="text-[12px] text-[var(--muted)] tabular-nums num">
                       {formatDate(t.date)}
@@ -186,7 +202,10 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleDelete(t.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(t.id)
+                      }}
                       aria-label="Eliminar transacción"
                       className="text-[var(--muted)] hover:text-[var(--coral)] p-2 rounded-lg hover:bg-white/[0.04] transition-colors justify-self-end"
                     >
@@ -200,11 +219,13 @@ export function TransactionsClient({ transactions, accounts, categories, hasBudg
         )}
       </div>
 
-      <AddTransactionModal
+      <TransactionFormModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleModalClose}
         accounts={accounts}
         categories={categories}
+        mode={editing ? 'edit' : 'add'}
+        initial={editing ? toInitial(editing) : undefined}
       />
     </>
   )
