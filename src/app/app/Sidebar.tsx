@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
+  Sparkles,
   Wallet,
   BarChart3,
   ArrowLeftRight,
@@ -16,6 +17,7 @@ import { logout } from '@/app/(auth)/actions'
 
 const NAV = [
   { id: 'resumen', label: 'Resumen', href: '/app', icon: LayoutDashboard },
+  { id: 'plan', label: 'Plan', href: '/app/plan', icon: Sparkles },
   { id: 'cuentas', label: 'Cuentas', href: '/app/cuentas', icon: Wallet },
   { id: 'analisis', label: 'Análisis', href: '/app/analisis', icon: BarChart3 },
   { id: 'transacciones', label: 'Transacciones', href: '/app/transacciones', icon: ArrowLeftRight },

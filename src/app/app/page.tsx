@@ -9,10 +9,6 @@ import {
   TrendingUp,
   TrendingDown,
   Receipt,
-  ShoppingBag,
-  Palette,
-  Target,
-  Tag,
   Plus,
   Sparkles,
 } from 'lucide-react'
@@ -20,6 +16,7 @@ import type { LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ResetOnboardingButton } from './ResetOnboardingButton'
 import { DonutChart } from './DonutChart'
+import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 
 const fmtMoney = (n: number) => {
   const abs = Math.abs(n)
@@ -71,21 +68,6 @@ const MONTH_NAMES = [
 const formatMonthLabel = (month: string) => {
   const [y, m] = month.split('-').map(Number)
   return `${MONTH_NAMES[m - 1]} ${y}`
-}
-
-const iconForGroup = (name: string): LucideIcon => {
-  switch (name) {
-    case 'Facturas':
-      return Receipt
-    case 'Necesidades':
-      return ShoppingBag
-    case 'Gustos':
-      return Palette
-    case 'Metas':
-      return Target
-    default:
-      return Tag
-  }
 }
 
 export default async function ResumenPage() {
@@ -205,21 +187,32 @@ export default async function ResumenPage() {
   const totalAssigned = assignmentsData.reduce((s, a) => s + Number(a.assigned), 0)
   const readyToAssign = totalCash - totalAssigned
 
-  // Per-group stats
-  const groupStats = groupsData.map((g) => {
-    const groupCatIds = catsData.filter((c) => c.group_id === g.id).map((c) => c.id)
-    const assigned = assignmentsData
-      .filter((a) => groupCatIds.includes(a.category_id))
-      .reduce((s, a) => s + Number(a.assigned), 0)
-    const spent = txnsData
-      .filter((t) => t.category_id && groupCatIds.includes(t.category_id) && Number(t.amount) < 0)
-      .reduce((s, t) => s + Math.abs(Number(t.amount)), 0)
+  // Per-group + per-category breakdown for the categorías cards (used by the modal)
+  const sectionGroups: SectionGroup[] = groupsData.map((g) => {
+    const groupCats = catsData.filter((c) => c.group_id === g.id)
+    const categories = groupCats.map((c) => {
+      const a = assignmentsData.find((x) => x.category_id === c.id)
+      const activity = txnsData
+        .filter((t) => t.category_id === c.id)
+        .reduce((s, t) => s + Number(t.amount), 0)
+      return {
+        id: c.id as string,
+        name: c.name as string,
+        assigned: Number(a?.assigned ?? 0),
+        activity,
+        goal_amount: c.goal_amount === null ? null : Number(c.goal_amount),
+      }
+    })
+    const assigned = categories.reduce((s, c) => s + c.assigned, 0)
+    const spent = categories
+      .filter((c) => c.activity < 0)
+      .reduce((s, c) => s + Math.abs(c.activity), 0)
     return {
       id: g.id as string,
       name: g.name as string,
+      categories,
       assigned,
       spent,
-      categoriesCount: groupCatIds.length,
     }
   })
 
@@ -294,55 +287,12 @@ export default async function ResumenPage() {
           />
         </div>
 
-        {/* Categories cards */}
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
-          <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-            <div>
-              <h2 className="text-[15px] font-semibold text-[var(--text)]">Categorías</h2>
-              <p className="text-[12px] text-[var(--muted)] mt-0.5">
-                Avance del mes por grupo
-              </p>
-            </div>
-            <Link
-              href="/app/plan"
-              className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
-            >
-              Ver plan <ArrowRight size={12} strokeWidth={2.4} />
-            </Link>
-          </header>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
-            {groupStats.map((g) => {
-              const Icon = iconForGroup(g.name)
-              const pct = g.assigned > 0 ? Math.min(1, g.spent / g.assigned) : 0
-              return (
-                <Link
-                  key={g.id}
-                  href="/app/plan"
-                  className="group p-5 hover:bg-white/[0.02] transition-colors"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center group-hover:text-[var(--brand-2)] transition-colors">
-                      <Icon size={16} strokeWidth={2} />
-                    </div>
-                    <div className="text-[13px] font-medium text-[var(--text)]">{g.name}</div>
-                  </div>
-                  <div className="text-[18px] font-bold tabular-nums num text-[var(--text)]">
-                    {fmtMoneyShort(g.spent)}
-                  </div>
-                  <div className="text-[11px] text-[var(--muted)] mt-0.5">
-                    de {fmtMoneyShort(g.assigned)}
-                  </div>
-                  <div className="mt-3 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
-                    <div
-                      className="h-full gradient-bg transition-[width] duration-500"
-                      style={{ width: `${pct * 100}%` }}
-                    />
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </section>
+        {/* Categories cards (with click-to-edit modal) */}
+        <CategoryCardsSection
+          budgetId={budget.id as string}
+          month={month}
+          groups={sectionGroups}
+        />
 
         {/* Recent transactions */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
