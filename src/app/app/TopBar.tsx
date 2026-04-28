@@ -2,14 +2,15 @@
 
 import Link from 'next/link'
 import { Bell, Search, ArrowRight } from 'lucide-react'
+import { AnimatedNumber } from './plan/AnimatedNumber'
+import { useReadyToAssign } from './ReadyToAssignProvider'
 
 interface TopBarProps {
   displayName: string | null
-  readyToAssign: number
   currency: string
 }
 
-const fmtMoney = (n: number, _currency: string) => {
+const fmtMoney = (n: number) => {
   const abs = Math.abs(n)
   const formatted = abs.toLocaleString('en-US', {
     minimumFractionDigits: 2,
@@ -19,7 +20,9 @@ const fmtMoney = (n: number, _currency: string) => {
   return `$${formatted}`
 }
 
-export function TopBar({ displayName, readyToAssign, currency }: TopBarProps) {
+export function TopBar({ displayName }: TopBarProps) {
+  const ctx = useReadyToAssign()
+  const readyToAssign = ctx?.readyToAssign ?? 0
   const firstName = displayName?.trim().split(/\s+/)[0]
   const isPositive = readyToAssign > 0.005
   const isNegative = readyToAssign < -0.005
@@ -53,17 +56,17 @@ export function TopBar({ displayName, readyToAssign, currency }: TopBarProps) {
               >
                 Por asignar
               </div>
-              <div
-                className={`text-[24px] sm:text-[28px] font-bold tabular-nums num leading-none mt-1 ${
+              <AnimatedNumber
+                value={readyToAssign}
+                format={fmtMoney}
+                className={`text-[24px] sm:text-[28px] font-bold tabular-nums num leading-none mt-1 block ${
                   isNegative
                     ? 'text-[var(--coral)]'
                     : isPositive
                       ? 'gradient-text'
                       : 'text-[var(--text2)]'
                 }`}
-              >
-                {fmtMoney(readyToAssign, currency)}
-              </div>
+              />
             </div>
             <Link
               href="/app/plan"

@@ -7,6 +7,7 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './InlineMoneyEdit'
 import { AnimatedNumber } from './AnimatedNumber'
 import { updateAssignment } from './actions'
+import { useReadyToAssign } from '../ReadyToAssignProvider'
 
 const MONTH_NAMES = [
   'Enero',
@@ -69,6 +70,7 @@ type Filter = 'todas' | 'subfondeadas' | 'con-dinero'
 
 export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) {
   const router = useRouter()
+  const rtaCtx = useReadyToAssign()
   const [navPending, startNav] = useTransition()
   const [filter, setFilter] = useState<Filter>('todas')
   const [overrides, setOverrides] = useState<Record<string, number>>({})
@@ -89,12 +91,15 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
   const handleSave = async (cat: PlanCategory, next: number) => {
     if (!budgetId) return
     const previous = getAssigned(cat)
+    const delta = next - previous
     setOverrides((p) => ({ ...p, [cat.id]: next }))
     setError(null)
+    rtaCtx?.adjust(delta) // optimistic topbar update
     const result = await updateAssignment(budgetId, cat.id, month, next)
     if ('error' in result && result.error) {
       // Rollback
       setOverrides((p) => ({ ...p, [cat.id]: previous }))
+      rtaCtx?.adjust(-delta)
       setError(result.error)
       window.setTimeout(() => setError(null), 5000)
     }

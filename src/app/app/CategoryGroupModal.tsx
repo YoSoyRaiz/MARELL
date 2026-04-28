@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './plan/InlineMoneyEdit'
 import { updateAssignment } from './plan/actions'
+import { useReadyToAssign } from './ReadyToAssignProvider'
 
 const fmtMoney = (n: number) => {
   const abs = Math.abs(n)
@@ -49,6 +50,7 @@ export function CategoryGroupModal({
 }: CategoryGroupModalProps) {
   const [overrides, setOverrides] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
+  const rtaCtx = useReadyToAssign()
 
   useEffect(() => {
     if (!isOpen) return
@@ -79,11 +81,14 @@ export function CategoryGroupModal({
 
   const handleSave = async (cat: ModalCategory, next: number) => {
     const previous = getAssigned(cat)
+    const delta = next - previous
     setOverrides((p) => ({ ...p, [cat.id]: next }))
     setError(null)
+    rtaCtx?.adjust(delta) // optimistic topbar update
     const result = await updateAssignment(budgetId, cat.id, month, next)
     if ('error' in result && result.error) {
       setOverrides((p) => ({ ...p, [cat.id]: previous }))
+      rtaCtx?.adjust(-delta)
       setError(result.error)
       window.setTimeout(() => setError(null), 5000)
     } else {
