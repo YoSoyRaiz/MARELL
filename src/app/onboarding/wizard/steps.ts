@@ -160,21 +160,9 @@ export const STEPS: StepDef[] = [
     Component: Step22SavingsAllocation,
   },
   {
-    id: 'zero-based',
+    id: 'plan-preview',
     phase: 'Paso 3 de 3 · Asignación',
-    primaryLabel: '¡Listo!',
-    wide: true,
-    canContinue: (a) => {
-      const assignable = a.accounts
-        .filter((acc) => {
-          if (acc.type === 'checking' || acc.type === 'cash') return true
-          if (acc.type === 'savings' && !a.savingsAside[acc.id]) return true
-          return false
-        })
-        .reduce((s, acc) => s + acc.balance, 0)
-      const totalAssigned = Object.values(a.assignments).reduce((s, v) => s + (v || 0), 0)
-      return Math.abs(assignable - totalAssigned) < 0.005
-    },
+    primaryLabel: 'Hora de asignar',
     Component: Step23ZeroBased,
   },
   {
