@@ -59,7 +59,42 @@ export type AdditionalCategory =
   | 'gifts'
   | 'home_decor'
 
+// ── Phase 2 ────────────────────────────────────────────
+
+export type AccountType =
+  // cash
+  | 'checking'
+  | 'savings'
+  | 'cash'
+  // credit
+  | 'credit_card'
+  | 'line_of_credit'
+  // mortgages & loans
+  | 'mortgage'
+  | 'auto_loan'
+  | 'student_loan'
+  | 'personal_loan'
+  | 'medical_debt'
+  | 'other_debt'
+  // tracking
+  | 'asset'
+  | 'liability'
+
+export type AccountCategory = 'cash' | 'credit' | 'loan' | 'tracking'
+
+export interface AccountInput {
+  id: string
+  name: string
+  type: AccountType
+  balance: number
+  interestRate?: number
+}
+
+// Targets and assignments are keyed by `${groupName}::${categoryName}`
+export type CategoryKey = string
+
 export interface OnboardingAnswers {
+  // Phase 1
   name: string
   motivation: Motivation | null
   household: Household | null
@@ -72,6 +107,11 @@ export interface OnboardingAnswers {
   infrequentExpenses: InfrequentExpense[]
   goals: Goal[]
   additionalCategories: AdditionalCategory[]
+  // Phase 2
+  targets: Record<CategoryKey, number>
+  accounts: AccountInput[]
+  assignments: Record<CategoryKey, number>
+  savingsAside: Record<string, boolean> // accountId -> aside
 }
 
 export interface StepDef {
@@ -80,6 +120,7 @@ export interface StepDef {
   primaryLabel?: string
   showSkip?: boolean
   wide?: boolean
+  hideContinue?: boolean
   canContinue?: (answers: OnboardingAnswers) => boolean
   Component: ComponentType
 }
@@ -97,4 +138,19 @@ export const initialAnswers: OnboardingAnswers = {
   infrequentExpenses: [],
   goals: [],
   additionalCategories: [],
+  targets: {},
+  accounts: [],
+  assignments: {},
+  savingsAside: {},
+}
+
+export function accountCategoryFromType(t: AccountType): AccountCategory {
+  if (t === 'checking' || t === 'savings' || t === 'cash') return 'cash'
+  if (t === 'credit_card' || t === 'line_of_credit') return 'credit'
+  if (t === 'asset' || t === 'liability') return 'tracking'
+  return 'loan'
+}
+
+export function isDebtType(t: AccountType): boolean {
+  return accountCategoryFromType(t) === 'loan' || t === 'credit_card' || t === 'line_of_credit'
 }

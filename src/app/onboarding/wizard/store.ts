@@ -30,10 +30,22 @@ export const useOnboardingStore = create<OnboardingState>()(
     }),
     {
       name: 'marell:onboarding:v1',
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ currentStep: s.currentStep, answers: s.answers }),
-      onRehydrateStorage: () => (state) => {
-        state?.setStep && (state.hasHydrated = true)
+      // Deep-merge persisted answers on top of the current default answers.
+      // This guarantees newly added fields (like targets/accounts) get their
+      // initial value even when an older persisted blob doesn't include them.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<OnboardingState>
+        return {
+          ...current,
+          ...p,
+          answers: {
+            ...current.answers,
+            ...(p.answers ?? {}),
+          },
+        }
       },
     }
   )

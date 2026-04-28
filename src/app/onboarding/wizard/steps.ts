@@ -14,6 +14,19 @@ import { Step12InfrequentExpenses } from './steps/Step12InfrequentExpenses'
 import { Step13Goals } from './steps/Step13Goals'
 import { Step14AdditionalCategories } from './steps/Step14AdditionalCategories'
 import { Step15CategoryList } from './steps/Step15CategoryList'
+import { Step16WelcomePlan } from './steps/Step16WelcomePlan'
+import { Step17Targets } from './steps/Step17Targets'
+import { Step18AddAccountsIntro } from './steps/Step18AddAccountsIntro'
+import { Step19AccountForm } from './steps/Step19AccountForm'
+import { Step20AccountsRecap } from './steps/Step20AccountsRecap'
+import { Step21FundIntro } from './steps/Step21FundIntro'
+import { Step22SavingsAllocation } from './steps/Step22SavingsAllocation'
+import { Step23ZeroBased } from './steps/Step23ZeroBased'
+import { Step24Tutorial1 } from './steps/Step24Tutorial1'
+import { Step25Tutorial2 } from './steps/Step25Tutorial2'
+import { Step26Tutorial3 } from './steps/Step26Tutorial3'
+import { Step27Tutorial4 } from './steps/Step27Tutorial4'
+import { Step28Final } from './steps/Step28Final'
 
 export const STEPS: StepDef[] = [
   {
@@ -102,8 +115,92 @@ export const STEPS: StepDef[] = [
   {
     id: 'category-list',
     phase: 'Tu plan',
-    primaryLabel: 'Continuar al plan',
+    primaryLabel: 'Personalizar plan',
     wide: true,
     Component: Step15CategoryList,
+  },
+  {
+    id: 'welcome-plan',
+    phase: 'Paso 1 de 3 · Personalizar plan',
+    Component: Step16WelcomePlan,
+  },
+  {
+    id: 'targets',
+    phase: 'Paso 1 de 3 · Personalizar plan',
+    primaryLabel: 'Continuar',
+    wide: true,
+    Component: Step17Targets,
+  },
+  {
+    id: 'accounts-intro',
+    phase: 'Paso 2 de 3 · Cuentas',
+    Component: Step18AddAccountsIntro,
+  },
+  {
+    id: 'account-form',
+    phase: 'Paso 2 de 3 · Cuentas',
+    hideContinue: true,
+    Component: Step19AccountForm,
+  },
+  {
+    id: 'accounts-recap',
+    phase: 'Paso 2 de 3 · Cuentas',
+    primaryLabel: 'Continuar',
+    canContinue: (a) => a.accounts.length >= 1,
+    Component: Step20AccountsRecap,
+  },
+  {
+    id: 'fund-intro',
+    phase: 'Paso 3 de 3 · Asignación',
+    Component: Step21FundIntro,
+  },
+  {
+    id: 'savings-allocation',
+    phase: 'Paso 3 de 3 · Asignación',
+    Component: Step22SavingsAllocation,
+  },
+  {
+    id: 'zero-based',
+    phase: 'Paso 3 de 3 · Asignación',
+    primaryLabel: '¡Listo!',
+    wide: true,
+    canContinue: (a) => {
+      const assignable = a.accounts
+        .filter((acc) => {
+          if (acc.type === 'checking' || acc.type === 'cash') return true
+          if (acc.type === 'savings' && !a.savingsAside[acc.id]) return true
+          return false
+        })
+        .reduce((s, acc) => s + acc.balance, 0)
+      const totalAssigned = Object.values(a.assignments).reduce((s, v) => s + (v || 0), 0)
+      return Math.abs(assignable - totalAssigned) < 0.005
+    },
+    Component: Step23ZeroBased,
+  },
+  {
+    id: 'tutorial-1',
+    phase: '¡Listo!',
+    Component: Step24Tutorial1,
+  },
+  {
+    id: 'tutorial-2',
+    phase: '¡Listo!',
+    Component: Step25Tutorial2,
+  },
+  {
+    id: 'tutorial-3',
+    phase: '¡Listo!',
+    Component: Step26Tutorial3,
+  },
+  {
+    id: 'tutorial-4',
+    phase: '¡Listo!',
+    Component: Step27Tutorial4,
+  },
+  {
+    id: 'final',
+    phase: '¡Listo!',
+    hideContinue: true,
+    Component: Step28Final,
   },
 ]

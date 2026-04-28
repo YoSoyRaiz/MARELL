@@ -37,7 +37,7 @@ export function Step15CategoryList() {
               className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden"
             >
               <div className="px-5 py-3 border-b border-[var(--border)] bg-white/[0.02] flex items-center justify-between">
-                <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">
+                <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
                   {g.name}
                 </h3>
                 <span className="text-[12px] text-[var(--muted)] tabular-nums">

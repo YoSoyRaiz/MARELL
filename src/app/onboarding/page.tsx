@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { OnboardingWizard } from './OnboardingWizard'
+import { OnboardingWizardClient } from './OnboardingWizardClient'
 
 export default async function OnboardingPage() {
   const supabase = await createClient()
@@ -18,9 +18,5 @@ export default async function OnboardingPage() {
 
   if (profile?.onboarded) redirect('/app')
 
-  return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-12">
-      <OnboardingWizard displayName={profile?.display_name ?? null} />
-    </main>
-  )
+  return <OnboardingWizardClient initialName={profile?.display_name ?? null} />
 }

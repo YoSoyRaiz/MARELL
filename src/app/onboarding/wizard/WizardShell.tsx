@@ -34,19 +34,8 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
         />
       </div>
 
-      {/* Header — back left, logo centered, X right */}
+      {/* Header — logo centered, X close on right */}
       <header className="relative px-6 py-5">
-        <button
-          type="button"
-          onClick={back}
-          disabled={safeIndex === 0}
-          aria-label="Atrás"
-          className="absolute left-6 top-1/2 -translate-y-1/2 text-[13px] text-[var(--muted)] hover:text-[var(--text)] disabled:opacity-30 disabled:pointer-events-none transition-colors flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-        >
-          <ArrowLeft size={14} strokeWidth={2.2} />
-          <span className="hidden sm:inline">Atrás</span>
-        </button>
-
         <div className="flex justify-center">
           <Logo height={42} />
         </div>
@@ -54,9 +43,9 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
         <Link
           href="/"
           aria-label="Cerrar y volver al inicio"
-          className="absolute right-6 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/[0.05] transition-colors"
+          className="absolute right-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-xl text-[var(--brand-2)] hover:text-[var(--text2)] hover:bg-white/[0.05] transition-colors"
         >
-          <X size={18} strokeWidth={2} />
+          <X size={22} strokeWidth={2.2} />
         </Link>
       </header>
 
@@ -76,14 +65,29 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Footer — counter left, back + continue right */}
       <footer className="fixed bottom-0 left-0 right-0 z-10 pt-16 pb-6 px-6 bg-gradient-to-t from-[var(--bg)] via-[var(--bg)]/90 to-transparent pointer-events-none">
         <div className={`${step.wide ? 'max-w-5xl' : 'max-w-2xl'} mx-auto flex items-center justify-between gap-4 pointer-events-auto`}>
-          <span className="text-[12px] text-[var(--muted)] tabular-nums">
-            <span className="text-[var(--text2)] font-medium">{safeIndex + 1}</span>
-            <span className="text-[var(--muted2)]"> / {total}</span>
-          </span>
-          <div className="flex items-center gap-2">
+          {/* Left side: counter + back */}
+          <div className="flex items-center gap-5">
+            <span className="text-[12px] text-[var(--muted)] tabular-nums">
+              <span className="text-[var(--text2)] font-medium">{safeIndex + 1}</span>
+              <span className="text-[var(--muted2)]"> / {total}</span>
+            </span>
+            {safeIndex > 0 && (
+              <button
+                type="button"
+                onClick={back}
+                className="h-[52px] px-7 inline-flex items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold text-[var(--text)] bg-white/[0.06] hover:bg-black hover:text-[var(--text)] transition-[background-color,color] duration-200 active:scale-[.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DDC97]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0C]"
+              >
+                <ArrowLeft size={16} strokeWidth={2.2} />
+                <span>Atrás</span>
+              </button>
+            )}
+          </div>
+
+          {/* Right side: skip + continue */}
+          <div className="flex items-center gap-3">
             {step.showSkip && safeIndex < total - 1 && (
               <button
                 type="button"
@@ -93,15 +97,17 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
                 Saltar
               </button>
             )}
-            <Button
-              variant="gradient"
-              size="lg"
-              onClick={next}
-              disabled={!canContinue}
-              iconRight={<ArrowRight size={16} strokeWidth={2.2} />}
-            >
-              {step.primaryLabel ?? 'Continuar'}
-            </Button>
+            {!step.hideContinue && (
+              <Button
+                variant="gradient"
+                size="lg"
+                onClick={next}
+                disabled={!canContinue}
+                iconRight={<ArrowRight size={16} strokeWidth={2.2} />}
+              >
+                {step.primaryLabel ?? 'Continuar'}
+              </Button>
+            )}
           </div>
         </div>
       </footer>
