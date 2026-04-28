@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Sparkles,
   Wallet,
-  BarChart3,
   ArrowLeftRight,
   Target,
   LifeBuoy,
@@ -19,7 +18,6 @@ const NAV = [
   { id: 'resumen', label: 'Resumen', href: '/app', icon: LayoutDashboard },
   { id: 'plan', label: 'Plan', href: '/app/plan', icon: Sparkles },
   { id: 'cuentas', label: 'Cuentas', href: '/app/cuentas', icon: Wallet },
-  { id: 'analisis', label: 'Análisis', href: '/app/analisis', icon: BarChart3 },
   { id: 'transacciones', label: 'Transacciones', href: '/app/transacciones', icon: ArrowLeftRight },
   { id: 'metas', label: 'Metas', href: '/app/metas', icon: Target },
 ] as const

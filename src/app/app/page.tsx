@@ -2,14 +2,10 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
   ArrowRight,
-  ArrowUpRight,
-  ArrowDownRight,
   PiggyBank,
   Wallet,
   TrendingUp,
   TrendingDown,
-  Receipt,
-  Plus,
   Sparkles,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -17,6 +13,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ResetOnboardingButton } from './ResetOnboardingButton'
 import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
+import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
 
 const fmtMoney = (n: number) => {
   const abs = Math.abs(n)
@@ -126,7 +123,11 @@ export default async function ResumenPage() {
       .from('categories')
       .select('id, name, group_id, goal_amount')
       .eq('budget_id', budget.id),
-    supabase.from('accounts').select('id, name, type, balance').eq('budget_id', budget.id),
+    supabase
+      .from('accounts')
+      .select('id, name, type, balance, closed')
+      .eq('budget_id', budget.id)
+      .order('sort_order'),
     supabase
       .from('monthly_assignments')
       .select('category_id, assigned')
@@ -186,6 +187,30 @@ export default async function ResumenPage() {
 
   const totalAssigned = assignmentsData.reduce((s, a) => s + Number(a.assigned), 0)
   const readyToAssign = totalCash - totalAssigned
+
+  // Modal data for the in-place "+ Agregar transacción" CTA
+  const modalAccounts = accountsData
+    .filter((a) => a.closed === false || a.closed === null || a.closed === undefined)
+    .map((a) => ({ id: a.id as string, name: a.name as string }))
+
+  const modalCategories = catsData.map((c) => {
+    const groupName = groupsData.find((g) => g.id === c.group_id)?.name as string | undefined
+    return {
+      id: c.id as string,
+      name: c.name as string,
+      group_name: groupName ?? '—',
+    }
+  })
+
+  const recentTxns: RecentTxn[] = txnsData.map((t) => ({
+    id: t.id as string,
+    date: t.date as string,
+    payee_name: (t.payee_name as string | null) ?? null,
+    category_name: t.category_id
+      ? (catsData.find((c) => c.id === t.category_id)?.name as string | undefined) ?? null
+      : null,
+    amount: Number(t.amount),
+  }))
 
   // Per-group + per-category breakdown for the categorías cards (used by the modal)
   const sectionGroups: SectionGroup[] = groupsData.map((g) => {
@@ -294,77 +319,12 @@ export default async function ResumenPage() {
           groups={sectionGroups}
         />
 
-        {/* Recent transactions */}
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
-          <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-            <div>
-              <h2 className="text-[15px] font-semibold text-[var(--text)]">Transacciones recientes</h2>
-              <p className="text-[12px] text-[var(--muted)] mt-0.5">
-                Últimos movimientos del mes
-              </p>
-            </div>
-            <Link
-              href="/app/transacciones"
-              className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
-            >
-              Ver todas <ArrowRight size={12} strokeWidth={2.4} />
-            </Link>
-          </header>
-          {txnsData.length === 0 ? (
-            <div className="p-10 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
-                <Receipt size={20} strokeWidth={2} />
-              </div>
-              <div className="text-[14px] text-[var(--text)] font-medium">
-                Aún sin transacciones
-              </div>
-              <p className="text-[12px] text-[var(--muted)] max-w-xs mx-auto leading-relaxed">
-                Cuando agregues tu primera transacción, aparecerá aquí con su categoría y fecha.
-              </p>
-              <Link
-                href="/app/transacciones"
-                className="inline-flex items-center gap-1.5 mt-2 h-9 px-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors"
-              >
-                <Plus size={14} strokeWidth={2.2} />
-                Agregar transacción
-              </Link>
-            </div>
-          ) : (
-            <ul className="divide-y divide-[var(--border)]">
-              {txnsData.map((t) => {
-                const cat = catsData.find((c) => c.id === t.category_id)
-                const isIncome = Number(t.amount) > 0
-                return (
-                  <li key={t.id as string} className="px-5 py-3 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-[var(--text2)] shrink-0">
-                      {isIncome ? (
-                        <ArrowUpRight size={16} strokeWidth={2} className="text-[var(--brand-2)]" />
-                      ) : (
-                        <ArrowDownRight size={16} strokeWidth={2} className="text-[var(--coral)]" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[14px] text-[var(--text)] truncate">
-                        {t.payee_name ?? 'Sin nombre'}
-                      </div>
-                      <div className="text-[11px] text-[var(--muted)] truncate">
-                        {cat?.name ?? 'Sin categoría'} · {String(t.date)}
-                      </div>
-                    </div>
-                    <div
-                      className={`text-[14px] tabular-nums num font-semibold ${
-                        isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
-                      }`}
-                    >
-                      {isIncome ? '+' : '−'}
-                      {fmtMoney(Math.abs(Number(t.amount)))}
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </section>
+        {/* Recent transactions (with in-place add modal) */}
+        <RecentTransactionsSection
+          transactions={recentTxns}
+          accounts={modalAccounts}
+          categories={modalCategories}
+        />
 
         {/* Reset onboarding (subtle, footer) */}
         <div className="pt-4 flex items-center justify-end">
