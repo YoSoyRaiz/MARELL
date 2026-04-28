@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Wand2 } from 'lucide-react'
+import { Wand2, Scale } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
 import { MoneyInput } from '../components/MoneyInput'
@@ -47,6 +47,43 @@ export function Step23ZeroBased() {
   }
 
   const hasTargets = Object.keys(answers.targets).length > 0
+
+  // Find the best buffer category for Auto-balancear:
+  // 1. "Fondo de emergencia" if it exists
+  // 2. First item in Metas group
+  // 3. First item in Gustos / Necesidades / Facturas (in that order)
+  const buffer = useMemo(() => {
+    const all = groups.flatMap((g) =>
+      g.items.map((it) => ({ groupName: g.name, itemName: it.name })),
+    )
+    const fondo = all.find((x) => x.itemName === 'Fondo de emergencia')
+    if (fondo) {
+      return { ...fondo, key: keyOf(fondo.groupName, fondo.itemName) }
+    }
+    const order = ['Metas', 'Gustos', 'Necesidades', 'Facturas']
+    for (const groupName of order) {
+      const g = groups.find((gg) => gg.name === groupName)
+      if (g && g.items.length > 0) {
+        return {
+          groupName: g.name,
+          itemName: g.items[0].name,
+          key: keyOf(g.name, g.items[0].name),
+        }
+      }
+    }
+    return null
+  }, [groups])
+
+  const autoBalance = () => {
+    if (remaining <= 0.005 || !buffer) return
+    const current = answers.assignments[buffer.key] ?? 0
+    setAnswer('assignments', {
+      ...answers.assignments,
+      [buffer.key]: Math.round((current + remaining) * 100) / 100,
+    })
+  }
+
+  const showAutoBalance = remaining > 0.005 && buffer !== null
 
   return (
     <div className="space-y-7">
@@ -116,6 +153,20 @@ export function Step23ZeroBased() {
           >
             <Wand2 size={14} strokeWidth={2.2} />
             Usar mis metas
+          </button>
+        )}
+        {showAutoBalance && buffer && (
+          <button
+            type="button"
+            onClick={autoBalance}
+            title={`Mueve ${fmtMoney(remaining)} a ${buffer.itemName}`}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-medium text-[#0B0B0C] gradient-bg hover:brightness-105 active:brightness-95 transition-[filter]"
+          >
+            <Scale size={14} strokeWidth={2.4} />
+            Auto-balancear ·{' '}
+            <span className="num">{fmtMoney(remaining)}</span>
+            <span className="text-[#0B0B0C]/60 font-normal">→</span>
+            <span>{buffer.itemName}</span>
           </button>
         )}
         <button
