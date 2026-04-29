@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { expandToCategoryContributions } from '@/lib/splits'
 import { PlanView, type PlanCategory, type PlanGroup } from './PlanView'
 
 const currentMonth = () => {
@@ -65,7 +66,9 @@ export default async function PlanPage({
       .eq('month', month),
     supabase
       .from('transactions')
-      .select('category_id, amount')
+      .select(
+        'id, date, category_id, amount, is_split, subtransactions(category_id, amount)',
+      )
       .eq('budget_id', budget.id)
       .gte('date', first)
       .lte('date', last),
@@ -85,10 +88,10 @@ export default async function PlanPage({
   }
 
   const activityById = new Map<string, number>()
-  for (const t of txnsRaw) {
-    if (!t.category_id) continue
-    const prev = activityById.get(t.category_id as string) ?? 0
-    activityById.set(t.category_id as string, prev + Number(t.amount))
+  for (const c of expandToCategoryContributions(txnsRaw)) {
+    if (!c.category_id) continue
+    const prev = activityById.get(c.category_id) ?? 0
+    activityById.set(c.category_id, prev + c.amount)
   }
 
   // Build the group → categories tree

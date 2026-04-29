@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { expandToCategoryContributions } from '@/lib/splits'
 import { AnalisisShell, type ReportKey } from './AnalisisShell'
 import { AnalisisClient, type CategoryRow, type Period } from './AnalisisClient'
 import {
@@ -322,7 +323,9 @@ export default async function AnalisisPage({
 
     let txnsQuery = supabase
       .from('transactions')
-      .select('category_id, amount')
+      .select(
+        'id, date, category_id, amount, is_split, subtransactions(category_id, amount)',
+      )
       .eq('budget_id', budget.id)
 
     if (range.first) txnsQuery = txnsQuery.gte('date', range.first)
@@ -338,24 +341,27 @@ export default async function AnalisisPage({
 
     const categoryNameById = new Map(cats.map((c) => [c.id as string, c.name as string]))
 
+    // Income / total expense use parent totals (a split touches multiple
+    // categories but contributes a single signed amount to the cash flow).
     let totalIncome = 0
     let totalExpenses = 0
-    const expensesByCategory = new Map<string, number>()
-    let uncategorized = 0
-
     for (const t of txns) {
       const amount = Number(t.amount)
-      if (amount > 0) {
-        totalIncome += amount
-      } else if (amount < 0) {
-        const abs = Math.abs(amount)
-        totalExpenses += abs
-        const catId = (t.category_id as string | null) ?? null
-        if (catId && categoryNameById.has(catId)) {
-          expensesByCategory.set(catId, (expensesByCategory.get(catId) ?? 0) + abs)
-        } else {
-          uncategorized += abs
-        }
+      if (amount > 0) totalIncome += amount
+      else if (amount < 0) totalExpenses += Math.abs(amount)
+    }
+
+    // Per-category expenses must use the split children when present.
+    const expensesByCategory = new Map<string, number>()
+    let uncategorized = 0
+    for (const c of expandToCategoryContributions(txns)) {
+      if (c.amount >= 0) continue
+      const abs = Math.abs(c.amount)
+      const catId = c.category_id
+      if (catId && categoryNameById.has(catId)) {
+        expensesByCategory.set(catId, (expensesByCategory.get(catId) ?? 0) + abs)
+      } else {
+        uncategorized += abs
       }
     }
 
@@ -493,9 +499,14 @@ export default async function AnalisisPage({
     const [txnsRes, catsRes] = await Promise.all([
       supabase
         .from('transactions')
-        .select('date, category_id, amount')
+        .select(
+          'id, date, category_id, amount, is_split, subtransactions(category_id, amount)',
+        )
         .eq('budget_id', budget.id)
         .gte('date', firstISO)
+        // Pull the universe of in-range transactions; we filter to expense
+        // contributions in JS so split children that are negative still count
+        // even when the parent might be a different sign for transfers.
         .lt('amount', 0),
       supabase.from('categories').select('id, name').eq('budget_id', budget.id),
     ])
@@ -509,18 +520,19 @@ export default async function AnalisisPage({
     const totalsByCat = new Map<string, Map<string, number>>()
     const overallByCat = new Map<string, number>()
 
-    for (const t of txns) {
-      const catId = (t.category_id as string | null) ?? null
+    for (const c of expandToCategoryContributions(txns)) {
+      if (c.amount >= 0) continue
+      const catId = c.category_id
       if (!catId || !categoryNameById.has(catId)) continue
-      const month = (t.date as string).slice(0, 7)
-      const amount = Math.abs(Number(t.amount))
+      const month = c.date.slice(0, 7)
+      const abs = Math.abs(c.amount)
       let mp = totalsByCat.get(catId)
       if (!mp) {
         mp = new Map<string, number>()
         totalsByCat.set(catId, mp)
       }
-      mp.set(month, (mp.get(month) ?? 0) + amount)
-      overallByCat.set(catId, (overallByCat.get(catId) ?? 0) + amount)
+      mp.set(month, (mp.get(month) ?? 0) + abs)
+      overallByCat.set(catId, (overallByCat.get(catId) ?? 0) + abs)
     }
 
     // Top 5 categories by total spending in range

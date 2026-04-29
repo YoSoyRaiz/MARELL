@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { expandToCategoryContributions } from '@/lib/splits'
 import { ResetOnboardingButton } from './ResetOnboardingButton'
 import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
@@ -141,7 +142,9 @@ export default async function ResumenPage() {
       .eq('month', month),
     supabase
       .from('transactions')
-      .select('id, date, payee_name, category_id, amount')
+      .select(
+        'id, date, payee_name, category_id, amount, is_split, subtransactions(category_id, amount)',
+      )
       .eq('budget_id', budget.id)
       .gte('date', first)
       .lte('date', last)
@@ -218,14 +221,18 @@ export default async function ResumenPage() {
     amount: Number(t.amount),
   }))
 
+  // Expand any split parent into its children so per-category activity counts
+  // correctly when a transaction touches multiple categories.
+  const txnContributions = expandToCategoryContributions(txnsData)
+
   // Per-group + per-category breakdown for the categorías cards (used by the modal)
   const sectionGroups: SectionGroup[] = groupsData.map((g) => {
     const groupCats = catsData.filter((c) => c.group_id === g.id)
     const categories = groupCats.map((c) => {
       const a = assignmentsData.find((x) => x.category_id === c.id)
-      const activity = txnsData
+      const activity = txnContributions
         .filter((t) => t.category_id === c.id)
-        .reduce((s, t) => s + Number(t.amount), 0)
+        .reduce((s, t) => s + t.amount, 0)
       return {
         id: c.id as string,
         name: c.name as string,

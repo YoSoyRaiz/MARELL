@@ -2,11 +2,20 @@
 
 import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, ArrowDownRight, ArrowUpRight, AlertCircle } from 'lucide-react'
+import {
+  X,
+  ArrowDownRight,
+  ArrowUpRight,
+  AlertCircle,
+  Split,
+  Plus,
+  Trash2,
+} from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import {
   createTransaction,
   updateTransaction,
+  type SplitInput,
   type TransactionType,
 } from './actions'
 
@@ -30,7 +39,16 @@ export interface InitialTransaction {
   payeeName: string
   amount: number // positive value (sign is in `type`)
   memo: string | null
+  splits?: SplitRow[] // when the transaction is already split
 }
+
+export interface SplitRow {
+  categoryId: string | null
+  amount: number // positive
+  memo: string | null
+}
+
+const newSplit = (): SplitRow => ({ categoryId: null, amount: 0, memo: null })
 
 interface TransactionFormModalProps {
   isOpen: boolean
@@ -63,6 +81,8 @@ export function TransactionFormModal({
   const [payeeName, setPayeeName] = useState('')
   const [amount, setAmount] = useState<number | null>(null)
   const [memo, setMemo] = useState('')
+  const [splitMode, setSplitMode] = useState(false)
+  const [splits, setSplits] = useState<SplitRow[]>([newSplit(), newSplit()])
   const [error, setError] = useState<string | null>(null)
 
   // Pre-fill on open: from `initial` in edit mode, blank in add mode.
@@ -76,6 +96,9 @@ export function TransactionFormModal({
       setPayeeName(initial.payeeName)
       setAmount(initial.amount)
       setMemo(initial.memo ?? '')
+      const hasSplits = (initial.splits?.length ?? 0) >= 2
+      setSplitMode(hasSplits)
+      setSplits(hasSplits ? initial.splits! : [newSplit(), newSplit()])
     } else {
       setType('expense')
       setDate(todayLocal())
@@ -84,6 +107,8 @@ export function TransactionFormModal({
       setPayeeName('')
       setAmount(null)
       setMemo('')
+      setSplitMode(false)
+      setSplits([newSplit(), newSplit()])
     }
     setError(null)
   }, [isOpen, mode, initial, accounts])
@@ -104,12 +129,21 @@ export function TransactionFormModal({
 
   if (!isOpen) return null
 
+  const splitsSum = splits.reduce(
+    (s, r) => s + (Number.isFinite(r.amount) ? r.amount : 0),
+    0,
+  )
+  const splitsBalanced =
+    amount !== null && Math.abs(splitsSum - (amount ?? 0)) < 0.005
+  const splitsRemainder = amount !== null ? Math.round((amount - splitsSum) * 100) / 100 : 0
+
   const valid =
     accountId !== '' &&
     payeeName.trim().length > 0 &&
     amount !== null &&
     amount > 0 &&
-    /^\d{4}-\d{2}-\d{2}$/.test(date)
+    /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+    (!splitMode || (splits.length >= 2 && splitsBalanced && splits.every((s) => s.amount > 0)))
 
   const groupedCategories = categories.reduce<Record<string, CategoryOption[]>>((acc, c) => {
     const key = c.group_name
@@ -118,18 +152,45 @@ export function TransactionFormModal({
     return acc
   }, {})
 
+  const updateSplit = (index: number, patch: Partial<SplitRow>) => {
+    setSplits((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)))
+  }
+  const addSplitRow = () => setSplits((prev) => [...prev, newSplit()])
+  const removeSplitRow = (index: number) => {
+    setSplits((prev) => (prev.length <= 2 ? prev : prev.filter((_, i) => i !== index)))
+  }
+  const distributeRemainder = () => {
+    if (amount === null) return
+    setSplits((prev) => {
+      if (prev.length === 0) return prev
+      const last = prev.length - 1
+      const others = prev.slice(0, last).reduce((s, r) => s + r.amount, 0)
+      const rest = Math.max(0, Math.round((amount - others) * 100) / 100)
+      return prev.map((r, i) => (i === last ? { ...r, amount: rest } : r))
+    })
+  }
+
   const handleSubmit = () => {
     if (!valid || amount === null) return
     setError(null)
     startTransition(async () => {
+      const splitPayload: SplitInput[] | undefined = splitMode
+        ? splits.map((r) => ({
+            categoryId: r.categoryId,
+            amount: r.amount,
+            memo: r.memo,
+          }))
+        : undefined
+
       const payload = {
         accountId,
-        categoryId: categoryId || null,
+        categoryId: splitMode ? null : categoryId || null,
         date,
         payeeName,
         amount,
         memo,
         type,
+        splits: splitPayload,
       }
       const result =
         mode === 'edit' && initial
@@ -260,20 +321,132 @@ export function TransactionFormModal({
             />
           </Field>
 
-          <Field label="Categoría" hint="opcional">
-            <NativeSelect value={categoryId} onChange={setCategoryId} ariaLabel="Categoría">
-              <option value="">Sin categoría</option>
-              {Object.entries(groupedCategories).map(([groupName, cats]) => (
-                <optgroup key={groupName} label={groupName}>
-                  {cats.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </NativeSelect>
-          </Field>
+          {!splitMode ? (
+            <Field label="Categoría" hint="opcional">
+              <NativeSelect value={categoryId} onChange={setCategoryId} ariaLabel="Categoría">
+                <option value="">Sin categoría</option>
+                {Object.entries(groupedCategories).map(([groupName, cats]) => (
+                  <optgroup key={groupName} label={groupName}>
+                    {cats.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </NativeSelect>
+              <button
+                type="button"
+                onClick={() => {
+                  setSplitMode(true)
+                  // Seed first split with current category + amount, second blank.
+                  setSplits([
+                    {
+                      categoryId: categoryId || null,
+                      amount: amount ?? 0,
+                      memo: null,
+                    },
+                    newSplit(),
+                  ])
+                }}
+                className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-2)] transition-colors"
+              >
+                <Split size={12} strokeWidth={2.2} />
+                Dividir en varias categorías
+              </button>
+            </Field>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <label className="text-[12px] text-[var(--text2)] font-medium inline-flex items-center gap-1.5">
+                  <Split size={12} strokeWidth={2.2} />
+                  Split en {splits.length} categorías
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSplitMode(false)
+                    setSplits([newSplit(), newSplit()])
+                  }}
+                  className="text-[11px] text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+                >
+                  Quitar split
+                </button>
+              </div>
+
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)]/40 divide-y divide-[var(--border)]">
+                {splits.map((row, i) => (
+                  <div key={i} className="p-3 grid grid-cols-[1fr_120px_36px] gap-2 items-center">
+                    <NativeSelect
+                      value={row.categoryId ?? ''}
+                      onChange={(v) =>
+                        updateSplit(i, { categoryId: v || null })
+                      }
+                      ariaLabel={`Categoría split ${i + 1}`}
+                    >
+                      <option value="">Sin categoría</option>
+                      {Object.entries(groupedCategories).map(([groupName, cats]) => (
+                        <optgroup key={groupName} label={groupName}>
+                          {cats.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </NativeSelect>
+                    <MoneyInput
+                      value={row.amount > 0 ? row.amount : null}
+                      onChange={(v) => updateSplit(i, { amount: v ?? 0 })}
+                      placeholder="0.00"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeSplitRow(i)}
+                      disabled={splits.length <= 2}
+                      aria-label="Quitar fila"
+                      className="w-9 h-9 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                    >
+                      <Trash2 size={14} strokeWidth={2} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={addSplitRow}
+                  className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-2)] transition-colors"
+                >
+                  <Plus size={12} strokeWidth={2.4} />
+                  Añadir categoría
+                </button>
+                {amount !== null && amount > 0 && (
+                  <div className="text-[11px] tabular-nums num">
+                    {splitsBalanced ? (
+                      <span className="text-[var(--brand-2)] font-semibold">
+                        Cuadrado · ${splitsSum.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    ) : splitsRemainder > 0 ? (
+                      <button
+                        type="button"
+                        onClick={distributeRemainder}
+                        className="text-[var(--coral)] font-semibold hover:underline"
+                        title="Asignar el resto a la última fila"
+                      >
+                        Falta ${splitsRemainder.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </button>
+                    ) : (
+                      <span className="text-[var(--coral)] font-semibold">
+                        Sobra ${Math.abs(splitsRemainder).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <Field label="Memo" hint="opcional">
             <textarea

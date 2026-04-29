@@ -5,6 +5,12 @@ import { createClient } from '@/lib/supabase/server'
 
 export type TransactionType = 'income' | 'expense'
 
+export interface SplitInput {
+  categoryId: string | null
+  amount: number // positive (sign comes from parent's `type`)
+  memo: string | null
+}
+
 export interface CreateTransactionInput {
   accountId: string
   categoryId: string | null
@@ -13,9 +19,31 @@ export interface CreateTransactionInput {
   amount: number // positive number; sign comes from `type`
   memo: string | null
   type: TransactionType
+  splits?: SplitInput[] // when present and length > 1, transaction is split
 }
 
 const isValidDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s)
+
+function isSplit(input: { splits?: SplitInput[] }): boolean {
+  return Array.isArray(input.splits) && input.splits.length >= 2
+}
+
+// Sum of split children must equal parent total (within rounding tolerance).
+// Returns null if valid, error string otherwise.
+function validateSplits(splits: SplitInput[], total: number): string | null {
+  if (splits.length < 2) return 'Un split necesita al menos 2 categorías'
+  let sum = 0
+  for (const s of splits) {
+    if (!Number.isFinite(s.amount) || s.amount <= 0) {
+      return 'Cada split debe tener monto positivo'
+    }
+    sum += s.amount
+  }
+  if (Math.abs(sum - total) > 0.005) {
+    return `La suma de los splits ($${sum.toFixed(2)}) no coincide con el total ($${total.toFixed(2)})`
+  }
+  return null
+}
 
 export async function createTransaction(input: CreateTransactionInput) {
   if (!input.accountId) return { error: 'Cuenta requerida' }
@@ -47,8 +75,24 @@ export async function createTransaction(input: CreateTransactionInput) {
     .single()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
-  // If a category was provided, verify it belongs to the same budget
-  if (input.categoryId) {
+  const split = isSplit(input)
+
+  if (split) {
+    const err = validateSplits(input.splits!, input.amount)
+    if (err) return { error: err }
+    // Verify each split's category (when set) belongs to budget.
+    for (const s of input.splits!) {
+      if (!s.categoryId) continue
+      const { data: cat } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('id', s.categoryId)
+        .eq('budget_id', budget.id)
+        .single()
+      if (!cat) return { error: 'Categoría inválida en un split' }
+    }
+  } else if (input.categoryId) {
+    // Single-category txn — verify the category belongs to the budget.
     const { data: cat } = await supabase
       .from('categories')
       .select('id')
@@ -58,23 +102,44 @@ export async function createTransaction(input: CreateTransactionInput) {
     if (!cat) return { error: 'Categoría no encontrada' }
   }
 
-  const signedAmount =
-    input.type === 'income' ? Math.abs(input.amount) : -Math.abs(input.amount)
+  const sign = input.type === 'income' ? 1 : -1
+  const signedAmount = sign * Math.abs(input.amount)
 
-  const { error: insertErr } = await supabase.from('transactions').insert({
-    account_id: input.accountId,
-    budget_id: budget.id,
-    date: input.date,
-    payee_name: input.payeeName.trim(),
-    category_id: input.categoryId,
-    memo: input.memo?.trim() || null,
-    amount: signedAmount,
-    cleared: 'uncleared',
-    approved: true,
-  })
-  if (insertErr) return { error: insertErr.message }
+  const { data: parent, error: insertErr } = await supabase
+    .from('transactions')
+    .insert({
+      account_id: input.accountId,
+      budget_id: budget.id,
+      date: input.date,
+      payee_name: input.payeeName.trim(),
+      // Splits never carry a category on the parent — the children do.
+      category_id: split ? null : input.categoryId,
+      memo: input.memo?.trim() || null,
+      amount: signedAmount,
+      cleared: 'uncleared',
+      approved: true,
+      is_split: split,
+    })
+    .select('id')
+    .single()
+  if (insertErr || !parent) return { error: insertErr?.message ?? 'Error al crear' }
 
-  // Update the account's running balance
+  if (split) {
+    const subRows = input.splits!.map((s) => ({
+      transaction_id: parent.id as string,
+      category_id: s.categoryId,
+      memo: s.memo?.trim() || null,
+      amount: sign * Math.abs(s.amount),
+    }))
+    const { error: subErr } = await supabase.from('subtransactions').insert(subRows)
+    if (subErr) {
+      // Best-effort rollback of parent row to keep data consistent.
+      await supabase.from('transactions').delete().eq('id', parent.id as string)
+      return { error: subErr.message }
+    }
+  }
+
+  // Update the account's running balance (uses parent total only).
   const newBalance = Math.round((Number(account.balance) + signedAmount) * 100) / 100
   const { error: updateErr } = await supabase
     .from('accounts')
@@ -132,8 +197,22 @@ export async function updateTransaction(input: UpdateTransactionInput) {
     return { error: 'Cuenta inválida' }
   }
 
-  // Optional category must belong to the budget.
-  if (input.categoryId) {
+  const split = isSplit(input)
+  if (split) {
+    const err = validateSplits(input.splits!, input.amount)
+    if (err) return { error: err }
+    for (const s of input.splits!) {
+      if (!s.categoryId) continue
+      const { data: cat } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('id', s.categoryId)
+        .eq('budget_id', budget.id)
+        .single()
+      if (!cat) return { error: 'Categoría inválida en un split' }
+    }
+  } else if (input.categoryId) {
+    // Optional category must belong to the budget.
     const { data: cat } = await supabase
       .from('categories')
       .select('id')
@@ -143,9 +222,9 @@ export async function updateTransaction(input: UpdateTransactionInput) {
     if (!cat) return { error: 'Categoría no encontrada' }
   }
 
+  const sign = input.type === 'income' ? 1 : -1
   const oldSignedAmount = Number(existing.amount)
-  const newSignedAmount =
-    input.type === 'income' ? Math.abs(input.amount) : -Math.abs(input.amount)
+  const newSignedAmount = sign * Math.abs(input.amount)
 
   const accountChanged = existing.account_id !== input.accountId
 
@@ -154,14 +233,29 @@ export async function updateTransaction(input: UpdateTransactionInput) {
     .from('transactions')
     .update({
       account_id: input.accountId,
-      category_id: input.categoryId,
+      // Splits never carry a category on the parent.
+      category_id: split ? null : input.categoryId,
       date: input.date,
       payee_name: input.payeeName.trim(),
       memo: input.memo?.trim() || null,
       amount: newSignedAmount,
+      is_split: split,
     })
     .eq('id', input.id)
   if (updateErr) return { error: updateErr.message }
+
+  // Rebuild subtransactions: simplest correct approach is delete-then-insert.
+  await supabase.from('subtransactions').delete().eq('transaction_id', input.id)
+  if (split) {
+    const subRows = input.splits!.map((s) => ({
+      transaction_id: input.id,
+      category_id: s.categoryId,
+      memo: s.memo?.trim() || null,
+      amount: sign * Math.abs(s.amount),
+    }))
+    const { error: subErr } = await supabase.from('subtransactions').insert(subRows)
+    if (subErr) return { error: subErr.message }
+  }
 
   if (accountChanged) {
     // Roll back the original account.

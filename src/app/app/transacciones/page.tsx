@@ -72,10 +72,13 @@ export default async function TransaccionesPage({
     )
   }
 
-  // Build the filtered query
+  // Build the filtered query — include subtransactions so split rows can be
+  // rendered with their child categories + amounts.
   let txnsQuery = supabase
     .from('transactions')
-    .select('id, date, payee_name, category_id, account_id, amount, memo, created_at')
+    .select(
+      'id, date, payee_name, category_id, account_id, amount, memo, created_at, is_split, subtransactions(id, category_id, amount, memo)',
+    )
     .eq('budget_id', budget.id)
 
   if (q) {
@@ -139,17 +142,39 @@ export default async function TransaccionesPage({
   const accountNameById = new Map(accounts.map((a) => [a.id, a.name]))
   const categoryNameById = new Map(categories.map((c) => [c.id, c.name]))
 
-  const transactions: ListTransaction[] = (txnsRes.data ?? []).map((t) => ({
-    id: t.id as string,
-    date: t.date as string,
-    payee_name: (t.payee_name as string | null) ?? null,
-    category_id: (t.category_id as string | null) ?? null,
-    category_name: t.category_id ? (categoryNameById.get(t.category_id as string) ?? null) : null,
-    account_id: t.account_id as string,
-    account_name: accountNameById.get(t.account_id as string) ?? '—',
-    amount: Number(t.amount),
-    memo: (t.memo as string | null) ?? null,
-  }))
+  type RawSub = {
+    id: string
+    category_id: string | null
+    amount: number
+    memo: string | null
+  }
+  const transactions: ListTransaction[] = (txnsRes.data ?? []).map((t) => {
+    const rawSubs = (t as unknown as { subtransactions?: RawSub[] }).subtransactions
+    const subs = (Array.isArray(rawSubs) ? rawSubs : []).map((s) => ({
+      id: s.id,
+      category_id: s.category_id ?? null,
+      category_name: s.category_id
+        ? (categoryNameById.get(s.category_id) ?? null)
+        : null,
+      amount: Number(s.amount),
+      memo: s.memo ?? null,
+    }))
+    return {
+      id: t.id as string,
+      date: t.date as string,
+      payee_name: (t.payee_name as string | null) ?? null,
+      category_id: (t.category_id as string | null) ?? null,
+      category_name: t.category_id
+        ? (categoryNameById.get(t.category_id as string) ?? null)
+        : null,
+      account_id: t.account_id as string,
+      account_name: accountNameById.get(t.account_id as string) ?? '—',
+      amount: Number(t.amount),
+      memo: (t.memo as string | null) ?? null,
+      is_split: !!t.is_split,
+      subtransactions: subs,
+    }
+  })
 
   const filters: FilterState = { month, type, q }
 

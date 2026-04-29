@@ -12,6 +12,8 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Split,
   X,
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
@@ -76,6 +78,14 @@ export interface FilterState {
   q: string
 }
 
+export interface ListSubtransaction {
+  id: string
+  category_id: string | null
+  category_name: string | null
+  amount: number
+  memo: string | null
+}
+
 export interface ListTransaction {
   id: string
   date: string
@@ -86,6 +96,8 @@ export interface ListTransaction {
   account_name: string
   amount: number
   memo: string | null
+  is_split: boolean
+  subtransactions: ListSubtransaction[]
 }
 
 export interface AccountOption {
@@ -116,6 +128,14 @@ const toInitial = (t: ListTransaction): InitialTransaction => ({
   payeeName: t.payee_name ?? '',
   amount: Math.abs(t.amount),
   memo: t.memo,
+  splits:
+    t.is_split && t.subtransactions.length >= 2
+      ? t.subtransactions.map((s) => ({
+          categoryId: s.category_id,
+          amount: Math.abs(s.amount),
+          memo: s.memo,
+        }))
+      : undefined,
 })
 
 export function TransactionsClient({
@@ -134,6 +154,16 @@ export function TransactionsClient({
   const [editing, setEditing] = useState<ListTransaction | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [, startDelete] = useTransition()
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   // Local search input that debounces into the URL
   const [searchInput, setSearchInput] = useState(filters.q)
@@ -406,56 +436,127 @@ export function TransactionsClient({
                 const isIncome = t.amount > 0
                 const Icon = t.category_name ? iconForCategoryName(t.category_name) : null
                 const dimmed = deletingId === t.id ? 'opacity-50 pointer-events-none' : ''
+                const isExpanded = expanded.has(t.id)
                 return (
-                  <li
-                    key={t.id}
-                    onClick={() => setEditing(t)}
-                    className={`grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer ${dimmed}`}
-                  >
-                    <div className="text-[12px] text-[var(--muted)] tabular-nums num">
-                      {formatDate(t.date)}
-                    </div>
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
-                        {isIncome ? (
-                          <ArrowUpRight size={14} strokeWidth={2} className="text-[var(--brand-2)]" />
-                        ) : (
-                          <ArrowDownRight size={14} strokeWidth={2} className="text-[var(--coral)]" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-[14px] text-[var(--text)] truncate">
-                          {t.payee_name ?? 'Sin nombre'}
-                        </div>
-                        {t.memo && (
-                          <div className="text-[11px] text-[var(--muted)] truncate">{t.memo}</div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 min-w-0 text-[13px] text-[var(--text2)]">
-                      {Icon && <Icon size={13} strokeWidth={2} className="shrink-0" />}
-                      <span className="truncate">{t.category_name ?? 'Sin categoría'}</span>
-                    </div>
-                    <div className="text-[13px] text-[var(--text2)] truncate">{t.account_name}</div>
+                  <li key={t.id} className={dimmed}>
                     <div
-                      className={`text-right text-[14px] tabular-nums num font-semibold ${
-                        isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
-                      }`}
+                      onClick={() => setEditing(t)}
+                      className="grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer"
                     >
-                      {isIncome ? '+' : '−'}
-                      {fmtMoney(t.amount)}
+                      <div className="text-[12px] text-[var(--muted)] tabular-nums num">
+                        {formatDate(t.date)}
+                      </div>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
+                          {isIncome ? (
+                            <ArrowUpRight size={14} strokeWidth={2} className="text-[var(--brand-2)]" />
+                          ) : (
+                            <ArrowDownRight size={14} strokeWidth={2} className="text-[var(--coral)]" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[14px] text-[var(--text)] truncate">
+                            {t.payee_name ?? 'Sin nombre'}
+                          </div>
+                          {t.memo && (
+                            <div className="text-[11px] text-[var(--muted)] truncate">{t.memo}</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 min-w-0 text-[13px] text-[var(--text2)]">
+                        {t.is_split ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleExpand(t.id)
+                            }}
+                            className="inline-flex items-center gap-1.5 text-[var(--brand-2)] hover:text-[var(--text)] transition-colors"
+                            aria-expanded={isExpanded}
+                            aria-label={isExpanded ? 'Ocultar splits' : 'Ver splits'}
+                          >
+                            <Split size={12} strokeWidth={2.2} />
+                            <span>{t.subtransactions.length} categorías</span>
+                            <ChevronDown
+                              size={12}
+                              strokeWidth={2.4}
+                              className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                            />
+                          </button>
+                        ) : (
+                          <>
+                            {Icon && <Icon size={13} strokeWidth={2} className="shrink-0" />}
+                            <span className="truncate">{t.category_name ?? 'Sin categoría'}</span>
+                          </>
+                        )}
+                      </div>
+                      <div className="text-[13px] text-[var(--text2)] truncate">{t.account_name}</div>
+                      <div
+                        className={`text-right text-[14px] tabular-nums num font-semibold ${
+                          isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                        }`}
+                      >
+                        {isIncome ? '+' : '−'}
+                        {fmtMoney(t.amount)}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(t.id)
+                        }}
+                        aria-label="Eliminar transacción"
+                        className="text-[var(--muted)] hover:text-[var(--coral)] p-2 rounded-lg hover:bg-white/[0.04] transition-colors justify-self-end"
+                      >
+                        <Trash2 size={14} strokeWidth={2} />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDelete(t.id)
-                      }}
-                      aria-label="Eliminar transacción"
-                      className="text-[var(--muted)] hover:text-[var(--coral)] p-2 rounded-lg hover:bg-white/[0.04] transition-colors justify-self-end"
-                    >
-                      <Trash2 size={14} strokeWidth={2} />
-                    </button>
+
+                    {t.is_split && isExpanded && (
+                      <div className="bg-[var(--bg)]/40 border-t border-[var(--border)] px-5 py-2">
+                        <ul className="divide-y divide-[var(--border)]">
+                          {t.subtransactions.map((s) => {
+                            const SubIcon = s.category_name
+                              ? iconForCategoryName(s.category_name)
+                              : null
+                            return (
+                              <li
+                                key={s.id}
+                                className="grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-0 py-2 items-center"
+                              >
+                                <div />
+                                <div className="flex items-center gap-3 min-w-0 pl-11">
+                                  <span className="text-[var(--muted2)] text-[14px]">↳</span>
+                                  {s.memo && (
+                                    <span className="text-[11px] text-[var(--muted)] truncate">
+                                      {s.memo}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 min-w-0 text-[12px] text-[var(--text2)]">
+                                  {SubIcon && (
+                                    <SubIcon size={12} strokeWidth={2} className="shrink-0" />
+                                  )}
+                                  <span className="truncate">
+                                    {s.category_name ?? 'Sin categoría'}
+                                  </span>
+                                </div>
+                                <div />
+                                <div
+                                  className={`text-right text-[12px] tabular-nums num ${
+                                    s.amount >= 0 ? 'text-[var(--brand-2)]' : 'text-[var(--text2)]'
+                                  }`}
+                                >
+                                  {s.amount >= 0 ? '+' : '−'}
+                                  {fmtMoney(s.amount)}
+                                </div>
+                                <div />
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      </div>
+                    )}
                   </li>
                 )
               })}

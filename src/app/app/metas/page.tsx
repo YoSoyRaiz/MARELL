@@ -79,7 +79,7 @@ export default async function MetasPage() {
     .filter((c) => (c.goal_type as string) === 'savings_balance')
     .map((c) => c.id as string)
 
-  const [monthAssignsRes, lifetimeAssignsRes, lifetimeTxnsRes] = await Promise.all([
+  const [monthAssignsRes, lifetimeAssignsRes, lifetimeTxnsRes, lifetimeSubsRes] = await Promise.all([
     supabase
       .from('monthly_assignments')
       .select('category_id, assigned')
@@ -94,6 +94,15 @@ export default async function MetasPage() {
     savingsCatIds.length > 0
       ? supabase
           .from('transactions')
+          .select('category_id, amount')
+          .in('category_id', savingsCatIds)
+          .lt('amount', 0)
+      : Promise.resolve({ data: [] as Array<{ category_id: string; amount: number }> }),
+    // Splits: subtransactions matching the savings categories with negative
+    // amounts. RLS scopes them through transactions.budget_id automatically.
+    savingsCatIds.length > 0
+      ? supabase
+          .from('subtransactions')
           .select('category_id, amount')
           .in('category_id', savingsCatIds)
           .lt('amount', 0)
@@ -115,6 +124,10 @@ export default async function MetasPage() {
   for (const t of lifetimeTxnsRes.data ?? []) {
     const id = t.category_id as string
     lifetimeSpentById.set(id, (lifetimeSpentById.get(id) ?? 0) + Math.abs(Number(t.amount)))
+  }
+  for (const s of lifetimeSubsRes.data ?? []) {
+    const id = s.category_id as string
+    lifetimeSpentById.set(id, (lifetimeSpentById.get(id) ?? 0) + Math.abs(Number(s.amount)))
   }
 
   const goals: ListGoal[] = goalCats.map((c) => {
