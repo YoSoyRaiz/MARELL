@@ -18,6 +18,11 @@ import {
   type NetWorthRange,
   type NetWorthPoint,
 } from './NetWorthReport'
+import {
+  AgeOfMoneyReport,
+  type AomRange,
+  type AgeOfMoneyPoint,
+} from './AgeOfMoneyReport'
 
 const todayLocal = () => {
   const d = new Date()
@@ -192,6 +197,45 @@ const netWorthRangeLabel = (range: NetWorthRange): string => {
     case 'twenty_four_months':
       return 'Últimos 24 meses'
   }
+}
+
+// ── Range helpers (Age of Money) ────────────────────────────
+
+const parseAomRange = (raw: string | undefined): AomRange => {
+  if (raw === 'six_months' || raw === 'twenty_four_months') return raw
+  return 'twelve_months'
+}
+
+const aomMonthCount: Record<AomRange, number> = {
+  six_months: 6,
+  twelve_months: 12,
+  twenty_four_months: 24,
+}
+
+const aomRangeLabel = (range: AomRange): string => {
+  switch (range) {
+    case 'six_months':
+      return 'Últimos 6 meses'
+    case 'twelve_months':
+      return 'Últimos 12 meses'
+    case 'twenty_four_months':
+      return 'Últimos 24 meses'
+  }
+}
+
+const daysBetween = (a: string, b: string): number => {
+  // YYYY-MM-DD strings; treat as UTC midnight to avoid DST quirks
+  const t1 = Date.UTC(
+    Number(a.slice(0, 4)),
+    Number(a.slice(5, 7)) - 1,
+    Number(a.slice(8, 10)),
+  )
+  const t2 = Date.UTC(
+    Number(b.slice(0, 4)),
+    Number(b.slice(5, 7)) - 1,
+    Number(b.slice(8, 10)),
+  )
+  return Math.max(0, Math.floor((t2 - t1) / (1000 * 60 * 60 * 24)))
 }
 
 const CASH_TYPES = new Set(['checking', 'savings', 'cash'])
@@ -613,7 +657,76 @@ export default async function AnalisisPage({
     )
   }
 
-  // Other reports are placeholders for now
+  // ── Age of Money (FIFO) ───────────────────────────────────
+  if (report === 'age_of_money') {
+    const aomRange = parseAomRange(params.range)
+    const monthCount = aomMonthCount[aomRange]
+    const today = todayLocal()
+
+    // FIFO needs the full transaction history to build the lot queue correctly.
+    const { data: txns } = await supabase
+      .from('transactions')
+      .select('date, amount')
+      .eq('budget_id', budget.id)
+      .order('date', { ascending: true })
+
+    type Lot = { date: string; remaining: number }
+    const lots: Lot[] = []
+    const monthly = new Map<string, { spent: number; weightedAge: number }>()
+
+    for (const t of txns ?? []) {
+      const amount = Number(t.amount)
+      const date = t.date as string
+      if (amount > 0) {
+        lots.push({ date, remaining: amount })
+      } else if (amount < 0) {
+        let toSpend = Math.abs(amount)
+        while (toSpend > 0.005 && lots.length > 0) {
+          const oldest = lots[0]
+          const consume = Math.min(oldest.remaining, toSpend)
+          const age = daysBetween(oldest.date, date)
+          const monthKey = date.slice(0, 7)
+          const m = monthly.get(monthKey) ?? { spent: 0, weightedAge: 0 }
+          m.spent += consume
+          m.weightedAge += consume * age
+          monthly.set(monthKey, m)
+          oldest.remaining -= consume
+          toSpend -= consume
+          if (oldest.remaining < 0.005) lots.shift()
+        }
+        // If toSpend > 0, we have a deficit (spent more than ever received).
+        // Ignore the leftover — it doesn't have an income to anchor its age.
+      }
+    }
+
+    // Build month sequence for the requested range
+    const series: AgeOfMoneyPoint[] = []
+    for (let i = monthCount - 1; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1)
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const m = monthly.get(monthKey)
+      const ageDays = m && m.spent > 0.005 ? m.weightedAge / m.spent : null
+      series.push({
+        month: monthKey,
+        label: MONTH_NAMES_SHORT[d.getMonth()],
+        ageDays: ageDays === null ? null : Math.round(ageDays * 10) / 10,
+      })
+    }
+
+    return (
+      <AnalisisShell active="age_of_money">
+        <AgeOfMoneyReport
+          range={aomRange}
+          rangeLabel={aomRangeLabel(aomRange)}
+          series={series}
+          hasBudget={true}
+          hasData={series.some((p) => p.ageDays !== null)}
+        />
+      </AnalisisShell>
+    )
+  }
+
+  // Catch-all (shouldn't happen — all 5 reports are wired)
   return (
     <AnalisisShell active={report}>
       <div className="space-y-2">
@@ -623,9 +736,6 @@ export default async function AnalisisPage({
         <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
           Próximamente.
         </h1>
-        <p className="text-[var(--text2)] text-[14px] max-w-xl leading-relaxed">
-          Edad del dinero llega en la siguiente entrega.
-        </p>
       </div>
     </AnalisisShell>
   )

@@ -30,7 +30,7 @@ const TABS: Tab[] = [
   { id: 'income_expense', label: 'Ingresos vs Gastos', Icon: Scale, enabled: true },
   { id: 'trends', label: 'Tendencias', Icon: TrendingUp, enabled: true },
   { id: 'networth', label: 'Patrimonio', Icon: Wallet, enabled: true },
-  { id: 'age_of_money', label: 'Edad del dinero', Icon: Hourglass, enabled: false },
+  { id: 'age_of_money', label: 'Edad del dinero', Icon: Hourglass, enabled: true },
 ]
 
 interface AnalisisShellProps {
