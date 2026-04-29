@@ -13,6 +13,11 @@ import {
   type TrendCategory,
   type TrendMonth,
 } from './SpendingTrendsReport'
+import {
+  NetWorthReport,
+  type NetWorthRange,
+  type NetWorthPoint,
+} from './NetWorthReport'
 
 const todayLocal = () => {
   const d = new Date()
@@ -164,6 +169,42 @@ const trendsRangeLabel = (range: TrendsRange): string => {
       return 'Últimos 24 meses'
   }
 }
+
+// ── Range helpers (Net Worth) ───────────────────────────────
+
+const parseNetWorthRange = (raw: string | undefined): NetWorthRange => {
+  if (raw === 'six_months' || raw === 'twenty_four_months') return raw
+  return 'twelve_months'
+}
+
+const netWorthMonthCount: Record<NetWorthRange, number> = {
+  six_months: 6,
+  twelve_months: 12,
+  twenty_four_months: 24,
+}
+
+const netWorthRangeLabel = (range: NetWorthRange): string => {
+  switch (range) {
+    case 'six_months':
+      return 'Últimos 6 meses'
+    case 'twelve_months':
+      return 'Últimos 12 meses'
+    case 'twenty_four_months':
+      return 'Últimos 24 meses'
+  }
+}
+
+const CASH_TYPES = new Set(['checking', 'savings', 'cash'])
+const DEBT_TYPES_SET = new Set([
+  'credit_card',
+  'line_of_credit',
+  'mortgage',
+  'auto_loan',
+  'student_loan',
+  'personal_loan',
+  'medical_debt',
+  'other_debt',
+])
 
 // ── Report dispatch ─────────────────────────────────────────
 
@@ -481,6 +522,97 @@ export default async function AnalisisPage({
     )
   }
 
+  // ── Net Worth ─────────────────────────────────────────────
+  if (report === 'networth') {
+    const nwRange = parseNetWorthRange(params.range)
+    const monthCount = netWorthMonthCount[nwRange]
+    const today = todayLocal()
+
+    const [accountsRes, txnsRes] = await Promise.all([
+      supabase.from('accounts').select('id, type, balance').eq('budget_id', budget.id),
+      supabase
+        .from('transactions')
+        .select('date, account_id, amount')
+        .eq('budget_id', budget.id),
+    ])
+
+    const accounts = accountsRes.data ?? []
+    const txns = txnsRes.data ?? []
+
+    // Group transactions by account_id for fast lookup
+    const txnsByAccount = new Map<string, Array<{ date: string; amount: number }>>()
+    for (const t of txns) {
+      const id = t.account_id as string
+      const arr = txnsByAccount.get(id) ?? []
+      arr.push({ date: t.date as string, amount: Number(t.amount) })
+      txnsByAccount.set(id, arr)
+    }
+
+    // Build monthly series (oldest → newest)
+    const series: NetWorthPoint[] = []
+    for (let i = monthCount - 1; i >= 0; i--) {
+      const monthFirst = new Date(today.getFullYear(), today.getMonth() - i, 1)
+      const monthLast = new Date(monthFirst.getFullYear(), monthFirst.getMonth() + 1, 0)
+      const cutoffDate = monthLast > today ? today : monthLast
+      const cutoffISO = formatISODate(cutoffDate)
+
+      let netWorth = 0
+      for (const acc of accounts) {
+        const accTxns = txnsByAccount.get(acc.id as string) ?? []
+        const futureSum = accTxns
+          .filter((t) => t.date > cutoffISO)
+          .reduce((s, t) => s + t.amount, 0)
+        const reconstructed = Number(acc.balance) - futureSum
+        // Cast type to string — generated Supabase types lag behind the
+        // schema's CHECK constraint expansion (see cuentas/actions.ts note).
+        if ((acc.type as string) === 'liability') {
+          netWorth -= reconstructed
+        } else {
+          netWorth += reconstructed
+        }
+      }
+
+      series.push({
+        month: `${monthFirst.getFullYear()}-${String(monthFirst.getMonth() + 1).padStart(2, '0')}`,
+        label: MONTH_NAMES_SHORT[monthFirst.getMonth()],
+        value: Math.round(netWorth * 100) / 100,
+      })
+    }
+
+    // Current snapshot for KPIs
+    let totalCash = 0
+    let totalAssets = 0
+    let totalDebts = 0
+    for (const acc of accounts) {
+      const balance = Number(acc.balance)
+      const type = acc.type as string
+      if (CASH_TYPES.has(type)) {
+        totalCash += balance
+      } else if (type === 'asset') {
+        totalAssets += balance
+      } else if (type === 'liability') {
+        totalDebts += balance // stored positive but counts as debt
+      } else if (DEBT_TYPES_SET.has(type)) {
+        totalDebts += Math.abs(balance) // stored negative
+      }
+    }
+
+    return (
+      <AnalisisShell active="networth">
+        <NetWorthReport
+          range={nwRange}
+          rangeLabel={netWorthRangeLabel(nwRange)}
+          series={series}
+          totalCash={Math.round(totalCash * 100) / 100}
+          totalAssets={Math.round(totalAssets * 100) / 100}
+          totalDebts={Math.round(totalDebts * 100) / 100}
+          hasBudget={true}
+          hasData={accounts.length > 0}
+        />
+      </AnalisisShell>
+    )
+  }
+
   // Other reports are placeholders for now
   return (
     <AnalisisShell active={report}>
@@ -492,8 +624,7 @@ export default async function AnalisisPage({
           Próximamente.
         </h1>
         <p className="text-[var(--text2)] text-[14px] max-w-xl leading-relaxed">
-          Estoy construyendo este reporte. Por ahora puedes explorar Gastos, Ingresos vs Gastos
-          y Tendencias.
+          Edad del dinero llega en la siguiente entrega.
         </p>
       </div>
     </AnalisisShell>
