@@ -7,6 +7,12 @@ import {
   type Range,
   type MonthAggregate,
 } from './IncomeVsExpenseReport'
+import {
+  SpendingTrendsReport,
+  type TrendsRange,
+  type TrendCategory,
+  type TrendMonth,
+} from './SpendingTrendsReport'
 
 const todayLocal = () => {
   const d = new Date()
@@ -132,6 +138,30 @@ const rangeLabel = (range: Range): string => {
       return 'Últimos 24 meses'
     case 'all':
       return 'Histórico completo'
+  }
+}
+
+// ── Range helpers (Trends) ──────────────────────────────────
+
+const parseTrendsRange = (raw: string | undefined): TrendsRange => {
+  if (raw === 'six_months' || raw === 'twenty_four_months') return raw
+  return 'twelve_months'
+}
+
+const trendsRangeMonthCount: Record<TrendsRange, number> = {
+  six_months: 6,
+  twelve_months: 12,
+  twenty_four_months: 24,
+}
+
+const trendsRangeLabel = (range: TrendsRange): string => {
+  switch (range) {
+    case 'six_months':
+      return 'Últimos 6 meses'
+    case 'twelve_months':
+      return 'Últimos 12 meses'
+    case 'twenty_four_months':
+      return 'Últimos 24 meses'
   }
 }
 
@@ -366,6 +396,91 @@ export default async function AnalisisPage({
     )
   }
 
+  // ── Spending Trends ───────────────────────────────────────
+  if (report === 'trends') {
+    const trendsRange = parseTrendsRange(params.range)
+    const monthCount = trendsRangeMonthCount[trendsRange]
+    const today = todayLocal()
+
+    const first = new Date(today.getFullYear(), today.getMonth() - (monthCount - 1), 1)
+    const firstISO = formatISODate(first)
+
+    const [txnsRes, catsRes] = await Promise.all([
+      supabase
+        .from('transactions')
+        .select('date, category_id, amount')
+        .eq('budget_id', budget.id)
+        .gte('date', firstISO)
+        .lt('amount', 0),
+      supabase.from('categories').select('id, name').eq('budget_id', budget.id),
+    ])
+
+    const txns = txnsRes.data ?? []
+    const cats = catsRes.data ?? []
+    const categoryNameById = new Map(cats.map((c) => [c.id as string, c.name as string]))
+
+    // Build per-category, per-month aggregation.
+    // shape: Map<categoryId, Map<YYYY-MM, total>>
+    const totalsByCat = new Map<string, Map<string, number>>()
+    const overallByCat = new Map<string, number>()
+
+    for (const t of txns) {
+      const catId = (t.category_id as string | null) ?? null
+      if (!catId || !categoryNameById.has(catId)) continue
+      const month = (t.date as string).slice(0, 7)
+      const amount = Math.abs(Number(t.amount))
+      let mp = totalsByCat.get(catId)
+      if (!mp) {
+        mp = new Map<string, number>()
+        totalsByCat.set(catId, mp)
+      }
+      mp.set(month, (mp.get(month) ?? 0) + amount)
+      overallByCat.set(catId, (overallByCat.get(catId) ?? 0) + amount)
+    }
+
+    // Top 5 categories by total spending in range
+    const topIds = Array.from(overallByCat.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([id]) => id)
+
+    // Build month sequence
+    const months: TrendMonth[] = []
+    for (let i = monthCount - 1; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1)
+      months.push({
+        month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        label: MONTH_NAMES_SHORT[d.getMonth()],
+      })
+    }
+
+    const categoriesPayload: TrendCategory[] = topIds.map((id) => {
+      const monthMap = totalsByCat.get(id) ?? new Map<string, number>()
+      const values = months.map(
+        (m) => Math.round((monthMap.get(m.month) ?? 0) * 100) / 100,
+      )
+      return {
+        id,
+        name: categoryNameById.get(id) ?? '—',
+        total: Math.round((overallByCat.get(id) ?? 0) * 100) / 100,
+        values,
+      }
+    })
+
+    return (
+      <AnalisisShell active="trends">
+        <SpendingTrendsReport
+          range={trendsRange}
+          rangeLabel={trendsRangeLabel(trendsRange)}
+          months={months}
+          categories={categoriesPayload}
+          hasBudget={true}
+          hasData={categoriesPayload.length > 0}
+        />
+      </AnalisisShell>
+    )
+  }
+
   // Other reports are placeholders for now
   return (
     <AnalisisShell active={report}>
@@ -377,8 +492,8 @@ export default async function AnalisisPage({
           Próximamente.
         </h1>
         <p className="text-[var(--text2)] text-[14px] max-w-xl leading-relaxed">
-          Estoy construyendo este reporte. Por ahora puedes explorar Gastos por categoría e
-          Ingresos vs Gastos.
+          Estoy construyendo este reporte. Por ahora puedes explorar Gastos, Ingresos vs Gastos
+          y Tendencias.
         </p>
       </div>
     </AnalisisShell>
