@@ -278,10 +278,10 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                           : `Eliminar meta de ${g.categoryName}`
                       }
                       title={isConfirming ? 'Click otra vez para confirmar' : 'Eliminar meta'}
-                      className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-50 ${
+                      className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 ${
                         isConfirming
-                          ? 'bg-[rgba(255,122,89,0.18)] text-[var(--coral)] border border-[var(--coral)]/50 opacity-100'
-                          : 'opacity-0 group-hover:opacity-100 focus:opacity-100 text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]'
+                          ? 'bg-[rgba(255,122,89,0.18)] text-[var(--coral)] border border-[var(--coral)]/50'
+                          : 'text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]'
                       }`}
                     >
                       <Trash2 size={14} strokeWidth={2} />
