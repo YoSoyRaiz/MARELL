@@ -75,7 +75,9 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
   const [filter, setFilter] = useState<Filter>('todas')
   const [overrides, setOverrides] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    () => new Set(groups.map((g) => g.id)),
+  )
 
   const toggleGroup = (id: string) => {
     setCollapsed((prev) => {

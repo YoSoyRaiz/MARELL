@@ -1,14 +1,23 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Target, Calendar, CheckCircle2, Repeat, PiggyBank } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  Plus,
+  Target,
+  Calendar,
+  CheckCircle2,
+  Repeat,
+  PiggyBank,
+  Trash2,
+} from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import {
   GoalFormModal,
   type CategoryOption,
   type InitialGoal,
 } from './GoalFormModal'
-import type { GoalType } from './actions'
+import { clearGoal, type GoalType } from './actions'
 
 const fmtMoney = (n: number) => {
   const abs = Math.abs(n)
@@ -60,8 +69,30 @@ interface Props {
 }
 
 export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
+  const router = useRouter()
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<ListGoal | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null)
+  const [deletingId, startDelete] = useTransition()
+
+  const handleDelete = (categoryId: string) => {
+    if (confirmingDelete !== categoryId) {
+      setConfirmingDelete(categoryId)
+      window.setTimeout(() => {
+        setConfirmingDelete((curr) => (curr === categoryId ? null : curr))
+      }, 3000)
+      return
+    }
+    startDelete(async () => {
+      const result = await clearGoal(categoryId)
+      if (result && 'error' in result && result.error) {
+        setConfirmingDelete(null)
+        return
+      }
+      setConfirmingDelete(null)
+      router.refresh()
+    })
+  }
 
   const isEmpty = goals.length === 0
 
@@ -183,12 +214,20 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                   ? remaining / monthsLeft
                   : null
 
+              const isConfirming = confirmingDelete === g.categoryId
               return (
-                <button
+                <div
                   key={g.categoryId}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setEditing(g)}
-                  className="text-left rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 hover:border-[var(--border3)] hover:bg-white/[0.02] transition-colors space-y-4"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setEditing(g)
+                    }
+                  }}
+                  className="group relative cursor-pointer text-left rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 hover:border-[var(--border3)] hover:bg-white/[0.02] transition-colors space-y-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-2)]/40"
                 >
                   <div className="flex items-start gap-3">
                     <div
@@ -226,6 +265,27 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                         Lista
                       </div>
                     )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(g.categoryId)
+                      }}
+                      disabled={deletingId}
+                      aria-label={
+                        isConfirming
+                          ? `Confirmar eliminar meta de ${g.categoryName}`
+                          : `Eliminar meta de ${g.categoryName}`
+                      }
+                      title={isConfirming ? 'Click otra vez para confirmar' : 'Eliminar meta'}
+                      className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-50 ${
+                        isConfirming
+                          ? 'bg-[rgba(255,122,89,0.18)] text-[var(--coral)] border border-[var(--coral)]/50 opacity-100'
+                          : 'opacity-0 group-hover:opacity-100 focus:opacity-100 text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]'
+                      }`}
+                    >
+                      <Trash2 size={14} strokeWidth={2} />
+                    </button>
                   </div>
 
                   {/* Progress bar */}
@@ -273,7 +333,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                       </div>
                     )}
                   </div>
-                </button>
+                </div>
               )
             })}
           </div>

@@ -120,12 +120,18 @@
   input[type="datetime-local"]::-webkit-calendar-picker-indicator,
   input[type="month"]::-webkit-calendar-picker-indicator,
   input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) brightness(1.4);
+    filter: invert(1) brightness(2);
     cursor: pointer;
-    opacity: .85;
-  }
-  input[type="date"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
+    padding: 2px;
+    border-radius: 4px;
+    transition: background-color .15s;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+  input[type="month"]::-webkit-calendar-picker-indicator:hover,
+  input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    background-color: rgba(255, 255, 255, 0.08);
   }
 
   input:focus, select:focus, textarea:focus {
