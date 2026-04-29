@@ -214,31 +214,29 @@ export function GoalFormModal({
             </Field>
           )}
 
-          {/* Custom name — both modes */}
-          {(isEdit || availableCategories.length > 0) && (
-            <Field
-              label="Nombre personalizado"
-              hint={isEdit ? 'edita el nombre' : 'opcional'}
-            >
-              <input
-                type="text"
-                value={customName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setCustomName(e.target.value)
-                }
-                maxLength={60}
-                placeholder={
-                  isEdit
-                    ? initial?.categoryName
-                    : 'Ej: Gimnasio del barrio, Viaje a Punta Cana…'
-                }
-                className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
-              />
-              <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
-                Usa un nombre con el que te identifiques en lugar del genérico.
-              </p>
-            </Field>
-          )}
+          {/* Custom name — both modes, always visible */}
+          <Field
+            label="Nombre personalizado"
+            hint={isEdit ? 'edita el nombre' : 'opcional'}
+          >
+            <input
+              type="text"
+              value={customName}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setCustomName(e.target.value)
+              }
+              maxLength={60}
+              placeholder={
+                isEdit
+                  ? initial?.categoryName
+                  : 'Ej: Gimnasio del barrio, Viaje a Punta Cana…'
+              }
+              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
+            />
+            <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
+              Usa un nombre con el que te identifiques en lugar del genérico.
+            </p>
+          </Field>
 
           {/* Type segmented */}
           <Field label="Tipo de meta">
