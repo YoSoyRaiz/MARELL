@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { X, AlertCircle, Trash2, Archive, ArchiveRestore } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { AccountTypeSelect } from '@/app/onboarding/wizard/components/AccountTypeSelect'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 import type { AccountType } from '@/app/onboarding/wizard/types'
 import {
   createAccount,
@@ -31,13 +32,13 @@ interface AccountFormModalProps {
 
 export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountFormModalProps) {
   const router = useRouter()
+  const confirm = useConfirm()
   const [pending, startTransition] = useTransition()
   const [name, setName] = useState('')
   const [type, setType] = useState<AccountType | null>(null)
   const [balance, setBalance] = useState<number | null>(null)
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -54,7 +55,6 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
       setNote('')
     }
     setError(null)
-    setConfirmingDelete(false)
   }, [isOpen, mode, initial])
 
   useEffect(() => {
@@ -111,12 +111,16 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
     })
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!initial) return
-    if (!confirmingDelete) {
-      setConfirmingDelete(true)
-      return
-    }
+    const ok = await confirm({
+      title: `¿Eliminar la cuenta "${initial.name}"?`,
+      description:
+        'Esto borra la cuenta y todas sus transacciones permanentemente. No se puede deshacer.',
+      confirmLabel: 'Eliminar permanentemente',
+      tone: 'danger',
+    })
+    if (!ok) return
     setError(null)
     startTransition(async () => {
       const result = await deleteAccount(initial.id)
@@ -236,19 +240,13 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                 type="button"
                 onClick={handleDelete}
                 disabled={pending}
-                className={`w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-[13px] transition-colors disabled:opacity-60 ${
-                  confirmingDelete
-                    ? 'bg-[rgba(255,122,89,0.10)] border border-[var(--coral)]/40 text-[var(--coral)] hover:bg-[rgba(255,122,89,0.18)]'
-                    : 'bg-white/[0.02] hover:bg-white/[0.05] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral)]'
-                }`}
+                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-[13px] transition-colors disabled:opacity-60 bg-white/[0.02] hover:bg-[rgba(255,122,89,0.10)] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral)]"
               >
                 <span className="inline-flex items-center gap-2">
                   <Trash2 size={14} strokeWidth={2} />
-                  {confirmingDelete ? 'Confirmar: eliminar permanentemente' : 'Eliminar cuenta'}
+                  Eliminar cuenta
                 </span>
-                <span className="text-[11px] opacity-70">
-                  {confirmingDelete ? 'Borra transacciones' : 'Click para confirmar'}
-                </span>
+                <span className="text-[11px] opacity-70">Borra transacciones</span>
               </button>
             </div>
           )}

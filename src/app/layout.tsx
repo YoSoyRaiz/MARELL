@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, IBM_Plex_Sans, Varela_Round } from 'next/font/google'
 import './globals.css'
+import { ConfirmProvider } from '@/components/ui/ConfirmDialog'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -36,7 +37,9 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${ibmPlex.variable} ${varelaRound.variable}`}
     >
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <ConfirmProvider>{children}</ConfirmProvider>
+      </body>
     </html>
   )
 }

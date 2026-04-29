@@ -3,18 +3,22 @@
 import { useState, useTransition } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { resetOnboarding } from '@/app/onboarding/actions'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 
 export function ResetOnboardingButton() {
+  const confirm = useConfirm()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
-  const handleClick = () => {
-    if (
-      !window.confirm(
-        '¿Rehacer el onboarding? Esto borra tu plan actual (categorías, cuentas, asignaciones) y te lleva de vuelta al wizard. Esta acción no se puede deshacer.',
-      )
-    )
-      return
+  const handleClick = async () => {
+    const ok = await confirm({
+      title: '¿Rehacer el onboarding?',
+      description:
+        'Esto borra tu plan actual (categorías, cuentas, asignaciones) y te lleva de vuelta al wizard. No se puede deshacer.',
+      confirmLabel: 'Borrar y rehacer',
+      tone: 'danger',
+    })
+    if (!ok) return
     setError(null)
     startTransition(async () => {
       const result = await resetOnboarding()

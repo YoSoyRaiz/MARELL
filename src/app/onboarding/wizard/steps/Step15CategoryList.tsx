@@ -3,17 +3,23 @@
 import { Sparkles } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 
 export function Step15CategoryList() {
+  const confirm = useConfirm()
   const answers = useOnboardingStore((s) => s.answers)
   const reset = useOnboardingStore((s) => s.reset)
   const groups = generateCategories(answers)
   const total = groups.reduce((sum, g) => sum + g.items.length, 0)
 
-  const handleStartOver = () => {
-    if (typeof window !== 'undefined' && window.confirm('¿Empezar de nuevo? Se borrarán tus respuestas.')) {
-      reset()
-    }
+  const handleStartOver = async () => {
+    const ok = await confirm({
+      title: '¿Empezar de nuevo?',
+      description: 'Se borrarán todas tus respuestas y volverás al inicio del onboarding.',
+      confirmLabel: 'Empezar de nuevo',
+      tone: 'danger',
+    })
+    if (ok) reset()
   }
 
   return (

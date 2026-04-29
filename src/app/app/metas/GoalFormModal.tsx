@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, AlertCircle, Trash2, Repeat, PiggyBank } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { updateGoal, clearGoal, type GoalType } from './actions'
 
 export interface CategoryOption {
@@ -38,6 +39,7 @@ export function GoalFormModal({
   availableCategories = [],
 }: GoalFormModalProps) {
   const router = useRouter()
+  const confirm = useConfirm()
   const [pending, startTransition] = useTransition()
   const [categoryId, setCategoryId] = useState('')
   const [customName, setCustomName] = useState('')
@@ -45,7 +47,6 @@ export function GoalFormModal({
   const [amount, setAmount] = useState<number | null>(null)
   const [date, setDate] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [confirmingClear, setConfirmingClear] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -63,7 +64,6 @@ export function GoalFormModal({
       setDate('')
     }
     setError(null)
-    setConfirmingClear(false)
   }, [isOpen, mode, initial, availableCategories])
 
   useEffect(() => {
@@ -107,12 +107,16 @@ export function GoalFormModal({
     })
   }
 
-  const handleClear = () => {
+  const handleClear = async () => {
     if (!initial) return
-    if (!confirmingClear) {
-      setConfirmingClear(true)
-      return
-    }
+    const ok = await confirm({
+      title: `¿Eliminar la meta de "${initial.categoryName}"?`,
+      description:
+        'Se borra solo la meta. La categoría y sus transacciones se mantienen intactas.',
+      confirmLabel: 'Eliminar meta',
+      tone: 'danger',
+    })
+    if (!ok) return
     setError(null)
     startTransition(async () => {
       const result = await clearGoal(initial.categoryId)
@@ -298,19 +302,13 @@ export function GoalFormModal({
                 type="button"
                 onClick={handleClear}
                 disabled={pending}
-                className={`w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-[13px] transition-colors disabled:opacity-60 ${
-                  confirmingClear
-                    ? 'bg-[rgba(255,122,89,0.10)] border border-[var(--coral)]/40 text-[var(--coral)] hover:bg-[rgba(255,122,89,0.18)]'
-                    : 'bg-white/[0.02] hover:bg-white/[0.05] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral)]'
-                }`}
+                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-[13px] transition-colors disabled:opacity-60 bg-white/[0.02] hover:bg-[rgba(255,122,89,0.10)] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral)]"
               >
                 <span className="inline-flex items-center gap-2">
                   <Trash2 size={14} strokeWidth={2} />
-                  {confirmingClear ? 'Confirmar: eliminar meta' : 'Eliminar meta'}
+                  Eliminar meta
                 </span>
-                <span className="text-[11px] opacity-70">
-                  {confirmingClear ? 'La categoría se mantiene' : 'Click para confirmar'}
-                </span>
+                <span className="text-[11px] opacity-70">La categoría se mantiene</span>
               </button>
             </div>
           )}

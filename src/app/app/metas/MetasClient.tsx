@@ -12,6 +12,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 import {
   GoalFormModal,
   type CategoryOption,
@@ -70,26 +71,22 @@ interface Props {
 
 export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
   const router = useRouter()
+  const confirm = useConfirm()
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<ListGoal | null>(null)
-  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null)
-  const [deletingId, startDelete] = useTransition()
+  const [deletingPending, startDelete] = useTransition()
 
-  const handleDelete = (categoryId: string) => {
-    if (confirmingDelete !== categoryId) {
-      setConfirmingDelete(categoryId)
-      window.setTimeout(() => {
-        setConfirmingDelete((curr) => (curr === categoryId ? null : curr))
-      }, 3000)
-      return
-    }
+  const handleDelete = async (goal: ListGoal) => {
+    const ok = await confirm({
+      title: `¿Eliminar la meta de "${goal.categoryName}"?`,
+      description:
+        'Se borra solo la meta. La categoría y sus transacciones se mantienen intactas.',
+      confirmLabel: 'Eliminar meta',
+      tone: 'danger',
+    })
+    if (!ok) return
     startDelete(async () => {
-      const result = await clearGoal(categoryId)
-      if (result && 'error' in result && result.error) {
-        setConfirmingDelete(null)
-        return
-      }
-      setConfirmingDelete(null)
+      await clearGoal(goal.categoryId)
       router.refresh()
     })
   }
@@ -214,7 +211,6 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                   ? remaining / monthsLeft
                   : null
 
-              const isConfirming = confirmingDelete === g.categoryId
               return (
                 <div
                   key={g.categoryId}
@@ -269,20 +265,12 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleDelete(g.categoryId)
+                        handleDelete(g)
                       }}
-                      disabled={deletingId}
-                      aria-label={
-                        isConfirming
-                          ? `Confirmar eliminar meta de ${g.categoryName}`
-                          : `Eliminar meta de ${g.categoryName}`
-                      }
-                      title={isConfirming ? 'Click otra vez para confirmar' : 'Eliminar meta'}
-                      className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 ${
-                        isConfirming
-                          ? 'bg-[rgba(255,122,89,0.18)] text-[var(--coral)] border border-[var(--coral)]/50'
-                          : 'text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]'
-                      }`}
+                      disabled={deletingPending}
+                      aria-label={`Eliminar meta de ${g.categoryName}`}
+                      title="Eliminar meta"
+                      className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]"
                     >
                       <Trash2 size={14} strokeWidth={2} />
                     </button>

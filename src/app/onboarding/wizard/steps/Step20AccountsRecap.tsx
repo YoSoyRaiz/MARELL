@@ -4,11 +4,13 @@ import { Plus, Trash2 } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { accountCategoryFromType, type AccountInput } from '../types'
 import { labelForAccountType } from '../components/AccountTypeSelect'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 
 const fmtMoney = (n: number) =>
   `$${Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 export function Step20AccountsRecap() {
+  const confirm = useConfirm()
   const accounts = useOnboardingStore((s) => s.answers.accounts)
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
   const back = useOnboardingStore((s) => s.back)
@@ -24,7 +26,15 @@ export function Step20AccountsRecap() {
     })
     .reduce((s, a) => s + Math.abs(a.balance), 0)
 
-  const removeAccount = (id: string) => {
+  const removeAccount = async (id: string) => {
+    const account = accounts.find((a) => a.id === id)
+    const ok = await confirm({
+      title: account ? `¿Eliminar "${account.name}"?` : '¿Eliminar esta cuenta?',
+      description: 'Se quita esta cuenta del onboarding. Puedes volver a agregarla.',
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+    })
+    if (!ok) return
     setAnswer(
       'accounts',
       accounts.filter((a) => a.id !== id),

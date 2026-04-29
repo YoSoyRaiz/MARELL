@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { ImportTransactionsModal } from './ImportTransactionsModal'
 import { deleteTransaction } from './actions'
@@ -126,6 +127,7 @@ export function TransactionsClient({
 }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const confirm = useConfirm()
   const [navPending, startNav] = useTransition()
   const [addOpen, setAddOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
@@ -168,10 +170,14 @@ export function TransactionsClient({
     })
   }
 
-  const handleDelete = (id: string) => {
-    if (!window.confirm('¿Eliminar esta transacción? Esto revierte el monto en la cuenta.')) {
-      return
-    }
+  const handleDelete = async (id: string) => {
+    const ok = await confirm({
+      title: '¿Eliminar esta transacción?',
+      description: 'Se revierte el monto en la cuenta. No se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+    })
+    if (!ok) return
     setDeletingId(id)
     startDelete(async () => {
       await deleteTransaction(id)
