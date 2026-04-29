@@ -2,8 +2,16 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, ArrowUpRight, ArrowDownRight, Plus, Receipt } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ArrowDownRight,
+  Plus,
+  Receipt,
+  Upload,
+} from 'lucide-react'
 import { TransactionFormModal } from './transacciones/TransactionFormModal'
+import { ImportTransactionsModal } from './transacciones/ImportTransactionsModal'
 
 const fmtMoney = (n: number) => {
   const abs = Math.abs(n)
@@ -44,14 +52,15 @@ export function RecentTransactionsSection({
   accounts,
   categories,
 }: RecentTransactionsSectionProps) {
-  const [modalOpen, setModalOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const canAdd = accounts.length > 0
 
   return (
     <>
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
-        <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-          <div>
+        <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <h2 className="text-[15px] font-semibold text-[var(--text)]">
               Transacciones recientes
             </h2>
@@ -59,12 +68,23 @@ export function RecentTransactionsSection({
               Últimos movimientos del mes
             </p>
           </div>
-          <Link
-            href="/app/transacciones"
-            className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
-          >
-            Ver todas <ArrowRight size={12} strokeWidth={2.4} />
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setImportOpen(true)}
+              disabled={!canAdd}
+              className="text-[12px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] inline-flex items-center gap-1.5 h-8 px-3 rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <Upload size={12} strokeWidth={2.2} />
+              Importar CSV
+            </button>
+            <Link
+              href="/app/transacciones"
+              className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 px-2"
+            >
+              Ver todas <ArrowRight size={12} strokeWidth={2.4} />
+            </Link>
+          </div>
         </header>
 
         {transactions.length === 0 ? (
@@ -78,15 +98,26 @@ export function RecentTransactionsSection({
             <p className="text-[12px] text-[var(--muted)] max-w-xs mx-auto leading-relaxed">
               Cuando agregues tu primera transacción, aparecerá aquí con su categoría y fecha.
             </p>
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              disabled={!canAdd}
-              className="inline-flex items-center gap-1.5 mt-2 h-9 px-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
-            >
-              <Plus size={14} strokeWidth={2.2} />
-              Agregar transacción
-            </button>
+            <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setAddOpen(true)}
+                disabled={!canAdd}
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              >
+                <Plus size={14} strokeWidth={2.2} />
+                Agregar
+              </button>
+              <button
+                type="button"
+                onClick={() => setImportOpen(true)}
+                disabled={!canAdd}
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              >
+                <Upload size={14} strokeWidth={2.2} />
+                Importar CSV
+              </button>
+            </div>
           </div>
         ) : (
           <ul className="divide-y divide-[var(--border)]">
@@ -133,11 +164,18 @@ export function RecentTransactionsSection({
       </section>
 
       <TransactionFormModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        isOpen={addOpen}
+        onClose={() => setAddOpen(false)}
         accounts={accounts}
         categories={categories}
         mode="add"
+      />
+
+      <ImportTransactionsModal
+        isOpen={importOpen}
+        onClose={() => setImportOpen(false)}
+        accounts={accounts}
+        categories={categories}
       />
     </>
   )
