@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useEffect, useRef, useState, useTransition } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
   Sparkles,
@@ -13,9 +14,14 @@ import {
   Settings,
   LifeBuoy,
   LogOut,
+  ChevronUp,
+  RotateCcw,
+  CircleUser,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { logout } from '@/app/(auth)/actions'
+import { resetOnboarding } from '@/app/onboarding/actions'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 
 const NAV = [
   { id: 'resumen', label: 'Resumen', href: '/app', icon: LayoutDashboard },
@@ -28,9 +34,66 @@ const NAV = [
   { id: 'ajustes', label: 'Ajustes', href: '/app/ajustes', icon: Settings },
 ] as const
 
-export function Sidebar({ displayName, plan }: { displayName: string | null; plan: string }) {
+interface SidebarProps {
+  displayName: string | null
+  email: string | null
+  plan: string
+  trialEndsAt: string | null
+}
+
+export function Sidebar({ displayName, email, plan, trialEndsAt }: SidebarProps) {
   const pathname = usePathname() ?? ''
+  const router = useRouter()
+  const confirm = useConfirm()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [, startReset] = useTransition()
+  const menuRef = useRef<HTMLDivElement>(null)
   const initials = (displayName ?? '?').trim().split(/\s+/).map((s) => s[0]?.toUpperCase() ?? '').slice(0, 2).join('') || '?'
+
+  // Close popover on outside click + Escape
+  useEffect(() => {
+    if (!menuOpen) return
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
+
+  const trialDaysLeft = (() => {
+    if (plan !== 'trial' || !trialEndsAt) return null
+    const end = new Date(trialEndsAt).getTime()
+    const now = Date.now()
+    const days = Math.ceil((end - now) / 86400000)
+    return Number.isFinite(days) ? days : null
+  })()
+
+  const handleReset = async () => {
+    setMenuOpen(false)
+    const ok = await confirm({
+      title: '¿Rehacer el onboarding?',
+      description:
+        'Esto borra tu plan actual (categorías, cuentas, asignaciones) y te lleva de vuelta al wizard. No se puede deshacer.',
+      confirmLabel: 'Borrar y rehacer',
+      tone: 'danger',
+    })
+    if (!ok) return
+    startReset(async () => {
+      const r = await resetOnboarding()
+      if (!r || !('error' in r) || !r.error) {
+        router.refresh()
+      }
+    })
+  }
 
   return (
     <aside className="w-[240px] shrink-0 border-r border-[var(--border)] bg-[var(--s1)]/60 backdrop-blur-md flex flex-col h-screen sticky top-0">
@@ -95,26 +158,112 @@ export function Sidebar({ displayName, plan }: { displayName: string | null; pla
         </Link>
       </div>
 
-      {/* User */}
-      <div className="border-t border-[var(--border)] px-3 py-3">
-        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg">
+      {/* User profile menu */}
+      <div ref={menuRef} className="relative border-t border-[var(--border)] px-3 py-3">
+        <button
+          type="button"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors ${
+            menuOpen ? 'bg-white/[0.05]' : 'hover:bg-white/[0.04]'
+          }`}
+        >
           <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-[13px] shrink-0">
             {initials}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 text-left">
             <div className="text-[13px] font-medium truncate">{displayName ?? 'Usuario'}</div>
-            <div className="text-[11px] text-[var(--muted)] capitalize">{plan}</div>
+            <div className="text-[11px] text-[var(--muted)] capitalize truncate">
+              {plan}
+              {trialDaysLeft !== null && trialDaysLeft >= 0 && (
+                <span className="ml-1 normal-case">
+                  · {trialDaysLeft}d restantes
+                </span>
+              )}
+            </div>
           </div>
-          <form action={logout}>
-            <button
-              type="submit"
-              aria-label="Cerrar sesión"
-              className="text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/[0.04] p-1.5 rounded-md transition-colors"
-            >
-              <LogOut size={14} strokeWidth={2} />
-            </button>
-          </form>
-        </div>
+          <ChevronUp
+            size={14}
+            strokeWidth={2.2}
+            className={`text-[var(--muted)] shrink-0 transition-transform ${
+              menuOpen ? '' : 'rotate-180'
+            }`}
+          />
+        </button>
+
+        {menuOpen && (
+          <div
+            role="menu"
+            className="absolute bottom-[calc(100%-4px)] left-3 right-3 mb-2 rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] overflow-hidden animate-step"
+          >
+            {/* Identity */}
+            <div className="px-4 py-3.5 border-b border-[var(--border)] bg-white/[0.02]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-[14px] shrink-0">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[13px] font-semibold truncate">
+                    {displayName ?? 'Usuario'}
+                  </div>
+                  {email && (
+                    <div className="text-[11px] text-[var(--muted)] truncate">{email}</div>
+                  )}
+                </div>
+              </div>
+              <div className="mt-3 inline-flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-white/[0.04] border border-[var(--border)] text-[10px] uppercase tracking-[0.15em] font-semibold text-[var(--text2)]">
+                  {plan}
+                </span>
+                {trialDaysLeft !== null && (
+                  <span
+                    className={`text-[11px] ${
+                      trialDaysLeft <= 3 ? 'text-[var(--coral)]' : 'text-[var(--muted)]'
+                    }`}
+                  >
+                    {trialDaysLeft >= 0
+                      ? `${trialDaysLeft} ${trialDaysLeft === 1 ? 'día' : 'días'} restantes`
+                      : 'Trial vencido'}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="py-1">
+              <Link
+                href="/app/ajustes"
+                onClick={() => setMenuOpen(false)}
+                role="menuitem"
+                className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-white/[0.04] transition-colors"
+              >
+                <CircleUser size={14} strokeWidth={2} className="text-[var(--text2)]" />
+                Ajustes de cuenta
+              </Link>
+              <button
+                type="button"
+                onClick={handleReset}
+                role="menuitem"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-white/[0.04] transition-colors text-left"
+              >
+                <RotateCcw size={14} strokeWidth={2} className="text-[var(--text2)]" />
+                Rehacer onboarding
+              </button>
+            </div>
+
+            <form action={logout} className="border-t border-[var(--border)]">
+              <button
+                type="submit"
+                role="menuitem"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--coral)] hover:bg-[rgba(255,122,89,0.08)] transition-colors"
+              >
+                <LogOut size={14} strokeWidth={2} />
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </aside>
   )

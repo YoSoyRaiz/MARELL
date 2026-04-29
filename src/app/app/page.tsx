@@ -11,7 +11,6 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
-import { ResetOnboardingButton } from './ResetOnboardingButton'
 import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
@@ -339,10 +338,6 @@ export default async function ResumenPage() {
           categories={modalCategories}
         />
 
-        {/* Reset onboarding (subtle, footer) */}
-        <div className="pt-4 flex items-center justify-end">
-          <ResetOnboardingButton />
-        </div>
       </div>
 
       {/* RIGHT COLUMN */}
