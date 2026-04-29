@@ -20,7 +20,7 @@
   --text:          #F7F7F5;
   --text2:         #C8C8C0;
   --muted:         #8A8A82;
-  --muted2:        #5A5A55;
+  --muted2:        #b2b2a5;
 
   /* Brand gradient stops */
   --brand-1:       #2EC4B6;
@@ -111,9 +111,22 @@
     font-size: 0.9375rem;
     outline: none;
     transition: border-color .15s, box-shadow .15s;
+    color-scheme: dark;
   }
 
   input::placeholder, textarea::placeholder { color: #5A5A55; }
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.4);
+    cursor: pointer;
+    opacity: .85;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
 
   input:focus, select:focus, textarea:focus {
     border-color: rgba(61,220,151,.55);

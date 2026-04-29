@@ -40,6 +40,7 @@ export function GoalFormModal({
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [categoryId, setCategoryId] = useState('')
+  const [customName, setCustomName] = useState('')
   const [goalType, setGoalType] = useState<GoalType>('monthly_spending')
   const [amount, setAmount] = useState<number | null>(null)
   const [date, setDate] = useState('')
@@ -50,11 +51,13 @@ export function GoalFormModal({
     if (!isOpen) return
     if (mode === 'edit' && initial) {
       setCategoryId(initial.categoryId)
+      setCustomName(initial.categoryName)
       setGoalType(initial.goalType)
       setAmount(initial.goalAmount)
       setDate(initial.goalDate ?? '')
     } else {
       setCategoryId(availableCategories[0]?.id ?? '')
+      setCustomName('')
       setGoalType('monthly_spending')
       setAmount(null)
       setDate('')
@@ -93,6 +96,7 @@ export function GoalFormModal({
         goalType,
         goalAmount: amount,
         goalDate: date || null,
+        customName: customName.trim() || null,
       })
       if (result && 'error' in result && result.error) {
         setError(result.error)
@@ -207,6 +211,32 @@ export function GoalFormModal({
                   ))}
                 </NativeSelect>
               )}
+            </Field>
+          )}
+
+          {/* Custom name — both modes */}
+          {(isEdit || availableCategories.length > 0) && (
+            <Field
+              label="Nombre personalizado"
+              hint={isEdit ? 'edita el nombre' : 'opcional'}
+            >
+              <input
+                type="text"
+                value={customName}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setCustomName(e.target.value)
+                }
+                maxLength={60}
+                placeholder={
+                  isEdit
+                    ? initial?.categoryName
+                    : 'Ej: Gimnasio del barrio, Viaje a Punta Cana…'
+                }
+                className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
+              />
+              <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
+                Usa un nombre con el que te identifiques en lugar del genérico.
+              </p>
             </Field>
           )}
 

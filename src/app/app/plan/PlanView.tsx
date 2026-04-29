@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, AlertCircle } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './InlineMoneyEdit'
 import { AnimatedNumber } from './AnimatedNumber'
@@ -75,6 +75,16 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
   const [filter, setFilter] = useState<Filter>('todas')
   const [overrides, setOverrides] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+
+  const toggleGroup = (id: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const goToMonth = (next: string) => {
     setOverrides({}) // navigation refetches; clear local overrides
@@ -275,22 +285,39 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
             (s, c) => s + getAssigned(c) + c.activity,
             0,
           )
+          const isCollapsed = collapsed.has(g.id)
+          const panelId = `plan-group-${g.id}`
           return (
             <div
               key={g.id}
               className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden"
             >
-              {/* Group header */}
-              <div className="px-5 py-3 border-b border-[var(--border)] bg-white/[0.02] flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+              {/* Group header — accordion toggle */}
+              <button
+                type="button"
+                onClick={() => toggleGroup(g.id)}
+                aria-expanded={!isCollapsed}
+                aria-controls={panelId}
+                className={`w-full px-5 py-3 ${
+                  isCollapsed ? '' : 'border-b border-[var(--border)]'
+                } bg-white/[0.02] hover:bg-white/[0.04] flex items-center justify-between gap-4 transition-colors text-left`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <ChevronDown
+                    size={16}
+                    strokeWidth={2.4}
+                    className={`text-[var(--text2)] shrink-0 transition-transform duration-200 ${
+                      isCollapsed ? '-rotate-90' : 'rotate-0'
+                    }`}
+                  />
+                  <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] truncate">
                     {g.name}
                   </h3>
-                  <span className="text-[11px] text-[var(--muted)] tabular-nums">
+                  <span className="text-[11px] text-[var(--muted)] tabular-nums shrink-0">
                     {g.categories.length}
                   </span>
                 </div>
-                <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] tabular-nums num">
+                <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] tabular-nums num shrink-0">
                   <span>
                     Asig{' '}
                     <span className="text-[var(--text2)] normal-case tracking-normal text-[12px] ml-1">
@@ -308,8 +335,10 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                     </span>
                   </span>
                 </div>
-              </div>
+              </button>
 
+              {!isCollapsed && (
+                <div id={panelId}>
               {/* Column headers */}
               <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px] gap-2 px-5 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
                 <div>Categoría</div>
@@ -367,6 +396,8 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                   )
                 })}
               </ul>
+                </div>
+              )}
             </div>
           )
         })}

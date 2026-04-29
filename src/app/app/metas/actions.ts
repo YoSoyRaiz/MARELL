@@ -10,6 +10,7 @@ export interface UpdateGoalInput {
   goalType: GoalType
   goalAmount: number
   goalDate: string | null // YYYY-MM-DD
+  customName?: string | null // optional rename
 }
 
 const isValidDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s)
@@ -26,6 +27,11 @@ export async function updateGoal(input: UpdateGoalInput) {
     return { error: 'Fecha inválida' }
   }
 
+  const trimmedName = input.customName?.trim() ?? ''
+  if (trimmedName.length > 60) {
+    return { error: 'Nombre demasiado largo (máx. 60)' }
+  }
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -34,7 +40,7 @@ export async function updateGoal(input: UpdateGoalInput) {
 
   const { data: cat } = await supabase
     .from('categories')
-    .select('id, budget_id')
+    .select('id, budget_id, name')
     .eq('id', input.categoryId)
     .single()
   if (!cat) return { error: 'Categoría no encontrada' }
@@ -49,14 +55,17 @@ export async function updateGoal(input: UpdateGoalInput) {
 
   const rounded = Math.round(input.goalAmount * 100) / 100
 
+  const update = {
+    goal_type: input.goalType,
+    goal_amount: rounded,
+    goal_monthly: input.goalType === 'monthly_spending' ? rounded : null,
+    goal_date: input.goalDate,
+    ...(trimmedName && trimmedName !== cat.name ? { name: trimmedName } : {}),
+  }
+
   const { error } = await supabase
     .from('categories')
-    .update({
-      goal_type: input.goalType,
-      goal_amount: rounded,
-      goal_monthly: input.goalType === 'monthly_spending' ? rounded : null,
-      goal_date: input.goalDate,
-    })
+    .update(update)
     .eq('id', input.categoryId)
 
   if (error) return { error: error.message }
