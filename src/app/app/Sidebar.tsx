@@ -8,6 +8,7 @@ import {
   Wallet,
   BarChart3,
   ArrowLeftRight,
+  Repeat,
   Target,
   LifeBuoy,
   LogOut,
@@ -21,6 +22,7 @@ const NAV = [
   { id: 'cuentas', label: 'Cuentas', href: '/app/cuentas', icon: Wallet },
   { id: 'analisis', label: 'Análisis', href: '/app/analisis', icon: BarChart3 },
   { id: 'transacciones', label: 'Transacciones', href: '/app/transacciones', icon: ArrowLeftRight },
+  { id: 'programadas', label: 'Programadas', href: '/app/programadas', icon: Repeat },
   { id: 'metas', label: 'Metas', href: '/app/metas', icon: Target },
 ] as const
 

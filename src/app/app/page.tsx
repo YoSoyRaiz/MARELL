@@ -14,6 +14,7 @@ import { ResetOnboardingButton } from './ResetOnboardingButton'
 import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
+import { materializeDue } from './programadas/actions'
 
 const fmtMoney = (n: number) => {
   const abs = Math.abs(n)
@@ -109,6 +110,11 @@ export default async function ResumenPage() {
       </div>
     )
   }
+
+  // Materialize any due scheduled transactions before fetching dashboard data
+  // so the recurring income/expenses are reflected in account balances and the
+  // current month's totals immediately when the user opens the app.
+  await materializeDue(budget.id as string)
 
   const month = currentMonth()
   const { first, last } = monthBounds(month)
