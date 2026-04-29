@@ -198,6 +198,97 @@ export async function updateTransaction(input: UpdateTransactionInput) {
   return { success: true as const }
 }
 
+export interface BulkTransactionRow {
+  date: string
+  payeeName: string
+  amount: number // already signed (+ income, − expense)
+  memo: string | null
+}
+
+export interface BulkCreateInput {
+  accountId: string
+  categoryId: string | null
+  transactions: BulkTransactionRow[]
+}
+
+export async function bulkCreateTransactions(input: BulkCreateInput) {
+  if (!input.accountId) return { error: 'Cuenta requerida' }
+  if (!input.transactions || input.transactions.length === 0) {
+    return { error: 'Sin transacciones que importar' }
+  }
+  if (input.transactions.length > 1000) {
+    return { error: 'Máximo 1,000 transacciones por importación' }
+  }
+
+  // Validate each row
+  for (const t of input.transactions) {
+    if (!isValidDate(t.date)) return { error: `Fecha inválida en una fila: ${t.date}` }
+    if (!t.payeeName.trim()) return { error: 'Hay filas sin descripción' }
+    if (!Number.isFinite(t.amount) || Math.abs(t.amount) < 0.005) {
+      return { error: 'Hay filas con monto inválido o cero' }
+    }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: account } = await supabase
+    .from('accounts')
+    .select('id, budget_id, balance')
+    .eq('id', input.accountId)
+    .single()
+  if (!account) return { error: 'Cuenta no encontrada' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', account.budget_id)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  if (input.categoryId) {
+    const { data: cat } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('id', input.categoryId)
+      .eq('budget_id', budget.id)
+      .single()
+    if (!cat) return { error: 'Categoría no encontrada' }
+  }
+
+  const inserts = input.transactions.map((t) => ({
+    account_id: input.accountId,
+    budget_id: budget.id,
+    date: t.date,
+    payee_name: t.payeeName.trim(),
+    category_id: input.categoryId,
+    memo: t.memo?.trim() || null,
+    amount: Math.round(t.amount * 100) / 100,
+    cleared: 'uncleared' as const,
+    approved: true,
+  }))
+
+  const { error: insertErr } = await supabase.from('transactions').insert(inserts)
+  if (insertErr) return { error: insertErr.message }
+
+  // Sum amounts and update balance once
+  const totalDelta =
+    Math.round(inserts.reduce((s, t) => s + t.amount, 0) * 100) / 100
+  const newBalance = Math.round((Number(account.balance) + totalDelta) * 100) / 100
+  const { error: updateErr } = await supabase
+    .from('accounts')
+    .update({ balance: newBalance })
+    .eq('id', input.accountId)
+  if (updateErr) return { error: updateErr.message }
+
+  revalidatePath('/app', 'layout')
+  return { success: true as const, imported: inserts.length }
+}
+
 export async function deleteTransaction(transactionId: string) {
   const supabase = await createClient()
   const {

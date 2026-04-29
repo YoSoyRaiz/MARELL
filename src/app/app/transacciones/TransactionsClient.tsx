@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Plus,
+  Upload,
   Receipt,
   Trash2,
   ArrowUpRight,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
+import { ImportTransactionsModal } from './ImportTransactionsModal'
 import { deleteTransaction } from './actions'
 
 const fmtMoney = (n: number) => {
@@ -126,6 +128,7 @@ export function TransactionsClient({
   const searchParams = useSearchParams()
   const [navPending, startNav] = useTransition()
   const [addOpen, setAddOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [editing, setEditing] = useState<ListTransaction | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [, startDelete] = useTransition()
@@ -210,15 +213,26 @@ export function TransactionsClient({
                 : `${transactions.length} ${transactions.length === 1 ? 'movimiento' : 'movimientos'}. Click en una fila para editar.`}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setAddOpen(true)}
-            disabled={!hasBudget || accounts.length === 0}
-            className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none"
-          >
-            <Plus size={14} strokeWidth={2.4} />
-            Agregar transacción
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setImportOpen(true)}
+              disabled={!hasBudget || accounts.length === 0}
+              className="h-11 px-4 rounded-xl text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-white/[0.04] hover:bg-white/[0.08] inline-flex items-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <Upload size={14} strokeWidth={2.2} />
+              Importar CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              disabled={!hasBudget || accounts.length === 0}
+              className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <Plus size={14} strokeWidth={2.4} />
+              Agregar transacción
+            </button>
+          </div>
         </div>
 
         {/* Filter bar */}
@@ -451,6 +465,13 @@ export function TransactionsClient({
         categories={categories}
         mode={editing ? 'edit' : 'add'}
         initial={editing ? toInitial(editing) : undefined}
+      />
+
+      <ImportTransactionsModal
+        isOpen={importOpen}
+        onClose={() => setImportOpen(false)}
+        accounts={accounts}
+        categories={categories}
       />
     </>
   )
