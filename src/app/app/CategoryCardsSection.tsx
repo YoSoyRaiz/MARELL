@@ -101,6 +101,7 @@ export function CategoryCardsSection({
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
           {displayGroups.map((g) => {
             const Icon = iconForGroup(g.name)
+            const isUnassigned = g.assigned <= 0.005 && g.spent <= 0.005
             const pct = g.assigned > 0 ? Math.min(1, g.spent / g.assigned) : 0
             return (
               <button
@@ -115,18 +116,31 @@ export function CategoryCardsSection({
                   </div>
                   <div className="text-[13px] font-medium text-[var(--text)]">{g.name}</div>
                 </div>
-                <div className="text-[18px] font-bold tabular-nums num text-[var(--text)]">
-                  {fmtMoneyShort(g.spent)}
-                </div>
-                <div className="text-[11px] text-[var(--muted)] mt-0.5">
-                  de {fmtMoneyShort(g.assigned)}
-                </div>
-                <div className="mt-3 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
-                  <div
-                    className="h-full gradient-bg transition-[width] duration-500"
-                    style={{ width: `${pct * 100}%` }}
-                  />
-                </div>
+                {isUnassigned ? (
+                  <>
+                    <div className="text-[15px] font-semibold text-[var(--muted)] leading-snug">
+                      Aún sin asignar
+                    </div>
+                    <div className="text-[11px] text-[var(--brand-2)] mt-1 group-hover:underline underline-offset-4">
+                      Click para asignar →
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-[18px] font-bold tabular-nums num text-[var(--text)]">
+                      {fmtMoneyShort(g.spent)}
+                    </div>
+                    <div className="text-[11px] text-[var(--muted)] mt-0.5">
+                      de {fmtMoneyShort(g.assigned)}
+                    </div>
+                    <div className="mt-3 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+                      <div
+                        className="h-full gradient-bg transition-[width] duration-500"
+                        style={{ width: `${pct * 100}%` }}
+                      />
+                    </div>
+                  </>
+                )}
               </button>
             )
           })}

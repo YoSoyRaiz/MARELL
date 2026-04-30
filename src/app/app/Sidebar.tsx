@@ -11,7 +11,6 @@ import {
   ArrowLeftRight,
   Repeat,
   Target,
-  Settings,
   LifeBuoy,
   LogOut,
   ChevronUp,
@@ -31,7 +30,6 @@ const NAV = [
   { id: 'transacciones', label: 'Transacciones', href: '/app/transacciones', icon: ArrowLeftRight },
   { id: 'programadas', label: 'Programadas', href: '/app/programadas', icon: Repeat },
   { id: 'metas', label: 'Metas', href: '/app/metas', icon: Target },
-  { id: 'ajustes', label: 'Ajustes', href: '/app/ajustes', icon: Settings },
 ] as const
 
 interface SidebarProps {

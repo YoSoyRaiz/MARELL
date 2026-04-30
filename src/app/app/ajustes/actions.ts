@@ -65,9 +65,10 @@ export async function updateBudgetSettings(input: {
   return { success: true as const }
 }
 
-// Wipes all the user's financial data (budget cascade + profile flags) and
-// signs them out. The auth.users record itself persists — true auth deletion
-// requires a service-role function we can add later.
+// Permanently deletes the user's account: cascades through their budget
+// data + profile, then removes the auth.users row via the security-definer
+// `public.delete_my_account` RPC. After this returns the session is no
+// longer valid; sign out and redirect to /login regardless.
 export async function deleteMyAccount() {
   const supabase = await createClient()
   const {
@@ -75,19 +76,8 @@ export async function deleteMyAccount() {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  // Delete owned budgets (cascades to accounts, categories, transactions,
-  // assignments, scheduled, etc. via FK on delete cascade).
-  const { error: delBudgetErr } = await supabase
-    .from('budgets')
-    .delete()
-    .eq('created_by', user.id)
-  if (delBudgetErr) return { error: delBudgetErr.message }
-
-  // Reset profile so a fresh sign-in starts at onboarding.
-  await supabase
-    .from('profiles')
-    .update({ onboarded: false, display_name: null })
-    .eq('id', user.id)
+  const { error } = await supabase.rpc('delete_my_account')
+  if (error) return { error: error.message }
 
   await supabase.auth.signOut()
   redirect('/login')

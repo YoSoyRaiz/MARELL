@@ -189,6 +189,10 @@ export type Database = {
         Args: { bid: string }
         Returns: boolean
       }
+      delete_my_account: {
+        Args: Record<string, never>
+        Returns: void
+      }
     }
     Enums: Record<string, never>
   }
