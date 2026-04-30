@@ -1,6 +1,7 @@
 import { ArrowRight, Play, Check, Star } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { DashboardPreview } from './DashboardPreview'
+import { InteractiveCard } from './InteractiveCard'
 
 const trustSignals = [
   'Gratis por 14 días',
@@ -17,15 +18,20 @@ export function LandingHero() {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            'radial-gradient(ellipse 60% 50% at 70% 0%, rgba(61,220,151,.10), transparent 60%), radial-gradient(ellipse 50% 40% at 20% 30%, rgba(46,196,182,.06), transparent 60%)',
+            'radial-gradient(ellipse 60% 50% at 70% 0%, rgba(61,220,151,.12), transparent 60%), radial-gradient(ellipse 50% 40% at 20% 30%, rgba(46,196,182,.06), transparent 60%)',
         }}
       />
       <div className="grid-fade absolute inset-0 -z-10" aria-hidden />
 
       <div className="mx-auto max-w-7xl px-6 pb-24 pt-12 lg:pt-16">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-10 lg:items-center">
+        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:items-center">
           {/* Left: copy */}
           <div className="max-w-xl">
+            <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-[var(--text2)]">
+              <span className="size-2 rounded-full bg-[var(--success)] shadow-[0_0_18px_rgba(61,220,151,.75)]" />
+              La app de finanzas personales que te da claridad
+            </span>
+
             <h1 className="text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-6xl lg:text-[64px]">
               Control total
               <br />
@@ -115,7 +121,12 @@ export function LandingHero() {
                   'linear-gradient(135deg, rgba(46,196,182,.18), rgba(61,220,151,.12), rgba(138,201,38,.06))',
               }}
             />
-            <DashboardPreview />
+            <InteractiveCard
+              hue="green"
+              surface="rounded-[28px] border border-white/[0.13] bg-gradient-to-b from-white/[0.08] to-white/[0.03] p-5 shadow-[0_30px_80px_rgba(0,0,0,.45)]"
+            >
+              <DashboardPreview />
+            </InteractiveCard>
           </div>
         </div>
       </div>
