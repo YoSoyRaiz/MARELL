@@ -154,8 +154,23 @@ export function Sidebar({
         })}
       </nav>
 
+      {/* Premium upsell — only while on trial */}
+      {plan === 'trial' && (
+        <div className="mx-3 mb-3 mt-4 p-4 rounded-2xl bg-[var(--s2)] border border-[var(--border2)] gradient-border space-y-3">
+          <div className="text-[13px] font-semibold leading-snug">
+            Desbloquea tu <span className="gradient-text">potencial</span> financiero.
+          </div>
+          <Link
+            href="/pricing"
+            className="w-full h-9 gradient-bg text-[#0B0B0C] font-semibold text-[12px] rounded-lg glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] inline-flex items-center justify-center"
+          >
+            Mejorar a Premium
+          </Link>
+        </div>
+      )}
+
       {/* Help — opens default mail client */}
-      <div className="px-5 mb-3 mt-auto">
+      <div className="px-5 mb-3">
         <a
           href="mailto:soporte@marell.app?subject=Ayuda%20MARELL"
           className="flex items-center gap-2 py-2 text-[13px] text-[var(--muted)] hover:text-[var(--text)] transition-colors"

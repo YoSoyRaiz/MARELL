@@ -42,6 +42,7 @@ const columns = [
       { label: 'Análisis',      href: '#producto' },
       { label: 'Transacciones', href: '#producto' },
       { label: 'Metas',         href: '#producto' },
+      { label: 'Precios',       href: '/pricing' },
     ],
   },
   {
