@@ -5,19 +5,23 @@ interface MonthPoint {
   expense: number
 }
 
+import { formatMoney as fmtDefault, currencySymbol, type Currency } from '@/lib/money'
+
 interface IncomeExpenseChartProps {
   data: MonthPoint[]
+  fmtMoney?: (n: number) => string
+  currency?: Currency
 }
 
-const fmtAxis = (n: number) => {
-  if (n === 0) return '$0'
-  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
-  if (Math.abs(n) >= 1_000) return `$${(n / 1_000).toFixed(0)}k`
-  return `$${Math.round(n)}`
+const makeAxisFmt = (currency: Currency) => {
+  const sym = currencySymbol(currency)
+  return (n: number) => {
+    if (n === 0) return `${sym}0`
+    if (Math.abs(n) >= 1_000_000) return `${sym}${(n / 1_000_000).toFixed(1)}M`
+    if (Math.abs(n) >= 1_000) return `${sym}${(n / 1_000).toFixed(0)}k`
+    return `${sym}${Math.round(n)}`
+  }
 }
-
-const fmtMoney = (n: number) =>
-  `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const niceCeil = (v: number): number => {
   if (v <= 0) return 100
@@ -31,8 +35,13 @@ const niceCeil = (v: number): number => {
   return n * base
 }
 
-export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
+export function IncomeExpenseChart({
+  data,
+  fmtMoney = (n) => fmtDefault(n, 'DOP'),
+  currency = 'DOP',
+}: IncomeExpenseChartProps) {
   if (data.length === 0) return null
+  const fmtAxis = makeAxisFmt(currency)
 
   const rawMax = Math.max(...data.flatMap((d) => [d.income, d.expense]), 100)
   const yMax = niceCeil(rawMax)

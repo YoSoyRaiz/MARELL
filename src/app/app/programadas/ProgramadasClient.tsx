@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { useFormatMoney } from '../CurrencyProvider'
 import {
   ScheduledFormModal,
   type InitialScheduled,
@@ -35,13 +36,6 @@ const FREQ_LABELS: Record<Frequency, string> = {
   yearly: 'Anual',
 }
 
-const fmtMoney = (n: number) => {
-  const formatted = Math.abs(n).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  return `$${formatted}`
-}
 
 const MONTHS = [
   'ene',
@@ -108,6 +102,7 @@ export function ProgramadasClient({
 }: Props) {
   const router = useRouter()
   const confirm = useConfirm()
+  const fmtMoney = useFormatMoney()
   const [, startMutate] = useTransition()
   const [filter, setFilter] = useState<Filter>('todas')
   const [addOpen, setAddOpen] = useState(false)

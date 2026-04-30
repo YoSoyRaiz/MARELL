@@ -5,9 +5,9 @@ import { useOnboardingStore } from '../store'
 import { accountCategoryFromType, type AccountInput } from '../types'
 import { labelForAccountType } from '../components/AccountTypeSelect'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { formatMoney } from '@/lib/money'
 
-const fmtMoney = (n: number) =>
-  `$${Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const fmtMoney = (n: number) => formatMoney(Math.abs(n))
 
 export function Step20AccountsRecap() {
   const confirm = useConfirm()

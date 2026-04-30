@@ -4,9 +4,9 @@ import { useMemo } from 'react'
 import { Sparkles } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
+import { formatMoney } from '@/lib/money'
 
-const fmtMoney = (n: number) =>
-  `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const fmtMoney = (n: number) => formatMoney(n)
 
 export function Step23ZeroBased() {
   const answers = useOnboardingStore((s) => s.answers)

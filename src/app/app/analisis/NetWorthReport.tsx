@@ -11,6 +11,7 @@ import {
   ArrowDown,
 } from 'lucide-react'
 import { NetWorthChart } from './NetWorthChart'
+import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type NetWorthRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
 
@@ -20,15 +21,6 @@ const RANGE_LABELS: Record<NetWorthRange, string> = {
   twenty_four_months: '24 meses',
 }
 
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
 
 export interface NetWorthPoint {
   month: string
@@ -60,6 +52,8 @@ export function NetWorthReport({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [pending, startTransition] = useTransition()
+  const fmtMoney = useFormatMoney()
+  const currency = useCurrency()
 
   const setRange = (next: NetWorthRange) => {
     const sp = new URLSearchParams(searchParams?.toString() ?? '')
@@ -217,7 +211,7 @@ export function NetWorthReport({
               <span className="text-[var(--text2)]">fin de mes</span>
             </div>
           </div>
-          <NetWorthChart data={series} />
+          <NetWorthChart data={series} fmtMoney={fmtMoney} currency={currency} />
         </div>
       )}
 

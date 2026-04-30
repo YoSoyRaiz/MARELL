@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { parseCSV, type ParseResult } from './csv'
 import { bulkCreateTransactions } from './actions'
+import { useFormatMoney } from '../CurrencyProvider'
 
 interface AccountOption {
   id: string
@@ -32,15 +33,6 @@ interface ImportTransactionsModalProps {
   categories: CategoryOption[]
 }
 
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  return `$${formatted}`
-}
-
 const formatDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
   const date = new Date(y, m - 1, d)
@@ -55,6 +47,7 @@ export function ImportTransactionsModal({
   categories,
 }: ImportTransactionsModalProps) {
   const router = useRouter()
+  const fmtMoney = useFormatMoney()
   const [pending, startTransition] = useTransition()
   const [file, setFile] = useState<File | null>(null)
   const [parseResult, setParseResult] = useState<ParseResult | null>(null)

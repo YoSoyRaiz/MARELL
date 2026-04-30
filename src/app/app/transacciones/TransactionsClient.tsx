@@ -21,15 +21,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { ImportTransactionsModal } from './ImportTransactionsModal'
 import { deleteTransaction } from './actions'
-
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  return `$${formatted}`
-}
+import { useFormatMoney } from '../CurrencyProvider'
 
 const formatDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
@@ -148,6 +140,7 @@ export function TransactionsClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const confirm = useConfirm()
+  const fmtMoney = useFormatMoney()
   const [navPending, startNav] = useTransition()
   const [addOpen, setAddOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)

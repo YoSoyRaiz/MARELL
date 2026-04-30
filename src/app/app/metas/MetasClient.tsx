@@ -19,22 +19,7 @@ import {
   type InitialGoal,
 } from './GoalFormModal'
 import { clearGoal, type GoalType } from './actions'
-
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
-
-const fmtMoneyShort = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', { maximumFractionDigits: 0 })
-  return `$${formatted}`
-}
+import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
 const formatGoalDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
@@ -72,6 +57,8 @@ interface Props {
 export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
   const router = useRouter()
   const confirm = useConfirm()
+  const fmtMoney = useFormatMoney()
+  const fmtMoneyShort = useFormatMoneyShort()
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<ListGoal | null>(null)
   const [deletingPending, startDelete] = useTransition()

@@ -3,9 +3,9 @@
 import { PiggyBank } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { accountCategoryFromType } from '../types'
+import { formatMoney } from '@/lib/money'
 
-const fmtMoney = (n: number) =>
-  `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const fmtMoney = (n: number) => formatMoney(n)
 
 export function Step22SavingsAllocation() {
   const accounts = useOnboardingStore((s) => s.answers.accounts)

@@ -17,16 +17,7 @@ import {
 } from '@/app/onboarding/wizard/types'
 import { labelForAccountType } from '@/app/onboarding/wizard/components/AccountTypeSelect'
 import { AccountFormModal, type InitialAccount } from './AccountFormModal'
-
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
+import { useFormatMoney } from '../CurrencyProvider'
 
 export interface ListAccount {
   id: string
@@ -59,6 +50,7 @@ interface Props {
 export function CuentasClient({ accounts, hasBudget }: Props) {
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<ListAccount | null>(null)
+  const fmtMoney = useFormatMoney()
 
   const grouped = CATEGORY_BLOCKS.map((block) => ({
     ...block,
@@ -279,6 +271,7 @@ function SummaryCard({
   positive?: boolean
   highlight?: boolean
 }) {
+  const fmtMoney = useFormatMoney()
   const color =
     value < -0.005
       ? 'text-[var(--coral)]'

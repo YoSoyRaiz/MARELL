@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { ReadyToAssignProvider } from './ReadyToAssignProvider'
 import { MobileNavProvider } from './MobileNavProvider'
+import { CurrencyProvider } from './CurrencyProvider'
 
 interface AppShellProps {
   displayName: string | null
@@ -26,6 +27,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   return (
+    <CurrencyProvider currency={budget?.currency ?? 'DOP'}>
     <ReadyToAssignProvider initialValue={readyToAssign}>
       <MobileNavProvider>
         <div className="min-h-screen bg-[var(--bg)] flex">
@@ -44,5 +46,6 @@ export function AppShell({
         </div>
       </MobileNavProvider>
     </ReadyToAssignProvider>
+    </CurrencyProvider>
   )
 }

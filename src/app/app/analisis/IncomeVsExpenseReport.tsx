@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TrendingUp, TrendingDown, Wallet, Percent, Scale } from 'lucide-react'
 import { IncomeExpenseChart } from './IncomeExpenseChart'
+import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type Range = 'six_months' | 'twelve_months' | 'twenty_four_months' | 'all'
 
@@ -14,15 +15,6 @@ const RANGE_LABELS: Record<Range, string> = {
   all: 'Todos',
 }
 
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
 
 export interface MonthAggregate {
   month: string // YYYY-MM
@@ -53,6 +45,8 @@ export function IncomeVsExpenseReport({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [pending, startTransition] = useTransition()
+  const fmtMoney = useFormatMoney()
+  const currency = useCurrency()
 
   const setRange = (next: Range) => {
     const sp = new URLSearchParams(searchParams?.toString() ?? '')
@@ -194,7 +188,7 @@ export function IncomeVsExpenseReport({
                 <LegendDot color="#FF7A59" label="Gastos" />
               </div>
             </div>
-            <IncomeExpenseChart data={months} />
+            <IncomeExpenseChart data={months} fmtMoney={fmtMoney} currency={currency} />
           </div>
 
           {/* Month-by-month table */}

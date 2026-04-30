@@ -6,6 +6,7 @@ import { TrendingUp } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { SpendingTrendsChart } from './SpendingTrendsChart'
 import { SEGMENT_COLORS } from './AnalisisClient'
+import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type TrendsRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
 
@@ -15,15 +16,6 @@ const RANGE_LABELS: Record<TrendsRange, string> = {
   twenty_four_months: '24 meses',
 }
 
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
 
 export interface TrendCategory {
   id: string
@@ -57,6 +49,8 @@ export function SpendingTrendsReport({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [pending, startTransition] = useTransition()
+  const fmtMoney = useFormatMoney()
+  const currency = useCurrency()
 
   const setRange = (next: TrendsRange) => {
     const sp = new URLSearchParams(searchParams?.toString() ?? '')
@@ -164,7 +158,12 @@ export function SpendingTrendsReport({
                 ))}
               </div>
             </div>
-            <SpendingTrendsChart lines={lines} months={months} />
+            <SpendingTrendsChart
+              lines={lines}
+              months={months}
+              fmtMoney={fmtMoney}
+              currency={currency}
+            />
           </div>
 
           {/* Categories detail */}

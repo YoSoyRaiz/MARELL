@@ -12,15 +12,7 @@ import {
 } from 'lucide-react'
 import { TransactionFormModal } from './transacciones/TransactionFormModal'
 import { ImportTransactionsModal } from './transacciones/ImportTransactionsModal'
-
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  return `$${formatted}`
-}
+import { useFormatMoney } from './CurrencyProvider'
 
 export interface RecentTxn {
   id: string
@@ -55,6 +47,7 @@ export function RecentTransactionsSection({
   const [addOpen, setAddOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const canAdd = accounts.length > 0
+  const fmtMoney = useFormatMoney()
 
   return (
     <>

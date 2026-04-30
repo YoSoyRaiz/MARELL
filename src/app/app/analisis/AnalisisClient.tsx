@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ChartPie, TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { MultiSegmentDonut } from './MultiSegmentDonut'
+import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
 // Brand-aligned palette for category segments. The 6th and beyond
 // are aggregated into "Otros" rendered in a muted gray.
@@ -18,22 +19,6 @@ export const SEGMENT_COLORS = [
 
 const OTHER_COLOR = 'rgba(255,255,255,0.18)'
 
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
-
-const fmtMoneyShort = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', { maximumFractionDigits: 0 })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
 
 export type Period = 'month' | 'last_month' | 'three_months' | 'year' | 'all'
 
@@ -75,6 +60,8 @@ export function AnalisisClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [pending, startTransition] = useTransition()
+  const fmtMoney = useFormatMoney()
+  const fmtMoneyShort = useFormatMoneyShort()
 
   const setPeriod = (next: Period) => {
     const sp = new URLSearchParams(searchParams?.toString() ?? '')
@@ -305,6 +292,7 @@ interface KpiCardProps {
 }
 
 function KpiCard({ label, value, Icon, iconBg, iconColor, highlight, isCount }: KpiCardProps) {
+  const fmtMoney = useFormatMoney()
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
       <div className="flex items-center justify-between mb-3">

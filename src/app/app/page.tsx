@@ -12,27 +12,15 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
+import {
+  formatMoney as fmtMoneyWithCurrency,
+  formatMoneyShort as fmtMoneyShortWithCurrency,
+  parseCurrency,
+} from '@/lib/money'
 import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
 import { materializeDue } from './programadas/actions'
-
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
-
-const fmtMoneyShort = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', { maximumFractionDigits: 0 })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
 
 const currentMonth = () => {
   const d = new Date()
@@ -116,6 +104,10 @@ export default async function ResumenPage() {
   // so the recurring income/expenses are reflected in account balances and the
   // current month's totals immediately when the user opens the app.
   await materializeDue(budget.id as string)
+
+  const currency = parseCurrency(budget.currency as string | null)
+  const fmtMoney = (n: number) => fmtMoneyWithCurrency(n, currency)
+  const fmtMoneyShort = (n: number) => fmtMoneyShortWithCurrency(n, currency)
 
   const month = currentMonth()
   const { first, last } = monthBounds(month)
@@ -364,6 +356,7 @@ export default async function ResumenPage() {
             iconBg="bg-[rgba(61,220,151,0.10)]"
             iconColor="text-[var(--brand-2)]"
             sublabel="Este mes"
+            fmtMoney={fmtMoney}
           />
           <KpiCard
             label="Gastos"
@@ -373,6 +366,7 @@ export default async function ResumenPage() {
             iconColor="text-[var(--coral)]"
             sublabel="Este mes"
             href="/app/plan"
+            fmtMoney={fmtMoney}
           />
           <KpiCard
             label="Ahorros"
@@ -381,6 +375,7 @@ export default async function ResumenPage() {
             iconBg="bg-[rgba(77,168,255,0.10)]"
             iconColor="text-[var(--info)]"
             sublabel="Cuentas de ahorro"
+            fmtMoney={fmtMoney}
           />
           <KpiCard
             label="Patrimonio neto"
@@ -389,6 +384,7 @@ export default async function ResumenPage() {
             iconBg="bg-[rgba(245,200,66,0.10)]"
             iconColor="text-[var(--warn)]"
             sublabel="Activos − deudas"
+            fmtMoney={fmtMoney}
           />
         </div>
 
@@ -586,9 +582,19 @@ interface KpiCardProps {
   iconColor: string
   sublabel: string
   href?: string
+  fmtMoney: (n: number) => string
 }
 
-function KpiCard({ label, value, Icon, iconBg, iconColor, sublabel, href }: KpiCardProps) {
+function KpiCard({
+  label,
+  value,
+  Icon,
+  iconBg,
+  iconColor,
+  sublabel,
+  href,
+  fmtMoney,
+}: KpiCardProps) {
   const inner = (
     <>
       <div className="flex items-center justify-between mb-3">

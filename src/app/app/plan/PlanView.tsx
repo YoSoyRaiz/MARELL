@@ -8,6 +8,7 @@ import { InlineMoneyEdit } from './InlineMoneyEdit'
 import { AnimatedNumber } from './AnimatedNumber'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
+import { useFormatMoney } from '../CurrencyProvider'
 
 const MONTH_NAMES = [
   'Enero',
@@ -24,15 +25,6 @@ const MONTH_NAMES = [
   'Diciembre',
 ]
 
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
 
 const formatMonthLabel = (month: string) => {
   const [year, m] = month.split('-').map(Number)
@@ -71,6 +63,7 @@ type Filter = 'todas' | 'subfondeadas' | 'con-dinero'
 export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) {
   const router = useRouter()
   const rtaCtx = useReadyToAssign()
+  const fmtMoney = useFormatMoney()
   const [navPending, startNav] = useTransition()
   const [filter, setFilter] = useState<Filter>('todas')
   const [overrides, setOverrides] = useState<Record<string, number>>({})

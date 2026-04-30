@@ -5,26 +5,18 @@ import { Bell, Menu, Search, ArrowRight } from 'lucide-react'
 import { AnimatedNumber } from './plan/AnimatedNumber'
 import { useReadyToAssign } from './ReadyToAssignProvider'
 import { useMobileNav } from './MobileNavProvider'
+import { useFormatMoney } from './CurrencyProvider'
 
 interface TopBarProps {
   displayName: string | null
   currency: string
 }
 
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
-
 export function TopBar({ displayName }: TopBarProps) {
   const ctx = useReadyToAssign()
   const readyToAssign = ctx?.readyToAssign ?? 0
   const { toggle: toggleDrawer } = useMobileNav()
+  const fmtMoney = useFormatMoney()
   const firstName = displayName?.trim().split(/\s+/)[0]
   const isPositive = readyToAssign > 0.005
   const isNegative = readyToAssign < -0.005

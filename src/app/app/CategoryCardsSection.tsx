@@ -13,13 +13,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { CategoryGroupModal, type ModalGroup, type ModalCategory } from './CategoryGroupModal'
-
-const fmtMoneyShort = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', { maximumFractionDigits: 0 })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
+import { useFormatMoneyShort } from './CurrencyProvider'
 
 const iconForGroup = (name: string): LucideIcon => {
   switch (name) {
@@ -55,6 +49,7 @@ export function CategoryCardsSection({
   const router = useRouter()
   const [openId, setOpenId] = useState<string | null>(null)
   const [edits, setEdits] = useState<Record<string, number>>({})
+  const fmtMoneyShort = useFormatMoneyShort()
 
   // Optimistically merge edits into the group totals so the cards
   // reflect saves made inside the modal until the next refresh.

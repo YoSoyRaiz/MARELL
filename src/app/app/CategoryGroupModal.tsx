@@ -6,16 +6,7 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './plan/InlineMoneyEdit'
 import { updateAssignment } from './plan/actions'
 import { useReadyToAssign } from './ReadyToAssignProvider'
-
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
-}
+import { useFormatMoney } from './CurrencyProvider'
 
 export interface ModalCategory {
   id: string
@@ -50,6 +41,7 @@ export function CategoryGroupModal({
 }: CategoryGroupModalProps) {
   const [overrides, setOverrides] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
+  const fmtMoney = useFormatMoney()
   const rtaCtx = useReadyToAssign()
 
   useEffect(() => {

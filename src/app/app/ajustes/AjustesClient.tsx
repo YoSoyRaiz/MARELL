@@ -208,7 +208,8 @@ export function AjustesClient({ email, displayName, plan, budget }: Props) {
               </button>
             </div>
             <p className="text-[11px] text-[var(--muted)] mt-1.5">
-              Por ahora afecta solo el código de moneda; el formato visual se mantiene en `$`.
+              DOP muestra <span className="num">RD$1,234.56</span>; USD muestra{' '}
+              <span className="num">$1,234.56</span>.
             </p>
           </Field>
           <SaveBar

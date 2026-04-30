@@ -4,27 +4,24 @@ interface NetWorthPoint {
   value: number
 }
 
+import { formatMoney as fmtDefault, currencySymbol, type Currency } from '@/lib/money'
+
 interface NetWorthChartProps {
   data: NetWorthPoint[]
+  fmtMoney?: (n: number) => string
+  currency?: Currency
 }
 
-const fmtAxis = (n: number) => {
-  if (n === 0) return '$0'
-  const sign = n < 0 ? '−' : ''
-  const abs = Math.abs(n)
-  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(1)}M`
-  if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(0)}k`
-  return `${sign}$${Math.round(abs)}`
-}
-
-const fmtMoney = (n: number) => {
-  const abs = Math.abs(n)
-  const formatted = abs.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  if (n < -0.005) return `−$${formatted}`
-  return `$${formatted}`
+const makeAxisFmt = (currency: Currency) => {
+  const sym = currencySymbol(currency)
+  return (n: number) => {
+    if (n === 0) return `${sym}0`
+    const sign = n < 0 ? '−' : ''
+    const abs = Math.abs(n)
+    if (abs >= 1_000_000) return `${sign}${sym}${(abs / 1_000_000).toFixed(1)}M`
+    if (abs >= 1_000) return `${sign}${sym}${(abs / 1_000).toFixed(0)}k`
+    return `${sign}${sym}${Math.round(abs)}`
+  }
 }
 
 const niceCeil = (v: number): number => {
@@ -44,7 +41,12 @@ const niceFloor = (v: number): number => {
   return -niceCeil(-v)
 }
 
-export function NetWorthChart({ data }: NetWorthChartProps) {
+export function NetWorthChart({
+  data,
+  fmtMoney = (n) => fmtDefault(n, 'DOP'),
+  currency = 'DOP',
+}: NetWorthChartProps) {
+  const fmtAxis = makeAxisFmt(currency)
   if (data.length === 0) return null
 
   const values = data.map((d) => d.value)
