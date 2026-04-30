@@ -56,17 +56,8 @@ export function LandingCtaBanner() {
 function BrandCard() {
   return (
     <div className="relative mx-auto aspect-[1.6/1] w-full max-w-[320px] -rotate-[8deg] overflow-hidden rounded-[22px] border border-white/[0.12] bg-gradient-to-br from-white/[0.18] via-white/[0.04] to-[#1F3529]/40 p-7 shadow-[0_24px_64px_-12px_rgba(0,0,0,.6)] transition-transform duration-300 hover:-rotate-[6deg]">
-      <div className="absolute left-7 top-7">
-        <p
-          className="text-4xl font-black leading-none gradient-text"
-          aria-hidden
-        >
-          M
-        </p>
-      </div>
-
-      <div className="absolute right-7 top-7 opacity-60">
-        <Logo variant="icon" height={28} />
+      <div className="absolute right-7 top-7 opacity-80">
+        <Logo variant="icon" height={32} />
       </div>
 
       <svg
