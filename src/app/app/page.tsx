@@ -137,7 +137,7 @@ export default async function ResumenPage() {
       supabase
         .from('transactions')
         .select(
-          'date, category_id, amount, is_split, subtransactions(category_id, amount)',
+          'date, category_id, amount, is_split, transfer_account_id, subtransactions(category_id, amount)',
         )
         .eq('budget_id', budget.id)
         .gte('date', first)
@@ -189,12 +189,15 @@ export default async function ResumenPage() {
 
   const netWorth = totalCash + totalInvestments - totalDebt
 
-  // Income / expense come from the *full* month — splits don't change parent
-  // sign so counting parents is correct for these aggregates.
-  const totalIncome = txnsMonthData
+  // Income / expense come from the *full* month. Transfers (rows with
+  // transfer_account_id set) are excluded — they just move money between
+  // accounts and shouldn't inflate either side. Splits don't change parent
+  // sign, so counting parents is correct for these aggregates.
+  const nonTransfer = txnsMonthData.filter((t) => !t.transfer_account_id)
+  const totalIncome = nonTransfer
     .filter((t) => Number(t.amount) > 0)
     .reduce((s, t) => s + Number(t.amount), 0)
-  const totalExpenses = txnsMonthData
+  const totalExpenses = nonTransfer
     .filter((t) => Number(t.amount) < 0)
     .reduce((s, t) => s + Math.abs(Number(t.amount)), 0)
 

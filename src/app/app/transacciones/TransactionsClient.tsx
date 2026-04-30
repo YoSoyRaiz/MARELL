@@ -9,6 +9,7 @@ import {
   Trash2,
   ArrowUpRight,
   ArrowDownRight,
+  ArrowLeftRight,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -89,6 +90,7 @@ export interface ListTransaction {
   amount: number
   memo: string | null
   is_split: boolean
+  is_transfer: boolean
   subtransactions: ListSubtransaction[]
 }
 
@@ -436,11 +438,15 @@ export function TransactionsClient({
                   <li key={t.id} className={dimmed}>
                     {/* Mobile card layout (<md) */}
                     <div
-                      onClick={() => setEditing(t)}
-                      className="md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.04] transition-colors cursor-pointer"
+                      onClick={() => !t.is_transfer && setEditing(t)}
+                      className={`md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.04] transition-colors ${
+                        t.is_transfer ? 'cursor-default' : 'cursor-pointer'
+                      }`}
                     >
                       <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0 mt-0.5">
-                        {isIncome ? (
+                        {t.is_transfer ? (
+                          <ArrowLeftRight size={15} strokeWidth={2} className="text-[var(--info)]" />
+                        ) : isIncome ? (
                           <ArrowUpRight size={15} strokeWidth={2} className="text-[var(--brand-2)]" />
                         ) : (
                           <ArrowDownRight size={15} strokeWidth={2} className="text-[var(--coral)]" />
@@ -508,15 +514,19 @@ export function TransactionsClient({
 
                     {/* Desktop table row (md+) */}
                     <div
-                      onClick={() => setEditing(t)}
-                      className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer"
+                      onClick={() => !t.is_transfer && setEditing(t)}
+                      className={`hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors ${
+                        t.is_transfer ? 'cursor-default' : 'cursor-pointer'
+                      }`}
                     >
                       <div className="text-[12px] text-[var(--muted)] tabular-nums num">
                         {formatDate(t.date)}
                       </div>
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
-                          {isIncome ? (
+                          {t.is_transfer ? (
+                            <ArrowLeftRight size={14} strokeWidth={2} className="text-[var(--info)]" />
+                          ) : isIncome ? (
                             <ArrowUpRight size={14} strokeWidth={2} className="text-[var(--brand-2)]" />
                           ) : (
                             <ArrowDownRight size={14} strokeWidth={2} className="text-[var(--coral)]" />

@@ -390,10 +390,12 @@ export async function deleteTransaction(transactionId: string) {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  // Get the transaction (with account info) to roll back the balance
+  // Get the transaction (with account info) to roll back the balance.
+  // Pull transfer_transaction_id too so we can delete the twin if it's a
+  // transfer pair.
   const { data: txn } = await supabase
     .from('transactions')
-    .select('id, account_id, amount, budget_id')
+    .select('id, account_id, amount, budget_id, transfer_transaction_id')
     .eq('id', transactionId)
     .single()
   if (!txn) return { error: 'Transacción no encontrada' }
@@ -407,22 +409,171 @@ export async function deleteTransaction(transactionId: string) {
     .single()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
-  const { data: account } = await supabase
-    .from('accounts')
-    .select('balance')
-    .eq('id', txn.account_id)
-    .single()
-  if (!account) return { error: 'Cuenta asociada no encontrada' }
+  // Collect all rows to delete (this txn + its transfer twin if any) so we
+  // can roll back both account balances in one pass.
+  const ids: string[] = [transactionId]
+  type Twin = { id: string; account_id: string; amount: number }
+  const balanceUpdates: Twin[] = [
+    { id: txn.id as string, account_id: txn.account_id as string, amount: Number(txn.amount) },
+  ]
+
+  if (txn.transfer_transaction_id) {
+    const { data: twin } = await supabase
+      .from('transactions')
+      .select('id, account_id, amount')
+      .eq('id', txn.transfer_transaction_id as string)
+      .single()
+    if (twin) {
+      ids.push(twin.id as string)
+      balanceUpdates.push({
+        id: twin.id as string,
+        account_id: twin.account_id as string,
+        amount: Number(twin.amount),
+      })
+    }
+  }
 
   const { error: delErr } = await supabase
     .from('transactions')
     .delete()
-    .eq('id', transactionId)
+    .in('id', ids)
   if (delErr) return { error: delErr.message }
 
-  // Roll back the balance: subtract the transaction's amount
-  const newBalance = Math.round((Number(account.balance) - Number(txn.amount)) * 100) / 100
-  await supabase.from('accounts').update({ balance: newBalance }).eq('id', txn.account_id)
+  // Roll back balances. Read each account just-in-time so successive
+  // updates against the same account compose correctly.
+  for (const u of balanceUpdates) {
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('balance')
+      .eq('id', u.account_id)
+      .single()
+    if (!account) continue
+    const newBalance =
+      Math.round((Number(account.balance) - u.amount) * 100) / 100
+    await supabase
+      .from('accounts')
+      .update({ balance: newBalance })
+      .eq('id', u.account_id)
+  }
+
+  revalidatePath('/app', 'layout')
+  return { success: true as const }
+}
+
+// ── Transfers ───────────────────────────────────────────────────
+//
+// A transfer is two linked transactions (one per account) that point to each
+// other via transfer_transaction_id and to the other account via
+// transfer_account_id. The amount on the source row is negative; the dest
+// row is positive. Categories don't apply (transfers don't affect the budget
+// — money just moves between accounts).
+
+export interface CreateTransferInput {
+  fromAccountId: string
+  toAccountId: string
+  amount: number // positive
+  date: string // YYYY-MM-DD
+  memo: string | null
+}
+
+export async function createTransfer(input: CreateTransferInput) {
+  if (!input.fromAccountId) return { error: 'Cuenta origen requerida' }
+  if (!input.toAccountId) return { error: 'Cuenta destino requerida' }
+  if (input.fromAccountId === input.toAccountId) {
+    return { error: 'Las cuentas deben ser diferentes' }
+  }
+  if (!isValidDate(input.date)) return { error: 'Fecha inválida' }
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    return { error: 'Monto inválido' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Both accounts must belong to the same budget owned by the user.
+  const { data: accts } = await supabase
+    .from('accounts')
+    .select('id, name, budget_id, balance')
+    .in('id', [input.fromAccountId, input.toAccountId])
+  if (!accts || accts.length !== 2) return { error: 'Cuenta no encontrada' }
+
+  const fromAcct = accts.find((a) => a.id === input.fromAccountId)
+  const toAcct = accts.find((a) => a.id === input.toAccountId)
+  if (!fromAcct || !toAcct) return { error: 'Cuenta no encontrada' }
+  if (fromAcct.budget_id !== toAcct.budget_id) {
+    return { error: 'Las cuentas pertenecen a presupuestos distintos' }
+  }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', fromAcct.budget_id)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  const amount = Math.round(input.amount * 100) / 100
+  const memo = input.memo?.trim() || null
+
+  // Insert the source row first so we have its id for the destination's
+  // transfer_transaction_id.
+  const { data: srcRow, error: srcErr } = await supabase
+    .from('transactions')
+    .insert({
+      account_id: fromAcct.id,
+      budget_id: budget.id,
+      date: input.date,
+      payee_name: `Transferencia a ${toAcct.name}`,
+      category_id: null,
+      memo,
+      amount: -amount,
+      cleared: 'uncleared',
+      approved: true,
+      transfer_account_id: toAcct.id,
+    })
+    .select('id')
+    .single()
+  if (srcErr || !srcRow) return { error: srcErr?.message ?? 'Error al crear' }
+
+  const { data: dstRow, error: dstErr } = await supabase
+    .from('transactions')
+    .insert({
+      account_id: toAcct.id,
+      budget_id: budget.id,
+      date: input.date,
+      payee_name: `Transferencia desde ${fromAcct.name}`,
+      category_id: null,
+      memo,
+      amount,
+      cleared: 'uncleared',
+      approved: true,
+      transfer_account_id: fromAcct.id,
+      transfer_transaction_id: srcRow.id,
+    })
+    .select('id')
+    .single()
+  if (dstErr || !dstRow) {
+    // Best-effort rollback of the source row.
+    await supabase.from('transactions').delete().eq('id', srcRow.id)
+    return { error: dstErr?.message ?? 'Error al crear destino' }
+  }
+
+  // Link the source back to the destination now that we know its id.
+  await supabase
+    .from('transactions')
+    .update({ transfer_transaction_id: dstRow.id })
+    .eq('id', srcRow.id)
+
+  // Update both account balances.
+  const newFromBalance =
+    Math.round((Number(fromAcct.balance) - amount) * 100) / 100
+  const newToBalance =
+    Math.round((Number(toAcct.balance) + amount) * 100) / 100
+  await supabase.from('accounts').update({ balance: newFromBalance }).eq('id', fromAcct.id)
+  await supabase.from('accounts').update({ balance: newToBalance }).eq('id', toAcct.id)
 
   revalidatePath('/app', 'layout')
   return { success: true as const }

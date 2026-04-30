@@ -77,7 +77,7 @@ export default async function TransaccionesPage({
   let txnsQuery = supabase
     .from('transactions')
     .select(
-      'id, date, payee_name, category_id, account_id, amount, memo, created_at, is_split, subtransactions(id, category_id, amount, memo)',
+      'id, date, payee_name, category_id, account_id, amount, memo, created_at, is_split, transfer_account_id, subtransactions(id, category_id, amount, memo)',
     )
     .eq('budget_id', budget.id)
 
@@ -172,6 +172,7 @@ export default async function TransaccionesPage({
       amount: Number(t.amount),
       memo: (t.memo as string | null) ?? null,
       is_split: !!t.is_split,
+      is_transfer: t.transfer_account_id !== null && t.transfer_account_id !== undefined,
       subtransactions: subs,
     }
   })

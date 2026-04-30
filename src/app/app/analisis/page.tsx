@@ -327,6 +327,9 @@ export default async function AnalisisPage({
         'id, date, category_id, amount, is_split, subtransactions(category_id, amount)',
       )
       .eq('budget_id', budget.id)
+      // Transfers move money between accounts and don't represent income or
+      // spending — exclude them so totals + the donut don't double-count.
+      .is('transfer_account_id', null)
 
     if (range.first) txnsQuery = txnsQuery.gte('date', range.first)
     if (range.last) txnsQuery = txnsQuery.lte('date', range.last)
@@ -405,6 +408,10 @@ export default async function AnalisisPage({
       .from('transactions')
       .select('date, amount')
       .eq('budget_id', budget.id)
+      // Exclude transfers — they're not income or expense, just money moving
+      // between accounts. Without this filter both sides of every transfer
+      // pair would inflate the corresponding bar.
+      .is('transfer_account_id', null)
 
     if (firstISO) txnsQuery = txnsQuery.gte('date', firstISO)
 
@@ -675,11 +682,14 @@ export default async function AnalisisPage({
     const monthCount = aomMonthCount[aomRange]
     const today = todayLocal()
 
-    // FIFO needs the full transaction history to build the lot queue correctly.
+    // FIFO needs the full transaction history to build the lot queue
+    // correctly. Transfers are excluded: they don't represent fresh income
+    // or actual spending, so they shouldn't affect Age of Money.
     const { data: txns } = await supabase
       .from('transactions')
       .select('date, amount')
       .eq('budget_id', budget.id)
+      .is('transfer_account_id', null)
       .order('date', { ascending: true })
 
     type Lot = { date: string; remaining: number }

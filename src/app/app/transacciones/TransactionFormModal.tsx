@@ -6,6 +6,7 @@ import {
   X,
   ArrowDownRight,
   ArrowUpRight,
+  ArrowLeftRight,
   AlertCircle,
   Split,
   Plus,
@@ -14,10 +15,13 @@ import {
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import {
   createTransaction,
+  createTransfer,
   updateTransaction,
   type SplitInput,
   type TransactionType,
 } from './actions'
+
+type EntryType = TransactionType | 'transfer'
 
 interface Account {
   id: string
@@ -74,9 +78,11 @@ export function TransactionFormModal({
 }: TransactionFormModalProps) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const [type, setType] = useState<TransactionType>('expense')
+  const [type, setType] = useState<EntryType>('expense')
   const [date, setDate] = useState(todayLocal())
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? '')
+  // Only used when type === 'transfer'.
+  const [toAccountId, setToAccountId] = useState(accounts[1]?.id ?? '')
   const [categoryId, setCategoryId] = useState<string>('')
   const [payeeName, setPayeeName] = useState('')
   const [amount, setAmount] = useState<number | null>(null)
@@ -84,6 +90,7 @@ export function TransactionFormModal({
   const [splitMode, setSplitMode] = useState(false)
   const [splits, setSplits] = useState<SplitRow[]>([newSplit(), newSplit()])
   const [error, setError] = useState<string | null>(null)
+  const isTransfer = type === 'transfer'
 
   // Pre-fill on open: from `initial` in edit mode, blank in add mode.
   useEffect(() => {
@@ -92,6 +99,7 @@ export function TransactionFormModal({
       setType(initial.type)
       setDate(initial.date)
       setAccountId(initial.accountId)
+      setToAccountId(accounts[1]?.id ?? '')
       setCategoryId(initial.categoryId ?? '')
       setPayeeName(initial.payeeName)
       setAmount(initial.amount)
@@ -103,6 +111,7 @@ export function TransactionFormModal({
       setType('expense')
       setDate(todayLocal())
       setAccountId(accounts[0]?.id ?? '')
+      setToAccountId(accounts[1]?.id ?? '')
       setCategoryId('')
       setPayeeName('')
       setAmount(null)
@@ -137,13 +146,19 @@ export function TransactionFormModal({
     amount !== null && Math.abs(splitsSum - (amount ?? 0)) < 0.005
   const splitsRemainder = amount !== null ? Math.round((amount - splitsSum) * 100) / 100 : 0
 
-  const valid =
-    accountId !== '' &&
-    payeeName.trim().length > 0 &&
-    amount !== null &&
-    amount > 0 &&
-    /^\d{4}-\d{2}-\d{2}$/.test(date) &&
-    (!splitMode || (splits.length >= 2 && splitsBalanced && splits.every((s) => s.amount > 0)))
+  const valid = isTransfer
+    ? accountId !== '' &&
+      toAccountId !== '' &&
+      accountId !== toAccountId &&
+      amount !== null &&
+      amount > 0 &&
+      /^\d{4}-\d{2}-\d{2}$/.test(date)
+    : accountId !== '' &&
+      payeeName.trim().length > 0 &&
+      amount !== null &&
+      amount > 0 &&
+      /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+      (!splitMode || (splits.length >= 2 && splitsBalanced && splits.every((s) => s.amount > 0)))
 
   const groupedCategories = categories.reduce<Record<string, CategoryOption[]>>((acc, c) => {
     const key = c.group_name
@@ -174,6 +189,24 @@ export function TransactionFormModal({
     if (!valid || amount === null) return
     setError(null)
     startTransition(async () => {
+      // Transfer: create a linked pair via createTransfer.
+      if (isTransfer) {
+        const result = await createTransfer({
+          fromAccountId: accountId,
+          toAccountId,
+          amount,
+          date,
+          memo,
+        })
+        if (result && 'error' in result && result.error) {
+          setError(result.error)
+          return
+        }
+        router.refresh()
+        onClose()
+        return
+      }
+
       const splitPayload: SplitInput[] | undefined = splitMode
         ? splits.map((r) => ({
             categoryId: r.categoryId,
@@ -189,7 +222,7 @@ export function TransactionFormModal({
         payeeName,
         amount,
         memo,
-        type,
+        type: type as TransactionType,
         splits: splitPayload,
       }
       const result =
@@ -249,12 +282,19 @@ export function TransactionFormModal({
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-          {/* Type segmented */}
-          <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--bg)] rounded-xl">
+          {/* Type segmented — Gasto / Ingreso / Transferencia.
+              In edit mode the transfer option is hidden because editing a
+              transfer pair atomically isn't supported yet (the user can
+              delete + recreate). */}
+          <div
+            className={`grid gap-2 p-1 bg-[var(--bg)] rounded-xl ${
+              isEdit ? 'grid-cols-2' : 'grid-cols-3'
+            }`}
+          >
             <button
               type="button"
               onClick={() => setType('expense')}
-              className={`py-2.5 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                 type === 'expense'
                   ? 'bg-[var(--coral)]/15 text-[var(--coral)]'
                   : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -266,7 +306,7 @@ export function TransactionFormModal({
             <button
               type="button"
               onClick={() => setType('income')}
-              className={`py-2.5 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                 type === 'income'
                   ? 'gradient-bg text-[#0B0B0C]'
                   : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -275,6 +315,20 @@ export function TransactionFormModal({
               <ArrowUpRight size={14} strokeWidth={2.2} />
               Ingreso
             </button>
+            {!isEdit && (
+              <button
+                type="button"
+                onClick={() => setType('transfer')}
+                className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                  isTransfer
+                    ? 'bg-[var(--info)]/15 text-[var(--info)]'
+                    : 'text-[var(--text2)] hover:text-[var(--text)]'
+                }`}
+              >
+                <ArrowLeftRight size={14} strokeWidth={2.2} />
+                Transferencia
+              </button>
+            )}
           </div>
 
           <Field label="Monto">
@@ -290,7 +344,7 @@ export function TransactionFormModal({
             />
           </Field>
 
-          <Field label="Cuenta">
+          <Field label={isTransfer ? 'Cuenta origen' : 'Cuenta'}>
             <NativeSelect value={accountId} onChange={setAccountId} ariaLabel="Cuenta">
               {accounts.length === 0 ? (
                 <option value="" disabled>
@@ -306,6 +360,31 @@ export function TransactionFormModal({
             </NativeSelect>
           </Field>
 
+          {isTransfer && (
+            <Field label="Cuenta destino">
+              <NativeSelect
+                value={toAccountId}
+                onChange={setToAccountId}
+                ariaLabel="Cuenta destino"
+              >
+                {accounts.length < 2 ? (
+                  <option value="" disabled>
+                    Necesitas al menos 2 cuentas
+                  </option>
+                ) : (
+                  accounts
+                    .filter((a) => a.id !== accountId)
+                    .map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name}
+                      </option>
+                    ))
+                )}
+              </NativeSelect>
+            </Field>
+          )}
+
+          {!isTransfer && (
           <Field label={type === 'income' ? 'Recibido de' : 'Pagado a'}>
             <input
               type="text"
@@ -320,8 +399,9 @@ export function TransactionFormModal({
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
           </Field>
+          )}
 
-          {!splitMode ? (
+          {!isTransfer && (!splitMode ? (
             <Field label="Categoría" hint="opcional">
               <NativeSelect value={categoryId} onChange={setCategoryId} ariaLabel="Categoría">
                 <option value="">Sin categoría</option>
@@ -446,7 +526,7 @@ export function TransactionFormModal({
                 )}
               </div>
             </div>
-          )}
+          ))}
 
           <Field label="Memo" hint="opcional">
             <textarea

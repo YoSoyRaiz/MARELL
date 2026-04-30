@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Bell, Menu, Search, ArrowRight } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
+import { Menu, Search, ArrowRight } from 'lucide-react'
 import { AnimatedNumber } from './plan/AnimatedNumber'
 import { useReadyToAssign } from './ReadyToAssignProvider'
 import { useMobileNav } from './MobileNavProvider'
@@ -17,6 +19,14 @@ export function TopBar({ displayName }: TopBarProps) {
   const readyToAssign = ctx?.readyToAssign ?? 0
   const { toggle: toggleDrawer } = useMobileNav()
   const fmtMoney = useFormatMoney()
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault()
+    const q = query.trim()
+    router.push(q ? `/app/transacciones?q=${encodeURIComponent(q)}` : '/app/transacciones')
+  }
   const firstName = displayName?.trim().split(/\s+/)[0]
   const isPositive = readyToAssign > 0.005
   const isNegative = readyToAssign < -0.005
@@ -85,28 +95,27 @@ export function TopBar({ displayName }: TopBarProps) {
             </Link>
           </div>
 
-          {/* Search + bell — desktop-only, hidden on mobile to save space */}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="relative w-[220px] xl:w-[320px] hidden md:block">
-              <Search
-                size={14}
-                strokeWidth={2}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none"
-              />
-              <input
-                type="search"
-                placeholder="Buscar transacciones, categorías, cuentas..."
-                className="w-full !h-11 !pl-10 !pr-3 !text-[13px] !rounded-xl"
-              />
-            </div>
-            <button
-              type="button"
-              aria-label="Notificaciones"
-              className="w-10 h-10 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
-            >
-              <Bell size={16} strokeWidth={2} />
-            </button>
-          </div>
+          {/* Search — desktop-only; submits to /app/transacciones?q=... */}
+          <form
+            onSubmit={handleSearch}
+            className="hidden md:block relative w-[260px] xl:w-[340px]"
+            role="search"
+          >
+            <Search
+              size={14}
+              strokeWidth={2}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none"
+            />
+            <input
+              type="search"
+              name="q"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar transacciones..."
+              aria-label="Buscar transacciones"
+              className="w-full !h-11 !pl-10 !pr-3 !text-[13px] !rounded-xl"
+            />
+          </form>
         </div>
       </div>
     </header>
