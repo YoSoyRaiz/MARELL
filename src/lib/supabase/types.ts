@@ -193,6 +193,41 @@ export type Database = {
         Args: Record<string, never>
         Returns: void
       }
+      is_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
+      admin_list_users: {
+        Args: Record<string, never>
+        Returns: Array<{
+          id: string
+          email: string
+          display_name: string | null
+          plan: string
+          trial_ends_at: string | null
+          pro_expires_at: string | null
+          approved: boolean
+          onboarded: boolean
+          signed_up_at: string
+          last_sign_in_at: string | null
+        }>
+      }
+      admin_record_payment: {
+        Args: { target_id: string; months: number }
+        Returns: void
+      }
+      admin_extend_trial: {
+        Args: { target_id: string; days: number }
+        Returns: void
+      }
+      admin_set_approved: {
+        Args: { target_id: string; approved: boolean }
+        Returns: void
+      }
+      admin_set_free: {
+        Args: { target_id: string }
+        Returns: void
+      }
     }
     Enums: Record<string, never>
   }

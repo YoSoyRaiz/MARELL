@@ -16,6 +16,7 @@ import {
   ChevronUp,
   RotateCcw,
   CircleUser,
+  ShieldCheck,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { logout } from '@/app/(auth)/actions'
@@ -38,9 +39,16 @@ interface SidebarProps {
   email: string | null
   plan: string
   trialEndsAt: string | null
+  isAdmin?: boolean
 }
 
-export function Sidebar({ displayName, email, plan, trialEndsAt }: SidebarProps) {
+export function Sidebar({
+  displayName,
+  email,
+  plan,
+  trialEndsAt,
+  isAdmin = false,
+}: SidebarProps) {
   const pathname = usePathname() ?? ''
   const router = useRouter()
   const confirm = useConfirm()
@@ -240,6 +248,17 @@ export function Sidebar({ displayName, email, plan, trialEndsAt }: SidebarProps)
                 <CircleUser size={14} strokeWidth={2} className="text-[var(--text2)]" />
                 Ajustes de cuenta
               </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMenuOpen(false)}
+                  role="menuitem"
+                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-white/[0.04] transition-colors"
+                >
+                  <ShieldCheck size={14} strokeWidth={2} className="text-[var(--brand-2)]" />
+                  Panel de admin
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={handleReset}

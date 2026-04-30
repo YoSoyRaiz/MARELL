@@ -14,6 +14,7 @@ interface AppShellProps {
   trialEndsAt: string | null
   budget: { id: string; name: string; currency: string } | null
   readyToAssign: number
+  isAdmin?: boolean
   children: ReactNode
 }
 
@@ -24,6 +25,7 @@ export function AppShell({
   trialEndsAt,
   budget,
   readyToAssign,
+  isAdmin = false,
   children,
 }: AppShellProps) {
   return (
@@ -36,6 +38,7 @@ export function AppShell({
             email={email}
             plan={plan}
             trialEndsAt={trialEndsAt}
+            isAdmin={isAdmin}
           />
           <div className="flex-1 flex flex-col min-w-0">
             <TopBar displayName={displayName} currency={budget?.currency ?? 'DOP'} />

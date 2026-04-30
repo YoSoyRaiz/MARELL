@@ -17,6 +17,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!profile?.onboarded) redirect('/onboarding')
 
+  // Single admin check for the layout — passed down so the profile popover
+  // can show the "Admin" link only when relevant.
+  const { data: isAdmin } = await supabase.rpc('is_admin')
+
   const { data: budget } = await supabase
     .from('budgets')
     .select('id, name, currency')
@@ -58,6 +62,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       trialEndsAt={(profile?.trial_ends_at as string | null) ?? null}
       budget={budget ?? null}
       readyToAssign={readyToAssign}
+      isAdmin={!!isAdmin}
     >
       {children}
     </AppShell>
