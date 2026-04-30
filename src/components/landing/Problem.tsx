@@ -11,7 +11,7 @@ const pains = [
 
 export function LandingProblem() {
   return (
-    <section className="relative py-24">
+    <section id="problema" className="relative py-24">
       <div className="mx-auto max-w-7xl px-6">
         <InteractiveCard
           surface="rounded-[28px] border border-white/[0.10] bg-gradient-to-b from-white/[0.055] to-white/[0.02] p-8 sm:p-12 shadow-[0_28px_90px_rgba(0,0,0,.25)]"

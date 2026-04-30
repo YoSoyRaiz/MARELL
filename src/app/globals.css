@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Override Tailwind container scale so max-w-7xl is roomier on the landing
+   (1440px instead of the 1280px default). */
+@theme {
+  --container-7xl: 90rem;
+}
+
 /* ─────────────────────────────────────────────
    MARELL — Brand Tokens (v1.0, mayo 2024)
    ───────────────────────────────────────────── */

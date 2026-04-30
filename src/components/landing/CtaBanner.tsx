@@ -29,7 +29,7 @@ export function LandingCtaBanner() {
                 te lo agradecerá.
               </h2>
               <p className="mt-5 text-[var(--text2)]">
-                Prueba MARELL gratis por 14 días. Sin tarjeta de crédito.
+                Prueba MARELL gratis por 31 días. Sin tarjeta de crédito.
               </p>
               <div className="mt-8">
                 <Button

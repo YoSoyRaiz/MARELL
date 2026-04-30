@@ -4,7 +4,7 @@ import { DashboardPreview } from './DashboardPreview'
 import { InteractiveCard } from './InteractiveCard'
 
 const trustSignals = [
-  'Gratis por 14 días',
+  'Gratis por 31 días',
   'Sin tarjeta de crédito',
   'Cancela cuando quieras',
 ]

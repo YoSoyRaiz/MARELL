@@ -6,7 +6,7 @@ export default function SignupPage() {
     <div className="card p-7">
       <h2 className="text-xl font-semibold mb-1">Crea tu cuenta</h2>
       <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
-        30 días de prueba gratis. Sin tarjeta.
+        31 días de prueba gratis. Sin tarjeta.
       </p>
       <SignupForm />
       <p className="text-sm text-center mt-6" style={{ color: 'var(--muted)' }}>

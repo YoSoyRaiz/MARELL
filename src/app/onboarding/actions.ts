@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateCategories } from './wizard/categoryGenerator'
 import type { AccountType, OnboardingAnswers } from './wizard/types'
 
-const TRIAL_DAYS = 30
+const TRIAL_DAYS = 31
 
 const currentMonth = () => {
   const d = new Date()

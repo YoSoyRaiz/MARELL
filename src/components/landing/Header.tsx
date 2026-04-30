@@ -3,11 +3,10 @@ import { Logo } from '@/components/ui/Logo'
 import { Button } from '@/components/ui/Button'
 
 const navItems = [
-  { label: 'Producto', href: '#producto' },
   { label: 'Cómo funciona', href: '#como-funciona' },
-  { label: 'Precios', href: '#precios' },
-  { label: 'Recursos', href: '#recursos' },
-  { label: 'Sobre nosotros', href: '#sobre' },
+  { label: 'El problema', href: '#problema' },
+  { label: 'Control total', href: '#producto' },
+  { label: 'Solución', href: '#cta' },
 ]
 
 export function LandingHeader() {
@@ -15,7 +14,7 @@ export function LandingHeader() {
     <header className="sticky top-0 z-50 border-b border-white/[0.04] bg-[#0B0B0C]/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2.5" aria-label="MARELL">
-          <Logo variant="horizontal" height={28} priority />
+          <Logo variant="horizontal" height={40} priority />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
