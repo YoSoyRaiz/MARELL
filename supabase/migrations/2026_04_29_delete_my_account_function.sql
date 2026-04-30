@@ -7,7 +7,7 @@
 -- RLS prevents deleting other users' rows because the function only
 -- targets auth.uid().
 --
--- Run once in Supabase SQL Editor.
+-- Run once in Supabase SQL Editor. Idempotent (CREATE OR REPLACE).
 -- ============================================================
 
 create or replace function public.delete_my_account()
@@ -26,6 +26,11 @@ begin
   -- Wipe owned budget data first. The cascade defined on accounts,
   -- categories, transactions, etc. handles the rest.
   delete from public.budgets where created_by = uid;
+
+  -- Drop any membership rows for budgets owned by someone else. Without
+  -- this, the next step would fail because budget_members.user_id has no
+  -- on-delete-cascade against auth.users.
+  delete from public.budget_members where user_id = uid;
 
   -- Profiles are FK'd to auth.users with on delete cascade, but delete
   -- explicitly to keep the order obvious if someone reads this later.
