@@ -119,43 +119,53 @@ export default async function ResumenPage() {
   const month = currentMonth()
   const { first, last } = monthBounds(month)
 
-  const [groupsRes, catsRes, accountsRes, assignmentsRes, txnsRes] = await Promise.all([
-    supabase
-      .from('category_groups')
-      .select('id, name, sort_order')
-      .eq('budget_id', budget.id)
-      .order('sort_order'),
-    supabase
-      .from('categories')
-      .select('id, name, group_id, goal_amount')
-      .eq('budget_id', budget.id),
-    supabase
-      .from('accounts')
-      .select('id, name, type, balance, closed')
-      .eq('budget_id', budget.id)
-      .order('sort_order'),
-    supabase
-      .from('monthly_assignments')
-      .select('category_id, assigned')
-      .eq('budget_id', budget.id)
-      .eq('month', month),
-    supabase
-      .from('transactions')
-      .select(
-        'id, date, payee_name, category_id, amount, is_split, subtransactions(category_id, amount)',
-      )
-      .eq('budget_id', budget.id)
-      .gte('date', first)
-      .lte('date', last)
-      .order('date', { ascending: false })
-      .limit(5),
-  ])
+  const [groupsRes, catsRes, accountsRes, assignmentsRes, txnsMonthRes, txnsRecentRes] =
+    await Promise.all([
+      supabase
+        .from('category_groups')
+        .select('id, name, sort_order')
+        .eq('budget_id', budget.id)
+        .order('sort_order'),
+      supabase
+        .from('categories')
+        .select('id, name, group_id, goal_amount')
+        .eq('budget_id', budget.id),
+      supabase
+        .from('accounts')
+        .select('id, name, type, balance, closed')
+        .eq('budget_id', budget.id)
+        .order('sort_order'),
+      supabase
+        .from('monthly_assignments')
+        .select('category_id, assigned')
+        .eq('budget_id', budget.id)
+        .eq('month', month),
+      // Full month — drives totals (income / expense) and per-category activity.
+      supabase
+        .from('transactions')
+        .select(
+          'date, category_id, amount, is_split, subtransactions(category_id, amount)',
+        )
+        .eq('budget_id', budget.id)
+        .gte('date', first)
+        .lte('date', last),
+      // Just the 5 most recent for the "Transacciones recientes" widget.
+      supabase
+        .from('transactions')
+        .select('id, date, payee_name, category_id, amount')
+        .eq('budget_id', budget.id)
+        .gte('date', first)
+        .lte('date', last)
+        .order('date', { ascending: false })
+        .limit(5),
+    ])
 
   const groupsData = groupsRes.data ?? []
   const catsData = catsRes.data ?? []
   const accountsData = accountsRes.data ?? []
   const assignmentsData = assignmentsRes.data ?? []
-  const txnsData = txnsRes.data ?? []
+  const txnsMonthData = txnsMonthRes.data ?? []
+  const txnsRecentData = txnsRecentRes.data ?? []
 
   // KPI computations
   const cashTypes = ['checking', 'savings', 'cash']
@@ -186,10 +196,12 @@ export default async function ResumenPage() {
 
   const netWorth = totalCash + totalInvestments - totalDebt
 
-  const totalIncome = txnsData
+  // Income / expense come from the *full* month — splits don't change parent
+  // sign so counting parents is correct for these aggregates.
+  const totalIncome = txnsMonthData
     .filter((t) => Number(t.amount) > 0)
     .reduce((s, t) => s + Number(t.amount), 0)
-  const totalExpenses = txnsData
+  const totalExpenses = txnsMonthData
     .filter((t) => Number(t.amount) < 0)
     .reduce((s, t) => s + Math.abs(Number(t.amount)), 0)
 
@@ -210,7 +222,7 @@ export default async function ResumenPage() {
     }
   })
 
-  const recentTxns: RecentTxn[] = txnsData.map((t) => ({
+  const recentTxns: RecentTxn[] = txnsRecentData.map((t) => ({
     id: t.id as string,
     date: t.date as string,
     payee_name: (t.payee_name as string | null) ?? null,
@@ -221,8 +233,9 @@ export default async function ResumenPage() {
   }))
 
   // Expand any split parent into its children so per-category activity counts
-  // correctly when a transaction touches multiple categories.
-  const txnContributions = expandToCategoryContributions(txnsData)
+  // correctly when a transaction touches multiple categories. Uses the full
+  // month set, not the 5-row recent slice.
+  const txnContributions = expandToCategoryContributions(txnsMonthData)
 
   // Per-group + per-category breakdown for the categorías cards (used by the modal)
   const sectionGroups: SectionGroup[] = groupsData.map((g) => {
