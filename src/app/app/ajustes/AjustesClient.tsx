@@ -9,12 +9,14 @@ import {
   Trash2,
   AlertCircle,
   Check,
+  Bell,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { logout } from '@/app/(auth)/actions'
 import {
   updateProfile,
   updateBudgetSettings,
+  setEmailNotifications,
   deleteMyAccount,
   type Currency,
 } from './actions'
@@ -29,14 +31,38 @@ interface Props {
   email: string
   displayName: string
   plan: string
+  emailNotifications: boolean
   budget: BudgetData | null
 }
 
-export function AjustesClient({ email, displayName, plan, budget }: Props) {
+export function AjustesClient({
+  email,
+  displayName,
+  plan,
+  emailNotifications,
+  budget,
+}: Props) {
   const router = useRouter()
   const confirm = useConfirm()
   const [, startSave] = useTransition()
   const [, startDelete] = useTransition()
+  const [, startToggle] = useTransition()
+  const [emailNotif, setEmailNotif] = useState(emailNotifications)
+  const [emailNotifError, setEmailNotifError] = useState<string | null>(null)
+
+  const toggleEmailNotif = (next: boolean) => {
+    setEmailNotif(next)
+    setEmailNotifError(null)
+    startToggle(async () => {
+      const r = await setEmailNotifications(next)
+      if (r && 'error' in r && r.error) {
+        setEmailNotif(!next) // revert
+        setEmailNotifError(r.error)
+      } else {
+        router.refresh()
+      }
+    })
+  }
 
   // Profile section state
   const [name, setName] = useState(displayName)
@@ -223,6 +249,39 @@ export function AjustesClient({ email, displayName, plan, budget }: Props) {
           />
         </Section>
       )}
+
+      {/* Notifications */}
+      <Section title="Notificaciones" Icon={Bell} error={emailNotifError}>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-[14px] font-medium text-[var(--text)]">
+              Correo electrónico
+            </p>
+            <p className="text-[12px] text-[var(--muted)] leading-relaxed mt-1">
+              Recibe avisos a <span className="text-[var(--text2)]">{email}</span> cuando
+              se acerca un movimiento programado, una deuda próxima a vencer o tu
+              suscripción está por expirar.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={emailNotif}
+            onClick={() => toggleEmailNotif(!emailNotif)}
+            className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${
+              emailNotif
+                ? 'bg-[var(--success)]'
+                : 'bg-white/[0.10]'
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform ${
+                emailNotif ? 'translate-x-5' : ''
+              }`}
+            />
+          </button>
+        </div>
+      </Section>
 
       {/* Session */}
       <Section title="Sesión" Icon={LogOut}>

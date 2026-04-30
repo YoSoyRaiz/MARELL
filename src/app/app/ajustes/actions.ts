@@ -65,6 +65,26 @@ export async function updateBudgetSettings(input: {
   return { success: true as const }
 }
 
+export async function setEmailNotifications(enabled: boolean) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      email_notifications: enabled,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.id)
+  if (error) return { error: error.message }
+
+  revalidatePath('/app', 'layout')
+  return { success: true as const }
+}
+
 // Permanently deletes the user's account: cascades through their budget
 // data + profile, then removes the auth.users row via the security-definer
 // `public.delete_my_account` RPC. After this returns the session is no

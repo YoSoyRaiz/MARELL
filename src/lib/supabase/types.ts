@@ -37,6 +37,8 @@ type Profile = {
   onboarded: boolean
   avatar_url: string | null
   updated_at: string
+  email_notifications: boolean
+  notifications_last_seen: string | null
 }
 
 type Budget = {

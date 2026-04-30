@@ -13,7 +13,7 @@ export default async function AjustesPage() {
   const [profileRes, budgetRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('display_name, plan, onboarded')
+      .select('display_name, plan, onboarded, email_notifications')
       .eq('id', user.id)
       .single(),
     supabase
@@ -30,6 +30,9 @@ export default async function AjustesPage() {
       email={user.email ?? ''}
       displayName={(profileRes.data?.display_name as string | null) ?? ''}
       plan={(profileRes.data?.plan as string | null) ?? 'trial'}
+      emailNotifications={
+        (profileRes.data?.email_notifications as boolean | null) ?? true
+      }
       budget={
         budgetRes.data
           ? {
