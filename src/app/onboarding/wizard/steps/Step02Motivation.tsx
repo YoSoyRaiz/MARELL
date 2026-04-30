@@ -26,7 +26,7 @@ export function Step02Motivation() {
   return (
     <div className="space-y-8">
       <div className="space-y-3">
-        <h1 className="text-[36px] sm:text-[44px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
           {greeting}
           <span className="gradient-text">MARELL</span>?
         </h1>

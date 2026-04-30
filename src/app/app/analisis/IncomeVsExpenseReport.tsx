@@ -73,7 +73,7 @@ export function IncomeVsExpenseReport({
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Análisis · Ingresos vs Gastos
         </div>
-        <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           Sin presupuesto <span className="gradient-text">aún</span>.
         </h1>
         <p className="text-[var(--text2)] text-[14px] max-w-xl">
@@ -90,7 +90,7 @@ export function IncomeVsExpenseReport({
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Análisis · Ingresos vs Gastos
         </div>
-        <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           ¿Estás <span className="gradient-text">ahorrando</span> o gastando?
         </h1>
         <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">

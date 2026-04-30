@@ -21,7 +21,7 @@ export function Step12InfrequentExpenses() {
   return (
     <div className="space-y-8">
       <div className="space-y-3">
-        <h1 className="text-[36px] sm:text-[44px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
           ¿Qué gastos <span className="gradient-text">menos frecuentes</span> preparar?
         </h1>
         <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">

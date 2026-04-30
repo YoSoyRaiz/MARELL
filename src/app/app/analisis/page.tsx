@@ -745,7 +745,7 @@ export default async function AnalisisPage({
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Análisis
         </div>
-        <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           Próximamente.
         </h1>
       </div>

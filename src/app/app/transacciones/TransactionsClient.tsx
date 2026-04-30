@@ -233,12 +233,12 @@ export function TransactionsClient({
     <>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2 min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
               Transacciones
             </div>
-            <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+            <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
               Cada movimiento de tu <span className="gradient-text">dinero</span>.
             </h1>
             <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
@@ -254,19 +254,21 @@ export function TransactionsClient({
               type="button"
               onClick={() => setImportOpen(true)}
               disabled={!hasBudget || accounts.length === 0}
-              className="h-11 px-4 rounded-xl text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-white/[0.04] hover:bg-white/[0.08] inline-flex items-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-white/[0.04] hover:bg-white/[0.08] inline-flex items-center gap-1.5 sm:gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
               <Upload size={14} strokeWidth={2.2} />
-              Importar CSV
+              <span className="hidden sm:inline">Importar CSV</span>
+              <span className="sm:hidden">Importar</span>
             </button>
             <button
               type="button"
               onClick={() => setAddOpen(true)}
               disabled={!hasBudget || accounts.length === 0}
-              className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none"
+              className="h-10 sm:h-11 px-4 sm:px-5 gradient-bg text-[#0B0B0C] font-semibold text-[12px] sm:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1.5 sm:gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none flex-1 lg:flex-initial justify-center"
             >
               <Plus size={14} strokeWidth={2.4} />
-              Agregar transacción
+              <span className="hidden sm:inline">Agregar transacción</span>
+              <span className="sm:hidden">Agregar</span>
             </button>
           </div>
         </div>
@@ -439,9 +441,82 @@ export function TransactionsClient({
                 const isExpanded = expanded.has(t.id)
                 return (
                   <li key={t.id} className={dimmed}>
+                    {/* Mobile card layout (<md) */}
                     <div
                       onClick={() => setEditing(t)}
-                      className="grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer"
+                      className="md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.04] transition-colors cursor-pointer"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0 mt-0.5">
+                        {isIncome ? (
+                          <ArrowUpRight size={15} strokeWidth={2} className="text-[var(--brand-2)]" />
+                        ) : (
+                          <ArrowDownRight size={15} strokeWidth={2} className="text-[var(--coral)]" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="text-[14px] text-[var(--text)] font-medium truncate">
+                            {t.payee_name ?? 'Sin nombre'}
+                          </div>
+                          <div
+                            className={`text-[14px] tabular-nums num font-semibold whitespace-nowrap ${
+                              isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                            }`}
+                          >
+                            {isIncome ? '+' : '−'}
+                            {fmtMoney(t.amount)}
+                          </div>
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
+                          <span className="tabular-nums num shrink-0">{formatDate(t.date)}</span>
+                          <span className="text-[var(--muted2)]">·</span>
+                          {t.is_split ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleExpand(t.id)
+                              }}
+                              className="inline-flex items-center gap-1 text-[var(--brand-2)]"
+                              aria-expanded={isExpanded}
+                            >
+                              <Split size={10} strokeWidth={2.2} />
+                              <span>{t.subtransactions.length} categorías</span>
+                              <ChevronDown
+                                size={10}
+                                strokeWidth={2.4}
+                                className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                              />
+                            </button>
+                          ) : (
+                            <span className="truncate">
+                              {t.category_name ?? 'Sin categoría'}
+                            </span>
+                          )}
+                          <span className="text-[var(--muted2)]">·</span>
+                          <span className="truncate">{t.account_name}</span>
+                        </div>
+                        {t.memo && (
+                          <div className="mt-1 text-[11px] text-[var(--muted)] truncate">{t.memo}</div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(t.id)
+                        }}
+                        aria-label="Eliminar transacción"
+                        className="text-[var(--muted)] hover:text-[var(--coral)] p-1.5 -mr-1 rounded-lg hover:bg-white/[0.04] transition-colors shrink-0"
+                      >
+                        <Trash2 size={14} strokeWidth={2} />
+                      </button>
+                    </div>
+
+                    {/* Desktop table row (md+) */}
+                    <div
+                      onClick={() => setEditing(t)}
+                      className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer"
                     >
                       <div className="text-[12px] text-[var(--muted)] tabular-nums num">
                         {formatDate(t.date)}
@@ -513,44 +588,65 @@ export function TransactionsClient({
                     </div>
 
                     {t.is_split && isExpanded && (
-                      <div className="bg-[var(--bg)]/40 border-t border-[var(--border)] px-5 py-2">
+                      <div className="bg-[var(--bg)]/40 border-t border-[var(--border)] px-4 md:px-5 py-2">
                         <ul className="divide-y divide-[var(--border)]">
                           {t.subtransactions.map((s) => {
                             const SubIcon = s.category_name
                               ? iconForCategoryName(s.category_name)
                               : null
                             return (
-                              <li
-                                key={s.id}
-                                className="grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-0 py-2 items-center"
-                              >
-                                <div />
-                                <div className="flex items-center gap-3 min-w-0 pl-11">
-                                  <span className="text-[var(--muted2)] text-[14px]">↳</span>
-                                  {s.memo && (
-                                    <span className="text-[11px] text-[var(--muted)] truncate">
-                                      {s.memo}
+                              <li key={s.id} className="py-2">
+                                {/* Mobile: simple payee/amount row */}
+                                <div className="md:hidden flex items-center gap-2 pl-9">
+                                  <span className="text-[var(--muted2)] text-[12px]">↳</span>
+                                  <div className="flex items-center gap-1.5 flex-1 min-w-0 text-[12px] text-[var(--text2)]">
+                                    {SubIcon && (
+                                      <SubIcon size={11} strokeWidth={2} className="shrink-0" />
+                                    )}
+                                    <span className="truncate">
+                                      {s.category_name ?? 'Sin categoría'}
                                     </span>
-                                  )}
+                                  </div>
+                                  <div
+                                    className={`text-[12px] tabular-nums num font-medium whitespace-nowrap ${
+                                      s.amount >= 0 ? 'text-[var(--brand-2)]' : 'text-[var(--text2)]'
+                                    }`}
+                                  >
+                                    {s.amount >= 0 ? '+' : '−'}
+                                    {fmtMoney(s.amount)}
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2 min-w-0 text-[12px] text-[var(--text2)]">
-                                  {SubIcon && (
-                                    <SubIcon size={12} strokeWidth={2} className="shrink-0" />
-                                  )}
-                                  <span className="truncate">
-                                    {s.category_name ?? 'Sin categoría'}
-                                  </span>
+
+                                {/* Desktop: aligned table grid */}
+                                <div className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 items-center">
+                                  <div />
+                                  <div className="flex items-center gap-3 min-w-0 pl-11">
+                                    <span className="text-[var(--muted2)] text-[14px]">↳</span>
+                                    {s.memo && (
+                                      <span className="text-[11px] text-[var(--muted)] truncate">
+                                        {s.memo}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 min-w-0 text-[12px] text-[var(--text2)]">
+                                    {SubIcon && (
+                                      <SubIcon size={12} strokeWidth={2} className="shrink-0" />
+                                    )}
+                                    <span className="truncate">
+                                      {s.category_name ?? 'Sin categoría'}
+                                    </span>
+                                  </div>
+                                  <div />
+                                  <div
+                                    className={`text-right text-[12px] tabular-nums num ${
+                                      s.amount >= 0 ? 'text-[var(--brand-2)]' : 'text-[var(--text2)]'
+                                    }`}
+                                  >
+                                    {s.amount >= 0 ? '+' : '−'}
+                                    {fmtMoney(s.amount)}
+                                  </div>
+                                  <div />
                                 </div>
-                                <div />
-                                <div
-                                  className={`text-right text-[12px] tabular-nums num ${
-                                    s.amount >= 0 ? 'text-[var(--brand-2)]' : 'text-[var(--text2)]'
-                                  }`}
-                                >
-                                  {s.amount >= 0 ? '+' : '−'}
-                                  {fmtMoney(s.amount)}
-                                </div>
-                                <div />
                               </li>
                             )
                           })}

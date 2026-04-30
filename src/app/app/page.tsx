@@ -96,7 +96,7 @@ export default async function ResumenPage() {
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Resumen
         </div>
-        <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           Aún no tienes <span className="gradient-text">presupuesto</span>.
         </h1>
         <p className="text-[var(--text2)] text-[16px] leading-relaxed max-w-xl">
@@ -350,13 +350,13 @@ export default async function ResumenPage() {
           <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
             Resumen · {formatMonthLabel(month)}
           </div>
-          <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+          <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
             Tu mes en una <span className="gradient-text">mirada</span>, {firstName}.
           </h1>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           <KpiCard
             label="Ingresos"
             value={totalIncome}
@@ -596,18 +596,18 @@ function KpiCard({ label, value, Icon, iconBg, iconColor, sublabel, href }: KpiC
           <Icon size={16} strokeWidth={2} />
         </div>
       </div>
-      <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
+      <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
         {label}
       </div>
-      <div className="text-[22px] font-bold tabular-nums num text-[var(--text)] leading-none">
+      <div className="text-[18px] sm:text-[22px] font-bold tabular-nums num text-[var(--text)] leading-none break-words">
         {fmtMoney(value)}
       </div>
-      <div className="text-[11px] text-[var(--muted2)] mt-2">{sublabel}</div>
+      <div className="text-[10px] sm:text-[11px] text-[var(--muted2)] mt-1.5 sm:mt-2">{sublabel}</div>
     </>
   )
 
   const className =
-    'rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 transition-all duration-200 hover:border-[var(--border3)] hover:-translate-y-[1px]'
+    'rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-4 sm:p-5 transition-all duration-200 hover:border-[var(--border3)] hover:-translate-y-[1px]'
 
   return href ? (
     <Link href={href} className={`block ${className}`}>

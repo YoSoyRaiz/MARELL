@@ -87,12 +87,12 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
     <>
       <div className="space-y-7">
         {/* Header */}
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2 min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
               Cuentas
             </div>
-            <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+            <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
               Todo tu <span className="gradient-text">dinero</span>, en un mapa.
             </h1>
             <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">

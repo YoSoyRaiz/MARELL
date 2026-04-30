@@ -197,12 +197,12 @@ export function ProgramadasClient({
     <>
       <div className="space-y-7">
         {/* Header */}
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2 min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
               Programadas
             </div>
-            <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+            <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
               Lo que <span className="gradient-text">se repite</span>.
             </h1>
             <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
@@ -215,7 +215,7 @@ export function ProgramadasClient({
             type="button"
             onClick={() => setAddOpen(true)}
             disabled={!hasBudget || noAccounts}
-            className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+            className="h-10 sm:h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none self-start sm:self-auto"
             title={noAccounts ? 'Necesitas al menos una cuenta abierta' : undefined}
           >
             <Plus size={14} strokeWidth={2.4} />

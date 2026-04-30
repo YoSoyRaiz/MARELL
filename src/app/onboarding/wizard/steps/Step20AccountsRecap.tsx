@@ -46,7 +46,7 @@ export function Step20AccountsRecap() {
   return (
     <div className="space-y-7">
       <div className="space-y-3">
-        <h1 className="text-[36px] sm:text-[44px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
           {accounts.length === 1 ? '¡Lista!' : '¡Buen trabajo!'}{' '}
           <span className="gradient-text">
             {accounts.length} {accounts.length === 1 ? 'cuenta' : 'cuentas'}

@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Bell, Search, ArrowRight } from 'lucide-react'
+import { Bell, Menu, Search, ArrowRight } from 'lucide-react'
 import { AnimatedNumber } from './plan/AnimatedNumber'
 import { useReadyToAssign } from './ReadyToAssignProvider'
+import { useMobileNav } from './MobileNavProvider'
 
 interface TopBarProps {
   displayName: string | null
@@ -23,26 +24,40 @@ const fmtMoney = (n: number) => {
 export function TopBar({ displayName }: TopBarProps) {
   const ctx = useReadyToAssign()
   const readyToAssign = ctx?.readyToAssign ?? 0
+  const { toggle: toggleDrawer } = useMobileNav()
   const firstName = displayName?.trim().split(/\s+/)[0]
   const isPositive = readyToAssign > 0.005
   const isNegative = readyToAssign < -0.005
 
   return (
-    <header className="border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md px-8 py-4 sticky top-0 z-10">
-      <div className="flex items-center justify-between gap-6">
-        {/* Left: greeting */}
-        <div className="min-w-0 shrink-0">
-          <div className="text-[24px] font-bold leading-tight tracking-tight text-[var(--text)] truncate">
-            Hola, {firstName ?? 'amigo'} <span aria-hidden>👋</span>
+    <header className="border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md px-4 py-3 sm:px-6 md:px-8 md:py-4 sticky top-0 z-30">
+      <div className="flex items-center justify-between gap-3 md:gap-6">
+        {/* Hamburger (mobile) + greeting */}
+        <div className="flex items-center gap-3 min-w-0 shrink-0">
+          <button
+            type="button"
+            onClick={toggleDrawer}
+            aria-label="Abrir menú"
+            className="lg:hidden w-10 h-10 -ml-1 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+          >
+            <Menu size={18} strokeWidth={2.2} />
+          </button>
+
+          <div className="min-w-0">
+            <div className="text-[16px] sm:text-[20px] md:text-[24px] font-bold leading-tight tracking-tight text-[var(--text)] truncate">
+              Hola, {firstName ?? 'amigo'} <span aria-hidden>👋</span>
+            </div>
+            <div className="hidden sm:block text-[12px] text-[var(--muted)] mt-0.5">
+              Listo para asignar
+            </div>
           </div>
-          <div className="text-[12px] text-[var(--muted)] mt-0.5">Listo para asignar</div>
         </div>
 
-        {/* Right cluster: pill + 30px gap + search + bell */}
-        <div className="flex items-center gap-[30px] shrink-0">
+        {/* Right cluster: pill + search + bell */}
+        <div className="flex items-center gap-3 md:gap-[30px] shrink-0">
           {/* Pill with Asignar button inside */}
           <div
-            className={`rounded-2xl border-2 px-4 py-2.5 flex items-center gap-3 shrink-0 transition-colors ${
+            className={`rounded-2xl border-2 px-3 py-2 md:px-4 md:py-2.5 flex items-center gap-2 md:gap-3 shrink-0 transition-colors ${
               isNegative
                 ? 'border-[var(--coral)]/40 bg-[rgba(255,122,89,0.04)]'
                 : 'border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)]'
@@ -50,7 +65,7 @@ export function TopBar({ displayName }: TopBarProps) {
           >
             <div className="leading-none">
               <div
-                className={`text-[10px] uppercase tracking-[0.18em] font-semibold ${
+                className={`text-[9px] md:text-[10px] uppercase tracking-[0.18em] font-semibold ${
                   isNegative ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
                 }`}
               >
@@ -59,7 +74,7 @@ export function TopBar({ displayName }: TopBarProps) {
               <AnimatedNumber
                 value={readyToAssign}
                 format={fmtMoney}
-                className={`text-[24px] sm:text-[28px] font-bold tabular-nums num leading-none mt-1 block ${
+                className={`text-[16px] sm:text-[20px] md:text-[28px] font-bold tabular-nums num leading-none mt-1 block ${
                   isNegative
                     ? 'text-[var(--coral)]'
                     : isPositive
@@ -70,16 +85,17 @@ export function TopBar({ displayName }: TopBarProps) {
             </div>
             <Link
               href="/app/plan"
-              className="h-10 px-4 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1.5 transition-[filter] shrink-0"
+              className="h-9 md:h-10 px-3 md:px-4 gradient-bg text-[#0B0B0C] font-semibold text-[12px] md:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1 md:gap-1.5 transition-[filter] shrink-0"
+              aria-label="Asignar"
             >
-              Asignar
+              <span className="hidden sm:inline">Asignar</span>
               <ArrowRight size={14} strokeWidth={2.4} />
             </Link>
           </div>
 
-          {/* Search + bell */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-[320px] hidden md:block">
+          {/* Search + bell — desktop-only, hidden on mobile to save space */}
+          <div className="hidden md:flex items-center gap-3">
+            <div className="relative w-[220px] xl:w-[320px] hidden md:block">
               <Search
                 size={14}
                 strokeWidth={2}

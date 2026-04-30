@@ -159,7 +159,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Plan
         </div>
-        <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           Sin presupuesto <span className="gradient-text">aún</span>.
         </h1>
         <p className="text-[var(--text2)] text-[16px] leading-relaxed max-w-xl">
@@ -186,7 +186,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
             >
               <ChevronLeft size={18} strokeWidth={2.2} />
             </button>
-            <h1 className="text-[28px] sm:text-[32px] leading-none font-bold tracking-tight tabular-nums">
+            <h1 className="text-[20px] sm:text-[28px] lg:text-[32px] leading-none font-bold tracking-tight tabular-nums">
               {formatMonthLabel(month)}
             </h1>
             <button
@@ -319,7 +319,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                     {g.categories.length}
                   </span>
                 </div>
-                <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] tabular-nums num shrink-0">
+                <div className="hidden sm:flex items-center gap-3 md:gap-6 text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] tabular-nums num shrink-0">
                   <span>
                     Asig{' '}
                     <span className="text-[var(--text2)] normal-case tracking-normal text-[12px] ml-1">
@@ -336,6 +336,14 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                       {fmtMoney(groupAvailable)}
                     </span>
                   </span>
+                </div>
+                {/* Mobile: just available, the most actionable number */}
+                <div
+                  className={`sm:hidden tabular-nums num text-[12px] font-semibold shrink-0 ${
+                    groupAvailable < -0.005 ? 'text-[var(--coral)]' : 'text-[var(--text2)]'
+                  }`}
+                >
+                  {fmtMoney(groupAvailable)}
                 </div>
               </button>
 
@@ -364,35 +372,73 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                   return (
                     <li
                       key={c.id}
-                      className="grid grid-cols-[1fr_120px_120px_120px] gap-2 px-5 py-3.5 items-center border-b border-[var(--border)] last:border-b-0 hover:bg-white/[0.02] transition-colors"
+                      className="border-b border-[var(--border)] last:border-b-0 hover:bg-white/[0.02] transition-colors"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
-                          <Icon size={16} strokeWidth={2} />
+                      {/* Mobile layout: stacked rows */}
+                      <div className="md:hidden px-4 py-3 space-y-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                            <Icon size={16} strokeWidth={2} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[14px] text-[var(--text)] truncate">{c.name}</div>
+                            {c.goal_amount && c.goal_amount > 0 && (
+                              <div className="text-[11px] text-[var(--muted)] num">
+                                meta: ${c.goal_amount.toLocaleString('en-US')}
+                              </div>
+                            )}
+                          </div>
+                          <div className="shrink-0">
+                            <InlineMoneyEdit
+                              value={assigned}
+                              onSave={(next) => handleSave(c, next)}
+                              ariaLabel={`Asignar a ${c.name}`}
+                            />
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-[14px] text-[var(--text)] truncate">{c.name}</div>
-                          {c.goal_amount && c.goal_amount > 0 && (
-                            <div className="text-[11px] text-[var(--muted)] num">
-                              meta: ${c.goal_amount.toLocaleString('en-US')}
-                            </div>
-                          )}
+                        <div className="flex items-center justify-between gap-2 pl-12 text-[11px]">
+                          <span className="text-[var(--muted)] tabular-nums num">
+                            Actividad:{' '}
+                            <span className="text-[var(--text2)]">
+                              {c.activity === 0 ? '—' : fmtMoney(c.activity)}
+                            </span>
+                          </span>
+                          <span className={`tabular-nums num font-semibold ${availableColor}`}>
+                            {fmtMoney(available)}
+                          </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <InlineMoneyEdit
-                          value={assigned}
-                          onSave={(next) => handleSave(c, next)}
-                          ariaLabel={`Asignar a ${c.name}`}
-                        />
-                      </div>
-                      <div className="text-right text-[14px] tabular-nums num text-[var(--muted)]">
-                        {c.activity === 0 ? '—' : fmtMoney(c.activity)}
-                      </div>
-                      <div
-                        className={`text-right text-[14px] tabular-nums num font-semibold ${availableColor}`}
-                      >
-                        {fmtMoney(available)}
+
+                      {/* Desktop layout: 4-col grid */}
+                      <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px] gap-2 px-5 py-3.5 items-center">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                            <Icon size={16} strokeWidth={2} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[14px] text-[var(--text)] truncate">{c.name}</div>
+                            {c.goal_amount && c.goal_amount > 0 && (
+                              <div className="text-[11px] text-[var(--muted)] num">
+                                meta: ${c.goal_amount.toLocaleString('en-US')}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <InlineMoneyEdit
+                            value={assigned}
+                            onSave={(next) => handleSave(c, next)}
+                            ariaLabel={`Asignar a ${c.name}`}
+                          />
+                        </div>
+                        <div className="text-right text-[14px] tabular-nums num text-[var(--muted)]">
+                          {c.activity === 0 ? '—' : fmtMoney(c.activity)}
+                        </div>
+                        <div
+                          className={`text-right text-[14px] tabular-nums num font-semibold ${availableColor}`}
+                        >
+                          {fmtMoney(available)}
+                        </div>
                       </div>
                     </li>
                   )

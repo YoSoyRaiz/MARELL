@@ -77,7 +77,7 @@ export function NetWorthReport({
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Análisis · Patrimonio
         </div>
-        <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           Sin presupuesto <span className="gradient-text">aún</span>.
         </h1>
         <p className="text-[var(--text2)] text-[14px] max-w-xl">
@@ -100,7 +100,7 @@ export function NetWorthReport({
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Análisis · Patrimonio
         </div>
-        <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           Tu <span className="gradient-text">patrimonio</span> en el tiempo.
         </h1>
         <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
@@ -137,7 +137,7 @@ export function NetWorthReport({
               Patrimonio neto · hoy
             </div>
             <div
-              className={`text-[36px] sm:text-[44px] font-bold tabular-nums num leading-none mt-2 ${
+              className={`text-[26px] sm:text-[36px] md:text-[44px] font-bold tabular-nums num leading-none mt-2 ${
                 currentNetWorth < -0.005 ? 'text-[var(--coral)]' : 'gradient-text'
               }`}
             >

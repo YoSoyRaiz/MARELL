@@ -16,7 +16,7 @@ export function TransitionSlide({ icon, title, subtitle }: TransitionSlideProps)
           {icon}
         </div>
       )}
-      <h1 className="text-[36px] sm:text-[44px] leading-[1.05] font-bold tracking-tight">
+      <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
         {title}
       </h1>
       <p className="text-[var(--text2)] text-[18px] leading-relaxed max-w-lg">{subtitle}</p>

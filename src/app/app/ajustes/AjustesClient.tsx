@@ -115,7 +115,7 @@ export function AjustesClient({ email, displayName, plan, budget }: Props) {
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Ajustes
         </div>
-        <h1 className="text-[32px] sm:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           Tu <span className="gradient-text">cuenta</span>.
         </h1>
         <p className="text-[var(--text2)] text-[14px] leading-relaxed">

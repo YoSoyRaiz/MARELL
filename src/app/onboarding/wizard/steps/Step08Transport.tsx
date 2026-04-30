@@ -24,7 +24,7 @@ export function Step08Transport() {
   return (
     <div className="space-y-8">
       <div className="space-y-3">
-        <h1 className="text-[36px] sm:text-[44px] leading-[1.05] font-bold tracking-tight">
+        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
           ¿Cómo te <span className="gradient-text">transportas</span>?
         </h1>
         <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">

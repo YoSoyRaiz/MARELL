@@ -21,6 +21,7 @@ import { Logo } from '@/components/ui/Logo'
 import { logout } from '@/app/(auth)/actions'
 import { resetOnboarding } from '@/app/onboarding/actions'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { useMobileNav } from './MobileNavProvider'
 
 const NAV = [
   { id: 'resumen', label: 'Resumen', href: '/app', icon: LayoutDashboard },
@@ -43,6 +44,7 @@ export function Sidebar({ displayName, email, plan, trialEndsAt }: SidebarProps)
   const pathname = usePathname() ?? ''
   const router = useRouter()
   const confirm = useConfirm()
+  const { open: drawerOpen, close: closeDrawer } = useMobileNav()
   const [menuOpen, setMenuOpen] = useState(false)
   const [, startReset] = useTransition()
   const menuRef = useRef<HTMLDivElement>(null)
@@ -94,7 +96,21 @@ export function Sidebar({ displayName, email, plan, trialEndsAt }: SidebarProps)
   }
 
   return (
-    <aside className="w-[240px] shrink-0 border-r border-[var(--border)] bg-[var(--s1)]/60 backdrop-blur-md flex flex-col h-screen sticky top-0">
+    <>
+      {/* Mobile backdrop */}
+      <div
+        onClick={closeDrawer}
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-200 lg:hidden ${
+          drawerOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        aria-hidden
+      />
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-[280px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-[240px] lg:translate-x-0 lg:bg-[var(--s1)]/60 ${
+          drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+        aria-hidden={!drawerOpen ? undefined : false}>
       {/* Logo */}
       <div className="px-5 pt-6 pb-[50px]">
         <Logo height={50} />
@@ -263,6 +279,7 @@ export function Sidebar({ displayName, email, plan, trialEndsAt }: SidebarProps)
           </div>
         )}
       </div>
-    </aside>
+      </aside>
+    </>
   )
 }
