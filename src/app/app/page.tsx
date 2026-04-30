@@ -7,6 +7,7 @@ import {
   TrendingUp,
   TrendingDown,
   Sparkles,
+  Target,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -128,7 +129,7 @@ export default async function ResumenPage() {
         .order('sort_order'),
       supabase
         .from('categories')
-        .select('id, name, group_id, goal_amount')
+        .select('id, name, group_id, goal_amount, goal_type, goal_date')
         .eq('budget_id', budget.id),
       supabase
         .from('accounts')
@@ -266,19 +267,73 @@ export default async function ResumenPage() {
     }
   })
 
-  // Goals preview (up to 4)
-  const goals = catsData
-    .filter((c) => c.goal_amount && Number(c.goal_amount) > 0)
+  // ── Goals preview (up to 4) ────────────────────────────────
+  // Mirrors the calculation on /app/metas: monthly_spending uses the current
+  // month's assignment, savings_balance uses lifetime (assigned − spent).
+  type GoalType = 'monthly_spending' | 'savings_balance'
+
+  const goalCats = catsData.filter(
+    (c) => c.goal_amount !== null && Number(c.goal_amount) > 0,
+  )
+  const savingsGoalIds = goalCats
+    .filter((c) => (c.goal_type as string | null) === 'savings_balance')
+    .map((c) => c.id as string)
+
+  // For savings goals we need lifetime aggregates. Skip the queries entirely
+  // if there are none, to keep the dashboard light.
+  const lifetimeAssignedById = new Map<string, number>()
+  const lifetimeSpentById = new Map<string, number>()
+  if (savingsGoalIds.length > 0) {
+    const [lifeAssignsRes, lifeTxnsRes, lifeSubsRes] = await Promise.all([
+      supabase
+        .from('monthly_assignments')
+        .select('category_id, assigned')
+        .in('category_id', savingsGoalIds),
+      supabase
+        .from('transactions')
+        .select('category_id, amount')
+        .in('category_id', savingsGoalIds)
+        .lt('amount', 0),
+      supabase
+        .from('subtransactions')
+        .select('category_id, amount')
+        .in('category_id', savingsGoalIds)
+        .lt('amount', 0),
+    ])
+    for (const a of lifeAssignsRes.data ?? []) {
+      const id = a.category_id as string
+      lifetimeAssignedById.set(id, (lifetimeAssignedById.get(id) ?? 0) + Number(a.assigned))
+    }
+    for (const t of lifeTxnsRes.data ?? []) {
+      const id = t.category_id as string
+      lifetimeSpentById.set(id, (lifetimeSpentById.get(id) ?? 0) + Math.abs(Number(t.amount)))
+    }
+    for (const s of lifeSubsRes.data ?? []) {
+      const id = s.category_id as string
+      lifetimeSpentById.set(id, (lifetimeSpentById.get(id) ?? 0) + Math.abs(Number(s.amount)))
+    }
+  }
+
+  const goals = goalCats
     .map((c) => {
-      const a = assignmentsData.find((x) => x.category_id === c.id)
-      const assigned = Number(a?.assigned ?? 0)
+      const id = c.id as string
+      const goalType: GoalType =
+        (c.goal_type as string) === 'savings_balance' ? 'savings_balance' : 'monthly_spending'
       const goal = Number(c.goal_amount ?? 0)
+      let current = 0
+      if (goalType === 'savings_balance') {
+        current = (lifetimeAssignedById.get(id) ?? 0) - (lifetimeSpentById.get(id) ?? 0)
+      } else {
+        const a = assignmentsData.find((x) => x.category_id === id)
+        current = Number(a?.assigned ?? 0)
+      }
       return {
-        id: c.id as string,
+        id,
         name: c.name as string,
-        assigned,
+        goalType,
+        current: Math.round(current * 100) / 100,
         goal,
-        progress: goal > 0 ? Math.min(1, assigned / goal) : 0,
+        progress: goal > 0 ? Math.min(1, current / goal) : 0,
       }
     })
     .sort((a, b) => b.progress - a.progress)
@@ -452,40 +507,72 @@ export default async function ResumenPage() {
         </section>
 
         {/* Metas preview */}
-        {goals.length > 0 && (
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
-            <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+        <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+          <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target size={14} strokeWidth={2.2} className="text-[var(--brand-2)]" />
               <h2 className="text-[14px] font-semibold text-[var(--text)]">Metas</h2>
+            </div>
+            {goals.length > 0 && (
               <Link
                 href="/app/metas"
                 className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
               >
                 Todas <ArrowRight size={12} strokeWidth={2.4} />
               </Link>
-            </header>
+            )}
+          </header>
+
+          {goals.length === 0 ? (
+            <div className="px-5 py-6 text-center space-y-3">
+              <p className="text-[13px] text-[var(--muted)] leading-relaxed">
+                Aún no tienes metas. Define cuánto quieres apartar mensualmente o
+                acumular en total para mantener el rumbo.
+              </p>
+              <Link
+                href="/app/metas"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg gradient-bg text-[#0B0B0C] font-semibold text-[12px] glow-on-hover hover:brightness-105 transition-[filter]"
+              >
+                <Target size={12} strokeWidth={2.4} />
+                Crear meta
+              </Link>
+            </div>
+          ) : (
             <ul className="divide-y divide-[var(--border)]">
-              {goals.map((g) => (
-                <li key={g.id} className="px-5 py-3 space-y-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] text-[var(--text)] truncate">{g.name}</span>
-                    <span className="text-[11px] text-[var(--muted)] tabular-nums num shrink-0">
-                      {Math.round(g.progress * 100)}%
-                    </span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
-                    <div
-                      className="h-full gradient-bg transition-[width] duration-500"
-                      style={{ width: `${g.progress * 100}%` }}
-                    />
-                  </div>
-                  <div className="text-[11px] text-[var(--muted)] num tabular-nums">
-                    {fmtMoneyShort(g.assigned)} de {fmtMoneyShort(g.goal)}
-                  </div>
-                </li>
-              ))}
+              {goals.map((g) => {
+                const isComplete = g.current >= g.goal - 0.005
+                return (
+                  <li key={g.id} className="px-5 py-3 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[13px] text-[var(--text)] truncate">{g.name}</span>
+                      <span
+                        className={`text-[11px] tabular-nums num shrink-0 ${
+                          isComplete ? 'text-[var(--brand-2)] font-semibold' : 'text-[var(--muted)]'
+                        }`}
+                      >
+                        {Math.round(g.progress * 100)}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+                      <div
+                        className="h-full gradient-bg transition-[width] duration-500"
+                        style={{ width: `${g.progress * 100}%` }}
+                      />
+                    </div>
+                    <div className="text-[11px] text-[var(--muted)] num tabular-nums flex items-center justify-between gap-2">
+                      <span>
+                        {fmtMoneyShort(g.current)} de {fmtMoneyShort(g.goal)}
+                      </span>
+                      <span className="text-[var(--muted2)]">
+                        {g.goalType === 'savings_balance' ? 'Acumulada' : 'Mensual'}
+                      </span>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
-          </section>
-        )}
+          )}
+        </section>
       </aside>
     </div>
   )
