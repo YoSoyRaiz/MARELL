@@ -7,6 +7,7 @@ import { ReadyToAssignProvider } from './ReadyToAssignProvider'
 import { MobileNavProvider } from './MobileNavProvider'
 import { CurrencyProvider } from './CurrencyProvider'
 import { KeyboardShortcuts } from './KeyboardShortcuts'
+import type { NotificationItem } from './NotificationBell'
 
 interface AppShellProps {
   displayName: string | null
@@ -16,6 +17,8 @@ interface AppShellProps {
   budget: { id: string; name: string; currency: string } | null
   readyToAssign: number
   isAdmin?: boolean
+  notifications?: NotificationItem[]
+  notificationsLastSeen?: string | null
   children: ReactNode
 }
 
@@ -27,6 +30,8 @@ export function AppShell({
   budget,
   readyToAssign,
   isAdmin = false,
+  notifications = [],
+  notificationsLastSeen = null,
   children,
 }: AppShellProps) {
   return (
@@ -42,7 +47,12 @@ export function AppShell({
             isAdmin={isAdmin}
           />
           <div className="flex-1 flex flex-col min-w-0">
-            <TopBar displayName={displayName} currency={budget?.currency ?? 'DOP'} />
+            <TopBar
+              displayName={displayName}
+              currency={budget?.currency ?? 'DOP'}
+              notifications={notifications}
+              notificationsLastSeen={notificationsLastSeen}
+            />
             <main className="flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-7 max-w-[1400px] w-full mx-auto">
               {children}
             </main>

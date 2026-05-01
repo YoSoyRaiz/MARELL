@@ -9,13 +9,21 @@ import { useMobileNav } from './MobileNavProvider'
 import { useFormatMoney } from './CurrencyProvider'
 import { AssignPopover } from './AssignPopover'
 import { SHORTCUT_EVENTS } from './KeyboardShortcuts'
+import { NotificationBell, type NotificationItem } from './NotificationBell'
+import { markNotificationsSeen } from './ajustes/actions'
 
 interface TopBarProps {
   displayName: string | null
   currency: string
+  notifications?: NotificationItem[]
+  notificationsLastSeen?: string | null
 }
 
-export function TopBar({ displayName }: TopBarProps) {
+export function TopBar({
+  displayName,
+  notifications = [],
+  notificationsLastSeen = null,
+}: TopBarProps) {
   const ctx = useReadyToAssign()
   const readyToAssign = ctx?.readyToAssign ?? 0
   const { toggle: toggleDrawer } = useMobileNav()
@@ -65,8 +73,15 @@ export function TopBar({ displayName }: TopBarProps) {
           </div>
         </div>
 
-        {/* Right cluster: pill + search + bell */}
-        <div className="flex items-center gap-3 md:gap-[30px] shrink-0">
+        {/* Right cluster: pill + bell */}
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          <NotificationBell
+            notifications={notifications}
+            lastSeenAt={notificationsLastSeen}
+            onMarkSeen={async () => {
+              await markNotificationsSeen()
+            }}
+          />
           {/* Pill with Asignar button inside */}
           <div ref={assignTriggerRef} className="relative shrink-0">
             <div

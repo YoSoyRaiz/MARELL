@@ -103,6 +103,25 @@ export async function setEmailNotifications(enabled: boolean) {
 // data + profile, then removes the auth.users row via the security-definer
 // `public.delete_my_account` RPC. After this returns the session is no
 // longer valid; sign out and redirect to /login regardless.
+/**
+ * Bumps `notifications_last_seen` to now. Called whenever the user
+ * opens the in-app bell so the unread dot disappears across sessions.
+ */
+export async function markNotificationsSeen() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ notifications_last_seen: new Date().toISOString() })
+    .eq('id', user.id)
+  if (error) return { error: error.message }
+  return { success: true as const }
+}
+
 // ── Data export ─────────────────────────────────────────────────
 //
 // Right to portability: the user can pull every byte of their MARELL
