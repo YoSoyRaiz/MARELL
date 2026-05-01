@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Camera, X, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -10,6 +10,11 @@ export interface ParsedReceipt {
   payee: string | null
   currency: 'DOP' | 'USD' | null
   confidence: 'high' | 'medium' | 'low'
+}
+
+interface UsageInfo {
+  used: number
+  limit: number
 }
 
 interface ReceiptCaptureProps {
@@ -53,6 +58,39 @@ export function ReceiptCapture({
   const [parsing, setParsing] = useState(false)
   const [parseHint, setParseHint] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [usage, setUsage] = useState<UsageInfo | null>(null)
+  const [quotaHit, setQuotaHit] = useState(false)
+
+  // Pull current month's OCR usage so the user sees "X/N restantes"
+  // before they take a photo. Plan-aware on the server side.
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const supabase = createClient()
+        const { data } = await supabase.rpc('get_ocr_usage').single<{
+          used: number
+          year_month: string
+        }>()
+        if (cancelled || !data) return
+        // Limit comes back from the parse call. We initialize with a
+        // plan-agnostic placeholder; the real limit lands after the
+        // first parse attempt or via the 429 payload.
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .single()
+        const plan = (profile?.plan as string | null) ?? 'free'
+        const planLimit = plan === 'pro' ? 50 : plan === 'trial' ? 15 : 3
+        setUsage({ used: data.used, limit: planLimit })
+      } catch {
+        // Non-fatal — the UI just won't show the counter.
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // Send the photo to /api/receipts/parse and forward the JSON to the
   // parent form. Failures are silent — the user can still type the
@@ -62,6 +100,7 @@ export function ReceiptCapture({
     if (!onParsed) return
     setParsing(true)
     setParseHint(null)
+    setQuotaHit(false)
     try {
       const fd = new FormData()
       fd.append('image', file)
@@ -69,8 +108,25 @@ export function ReceiptCapture({
         method: 'POST',
         body: fd,
       })
+      if (resp.status === 429) {
+        const body = (await resp.json().catch(() => ({}))) as {
+          used?: number
+          limit?: number
+        }
+        if (body.used !== undefined && body.limit !== undefined) {
+          setUsage({ used: body.used, limit: body.limit })
+        }
+        setQuotaHit(true)
+        return
+      }
       if (!resp.ok) return
-      const json = (await resp.json()) as ParsedReceipt
+      const json = (await resp.json()) as ParsedReceipt & {
+        used?: number
+        limit?: number
+      }
+      if (json.used !== undefined && json.limit !== undefined) {
+        setUsage({ used: json.used, limit: json.limit })
+      }
       onParsed(json)
       const fields: string[] = []
       if (json.amount !== null) fields.push('monto')
@@ -205,11 +261,22 @@ export function ReceiptCapture({
               <X size={18} strokeWidth={2.4} />
             </button>
           </div>
-          <div className="px-4 py-2 bg-[rgba(61,220,151,0.10)] border-t border-[var(--brand-2)]/20 text-[12px] text-[var(--brand-2)] font-medium inline-flex items-center gap-1.5 w-full">
+          <div
+            className={`px-4 py-2 border-t text-[12px] font-medium inline-flex items-center gap-1.5 w-full ${
+              quotaHit
+                ? 'bg-[rgba(245,200,66,0.10)] border-[var(--warn)]/20 text-[var(--warn)]'
+                : 'bg-[rgba(61,220,151,0.10)] border-[var(--brand-2)]/20 text-[var(--brand-2)]'
+            }`}
+          >
             {parsing ? (
               <>
                 <span className="inline-block w-3 h-3 rounded-full border-[1.5px] border-[var(--brand-2)]/40 border-t-[var(--brand-2)] animate-spin" />
                 Leyendo recibo…
+              </>
+            ) : quotaHit ? (
+              <>
+                <Sparkles size={12} strokeWidth={2.4} />
+                Límite mensual de OCR alcanzado · escribe los datos a mano
               </>
             ) : parseHint ? (
               <>
@@ -261,6 +328,13 @@ export function ReceiptCapture({
       {error && (
         <p className="text-[11px] text-[var(--coral)] mt-2 leading-relaxed">
           {error}
+        </p>
+      )}
+
+      {usage && !url && (
+        <p className="text-[10px] text-[var(--muted2)] mt-1.5 num tabular-nums">
+          Lectura automática: {Math.max(0, usage.limit - usage.used)} de{' '}
+          {usage.limit} escaneos restantes este mes
         </p>
       )}
     </div>

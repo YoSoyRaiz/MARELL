@@ -302,6 +302,25 @@ export type Database = {
         Args: { target_id: string }
         Returns: void
       }
+      increment_ocr_usage: {
+        Args: { p_limit: number }
+        Returns: Array<{
+          allowed: boolean
+          used: number
+          limit_value: number
+        }>
+      }
+      decrement_ocr_usage: {
+        Args: Record<string, never>
+        Returns: void
+      }
+      get_ocr_usage: {
+        Args: Record<string, never>
+        Returns: Array<{
+          used: number
+          year_month: string
+        }>
+      }
     }
     Enums: Record<string, never>
   }

@@ -8,6 +8,19 @@ export const dynamic = 'force-dynamic'
 const MAX_BYTES = 5 * 1024 * 1024
 const ALLOWED_MEDIA = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 
+// Per-plan monthly OCR cap. Tweak here, no migration needed.
+const PLAN_LIMITS: Record<string, number> = {
+  free: 3,
+  trial: 15,
+  pro: 50,
+}
+const DEFAULT_LIMIT = PLAN_LIMITS.free
+
+function limitForPlan(plan: string | null | undefined): number {
+  if (!plan) return DEFAULT_LIMIT
+  return PLAN_LIMITS[plan] ?? DEFAULT_LIMIT
+}
+
 const SYSTEM_PROMPT = `Eres un parser de recibos de la República Dominicana. Recibirás una foto de un recibo o factura y debes extraer los datos. Devuelve EXCLUSIVAMENTE un objeto JSON sin markdown, sin texto adicional, sin code fences, con esta forma exacta:
 
 {
@@ -49,6 +62,35 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  }
+
+  // Check the user's plan to know their monthly cap, then atomically
+  // claim a slot. If the cap is hit, bail out before paying Anthropic.
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', user.id)
+    .single()
+  const limit = limitForPlan(profile?.plan as string | null | undefined)
+
+  const { data: usage, error: usageErr } = await supabase
+    .rpc('increment_ocr_usage', { p_limit: limit })
+    .single<{ allowed: boolean; used: number; limit_value: number }>()
+  if (usageErr) {
+    return NextResponse.json(
+      { error: `quota check failed: ${usageErr.message}` },
+      { status: 500 },
+    )
+  }
+  if (!usage?.allowed) {
+    return NextResponse.json(
+      {
+        error: 'quota_exceeded',
+        used: usage?.used ?? limit,
+        limit: limit,
+      },
+      { status: 429 },
+    )
   }
 
   let form: FormData
@@ -102,6 +144,9 @@ export async function POST(request: NextRequest) {
       .join('')
       .trim()
   } catch (e) {
+    // Refund the slot — the user shouldn't lose quota on a vision
+    // outage on our side.
+    await supabase.rpc('decrement_ocr_usage')
     const msg = e instanceof Error ? e.message : 'fallo de visión'
     return NextResponse.json({ error: msg }, { status: 502 })
   }
@@ -116,11 +161,16 @@ export async function POST(request: NextRequest) {
   try {
     parsed = JSON.parse(jsonText) as ParsedReceipt
   } catch {
+    await supabase.rpc('decrement_ocr_usage')
     return NextResponse.json(
       { error: 'respuesta del modelo no es JSON', raw },
       { status: 502 },
     )
   }
 
-  return NextResponse.json(parsed)
+  return NextResponse.json({
+    ...parsed,
+    used: usage.used,
+    limit: usage.limit_value,
+  })
 }
