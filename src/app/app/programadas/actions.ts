@@ -340,11 +340,8 @@ export async function materializeDue(budgetId: string) {
       })
       if (insertErr) break
 
-      const newBalance = Math.round((Number(account.balance) + amount) * 100) / 100
-      await supabase
-        .from('accounts')
-        .update({ balance: newBalance })
-        .eq('id', s.account_id as string)
+      // Balance is updated by the `transactions_balance_sync` trigger
+      // when the row above is inserted.
 
       created += 1
 

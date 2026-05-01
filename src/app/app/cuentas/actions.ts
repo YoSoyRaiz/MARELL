@@ -313,18 +313,45 @@ export async function reconcileAccount(
     .select('id')
   if (lockErr) return { error: lockErr.message }
 
-  // 3. Sync the cached balance.
-  const { error: balErr } = await supabase
-    .from('accounts')
-    .update({ balance: newInternalBalance })
-    .eq('id', accountId)
-  if (balErr) return { error: balErr.message }
+  // The adjustment txn we inserted in step 1 already pushed the
+  // balance to the right number via the `transactions_balance_sync`
+  // trigger. No manual `update accounts.balance` needed.
 
   revalidatePath('/app', 'layout')
   return {
     adjustmentAmount: diff,
     reconciledCount: locked?.length ?? 0,
   }
+}
+
+// ── Unreconcile ────────────────────────────────────────────
+//
+// Reverses the "lock the past" side-effect of reconciling so the user
+// can fix a botched reconciliation. Calls a SECURITY DEFINER RPC
+// that flips every reconciled txn back to cleared. Doesn't undo the
+// adjustment transaction — if the user wants to remove that they can
+// delete it manually now that it's editable again.
+
+export async function unreconcileAccount(accountId: string): Promise<{
+  error?: string
+  unlocked?: number
+}> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  type RpcArgs = { p_account_id: string }
+  const { data, error } = await (supabase as unknown as {
+    rpc: (
+      fn: string,
+      args: RpcArgs,
+    ) => Promise<{ data: number | null; error: { message: string } | null }>
+  }).rpc('unreconcile_account', { p_account_id: accountId })
+  if (error) return { error: error.message }
+  revalidatePath('/app', 'layout')
+  return { unlocked: data ?? 0 }
 }
 
 /**

@@ -30,8 +30,14 @@ export type TransactionType = 'income' | 'expense'
 
 const CC_PAYMENT_CATEGORY_NAME = 'Pago tarjeta de crédito'
 
-function monthFromDate(iso: string): string {
-  return iso.slice(0, 7)
+// Strict YYYY-MM extraction. The regex catches malformed dates that
+// the looser isValidDate (which uses just \d{4}-\d{2}-\d{2}) lets
+// through — like "2026-13-01" — so the bucket math can't end up
+// keyed on an impossible month.
+function monthFromDate(iso: string): string | null {
+  const m = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.exec(iso)
+  if (!m) return null
+  return `${m[1]}-${m[2]}`
 }
 
 async function findCreditCardPaymentCategoryId(
@@ -59,33 +65,36 @@ async function findCreditCardPaymentCategoryId(
 async function applyCcBucketDelta(
   supabase: SupabaseClient,
   budgetId: string,
-  month: string,
+  month: string | null,
   delta: number,
   excludeCategoryId: string | null = null,
 ) {
+  if (!month) return
   if (!Number.isFinite(delta) || Math.abs(delta) < 0.005) return
   const paymentCatId = await findCreditCardPaymentCategoryId(supabase, budgetId)
   if (!paymentCatId) return
   if (excludeCategoryId && excludeCategoryId === paymentCatId) return
 
-  const { data: existing } = await supabase
-    .from('monthly_assignments')
-    .select('assigned')
-    .eq('budget_id', budgetId)
-    .eq('category_id', paymentCatId)
-    .eq('month', month)
-    .maybeSingle()
-  const previous = Number(existing?.assigned ?? 0)
-  const next = Math.round((previous + delta) * 100) / 100
-  await supabase.from('monthly_assignments').upsert(
-    {
-      budget_id: budgetId,
-      category_id: paymentCatId,
-      month,
-      assigned: next,
-    },
-    { onConflict: 'category_id,month' },
-  )
+  // Single atomic upsert via the `assignments_increment` RPC (migration
+  // 2026_05_04). Replaces the read-then-write pattern that was racey
+  // when two writes hit the same (category, month) at once.
+  type RpcArgs = {
+    p_budget_id: string
+    p_category_id: string
+    p_month: string
+    p_delta: number
+  }
+  await (supabase as unknown as {
+    rpc: (
+      fn: string,
+      args: RpcArgs,
+    ) => Promise<{ data: number | null; error: unknown }>
+  }).rpc('assignments_increment', {
+    p_budget_id: budgetId,
+    p_category_id: paymentCatId,
+    p_month: month,
+    p_delta: delta,
+  })
 }
 
 // Helpers for the CC bucket math live in `./ccBucketMath` (sync; this
@@ -283,13 +292,9 @@ export async function createTransaction(input: CreateTransactionInput) {
     }
   }
 
-  // Update the account's running balance (uses parent total only).
-  const newBalance = Math.round((Number(account.balance) + signedAmount) * 100) / 100
-  const { error: updateErr } = await supabase
-    .from('accounts')
-    .update({ balance: newBalance })
-    .eq('id', input.accountId)
-  if (updateErr) return { error: updateErr.message }
+  // Account balance is maintained by the `transactions_balance_sync`
+  // trigger (migration 2026_05_04). No manual update needed —
+  // re-introducing one here would double-count.
 
   // Credit-card auto-bucket: when this charge lands on a credit_card
   // account, move the same amount into the payment category for the
@@ -450,36 +455,11 @@ export async function updateTransaction(input: UpdateTransactionInput) {
     if (subErr) return { error: subErr.message }
   }
 
-  if (accountChanged) {
-    // Roll back the original account.
-    const { data: oldAccount } = await supabase
-      .from('accounts')
-      .select('balance')
-      .eq('id', existing.account_id)
-      .single()
-    if (oldAccount) {
-      const rolledBack =
-        Math.round((Number(oldAccount.balance) - oldSignedAmount) * 100) / 100
-      await supabase
-        .from('accounts')
-        .update({ balance: rolledBack })
-        .eq('id', existing.account_id)
-    }
-    // Apply the new amount to the new account.
-    const applied = Math.round((Number(newAccount.balance) + newSignedAmount) * 100) / 100
-    await supabase
-      .from('accounts')
-      .update({ balance: applied })
-      .eq('id', input.accountId)
-  } else {
-    // Same account: just apply the net delta.
-    const delta = newSignedAmount - oldSignedAmount
-    const applied = Math.round((Number(newAccount.balance) + delta) * 100) / 100
-    await supabase
-      .from('accounts')
-      .update({ balance: applied })
-      .eq('id', input.accountId)
-  }
+  // Balance side-effects (rolling back the old account, applying to
+  // the new one, or net-deltaing the same account) are handled by
+  // the `transactions_balance_sync` trigger now. The trigger reads
+  // OLD vs NEW on UPDATE so account changes + amount changes both
+  // flow through automatically.
 
   // Credit-card auto-bucket sync: reverse the old contribution at its
   // old month, then apply the new contribution at the new month. Months
@@ -609,15 +589,8 @@ export async function bulkCreateTransactions(input: BulkCreateInput) {
   const { error: insertErr } = await supabase.from('transactions').insert(inserts)
   if (insertErr) return { error: insertErr.message }
 
-  // Sum amounts and update balance once
-  const totalDelta =
-    Math.round(inserts.reduce((s, t) => s + t.amount, 0) * 100) / 100
-  const newBalance = Math.round((Number(account.balance) + totalDelta) * 100) / 100
-  const { error: updateErr } = await supabase
-    .from('accounts')
-    .update({ balance: newBalance })
-    .eq('id', input.accountId)
-  if (updateErr) return { error: updateErr.message }
+  // The trigger fires once per inserted row and updates the account
+  // balance — no manual sum/update needed.
 
   revalidatePath('/app', 'layout')
   return { success: true as const, imported: inserts.length }
@@ -698,22 +671,9 @@ export async function deleteTransaction(transactionId: string) {
     .in('id', ids)
   if (delErr) return { error: delErr.message }
 
-  // Roll back balances. Read each account just-in-time so successive
-  // updates against the same account compose correctly.
-  for (const u of balanceUpdates) {
-    const { data: account } = await supabase
-      .from('accounts')
-      .select('balance')
-      .eq('id', u.account_id)
-      .single()
-    if (!account) continue
-    const newBalance =
-      Math.round((Number(account.balance) - u.amount) * 100) / 100
-    await supabase
-      .from('accounts')
-      .update({ balance: newBalance })
-      .eq('id', u.account_id)
-  }
+  // Balance rollbacks happen in the trigger now — both the parent
+  // delete and the transfer-twin delete fire `transactions_balance_sync`
+  // with TG_OP = 'DELETE' which subtracts the amount from the account.
 
   // Reverse the CC bucket contribution if this was a credit-card charge.
   if (accSnap?.type === 'credit_card') {
@@ -1133,13 +1093,9 @@ export async function createTransfer(input: CreateTransferInput) {
     .update({ transfer_transaction_id: dstRow.id })
     .eq('id', srcRow.id)
 
-  // Update both account balances.
-  const newFromBalance =
-    Math.round((Number(fromAcct.balance) - amount) * 100) / 100
-  const newToBalance =
-    Math.round((Number(toAcct.balance) + amount) * 100) / 100
-  await supabase.from('accounts').update({ balance: newFromBalance }).eq('id', fromAcct.id)
-  await supabase.from('accounts').update({ balance: newToBalance }).eq('id', toAcct.id)
+  // Both balances are updated by the trigger as each leg's INSERT
+  // fires (source.amount = -amount, dest.amount = +amount). No manual
+  // update needed.
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -1228,36 +1184,11 @@ export async function updateTransfer(input: UpdateTransferInput) {
   const newAmount = Math.round(input.amount * 100) / 100
   const memo = input.memo?.trim() || null
 
-  // 1. Roll back the old amounts on the OLD accounts.
-  const oldSourceAmount = Number(sourceLeg.amount) // negative
-  const oldDestAmount = Number(destLeg.amount) // positive
-
-  const { data: oldSrcAcc } = await supabase
-    .from('accounts')
-    .select('balance')
-    .eq('id', sourceLeg.account_id as string)
-    .single()
-  const { data: oldDstAcc } = await supabase
-    .from('accounts')
-    .select('balance')
-    .eq('id', destLeg.account_id as string)
-    .single()
-  if (oldSrcAcc) {
-    const rolled = Math.round((Number(oldSrcAcc.balance) - oldSourceAmount) * 100) / 100
-    await supabase
-      .from('accounts')
-      .update({ balance: rolled })
-      .eq('id', sourceLeg.account_id as string)
-  }
-  if (oldDstAcc) {
-    const rolled = Math.round((Number(oldDstAcc.balance) - oldDestAmount) * 100) / 100
-    await supabase
-      .from('accounts')
-      .update({ balance: rolled })
-      .eq('id', destLeg.account_id as string)
-  }
-
-  // 2. Update both legs in-place with the new accounts/amount/date/memo.
+  // Update both legs in-place. The `transactions_balance_sync`
+  // trigger handles the four-way balance dance automatically: when
+  // an UPDATE changes account_id, it subtracts OLD.amount from the
+  // old account and adds NEW.amount to the new one. When only the
+  // amount changes, it nets the delta on the same account.
   const { error: srcUpdErr } = await supabase
     .from('transactions')
     .update({
@@ -1283,28 +1214,6 @@ export async function updateTransfer(input: UpdateTransferInput) {
     })
     .eq('id', destLeg.id as string)
   if (dstUpdErr) return { error: dstUpdErr.message }
-
-  // 3. Apply the new amounts to the NEW accounts (read fresh balances —
-  // they may be the same accounts as before, in which case the numbers
-  // already reflect the rollback).
-  const { data: freshFrom } = await supabase
-    .from('accounts')
-    .select('balance')
-    .eq('id', fromAcct.id)
-    .single()
-  const { data: freshTo } = await supabase
-    .from('accounts')
-    .select('balance')
-    .eq('id', toAcct.id)
-    .single()
-  if (freshFrom) {
-    const applied = Math.round((Number(freshFrom.balance) - newAmount) * 100) / 100
-    await supabase.from('accounts').update({ balance: applied }).eq('id', fromAcct.id)
-  }
-  if (freshTo) {
-    const applied = Math.round((Number(freshTo.balance) + newAmount) * 100) / 100
-    await supabase.from('accounts').update({ balance: applied }).eq('id', toAcct.id)
-  }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
