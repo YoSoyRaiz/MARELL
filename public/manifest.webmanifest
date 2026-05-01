@@ -1,0 +1,48 @@
+{
+  "name": "MARELL",
+  "short_name": "MARELL",
+  "description": "Control total de tu dinero, sin complicaciones.",
+  "lang": "es-DO",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0B0C",
+  "theme_color": "#0B0B0C",
+  "icons": [
+    {
+      "src": "/brand/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/logo-main.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Asignar dinero",
+      "short_name": "Asignar",
+      "url": "/app/plan",
+      "icons": [{ "src": "/brand/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Nueva transacción",
+      "short_name": "Transacción",
+      "url": "/app/transacciones",
+      "icons": [{ "src": "/brand/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Cuentas",
+      "short_name": "Cuentas",
+      "url": "/app/cuentas",
+      "icons": [{ "src": "/brand/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "categories": ["finance", "productivity", "lifestyle"],
+  "prefer_related_applications": false
+}

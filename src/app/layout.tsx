@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, IBM_Plex_Sans, Varela_Round } from 'next/font/google'
 import './globals.css'
 import { ConfirmProvider } from '@/components/ui/ConfirmDialog'
@@ -27,6 +27,24 @@ export const metadata: Metadata = {
   title: 'MARELL — Clarity in every dollar',
   description:
     'Control total de tu dinero, sin complicaciones. MARELL te ayuda a asignar, rastrear y optimizar cada peso para que alcances tus metas más rápido.',
+  manifest: '/manifest.webmanifest',
+  applicationName: 'MARELL',
+  appleWebApp: {
+    capable: true,
+    title: 'MARELL',
+    statusBarStyle: 'black-translucent',
+  },
+  icons: {
+    icon: '/brand/icon.svg',
+    apple: '/brand/icon.svg',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0B0B0C',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 }
 
 export default function RootLayout({

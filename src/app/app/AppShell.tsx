@@ -7,6 +7,7 @@ import { ReadyToAssignProvider } from './ReadyToAssignProvider'
 import { MobileNavProvider } from './MobileNavProvider'
 import { CurrencyProvider } from './CurrencyProvider'
 import { KeyboardShortcuts } from './KeyboardShortcuts'
+import { OfflineBanner } from './OfflineBanner'
 import type { NotificationItem } from './NotificationBell'
 
 interface AppShellProps {
@@ -47,6 +48,7 @@ export function AppShell({
             isAdmin={isAdmin}
           />
           <div className="flex-1 flex flex-col min-w-0">
+            <OfflineBanner />
             <TopBar
               displayName={displayName}
               currency={budget?.currency ?? 'DOP'}
