@@ -33,34 +33,33 @@ function LiIcon({ size = 15 }: { size?: number }) {
   )
 }
 
+// Links to actual app routes when they exist; section anchors when
+// they're still on the marketing page only.
 const columns = [
   {
     heading: 'Producto',
     links: [
-      { label: 'Resumen',       href: '#producto' },
-      { label: 'Cuentas',       href: '#producto' },
-      { label: 'Análisis',      href: '#producto' },
-      { label: 'Transacciones', href: '#producto' },
-      { label: 'Metas',         href: '#producto' },
+      { label: 'Cómo funciona', href: '#como-funciona' },
+      { label: 'El problema',   href: '#problema' },
+      { label: 'Cuentas y dinero', href: '#producto' },
+      { label: 'Familia',       href: '/app/familia' },
+      { label: 'Cálculos RD',   href: '/app/herramientas' },
       { label: 'Precios',       href: '/pricing' },
     ],
   },
   {
-    heading: 'Recursos',
+    heading: 'Aprende',
     links: [
-      { label: 'Blog',                  href: '#recursos' },
-      { label: 'Guías',                 href: '#recursos' },
-      { label: 'Preguntas frecuentes',  href: '#recursos' },
-      { label: 'Centro de ayuda',       href: '#recursos' },
+      { label: 'Empezar gratis',    href: '/signup' },
+      { label: 'Cómo funciona',     href: '#como-funciona' },
+      { label: 'Iniciar sesión',    href: '/login' },
     ],
   },
   {
     heading: 'Empresa',
     links: [
       { label: 'Sobre nosotros',     href: '#sobre' },
-      { label: 'Trabaja con nosotros', href: '#sobre' },
-      { label: 'Contacto',           href: '#sobre' },
-      { label: 'Prensa',             href: '#sobre' },
+      { label: 'Contacto',           href: 'mailto:hola@marell.app' },
     ],
   },
   {

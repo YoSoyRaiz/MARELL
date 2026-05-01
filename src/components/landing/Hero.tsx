@@ -1,6 +1,6 @@
+import Image from 'next/image'
 import { ArrowRight, Play, Check, Star } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { DashboardPreview } from './DashboardPreview'
 import { InteractiveCard } from './InteractiveCard'
 
 const trustSignals = [
@@ -111,7 +111,9 @@ export function LandingHero() {
             </div>
           </div>
 
-          {/* Right: dashboard preview */}
+          {/* Right: real product screenshot. Replace
+              /public/landing/dashboard-hero.png with a fresh capture
+              whenever the dashboard's UI changes meaningfully. */}
           <div className="relative">
             <div
               aria-hidden
@@ -123,9 +125,17 @@ export function LandingHero() {
             />
             <InteractiveCard
               hue="green"
-              surface="rounded-[28px] border border-white/[0.13] bg-gradient-to-b from-white/[0.08] to-white/[0.03] p-5 shadow-[0_30px_80px_rgba(0,0,0,.45)]"
+              surface="rounded-[28px] border border-white/[0.13] bg-gradient-to-b from-white/[0.08] to-white/[0.03] p-2 shadow-[0_30px_80px_rgba(0,0,0,.45)]"
             >
-              <DashboardPreview />
+              <Image
+                src="/landing/dashboard-hero.png"
+                alt="Dashboard de MARELL — vista de Resumen con KPIs, categorías y transacciones"
+                width={2000}
+                height={1080}
+                priority
+                sizes="(min-width: 1024px) 55vw, 100vw"
+                className="rounded-[22px] w-full h-auto"
+              />
             </InteractiveCard>
           </div>
         </div>

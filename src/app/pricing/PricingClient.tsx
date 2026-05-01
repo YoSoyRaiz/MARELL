@@ -44,15 +44,24 @@ export function PricingClient({ userId, userEmail }: Props) {
     )
   }
 
+  // Logged-in users go straight to the in-app upgrade page where the
+  // Azul + PayPal flow lives. Bank-transfer is kept as a fallback in
+  // the modal for users who prefer to pay manually.
   return (
-    <>
+    <div className="mt-8 flex flex-col items-center gap-3">
+      <Link
+        href="/app/upgrade"
+        className="h-11 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter] px-6"
+      >
+        Pasar a Pro con tarjeta o PayPal
+        <ArrowRight size={14} strokeWidth={2.4} />
+      </Link>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-8 h-11 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter]"
+        className="text-[12px] text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline"
       >
-        Pasar a Pro
-        <ArrowRight size={14} strokeWidth={2.4} />
+        ¿Prefieres pagar por transferencia bancaria?
       </button>
 
       {open && (
@@ -62,7 +71,7 @@ export function PricingClient({ userId, userEmail }: Props) {
           onClose={() => setOpen(false)}
         />
       )}
-    </>
+    </div>
   )
 }
 
