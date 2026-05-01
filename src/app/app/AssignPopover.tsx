@@ -200,20 +200,41 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
   }
 
   return (
-    <div
-      ref={popoverRef}
-      role="dialog"
-      aria-label="Asignar dinero rápido"
-      className="absolute right-0 top-full mt-2 w-[360px] sm:w-[400px] max-h-[80vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step z-40"
-    >
-      <header className="px-5 pt-4 pb-3 border-b border-[var(--border)]">
-        <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-2)]">
-          Asignar dinero
+    <>
+      {/* Backdrop only on mobile — desktop uses click-outside on the
+          popover itself. */}
+      <div
+        className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-40 animate-step"
+        onClick={onClose}
+        aria-hidden
+      />
+      <div
+        ref={popoverRef}
+        role="dialog"
+        aria-label="Asignar dinero rápido"
+        className={[
+          // Mobile: full-width bottom sheet that respects safe-area
+          // and clears the MobileTabBar.
+          'fixed inset-x-0 bottom-0 max-h-[88dvh] rounded-t-3xl pb-[env(safe-area-inset-bottom)]',
+          // Desktop: anchored popover under the topbar pill.
+          'lg:absolute lg:inset-x-auto lg:bottom-auto lg:right-0 lg:top-full lg:mt-2 lg:w-[400px] lg:max-h-[80vh] lg:rounded-2xl lg:pb-0',
+          // Common.
+          'overflow-y-auto border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] lg:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step z-50',
+        ].join(' ')}
+      >
+        {/* Drag handle on mobile to signal "swipe down to close" — purely
+            visual; tap anywhere outside also closes. */}
+        <div className="lg:hidden flex justify-center pt-2 pb-1">
+          <div className="w-10 h-1 rounded-full bg-white/[0.15]" />
         </div>
-        <p className="text-[12px] text-[var(--muted)] mt-0.5 leading-relaxed">
-          Manda un monto a una categoría sin abrir el plan completo.
-        </p>
-      </header>
+        <header className="px-5 pt-3 pb-3 border-b border-[var(--border)]">
+          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+            Asignar dinero
+          </div>
+          <p className="text-[13px] text-[var(--muted)] mt-1 leading-relaxed">
+            Manda un monto a una categoría sin abrir el plan completo.
+          </p>
+        </header>
 
       {/* Tab switcher */}
       {ctx !== null && (
@@ -319,7 +340,8 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               value={amountText}
               onChange={(e) => setAmountText(formatTyping(e.target.value))}
               placeholder="0.00"
-              className="w-full mt-1 !text-[18px] !font-bold !py-3 !px-4 !rounded-xl tabular-nums num"
+              autoFocus
+              className="w-full mt-1 !text-[28px] sm:!text-[24px] !font-bold !py-4 !px-4 !rounded-xl tabular-nums num"
             />
           </div>
 
@@ -335,7 +357,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               id="qa-cat"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full mt-1 !text-[14px] !py-3 !px-4 !rounded-xl appearance-none cursor-pointer"
+              className="w-full mt-1 !text-[15px] !py-3.5 !px-4 !rounded-xl appearance-none cursor-pointer"
             >
               {grouped.map((g) => (
                 <optgroup key={g.name} label={g.name}>
@@ -364,7 +386,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <button
             type="submit"
             disabled={!selectedCategory || amount <= 0}
-            className="w-full h-11 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter] disabled:opacity-40 disabled:pointer-events-none"
+            className="w-full h-12 sm:h-11 gradient-bg text-[#0B0B0C] font-semibold text-[15px] sm:text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter] disabled:opacity-40 disabled:pointer-events-none"
           >
             {mode === 'add' ? 'Sumar' : 'Reemplazar'}
             <ArrowRight size={14} strokeWidth={2.4} />
@@ -413,7 +435,8 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <ArrowRight size={11} strokeWidth={2.4} />
         </Link>
       </footer>
-    </div>
+      </div>
+    </>
   )
 }
 

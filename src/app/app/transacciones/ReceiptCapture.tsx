@@ -130,32 +130,36 @@ export function ReceiptCapture({
       />
 
       {url ? (
-        <div className="relative rounded-xl overflow-hidden border border-[var(--border)]">
+        <div className="relative rounded-2xl overflow-hidden border border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={url}
             alt="Recibo adjunto"
             className="w-full max-h-64 object-cover"
           />
-          <div className="absolute top-2 right-2 flex items-center gap-1.5">
+          <div className="absolute top-3 right-3 flex items-center gap-2">
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={pending}
-              className="w-9 h-9 rounded-lg bg-black/60 backdrop-blur-sm text-white hover:bg-black/80 flex items-center justify-center transition-colors disabled:opacity-50"
+              className="min-w-[44px] min-h-[44px] rounded-xl bg-black/70 backdrop-blur-sm text-white hover:bg-black/85 flex items-center justify-center transition-colors disabled:opacity-50"
               aria-label="Reemplazar foto"
             >
-              <Camera size={14} strokeWidth={2.4} />
+              <Camera size={18} strokeWidth={2.4} />
             </button>
             <button
               type="button"
               onClick={handleRemove}
               disabled={pending}
-              className="w-9 h-9 rounded-lg bg-black/60 backdrop-blur-sm text-[var(--coral)] hover:bg-black/80 flex items-center justify-center transition-colors disabled:opacity-50"
+              className="min-w-[44px] min-h-[44px] rounded-xl bg-black/70 backdrop-blur-sm text-[var(--coral)] hover:bg-black/85 flex items-center justify-center transition-colors disabled:opacity-50"
               aria-label="Quitar foto"
             >
-              <X size={14} strokeWidth={2.4} />
+              <X size={18} strokeWidth={2.4} />
             </button>
+          </div>
+          <div className="px-4 py-2 bg-[rgba(61,220,151,0.10)] border-t border-[var(--brand-2)]/20 text-[12px] text-[var(--brand-2)] font-medium inline-flex items-center gap-1.5 w-full">
+            <Camera size={12} strokeWidth={2.4} />
+            Recibo guardado
           </div>
         </div>
       ) : (
@@ -163,24 +167,30 @@ export function ReceiptCapture({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={pending}
-          className="w-full rounded-xl border border-dashed border-[var(--border2)] bg-[var(--bg)]/40 hover:bg-white/[0.02] hover:border-[var(--brand-2)]/40 px-4 py-4 flex items-center gap-3 transition-colors disabled:opacity-60"
+          className="w-full rounded-2xl border-2 border-dashed border-[var(--brand-2)]/40 bg-[rgba(61,220,151,0.04)] hover:bg-[rgba(61,220,151,0.08)] hover:border-[var(--brand-2)]/60 active:scale-[0.99] px-5 py-5 flex items-center gap-4 transition-all disabled:opacity-60"
         >
-          <div className="w-10 h-10 rounded-lg bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+          <div className="w-14 h-14 rounded-2xl gradient-bg text-[#0B0B0C] flex items-center justify-center shrink-0 shadow-[0_8px_24px_rgba(61,220,151,0.35)]">
             {pending ? (
-              <span className="inline-block w-4 h-4 rounded-full border-2 border-[var(--brand-2)]/30 border-t-[var(--brand-2)] animate-spin" />
+              <span className="inline-block w-5 h-5 rounded-full border-[2.5px] border-[#0B0B0C]/30 border-t-[#0B0B0C] animate-spin" />
             ) : (
-              <Camera size={16} strokeWidth={2.2} />
+              <Camera size={22} strokeWidth={2.4} />
             )}
           </div>
           <div className="text-left flex-1 min-w-0">
-            <div className="text-[13px] font-semibold text-[var(--text)]">
-              {pending ? 'Subiendo…' : 'Foto del recibo'}
-            </div>
-            <div className="text-[11px] text-[var(--muted)] mt-0.5">
-              <span className="inline-flex items-center gap-1">
-                <ImageIcon size={10} strokeWidth={2.2} />
-                Opcional · máx 5 MB
+            <div className="inline-flex items-center gap-2 mb-1">
+              <span className="text-[15px] font-bold text-[var(--text)]">
+                {pending ? 'Subiendo…' : 'Tomar foto del recibo'}
               </span>
+              {!pending && (
+                <span className="text-[9px] uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[var(--brand-2)]/15 text-[var(--brand-2)]">
+                  Rápido
+                </span>
+              )}
+            </div>
+            <div className="text-[12px] text-[var(--text2)] leading-snug">
+              {pending
+                ? 'Un momento, cargando tu foto…'
+                : 'Apunta al recibo y registra el gasto en segundos.'}
             </div>
           </div>
         </button>

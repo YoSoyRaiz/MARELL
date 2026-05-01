@@ -343,7 +343,7 @@ export function TransactionFormModal({
   const isEdit = mode === 'edit'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
         onClick={onClose}
@@ -354,7 +354,7 @@ export function TransactionFormModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="tx-form-title"
-        className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
+        className="relative w-full max-w-md max-h-[100dvh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
@@ -445,6 +445,17 @@ export function TransactionFormModal({
             )}
           </div>
 
+          {/* Receipt camera at the TOP so it's the first thing the user
+              sees — avoids the "scroll to find" pattern. Skipped for
+              transfers since those don't have a physical receipt. */}
+          {!isTransfer && (
+            <ReceiptCapture
+              initialUrl={initial?.receiptUrl ?? null}
+              initialPath={initial?.receiptPath ?? null}
+              onChange={(next) => setReceipt(next)}
+            />
+          )}
+
           <Field label="Monto">
             <MoneyInput value={amount} onChange={setAmount} placeholder="0.00" />
           </Field>
@@ -454,7 +465,7 @@ export function TransactionFormModal({
               type="date"
               value={date}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
+              className="w-full !text-[16px] sm:!text-[14px] !py-3.5 sm:!py-3 !px-4 !rounded-xl"
             />
           </Field>
 
@@ -510,7 +521,7 @@ export function TransactionFormModal({
                   : 'Supermercado Nacional, etc.'
               }
               maxLength={80}
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
+              className="w-full !text-[16px] sm:!text-[14px] !py-3.5 sm:!py-3 !px-4 !rounded-xl"
             />
           </Field>
           )}
@@ -707,22 +718,9 @@ export function TransactionFormModal({
               placeholder="Notas adicionales..."
               maxLength={200}
               rows={2}
-              className="w-full !text-[14px] !py-2.5 !px-4 !rounded-xl resize-none"
+              className="w-full !text-[16px] sm:!text-[14px] !py-3 sm:!py-2.5 !px-4 !rounded-xl resize-none"
             />
           </Field>
-
-          {/* Receipt photo — opens the rear camera on mobile, file
-              picker on desktop. Hidden for transfers since they don't
-              correspond to a single physical receipt. */}
-          {!isTransfer && (
-            <Field label="Recibo" hint="opcional">
-              <ReceiptCapture
-                initialUrl={initial?.receiptUrl ?? null}
-                initialPath={initial?.receiptPath ?? null}
-                onChange={(next) => setReceipt(next)}
-              />
-            </Field>
-          )}
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
@@ -732,12 +730,12 @@ export function TransactionFormModal({
           )}
         </div>
 
-        <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-white/[0.01]">
+        <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--s1)] sticky bottom-0">
           <button
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-lg transition-colors disabled:opacity-60"
+            className="h-12 sm:h-10 px-4 text-[14px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-xl sm:rounded-lg transition-colors disabled:opacity-60"
           >
             Cancelar
           </button>
@@ -745,7 +743,7 @@ export function TransactionFormModal({
             type="button"
             onClick={handleSubmit}
             disabled={!valid || pending}
-            className="h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-2"
+            className="h-12 sm:h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[14px] sm:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-2"
           >
             {pending ? (
               <>
