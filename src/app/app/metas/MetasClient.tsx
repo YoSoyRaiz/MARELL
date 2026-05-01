@@ -10,6 +10,7 @@ import {
   Repeat,
   PiggyBank,
   Trash2,
+  CalendarClock,
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
@@ -194,7 +195,9 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
               const remaining = Math.max(0, g.goalAmount - g.current)
               const monthsLeft = g.goalDate ? monthsUntil(g.goalDate) : null
               const monthlyNeeded =
-                monthsLeft !== null && monthsLeft > 0 && g.goalType === 'savings_balance'
+                monthsLeft !== null &&
+                monthsLeft > 0 &&
+                (g.goalType === 'savings_balance' || g.goalType === 'needed_by')
                   ? remaining / monthsLeft
                   : null
 
@@ -233,6 +236,11 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                           <span className="inline-flex items-center gap-1">
                             <Repeat size={10} strokeWidth={2} />
                             Mensual
+                          </span>
+                        ) : g.goalType === 'needed_by' ? (
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarClock size={10} strokeWidth={2} />
+                            Por fecha
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1">

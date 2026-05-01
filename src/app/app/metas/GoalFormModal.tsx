@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, AlertCircle, Trash2, Repeat, PiggyBank } from 'lucide-react'
+import { X, AlertCircle, Trash2, Repeat, PiggyBank, CalendarClock } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { updateGoal, clearGoal, type GoalType } from './actions'
@@ -85,7 +85,8 @@ export function GoalFormModal({
     categoryId !== '' &&
     amount !== null &&
     amount > 0 &&
-    (date === '' || /^\d{4}-\d{2}-\d{2}$/.test(date))
+    (date === '' || /^\d{4}-\d{2}-\d{2}$/.test(date)) &&
+    (goalType !== 'needed_by' || /^\d{4}-\d{2}-\d{2}$/.test(date))
 
   const handleSubmit = () => {
     if (!valid || amount === null) return
@@ -244,46 +245,69 @@ export function GoalFormModal({
 
           {/* Type segmented */}
           <Field label="Tipo de meta">
-            <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--bg)] rounded-xl">
+            <div className="grid grid-cols-3 gap-1 p-1 bg-[var(--bg)] rounded-xl">
               <button
                 type="button"
                 onClick={() => setGoalType('monthly_spending')}
-                className={`py-2.5 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   goalType === 'monthly_spending'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
                 }`}
               >
-                <Repeat size={14} strokeWidth={2.2} />
+                <Repeat size={13} strokeWidth={2.2} />
                 Mensual
               </button>
               <button
                 type="button"
                 onClick={() => setGoalType('savings_balance')}
-                className={`py-2.5 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   goalType === 'savings_balance'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
                 }`}
               >
-                <PiggyBank size={14} strokeWidth={2.2} />
+                <PiggyBank size={13} strokeWidth={2.2} />
                 Acumulada
+              </button>
+              <button
+                type="button"
+                onClick={() => setGoalType('needed_by')}
+                className={`py-2.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                  goalType === 'needed_by'
+                    ? 'gradient-bg text-[#0B0B0C]'
+                    : 'text-[var(--text2)] hover:text-[var(--text)]'
+                }`}
+              >
+                <CalendarClock size={13} strokeWidth={2.2} />
+                Por fecha
               </button>
             </div>
             <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-2">
               {goalType === 'monthly_spending'
                 ? 'Apartas este monto cada mes (ej: gimnasio, internet).'
-                : 'Acumulas hasta llegar al monto total (ej: fondo de emergencia, vacaciones).'}
+                : goalType === 'savings_balance'
+                  ? 'Acumulas hasta llegar al monto total (ej: fondo de emergencia, viajes).'
+                  : 'Te decimos cuánto apartar cada mes para llegar a tiempo (ej: boda, prima de casa).'}
             </p>
           </Field>
 
           <Field
-            label={goalType === 'monthly_spending' ? 'Monto mensual' : 'Monto total objetivo'}
+            label={
+              goalType === 'monthly_spending'
+                ? 'Monto mensual'
+                : goalType === 'needed_by'
+                  ? 'Total que necesitas'
+                  : 'Monto total objetivo'
+            }
           >
             <MoneyInput value={amount} onChange={setAmount} placeholder="0.00" />
           </Field>
 
-          <Field label="Fecha objetivo" hint="opcional">
+          <Field
+            label="Fecha objetivo"
+            hint={goalType === 'needed_by' ? 'requerida' : 'opcional'}
+          >
             <input
               type="date"
               value={date}
@@ -291,7 +315,9 @@ export function GoalFormModal({
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
             <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
-              Útil para metas con plazo (boda, vacaciones, prima de casa).
+              {goalType === 'needed_by'
+                ? 'Fecha en que necesitas tener el dinero completo.'
+                : 'Útil para metas con plazo (boda, vacaciones, prima de casa).'}
             </p>
           </Field>
 

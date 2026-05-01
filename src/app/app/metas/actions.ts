@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
-export type GoalType = 'monthly_spending' | 'savings_balance'
+export type GoalType = 'monthly_spending' | 'savings_balance' | 'needed_by'
 
 export interface UpdateGoalInput {
   categoryId: string
@@ -17,7 +17,11 @@ const isValidDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
 export async function updateGoal(input: UpdateGoalInput) {
   if (!input.categoryId) return { error: 'Categoría requerida' }
-  if (input.goalType !== 'monthly_spending' && input.goalType !== 'savings_balance') {
+  if (
+    input.goalType !== 'monthly_spending' &&
+    input.goalType !== 'savings_balance' &&
+    input.goalType !== 'needed_by'
+  ) {
     return { error: 'Tipo de meta inválido' }
   }
   if (!Number.isFinite(input.goalAmount) || input.goalAmount <= 0) {
@@ -25,6 +29,9 @@ export async function updateGoal(input: UpdateGoalInput) {
   }
   if (input.goalDate !== null && !isValidDate(input.goalDate)) {
     return { error: 'Fecha inválida' }
+  }
+  if (input.goalType === 'needed_by' && !input.goalDate) {
+    return { error: 'Las metas con fecha requieren una fecha objetivo' }
   }
 
   const trimmedName = input.customName?.trim() ?? ''

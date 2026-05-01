@@ -72,9 +72,11 @@ export default async function MetasPage() {
     )
   }
 
-  // Fetch this month's assignments + lifetime data for savings goals
+  // Fetch this month's assignments + lifetime data for goals whose
+  // progress is measured against lifetime balance (savings + by-date).
+  const lifetimeGoalTypes = new Set(['savings_balance', 'needed_by'])
   const savingsCatIds = goalCats
-    .filter((c) => (c.goal_type as string) === 'savings_balance')
+    .filter((c) => lifetimeGoalTypes.has(c.goal_type as string))
     .map((c) => c.id as string)
 
   const [monthAssignsRes, lifetimeAssignsRes, lifetimeTxnsRes, lifetimeSubsRes] = await Promise.all([
@@ -132,10 +134,12 @@ export default async function MetasPage() {
     const id = c.id as string
     const type = (c.goal_type as string) || 'monthly_spending'
     const goalType: GoalType =
-      type === 'savings_balance' ? 'savings_balance' : 'monthly_spending'
+      type === 'savings_balance' || type === 'needed_by'
+        ? (type as GoalType)
+        : 'monthly_spending'
 
     let current = 0
-    if (goalType === 'savings_balance') {
+    if (goalType === 'savings_balance' || goalType === 'needed_by') {
       const assigned = lifetimeAssignedById.get(id) ?? 0
       const spent = lifetimeSpentById.get(id) ?? 0
       current = assigned - spent

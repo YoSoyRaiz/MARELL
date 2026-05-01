@@ -310,13 +310,18 @@ export default async function ResumenPage() {
   // ── Goals preview (up to 4) ────────────────────────────────
   // Mirrors the calculation on /app/metas: monthly_spending uses the current
   // month's assignment, savings_balance uses lifetime (assigned − spent).
-  type GoalType = 'monthly_spending' | 'savings_balance'
+  type GoalType = 'monthly_spending' | 'savings_balance' | 'needed_by'
 
   const goalCats = catsData.filter(
     (c) => c.goal_amount !== null && Number(c.goal_amount) > 0,
   )
+  // savings_balance and needed_by both measure progress against lifetime
+  // balance, so they share the same query path.
   const savingsGoalIds = goalCats
-    .filter((c) => (c.goal_type as string | null) === 'savings_balance')
+    .filter((c) => {
+      const t = c.goal_type as string | null
+      return t === 'savings_balance' || t === 'needed_by'
+    })
     .map((c) => c.id as string)
 
   // For savings goals we need lifetime aggregates. Skip the queries entirely
@@ -357,11 +362,14 @@ export default async function ResumenPage() {
   const goals = goalCats
     .map((c) => {
       const id = c.id as string
+      const rawType = c.goal_type as string | null
       const goalType: GoalType =
-        (c.goal_type as string) === 'savings_balance' ? 'savings_balance' : 'monthly_spending'
+        rawType === 'savings_balance' || rawType === 'needed_by'
+          ? (rawType as GoalType)
+          : 'monthly_spending'
       const goal = Number(c.goal_amount ?? 0)
       let current = 0
-      if (goalType === 'savings_balance') {
+      if (goalType === 'savings_balance' || goalType === 'needed_by') {
         current = (lifetimeAssignedById.get(id) ?? 0) - (lifetimeSpentById.get(id) ?? 0)
       } else {
         const a = assignmentsData.find((x) => x.category_id === id)
