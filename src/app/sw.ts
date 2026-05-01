@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 // Service worker entry. Built by `@serwist/next` at compile time and
 // served from the app root as `/sw.js`. Strategies:
 //
