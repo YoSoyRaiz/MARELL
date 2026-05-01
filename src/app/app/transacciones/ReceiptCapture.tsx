@@ -1,8 +1,16 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Camera, X, Image as ImageIcon } from 'lucide-react'
+import { Camera, X, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+
+export interface ParsedReceipt {
+  amount: number | null
+  date: string | null
+  payee: string | null
+  currency: 'DOP' | 'USD' | null
+  confidence: 'high' | 'medium' | 'low'
+}
 
 interface ReceiptCaptureProps {
   /** Existing receipt URL (when editing). */
@@ -13,6 +21,9 @@ interface ReceiptCaptureProps {
   /** Fires whenever the receipt changes. Called with `{ url, path }`
    *  on upload/replace and with `null` on remove. */
   onChange: (next: { url: string; path: string } | null) => void
+  /** Fires once vision OCR returns. Form uses this to pre-fill amount,
+   *  date and payee. Only called on a fresh upload, not on remove. */
+  onParsed?: (parsed: ParsedReceipt) => void
 }
 
 const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
@@ -33,12 +44,47 @@ export function ReceiptCapture({
   initialUrl,
   initialPath,
   onChange,
+  onParsed,
 }: ReceiptCaptureProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [url, setUrl] = useState<string | null>(initialUrl ?? null)
   const [path, setPath] = useState<string | null>(initialPath ?? null)
   const [pending, setPending] = useState(false)
+  const [parsing, setParsing] = useState(false)
+  const [parseHint, setParseHint] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Send the photo to /api/receipts/parse and forward the JSON to the
+  // parent form. Failures are silent — the user can still type the
+  // fields manually. Runs concurrently with the storage upload so the
+  // total wait is whichever takes longer.
+  const runParse = async (file: File) => {
+    if (!onParsed) return
+    setParsing(true)
+    setParseHint(null)
+    try {
+      const fd = new FormData()
+      fd.append('image', file)
+      const resp = await fetch('/api/receipts/parse', {
+        method: 'POST',
+        body: fd,
+      })
+      if (!resp.ok) return
+      const json = (await resp.json()) as ParsedReceipt
+      onParsed(json)
+      const fields: string[] = []
+      if (json.amount !== null) fields.push('monto')
+      if (json.date) fields.push('fecha')
+      if (json.payee) fields.push('comercio')
+      if (fields.length > 0) {
+        setParseHint(`Detectado: ${fields.join(' · ')}`)
+      }
+    } catch {
+      // Network or parse error — ignore. The user types manually.
+    } finally {
+      setParsing(false)
+    }
+  }
 
   const handleFile = async (file: File) => {
     if (file.size > MAX_BYTES) {
@@ -51,6 +97,8 @@ export function ReceiptCapture({
     }
     setError(null)
     setPending(true)
+    // Kick off vision OCR in parallel with the storage upload.
+    void runParse(file)
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -158,8 +206,22 @@ export function ReceiptCapture({
             </button>
           </div>
           <div className="px-4 py-2 bg-[rgba(61,220,151,0.10)] border-t border-[var(--brand-2)]/20 text-[12px] text-[var(--brand-2)] font-medium inline-flex items-center gap-1.5 w-full">
-            <Camera size={12} strokeWidth={2.4} />
-            Recibo guardado
+            {parsing ? (
+              <>
+                <span className="inline-block w-3 h-3 rounded-full border-[1.5px] border-[var(--brand-2)]/40 border-t-[var(--brand-2)] animate-spin" />
+                Leyendo recibo…
+              </>
+            ) : parseHint ? (
+              <>
+                <Sparkles size={12} strokeWidth={2.4} />
+                {parseHint}
+              </>
+            ) : (
+              <>
+                <Camera size={12} strokeWidth={2.4} />
+                Recibo guardado
+              </>
+            )}
           </div>
         </div>
       ) : (

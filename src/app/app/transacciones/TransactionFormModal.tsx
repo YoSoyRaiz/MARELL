@@ -453,6 +453,19 @@ export function TransactionFormModal({
               initialUrl={initial?.receiptUrl ?? null}
               initialPath={initial?.receiptPath ?? null}
               onChange={(next) => setReceipt(next)}
+              onParsed={(parsed) => {
+                // Only fill fields the user hasn't touched yet, so a
+                // re-scan never destroys typed input.
+                if (parsed.amount !== null && (amount === null || amount === 0)) {
+                  setAmount(parsed.amount)
+                }
+                if (parsed.date && date === todayLocal()) {
+                  setDate(parsed.date)
+                }
+                if (parsed.payee && payeeName.trim() === '') {
+                  setPayeeName(parsed.payee)
+                }
+              }}
             />
           )}
 
