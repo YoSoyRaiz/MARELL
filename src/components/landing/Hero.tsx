@@ -23,9 +23,12 @@ export function LandingHero() {
       />
       <div className="grid-fade absolute inset-0 -z-10" aria-hidden />
 
-      <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-12 lg:pt-16">
-        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.25fr] lg:gap-12 lg:items-center">
-          {/* Left: copy */}
+      {/* Left side stays inside the 1400px content rail; the right
+          side bleeds to the viewport edge so the dashboard screenshot
+          fills the full visual area on desktop. */}
+      <div className="grid gap-12 pb-24 pt-12 lg:pt-16 lg:grid-cols-[0.6fr_1.4fr] lg:gap-12 lg:items-stretch">
+        {/* Left: copy */}
+        <div className="px-6 lg:pl-[max(24px,calc((100vw-1400px)/2))] lg:pr-0">
           <div className="max-w-xl">
             <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-[var(--text2)]">
               <span className="size-2 rounded-full bg-[var(--success)] shadow-[0_0_18px_rgba(61,220,151,.75)]" />
@@ -111,33 +114,35 @@ export function LandingHero() {
             </div>
           </div>
 
-          {/* Right: real product screenshot. Replace
-              /public/landing/dashboard-hero.jpg with a fresh capture
-              whenever the dashboard's UI changes meaningfully. */}
-          <div className="relative">
-            <div
-              aria-hidden
-              className="absolute -inset-6 -z-10 rounded-[32px] opacity-60 blur-3xl"
-              style={{
-                background:
-                  'linear-gradient(135deg, rgba(46,196,182,.18), rgba(61,220,151,.12), rgba(138,201,38,.06))',
-              }}
+        </div>
+
+        {/* Right: real product screenshot. Bleeds to the viewport edge
+            on desktop so the image dominates the hero. Replace
+            /public/landing/dashboard-hero.jpg with a fresh capture
+            whenever the dashboard's UI changes meaningfully. */}
+        <div className="relative px-6 lg:px-0 lg:pr-0 flex items-center">
+          <div
+            aria-hidden
+            className="absolute -inset-6 -z-10 rounded-[32px] opacity-60 blur-3xl"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(46,196,182,.18), rgba(61,220,151,.12), rgba(138,201,38,.06))',
+            }}
+          />
+          <InteractiveCard
+            hue="green"
+            surface="rounded-l-[28px] lg:rounded-r-none border border-white/[0.13] lg:border-r-0 bg-gradient-to-b from-white/[0.08] to-white/[0.03] p-2 shadow-[0_30px_80px_rgba(0,0,0,.45)] w-full"
+          >
+            <Image
+              src="/landing/dashboard-hero.jpg"
+              alt="Dashboard de MARELL — vista de Resumen con KPIs, categorías y transacciones"
+              width={2400}
+              height={1298}
+              priority
+              sizes="(min-width: 1024px) 65vw, 100vw"
+              className="rounded-l-[22px] lg:rounded-r-none w-full h-auto"
             />
-            <InteractiveCard
-              hue="green"
-              surface="rounded-[28px] border border-white/[0.13] bg-gradient-to-b from-white/[0.08] to-white/[0.03] p-2 shadow-[0_30px_80px_rgba(0,0,0,.45)]"
-            >
-              <Image
-                src="/landing/dashboard-hero.jpg"
-                alt="Dashboard de MARELL — vista de Resumen con KPIs, categorías y transacciones"
-                width={2400}
-                height={1298}
-                priority
-                sizes="(min-width: 1024px) 55vw, 100vw"
-                className="rounded-[22px] w-full h-auto"
-              />
-            </InteractiveCard>
-          </div>
+          </InteractiveCard>
         </div>
       </div>
     </section>
