@@ -74,6 +74,10 @@ interface TransactionFormModalProps {
    *  formulario quepa sin scroll. Used by the mobile FAB quick-add
    *  flow. The user can categorize later from the Movimientos list. */
   compactMobile?: boolean
+  /** Called after a successful save with the saved transaction's
+   *  ISO date (YYYY-MM-DD). Lets the parent jump to the right month
+   *  filter so the user sees the row they just created. */
+  onSaved?: (savedDate: string) => void
 }
 
 const todayLocal = () => {
@@ -89,6 +93,7 @@ export function TransactionFormModal({
   mode,
   initial,
   compactMobile = false,
+  onSaved,
 }: TransactionFormModalProps) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -367,6 +372,9 @@ export function TransactionFormModal({
           setError(result.error)
           return
         }
+        // Tell the parent which date we saved at — it can switch the
+        // month filter so the new row is actually visible.
+        onSaved?.(date)
         router.refresh()
         onClose()
       } catch (e) {

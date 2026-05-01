@@ -815,6 +815,15 @@ export function TransactionsClient({
         mode={editing ? 'edit' : 'add'}
         initial={editing ? toInitial(editing) : undefined}
         compactMobile={!editing && addCompact}
+        onSaved={(savedDate) => {
+          // savedDate is YYYY-MM-DD; the filter speaks YYYY-MM. If the
+          // user just created a transaction in a month different from
+          // what they're viewing, jump to that month so they see it.
+          const targetMonth = savedDate.slice(0, 7)
+          if (filters.month !== 'all' && filters.month !== targetMonth) {
+            pushParams({ month: targetMonth })
+          }
+        }}
       />
 
       <ImportTransactionsModal
