@@ -217,24 +217,36 @@ export interface ReconcileResult {
  * Reconciles an account against an externally-known balance (e.g. what the
  * bank app says). Three things happen:
  *
- * 1. If `actualBalance` differs from MARELL's stored balance, create an
- *    uncategorized adjustment transaction dated today for the diff. This
- *    keeps the account's running total honest without forcing the user to
- *    pick a category.
+ * 1. If the actual balance differs from MARELL's stored balance, create
+ *    an uncategorized adjustment transaction dated today for the diff.
  *
- * 2. Every transaction in the account up to today (cleared or uncleared)
- *    is locked to `reconciled`. YNAB calls this "locking the past".
+ * 2. Every transaction in the account is locked to `reconciled` (YNAB's
+ *    "lock the past").
  *
- * 3. The account's `balance` column is set to `actualBalance`.
+ * 3. The account's `balance` column is set to the new internal balance.
  *
- * Currently scoped to cash-style accounts (checking / savings / cash) since
- * debt-account sign handling needs more thought before we expose it.
+ * For cash-style accounts (checking / savings / cash) `actualBalance`
+ * is taken as-is. For credit_card / *_loan / mortgage / *_debt the
+ * caller enters what's *owed* as a positive number and we flip the
+ * sign internally so the column stays negative for debt.
  */
+const CASH_RECONCILE_TYPES = new Set(['checking', 'savings', 'cash'])
+const DEBT_RECONCILE_TYPES = new Set([
+  'credit_card',
+  'line_of_credit',
+  'mortgage',
+  'auto_loan',
+  'student_loan',
+  'personal_loan',
+  'medical_debt',
+  'other_debt',
+])
+
 export async function reconcileAccount(
   accountId: string,
-  actualBalance: number,
+  enteredBalance: number,
 ): Promise<ReconcileResult> {
-  if (!Number.isFinite(actualBalance)) return { error: 'Balance inválido' }
+  if (!Number.isFinite(enteredBalance)) return { error: 'Balance inválido' }
 
   const supabase = await createClient()
   const {
@@ -257,13 +269,18 @@ export async function reconcileAccount(
     .single()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
-  const allowedTypes = ['checking', 'savings', 'cash']
-  if (!allowedTypes.includes(account.type as string)) {
-    return { error: 'Por ahora solo cuentas de efectivo se pueden reconciliar.' }
+  const accountType = account.type as string
+  const isCash = CASH_RECONCILE_TYPES.has(accountType)
+  const isDebt = DEBT_RECONCILE_TYPES.has(accountType)
+  if (!isCash && !isDebt) {
+    return { error: 'Esta cuenta no se puede reconciliar.' }
   }
 
+  // For debt accounts the user types the amount owed as a positive
+  // number. The internal column stays negative.
+  const newInternalBalance = isDebt ? -Math.abs(enteredBalance) : enteredBalance
   const currentBalance = Number(account.balance)
-  const diff = Math.round((actualBalance - currentBalance) * 100) / 100
+  const diff = Math.round((newInternalBalance - currentBalance) * 100) / 100
 
   // 1. Adjustment txn if needed.
   if (Math.abs(diff) >= 0.005) {
@@ -299,7 +316,7 @@ export async function reconcileAccount(
   // 3. Sync the cached balance.
   const { error: balErr } = await supabase
     .from('accounts')
-    .update({ balance: actualBalance })
+    .update({ balance: newInternalBalance })
     .eq('id', accountId)
   if (balErr) return { error: balErr.message }
 

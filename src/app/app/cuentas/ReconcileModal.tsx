@@ -13,6 +13,9 @@ interface ReconcileModalProps {
   accountId: string
   accountName: string
   currentBalance: number
+  /** When true, the modal asks for "what you owe" (positive) rather
+      than "what you have", and the diff is interpreted accordingly. */
+  isDebt?: boolean
 }
 
 export function ReconcileModal({
@@ -21,6 +24,7 @@ export function ReconcileModal({
   accountId,
   accountName,
   currentBalance,
+  isDebt = false,
 }: ReconcileModalProps) {
   const router = useRouter()
   const fmtMoney = useFormatMoney()
@@ -54,7 +58,11 @@ export function ReconcileModal({
 
   if (!isOpen) return null
 
-  const diff = actual !== null ? actual - currentBalance : 0
+  // For debt accounts the user enters what they owe (positive). We
+  // compare that to the absolute value of the stored balance so the
+  // "matches?" check works regardless of sign convention.
+  const displayedCurrent = isDebt ? Math.abs(currentBalance) : currentBalance
+  const diff = actual !== null ? actual - displayedCurrent : 0
   const matches = actual !== null && Math.abs(diff) < 0.005
 
   const handleSubmit = () => {
@@ -148,18 +156,23 @@ export function ReconcileModal({
             <div className="px-6 py-5 space-y-4">
               <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
                 <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
-                  Balance actual en MARELL
+                  {isDebt ? 'Lo que MARELL dice que debes' : 'Balance actual en MARELL'}
                 </div>
                 <div className="text-[18px] font-bold tabular-nums num text-[var(--text)]">
-                  {fmtMoney(currentBalance)}
+                  {fmtMoney(displayedCurrent)}
                 </div>
               </div>
 
               <div>
                 <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 block">
-                  Balance según tu banco
+                  {isDebt ? 'Lo que realmente debes según tu banco' : 'Balance según tu banco'}
                 </label>
                 <MoneyInput value={actual} onChange={setActual} placeholder="0.00" />
+                {isDebt && (
+                  <p className="text-[11px] text-[var(--muted)] mt-1.5 leading-relaxed">
+                    Pon el saldo pendiente como número positivo (lo que aparece en el estado).
+                  </p>
+                )}
               </div>
 
               {actual !== null && (

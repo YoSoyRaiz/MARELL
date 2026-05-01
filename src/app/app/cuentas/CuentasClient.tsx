@@ -189,11 +189,20 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
                     <ul className="divide-y divide-[var(--border)]">
                       {g.items.map((a) => {
                         const isDebt = g.key === 'credit' || g.key === 'loan'
+                        const cashTypes = ['checking', 'savings', 'cash']
+                        const debtTypes = [
+                          'credit_card',
+                          'line_of_credit',
+                          'mortgage',
+                          'auto_loan',
+                          'student_loan',
+                          'personal_loan',
+                          'medical_debt',
+                          'other_debt',
+                        ]
                         const canReconcile =
                           !a.closed &&
-                          (a.type === 'checking' ||
-                            a.type === 'savings' ||
-                            a.type === 'cash')
+                          (cashTypes.includes(a.type) || debtTypes.includes(a.type))
                         return (
                           <li
                             key={a.id}
@@ -266,6 +275,10 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
           accountId={reconciling.id}
           accountName={reconciling.name}
           currentBalance={reconciling.balance}
+          isDebt={
+            accountCategoryFromType(reconciling.type) === 'credit' ||
+            accountCategoryFromType(reconciling.type) === 'loan'
+          }
         />
       )}
 
