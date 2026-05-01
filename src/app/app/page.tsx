@@ -245,7 +245,21 @@ export default async function ResumenPage() {
     .reduce((s, t) => s + Math.abs(Number(t.amount)), 0)
 
   const totalAssigned = assignmentsData.reduce((s, a) => s + Number(a.assigned), 0)
-  const readyToAssign = totalCash - totalAssigned
+
+  // Ready-to-Assign uses the SAME lifetime formula as the topbar pill
+  // (layout.tsx) so the resumen sidebar and the topbar always match. The
+  // old `cash − assigned-this-month` shortcut was misleading because it
+  // ignored carry-over from prior months and over-categorized inflows.
+  const totalCategorizedActivityLifetime =
+    (txnsLifetimeRes.data ?? []).reduce((s, t) => s + Number(t.amount), 0) +
+    (subsLifetimeRes.data ?? []).reduce((s, t) => s + Number(t.amount), 0)
+  const totalAssignedLifetime = (assignmentsLifetimeRes.data ?? []).reduce(
+    (s, a) => s + Number(a.assigned),
+    0,
+  )
+  const readyToAssign = Math.round(
+    (totalCash - (totalAssignedLifetime + totalCategorizedActivityLifetime)) * 100,
+  ) / 100
 
   // Modal data for the in-place "+ Agregar transacción" CTA
   const modalAccounts = accountsData
