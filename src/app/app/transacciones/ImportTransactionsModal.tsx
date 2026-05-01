@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { parseCSV, type ParseResult } from './csv'
+import { detectBank, type BankDetection } from './bankDetectors'
 import { bulkCreateTransactions } from './actions'
 import { useFormatMoney } from '../CurrencyProvider'
 
@@ -51,6 +52,7 @@ export function ImportTransactionsModal({
   const [pending, startTransition] = useTransition()
   const [file, setFile] = useState<File | null>(null)
   const [parseResult, setParseResult] = useState<ParseResult | null>(null)
+  const [bankDetection, setBankDetection] = useState<BankDetection | null>(null)
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? '')
   const [categoryId, setCategoryId] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
@@ -62,6 +64,7 @@ export function ImportTransactionsModal({
     if (!isOpen) return
     setFile(null)
     setParseResult(null)
+    setBankDetection(null)
     setAccountId(accounts[0]?.id ?? '')
     setCategoryId('')
     setError(null)
@@ -104,6 +107,10 @@ export function ImportTransactionsModal({
     setFile(f)
     try {
       const text = await f.text()
+      // Detect the bank first so we can surface a "Detectamos: X" pill
+      // and (in the future) feed bank-specific parsing back into csv.ts.
+      const detection = detectBank(text)
+      setBankDetection(detection.bank === 'unknown' ? null : detection)
       const result = parseCSV(text)
       setParseResult(result)
     } catch (err) {
@@ -234,8 +241,13 @@ export function ImportTransactionsModal({
                 <FileText size={18} strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] font-semibold text-[var(--text)] truncate">
-                  {file.name}
+                <div className="text-[14px] font-semibold text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
+                  <span className="truncate">{file.name}</span>
+                  {bankDetection && (
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-2 py-0.5 rounded-full bg-[rgba(61,220,151,0.12)] text-[var(--brand-2)] border border-[var(--brand-2)]/20">
+                      Detectamos {bankDetection.displayName}
+                    </span>
+                  )}
                 </div>
                 <div className="text-[12px] text-[var(--muted)] mt-0.5">
                   {parseResult.totalRows} filas leídas ·{' '}
