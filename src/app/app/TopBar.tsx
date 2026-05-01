@@ -1,13 +1,13 @@
 'use client'
 
-import Link from 'next/link'
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { Menu, Search, ArrowRight } from 'lucide-react'
+import { Menu, Search, ArrowRight, ChevronDown } from 'lucide-react'
 import { AnimatedNumber } from './plan/AnimatedNumber'
 import { useReadyToAssign } from './ReadyToAssignProvider'
 import { useMobileNav } from './MobileNavProvider'
 import { useFormatMoney } from './CurrencyProvider'
+import { AssignPopover } from './AssignPopover'
 
 interface TopBarProps {
   displayName: string | null
@@ -21,6 +21,8 @@ export function TopBar({ displayName }: TopBarProps) {
   const fmtMoney = useFormatMoney()
   const router = useRouter()
   const [query, setQuery] = useState('')
+  const [assignOpen, setAssignOpen] = useState(false)
+  const assignTriggerRef = useRef<HTMLDivElement>(null)
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault()
@@ -58,41 +60,56 @@ export function TopBar({ displayName }: TopBarProps) {
         {/* Right cluster: pill + search + bell */}
         <div className="flex items-center gap-3 md:gap-[30px] shrink-0">
           {/* Pill with Asignar button inside */}
-          <div
-            className={`rounded-2xl border-2 px-3 py-2 md:px-4 md:py-2.5 flex items-center gap-2 md:gap-3 shrink-0 transition-colors ${
-              isNegative
-                ? 'border-[var(--coral)]/40 bg-[rgba(255,122,89,0.04)]'
-                : 'border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)]'
-            }`}
-          >
-            <div className="leading-none">
-              <div
-                className={`text-[9px] md:text-[10px] uppercase tracking-[0.18em] font-semibold ${
-                  isNegative ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
-                }`}
-              >
-                Por asignar
-              </div>
-              <AnimatedNumber
-                value={readyToAssign}
-                format={fmtMoney}
-                className={`text-[16px] sm:text-[20px] md:text-[28px] font-bold tabular-nums num leading-none mt-1 block ${
-                  isNegative
-                    ? 'text-[var(--coral)]'
-                    : isPositive
-                      ? 'gradient-text'
-                      : 'text-[var(--text2)]'
-                }`}
-              />
-            </div>
-            <Link
-              href="/app/plan"
-              className="h-9 md:h-10 px-3 md:px-4 gradient-bg text-[#0B0B0C] font-semibold text-[12px] md:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1 md:gap-1.5 transition-[filter] shrink-0"
-              aria-label="Asignar"
+          <div ref={assignTriggerRef} className="relative shrink-0">
+            <div
+              className={`rounded-2xl border-2 px-3 py-2 md:px-4 md:py-2.5 flex items-center gap-2 md:gap-3 transition-colors ${
+                isNegative
+                  ? 'border-[var(--coral)]/40 bg-[rgba(255,122,89,0.04)]'
+                  : 'border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)]'
+              }`}
             >
-              <span className="hidden sm:inline">Asignar</span>
-              <ArrowRight size={14} strokeWidth={2.4} />
-            </Link>
+              <div className="leading-none">
+                <div
+                  className={`text-[9px] md:text-[10px] uppercase tracking-[0.18em] font-semibold ${
+                    isNegative ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
+                  }`}
+                >
+                  Por asignar
+                </div>
+                <AnimatedNumber
+                  value={readyToAssign}
+                  format={fmtMoney}
+                  className={`text-[16px] sm:text-[20px] md:text-[28px] font-bold tabular-nums num leading-none mt-1 block ${
+                    isNegative
+                      ? 'text-[var(--coral)]'
+                      : isPositive
+                        ? 'gradient-text'
+                        : 'text-[var(--text2)]'
+                  }`}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setAssignOpen((v) => !v)}
+                aria-expanded={assignOpen}
+                aria-haspopup="dialog"
+                aria-label="Abrir popover para asignar dinero"
+                className="h-9 md:h-10 px-3 md:px-4 gradient-bg text-[#0B0B0C] font-semibold text-[12px] md:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1 md:gap-1.5 transition-[filter]"
+              >
+                <span className="hidden sm:inline">Asignar</span>
+                <ChevronDown
+                  size={14}
+                  strokeWidth={2.4}
+                  className={`transition-transform ${assignOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+            </div>
+
+            <AssignPopover
+              open={assignOpen}
+              onClose={() => setAssignOpen(false)}
+              anchorRef={assignTriggerRef}
+            />
           </div>
 
           {/* Search — desktop-only; submits to /app/transacciones?q=... */}
