@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "cap:sync": "next build && npx cap sync",
-    "cap:ios": "next build && npx cap sync ios && npx cap open ios",
-    "cap:android": "next build && npx cap sync android && npx cap open android"
+    "cap:sync": "next build --webpack && npx cap sync",
+    "cap:ios": "next build --webpack && npx cap sync ios && npx cap open ios",
+    "cap:android": "next build --webpack && npx cap sync android && npx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.0",
