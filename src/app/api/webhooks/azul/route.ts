@@ -76,11 +76,26 @@ export async function POST(request: NextRequest) {
   // Failed payments come with codes like 51, 05, 14, etc.
   const success = responseCode === 'ISO8583' || responseCode === 'ISO1A' || responseCode === '00'
 
+  // Idempotency: Azul retransmits webhooks if it doesn't see a 200
+  // ack within their timeout window. Reject duplicates by checking the
+  // payment_events ledger before doing any state-changing work.
+  const dedupeId = (azulOrderId ?? orderId) as string
+  const { data: existingEvent } = await supabase
+    .from('payment_events')
+    .select('id')
+    .eq('provider', 'azul')
+    .eq('external_id', dedupeId)
+    .eq('status', success ? 'success' : 'failed')
+    .maybeSingle()
+  if (existingEvent) {
+    return NextResponse.json({ ok: true, deduped: true })
+  }
+
   // Append to the immutable ledger first so we always have a paper trail.
   await supabase.from('payment_events').insert({
     profile_id: profileId,
     provider: 'azul',
-    external_id: azulOrderId ?? orderId,
+    external_id: dedupeId,
     amount: 999,
     currency: 'DOP',
     status: success ? 'success' : 'failed',

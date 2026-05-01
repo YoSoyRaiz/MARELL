@@ -113,6 +113,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const supabase = createAdminClient()
+  const today = new Date().toISOString().slice(0, 10)
+  const { error: lockErr } = await supabase
+    .from('cron_runs')
+    .insert({ route: 'update-fx-rate', run_date: today } as never)
+  if (lockErr) {
+    return NextResponse.json({ ok: true, deduped: true })
+  }
+
   const result = (await fetchFromBcrd()) ?? (await fetchFromOpenEr())
   if (!result) {
     return NextResponse.json(
@@ -123,8 +132,6 @@ export async function GET(request: NextRequest) {
 
   // Round to 4 decimals to match the column precision (numeric(8,4)).
   const rate = Math.round(result.rate * 10000) / 10000
-
-  const supabase = createAdminClient()
   const { data: updated, error } = await supabase
     .from('budgets')
     .update({ usd_to_dop_rate: rate } as never)

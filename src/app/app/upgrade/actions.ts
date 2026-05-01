@@ -107,11 +107,14 @@ export async function cancelSubscription() {
 
   // For Azul we stop charging on next renewal cycle by flipping the
   // local flag. The user still has Pro access until pro_expires_at.
+  // Wipe the saved card token at the same time so a future DB
+  // breach can't replay it — re-subscribing prompts for the card again.
   await supabase
     .from('profiles')
     .update({
       subscription_status: 'canceled',
       subscription_canceled_at: new Date().toISOString(),
+      subscription_card_token: null,
     } as never)
     .eq('id', user.id)
 

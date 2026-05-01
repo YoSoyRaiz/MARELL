@@ -26,6 +26,7 @@
 // with real calls. The function signatures are stable so the rest of
 // the app doesn't need to change.
 
+import { createHmac, timingSafeEqual } from 'crypto'
 import type { BillingProvider, PricingPlan } from './types'
 
 export interface AzulCheckoutSession {
@@ -94,25 +95,41 @@ export async function createAzulCheckout(input: {
 }
 
 /**
- * Verify the HMAC signature Azul sends with their server-to-server
- * webhook. They sign the body using their private key.
+ * Verify the HMAC-SHA-256 signature Azul sends with their server-to-
+ * server webhook. The header value is hex-encoded; we recompute the
+ * HMAC of the raw body using AZUL_WEBHOOK_HMAC_SECRET and compare
+ * with timingSafeEqual to avoid timing leaks.
  *
- * Replace with the actual algorithm once credentials are confirmed.
+ * Azul's docs vary by integration tier — some accounts use SHA-256,
+ * others SHA-512. We support both: try SHA-256 first, then SHA-512
+ * if that fails. The merchant configures the secret on their dashboard
+ * so the secret value itself is what we control here.
  */
 export function verifyAzulWebhook(
   signature: string | null,
   rawBody: string,
 ): boolean {
-  if (!process.env.AZUL_WEBHOOK_HMAC_SECRET) {
-    // Without the secret we can't verify — refuse all webhooks in
-    // production. In dev (NODE_ENV !== 'production') we accept so the
-    // route is testable.
+  const secret = process.env.AZUL_WEBHOOK_HMAC_SECRET
+  if (!secret) {
+    // Without the secret we can't verify. Reject in production; allow
+    // in dev so the route stays testable.
     return process.env.NODE_ENV !== 'production'
   }
   if (!signature) return false
-  // TODO: implement HMAC-SHA-256 (Azul's docs spell out the exact
-  // header name + algorithm) and constant-time-compare.
-  void rawBody
+
+  const provided = signature.trim().toLowerCase()
+  const providedBuf = Buffer.from(provided, 'hex')
+  if (providedBuf.length === 0) return false
+
+  for (const algo of ['sha256', 'sha512'] as const) {
+    const expected = createHmac(algo, secret).update(rawBody).digest()
+    if (expected.length !== providedBuf.length) continue
+    try {
+      if (timingSafeEqual(expected, providedBuf)) return true
+    } catch {
+      // length mismatch — fall through to the next algo
+    }
+  }
   return false
 }
 

@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
   }
 
   let event: {
+    id?: string
     event_type?: string
     resource?: Record<string, unknown>
   } = {}
@@ -43,6 +44,23 @@ export async function POST(request: NextRequest) {
 
   const type = event.event_type ?? ''
   const resource = event.resource ?? {}
+  const eventId = event.id
+
+  // Idempotency: PayPal sends each event with a stable `id`. If we
+  // already recorded a payment_event with that external_id we ack
+  // without re-applying the side-effects.
+  if (eventId) {
+    const adminCheck = createAdminClient()
+    const { data: existing } = await adminCheck
+      .from('payment_events')
+      .select('id')
+      .eq('provider', 'paypal')
+      .eq('external_id', eventId)
+      .maybeSingle()
+    if (existing) {
+      return NextResponse.json({ ok: true, deduped: true })
+    }
+  }
   const profileId = (resource.custom_id ?? resource.custom) as
     | string
     | undefined
@@ -120,7 +138,7 @@ export async function POST(request: NextRequest) {
       await supabase.from('payment_events').insert({
         profile_id: targetProfileId,
         provider: 'paypal',
-        external_id: subId ?? null,
+        external_id: eventId ?? subId ?? null,
         amount: parseFloat(amount),
         currency: currencyVal,
         status: 'success',
@@ -143,7 +161,7 @@ export async function POST(request: NextRequest) {
       await supabase.from('payment_events').insert({
         profile_id: targetProfileId,
         provider: 'paypal',
-        external_id: subId ?? null,
+        external_id: eventId ?? subId ?? null,
         amount: 0,
         currency: 'USD',
         status: 'failed',

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { todayISODR } from '@/lib/dates'
+import { ensurePro } from '@/lib/billing/check-server'
 
 export type Frequency =
   | 'once'
@@ -55,6 +56,8 @@ function signedAmount(amount: number, type: ScheduledType): number {
 }
 
 export async function createScheduled(input: CreateScheduledInput) {
+  const gate = await ensurePro()
+  if (!gate.ok) return { error: gate.error }
   const err = validate(input)
   if (err) return { error: err }
 
@@ -108,6 +111,8 @@ export async function createScheduled(input: CreateScheduledInput) {
 }
 
 export async function updateScheduled(input: UpdateScheduledInput) {
+  const gate = await ensurePro()
+  if (!gate.ok) return { error: gate.error }
   if (!input.id) return { error: 'ID requerido' }
   const err = validate(input)
   if (err) return { error: err }

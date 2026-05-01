@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { ensurePro } from '@/lib/billing/check-server'
 
 export type GoalType = 'monthly_spending' | 'savings_balance' | 'needed_by'
 
@@ -16,6 +17,8 @@ export interface UpdateGoalInput {
 const isValidDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
 export async function updateGoal(input: UpdateGoalInput) {
+  const gate = await ensurePro()
+  if (!gate.ok) return { error: gate.error }
   if (!input.categoryId) return { error: 'Categoría requerida' }
   if (
     input.goalType !== 'monthly_spending' &&

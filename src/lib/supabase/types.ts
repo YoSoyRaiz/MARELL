@@ -192,6 +192,15 @@ type BudgetInvitation = {
   created_at: string
 }
 
+type CronRun = {
+  id: string
+  route: string
+  run_date: string
+  succeeded: boolean | null
+  payload: Record<string, unknown> | null
+  created_at: string
+}
+
 type PaymentEvent = {
   id: string
   profile_id: string
@@ -221,6 +230,7 @@ export type Database = {
       scheduled_transactions: Table<ScheduledTransaction>
       budget_invitations: Table<BudgetInvitation>
       payment_events: Table<PaymentEvent>
+      cron_runs: Table<CronRun>
     }
     Views: Record<string, never>
     Functions: {

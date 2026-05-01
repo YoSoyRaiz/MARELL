@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Plus,
   Wallet,
@@ -9,7 +10,10 @@ import {
   TrendingUp,
   Archive,
   Scale,
+  Unlock,
 } from 'lucide-react'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { unreconcileAccount } from './actions'
 import { ReconcileModal } from './ReconcileModal'
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -50,10 +54,28 @@ interface Props {
 }
 
 export function CuentasClient({ accounts, hasBudget }: Props) {
+  const router = useRouter()
+  const confirm = useConfirm()
+  const [, startUnreconcile] = useTransition()
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<ListAccount | null>(null)
   const [reconciling, setReconciling] = useState<ListAccount | null>(null)
   const fmtMoney = useFormatMoney()
+
+  const handleUnreconcile = async (a: ListAccount) => {
+    const ok = await confirm({
+      title: `¿Desreconciliar ${a.name}?`,
+      description:
+        'Pasamos cada transacción reconciliada a "cleared" para que las puedas editar otra vez. El ajuste de reconciliación no se borra automáticamente — bórralo a mano si la última reconciliación fue un error.',
+      confirmLabel: 'Desreconciliar',
+      tone: 'danger',
+    })
+    if (!ok) return
+    startUnreconcile(async () => {
+      await unreconcileAccount(a.id)
+      router.refresh()
+    })
+  }
 
   const grouped = CATEGORY_BLOCKS.map((block) => ({
     ...block,
@@ -232,19 +254,33 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
                               </div>
                             </div>
                             {canReconcile && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setReconciling(a)
-                                }}
-                                title="Reconciliar contra el banco"
-                                aria-label={`Reconciliar ${a.name}`}
-                                className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text2)] hover:text-[var(--brand-2)] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors"
-                              >
-                                <Scale size={12} strokeWidth={2.4} />
-                                <span className="hidden sm:inline">Reconciliar</span>
-                              </button>
+                              <div className="shrink-0 inline-flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setReconciling(a)
+                                  }}
+                                  title="Reconciliar contra el banco"
+                                  aria-label={`Reconciliar ${a.name}`}
+                                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text2)] hover:text-[var(--brand-2)] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors"
+                                >
+                                  <Scale size={12} strokeWidth={2.4} />
+                                  <span className="hidden sm:inline">Reconciliar</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleUnreconcile(a)
+                                  }}
+                                  title="Desreconciliar (deshacer la última reconciliación)"
+                                  aria-label={`Desreconciliar ${a.name}`}
+                                  className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] inline-flex items-center justify-center transition-colors"
+                                >
+                                  <Unlock size={12} strokeWidth={2.4} />
+                                </button>
+                              </div>
                             )}
                             <div
                               className={`text-[15px] tabular-nums num font-semibold shrink-0 ${

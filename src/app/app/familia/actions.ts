@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/send'
 import { budgetInvitationEmail } from '@/lib/email/templates'
+import { ensurePro } from '@/lib/billing/check-server'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://marell.app'
 
@@ -15,6 +16,8 @@ export interface InviteInput {
 }
 
 export async function inviteToBudget(input: InviteInput) {
+  const gate = await ensurePro()
+  if (!gate.ok) return { error: gate.error }
   const email = input.email.trim().toLowerCase()
   if (!email || !/^.+@.+\..+$/.test(email)) {
     return { error: 'Email inválido' }
@@ -114,13 +117,16 @@ export async function acceptInvitation(token: string) {
   if (new Date(inv.expires_at).getTime() < Date.now()) {
     return { error: 'Esta invitación expiró' }
   }
-  // Optional: enforce that the email matches the signed-in user.
-  // We do a soft check — if the addresses don't match we still let
-  // them in (some users sign up with a slightly different alias).
+  // Strict email match: the signed-in user's email must equal the
+  // invited address. Without this, a leaked token would let anyone
+  // accept the invite. Token + email together is the auth.
   const userEmail = (user.email ?? '').toLowerCase()
   const invEmail = (inv.email as string).toLowerCase()
-  if (userEmail && invEmail && userEmail !== invEmail) {
-    // Allowed but flag in the response so the UI can warn.
+  if (!userEmail || !invEmail || userEmail !== invEmail) {
+    return {
+      error:
+        'Esta invitación es para otra cuenta. Inicia sesión con el correo al que llegó la invitación.',
+    }
   }
 
   // Already a member?
