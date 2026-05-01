@@ -267,7 +267,7 @@ export function AjustesClient({
               <span className="text-[12px] text-[var(--text2)] shrink-0">DOP</span>
             </div>
             <p className="text-[11px] text-[var(--muted)] mt-1.5 leading-relaxed">
-              Lo usamos para convertir cuentas en moneda distinta al presupuesto. Refresca cuando el cambio se mueva más de 2-3%.
+              Se actualiza solo cada día con la tasa del Banco Central. Edítala aquí solo si quieres usar una tasa específica (la del banco que usas, por ejemplo).
             </p>
           </Field>
           <SaveBar
