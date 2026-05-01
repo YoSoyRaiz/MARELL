@@ -70,6 +70,10 @@ interface TransactionFormModalProps {
   categories: CategoryOption[]
   mode: 'add' | 'edit'
   initial?: InitialTransaction
+  /** When true, hide Categoría / Split / Memo on mobile so the
+   *  formulario quepa sin scroll. Used by the mobile FAB quick-add
+   *  flow. The user can categorize later from the Movimientos list. */
+  compactMobile?: boolean
 }
 
 const todayLocal = () => {
@@ -84,6 +88,7 @@ export function TransactionFormModal({
   categories,
   mode,
   initial,
+  compactMobile = false,
 }: TransactionFormModalProps) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -544,11 +549,10 @@ export function TransactionFormModal({
           </Field>
           )}
 
-          {/* Categoría + split: oculto en móvil para que el modal del FAB
-              quepa sin scroll. El usuario puede categorizar la
-              transacción luego desde la lista de Movimientos. En
-              desktop sigue visible como siempre. */}
-          <div className="hidden lg:block">
+          {/* Categoría + split: ocultos solo cuando el modal abre desde
+              el FAB (compactMobile=true). En el flujo normal de
+              /movimientos siempre se ven, también en móvil. */}
+          <div className={compactMobile ? 'hidden lg:block' : ''}>
           {!isTransfer && (!splitMode ? (
             <Field
               label="Categoría"
@@ -735,7 +739,7 @@ export function TransactionFormModal({
           ))}
           </div>
 
-          <div className="hidden lg:block">
+          <div className={compactMobile ? 'hidden lg:block' : ''}>
             <Field label="Memo" hint="opcional">
               <textarea
                 value={memo}

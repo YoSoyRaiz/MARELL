@@ -171,6 +171,10 @@ export function TransactionsClient({
   const fmtMoney = useFormatMoney()
   const [navPending, startNav] = useTransition()
   const [addOpen, setAddOpen] = useState(false)
+  // Tracks whether the open add-modal came from the mobile FAB. The
+  // FAB version hides Categoría/Split/Memo to keep the form short;
+  // the in-page "+ Agregar" button shows everything.
+  const [addCompact, setAddCompact] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [editing, setEditing] = useState<ListTransaction | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -178,10 +182,13 @@ export function TransactionsClient({
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
-  // "n" anywhere on /transacciones opens a fresh new-transaction modal.
+  // "n" anywhere on /transacciones opens a fresh new-transaction
+  // modal. The keyboard shortcut is desktop-only by nature, so full
+  // form (compact=false).
   useEffect(() => {
     const onNewKey = () => {
       setEditing(null)
+      setAddCompact(false)
       setAddOpen(true)
     }
     window.addEventListener(SHORTCUT_EVENTS.newTransaction, onNewKey)
@@ -190,10 +197,11 @@ export function TransactionsClient({
 
   // The mobile FAB navigates here with ?new=1 to open a fresh modal.
   // Strip the param after opening so refreshing the page doesn't
-  // re-trigger the modal.
+  // re-trigger the modal. FAB-triggered modals run in compact mode.
   useEffect(() => {
     if (searchParams?.get('new') !== '1') return
     setEditing(null)
+    setAddCompact(true)
     setAddOpen(true)
     const sp = new URLSearchParams(searchParams.toString())
     sp.delete('new')
@@ -277,6 +285,7 @@ export function TransactionsClient({
   const modalOpen = addOpen || editing !== null
   const handleModalClose = () => {
     setAddOpen(false)
+    setAddCompact(false)
     setEditing(null)
   }
 
@@ -318,7 +327,10 @@ export function TransactionsClient({
             </button>
             <button
               type="button"
-              onClick={() => setAddOpen(true)}
+              onClick={() => {
+                setAddCompact(false)
+                setAddOpen(true)
+              }}
               disabled={!hasBudget || accounts.length === 0}
               className="h-10 sm:h-11 px-4 sm:px-5 gradient-bg text-[#0B0B0C] font-semibold text-[12px] sm:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1.5 sm:gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none flex-1 lg:flex-initial justify-center"
             >
@@ -440,7 +452,10 @@ export function TransactionsClient({
             </p>
             <button
               type="button"
-              onClick={() => setAddOpen(true)}
+              onClick={() => {
+                setAddCompact(false)
+                setAddOpen(true)
+              }}
               disabled={!hasBudget || accounts.length === 0}
               className="inline-flex items-center gap-1.5 mt-2 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
             >
@@ -799,6 +814,7 @@ export function TransactionsClient({
         categories={categories}
         mode={editing ? 'edit' : 'add'}
         initial={editing ? toInitial(editing) : undefined}
+        compactMobile={!editing && addCompact}
       />
 
       <ImportTransactionsModal
