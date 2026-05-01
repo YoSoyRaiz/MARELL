@@ -358,16 +358,27 @@ export function TransactionFormModal({
         receiptUrl: receipt?.url ?? null,
         receiptPath: receipt?.path ?? null,
       }
-      const result =
-        mode === 'edit' && initial
-          ? await updateTransaction({ id: initial.id, ...payload })
-          : await createTransaction(payload)
-      if (result && 'error' in result && result.error) {
-        setError(result.error)
-        return
+      try {
+        const result =
+          mode === 'edit' && initial
+            ? await updateTransaction({ id: initial.id, ...payload })
+            : await createTransaction(payload)
+        if (result && 'error' in result && result.error) {
+          setError(result.error)
+          return
+        }
+        router.refresh()
+        onClose()
+      } catch (e) {
+        // Without this catch a thrown error inside startTransition gets
+        // swallowed and the user sees nothing — modal just stays open.
+        console.error('createTransaction threw', e)
+        setError(
+          e instanceof Error
+            ? `Error: ${e.message}`
+            : 'No pudimos guardar — intenta de nuevo.',
+        )
       }
-      router.refresh()
-      onClose()
     })
   }
 
@@ -413,6 +424,16 @@ export function TransactionFormModal({
             <X size={18} strokeWidth={2.2} />
           </button>
         </header>
+
+        {/* Error banner pinned just under the header so the user always
+            sees what failed, even if they're scrolled to the bottom of
+            the form. */}
+        {error && (
+          <div className="mx-6 mt-3 rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.08)] px-4 py-3 flex items-start gap-3">
+            <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral)] shrink-0 mt-0.5" />
+            <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           {/* Type segmented — Gasto / Ingreso / Transferencia.
@@ -777,13 +798,6 @@ export function TransactionFormModal({
               />
             </Field>
           </div>
-
-          {error && (
-            <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-              <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral)] shrink-0 mt-0.5" />
-              <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
-            </div>
-          )}
         </div>
 
         {!valid && missingFields.length > 0 && (
