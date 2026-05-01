@@ -6,7 +6,6 @@ import {
   Wallet,
   TrendingUp,
   TrendingDown,
-  Sparkles,
   Target,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -20,6 +19,7 @@ import {
 import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
+import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { materializeDue } from './programadas/actions'
 import { currentMonthDR, monthBoundsISO } from '@/lib/dates'
 
@@ -389,6 +389,70 @@ export default async function ResumenPage() {
 
   const firstName = (profile?.display_name ?? '').trim().split(/\s+/)[0] || 'amigo'
 
+  // Insights inputs — these aggregate signals already computed above so
+  // we don't issue any extra Supabase queries.
+  const overspentCount = sectionGroups.reduce((acc, g) => {
+    return (
+      acc +
+      g.categories.filter((c) => c.available < -0.005).length
+    )
+  }, 0)
+
+  // A "goal" here means a category with a positive monthly target. We
+  // only count monthly_spending-style goals as "undermet" — savings
+  // goals don't have a per-month obligation in the same way.
+  const undermetGoalsCount = catsData.filter((c) => {
+    const goalAmount = c.goal_amount === null ? 0 : Number(c.goal_amount)
+    if (goalAmount <= 0) return false
+    if ((c.goal_type as string) !== 'monthly_spending' && c.goal_type !== null) {
+      return false
+    }
+    const a = assignmentsData.find((x) => x.category_id === c.id)
+    const assigned = Number(a?.assigned ?? 0)
+    return assigned + 0.005 < goalAmount
+  }).length
+
+  // Top expense category this month: build from txn contributions so
+  // splits count correctly.
+  const expenseByCategory = new Map<string, number>()
+  for (const t of txnContributions) {
+    if (t.amount < 0 && t.category_id) {
+      expenseByCategory.set(
+        t.category_id,
+        (expenseByCategory.get(t.category_id) ?? 0) + Math.abs(t.amount),
+      )
+    }
+  }
+  let topExpenseEntry: { name: string; amount: number } | null = null
+  for (const [catId, amount] of expenseByCategory) {
+    const cat = catsData.find((c) => c.id === catId)
+    if (!cat) continue
+    if (!topExpenseEntry || amount > topExpenseEntry.amount) {
+      topExpenseEntry = { name: cat.name as string, amount }
+    }
+  }
+
+  // Closest in-progress goal — top of the goals array (already sorted by
+  // progress desc) that's still under 100%.
+  const closestGoalEntry = (() => {
+    const cand = goals.find((g) => g.progress < 1 && g.progress > 0)
+    if (!cand) return null
+    return {
+      name: cand.name,
+      progress: cand.progress,
+      remaining: Math.max(0, cand.goal - cand.current),
+    }
+  })()
+
+  const insightInputs: InsightInputs = {
+    readyToAssign,
+    totalAssignedThisMonth: totalAssigned,
+    overspentCount,
+    undermetGoalsCount,
+    topExpense: topExpenseEntry,
+    closestGoal: closestGoalEntry,
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
       {/* LEFT COLUMN */}
@@ -539,24 +603,8 @@ export default async function ResumenPage() {
           </div>
         </section>
 
-        {/* Smart insight (placeholder) */}
-        <section className="rounded-2xl gradient-border p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-[#0B0B0C]">
-              <Sparkles size={14} strokeWidth={2.4} />
-            </div>
-            <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-2)] font-semibold">
-              Idea inteligente
-            </div>
-          </div>
-          <p className="text-[13px] text-[var(--text)] leading-relaxed">
-            {totalAssigned === 0
-              ? 'Tu plan está creado. Asigna tu primer peso desde el botón "Asignar dinero" en la barra superior.'
-              : readyToAssign > 0.005
-                ? `Tienes ${fmtMoneyShort(readyToAssign)} sin asignar. Cada peso con destino te acerca a tu meta.`
-                : '¡Plan completo! Cada peso tiene su trabajo. Cuando agregues transacciones, vamos a marcarte el progreso aquí.'}
-          </p>
-        </section>
+        {/* Real-data insights replace the old single-message placeholder. */}
+        <InsightsSection inputs={insightInputs} />
 
         {/* Metas preview */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
