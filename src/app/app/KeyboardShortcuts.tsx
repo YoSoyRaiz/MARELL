@@ -16,7 +16,8 @@ const NAV_SHORTCUTS: { sequence: string; href: string; label: string }[] = [
   { sequence: 'gc', href: '/app/cuentas', label: 'Cuentas' },
   { sequence: 'gm', href: '/app/metas', label: 'Metas' },
   { sequence: 'gs', href: '/app/programadas', label: 'Programadas' },
-  { sequence: 'ge', href: '/app/reflejo', label: 'Reflejo' },
+  { sequence: 'ge', href: '/app/analisis', label: 'Análisis' },
+  { sequence: 'gh', href: '/app/herramientas', label: 'Herramientas' },
 ]
 
 const HELP_LIST: ShortcutDef[] = [
@@ -26,7 +27,8 @@ const HELP_LIST: ShortcutDef[] = [
   { keys: 'g  c', label: 'Ir a Cuentas' },
   { keys: 'g  m', label: 'Ir a Metas' },
   { keys: 'g  s', label: 'Ir a Programadas' },
-  { keys: 'g  e', label: 'Ir a Reflejo' },
+  { keys: 'g  e', label: 'Ir a Análisis' },
+  { keys: 'g  h', label: 'Ir a Herramientas' },
   { keys: 'n', label: 'Nueva transacción' },
   { keys: 'a', label: 'Asignar dinero' },
   { keys: '?', label: 'Mostrar atajos' },
