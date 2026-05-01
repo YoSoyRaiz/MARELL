@@ -26,7 +26,7 @@ export function LandingHero() {
       {/* Left side stays inside the 1400px content rail; the right
           side bleeds to the viewport edge so the dashboard screenshot
           fills the full visual area on desktop. */}
-      <div className="grid gap-12 pb-24 pt-12 lg:pt-16 lg:grid-cols-[0.45fr_1.55fr] lg:gap-[78px] lg:items-stretch">
+      <div className="grid gap-12 pb-24 pt-12 lg:pt-16 lg:grid-cols-[0.45fr_1.55fr] lg:gap-[100px] lg:items-stretch">
         {/* Left: copy */}
         <div className="px-6 lg:pl-[max(24px,calc((100vw-1400px)/2))] lg:pr-0">
           <div className="max-w-xl">
