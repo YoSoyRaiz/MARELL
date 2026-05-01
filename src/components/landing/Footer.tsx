@@ -86,7 +86,7 @@ export function LandingFooter() {
         <div className="grid gap-12 lg:grid-cols-6">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Logo variant="horizontal" height={28} />
+            <Logo variant="horizontal" height={40} />
             <p className="mt-4 text-sm text-[var(--text2)]">
               Tu dinero. Tu futuro. Bajo control.
             </p>

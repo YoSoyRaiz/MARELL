@@ -23,8 +23,8 @@ export function LandingHero() {
       />
       <div className="grid-fade absolute inset-0 -z-10" aria-hidden />
 
-      <div className="mx-auto max-w-7xl px-6 pb-24 pt-12 lg:pt-16">
-        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:items-center">
+      <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-12 lg:pt-16">
+        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.25fr] lg:gap-12 lg:items-center">
           {/* Left: copy */}
           <div className="max-w-xl">
             <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-[var(--text2)]">
@@ -32,12 +32,12 @@ export function LandingHero() {
               La app de finanzas personales que te da claridad
             </span>
 
-            <h1 className="text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-6xl lg:text-[64px]">
+            <h1 className="text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[56px] lg:text-[58px]">
               Control total
               <br />
               de tu dinero.
               <br />
-              <span className="gradient-text">Sin complicaciones.</span>
+              <span className="gradient-text whitespace-nowrap">Sin complicaciones.</span>
             </h1>
 
             <p className="mt-6 text-lg leading-relaxed text-[var(--text2)]">
