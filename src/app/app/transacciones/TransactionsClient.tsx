@@ -188,6 +188,20 @@ export function TransactionsClient({
     return () => window.removeEventListener(SHORTCUT_EVENTS.newTransaction, onNewKey)
   }, [])
 
+  // The mobile FAB navigates here with ?new=1 to open a fresh modal.
+  // Strip the param after opening so refreshing the page doesn't
+  // re-trigger the modal.
+  useEffect(() => {
+    if (searchParams?.get('new') !== '1') return
+    setEditing(null)
+    setAddOpen(true)
+    const sp = new URLSearchParams(searchParams.toString())
+    sp.delete('new')
+    const qs = sp.toString()
+    router.replace(qs ? `/app/transacciones?${qs}` : '/app/transacciones')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
   const toggleSelected = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev)

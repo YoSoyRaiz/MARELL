@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
   Sparkles,
@@ -54,9 +54,18 @@ function isActive(path: string | null, item: TabItem): boolean {
  */
 export function MobileTabBar() {
   const pathname = usePathname()
+  const router = useRouter()
 
-  const triggerAssign = () => {
-    window.dispatchEvent(new CustomEvent(SHORTCUT_EVENTS.assignMoney))
+  // FAB now opens the new-transaction modal. If the user is already on
+  // /app/transacciones we just dispatch the event so the page's existing
+  // listener picks it up; otherwise we navigate there with ?new=1 and
+  // TransactionsClient auto-opens the modal on arrival.
+  const triggerNewTransaction = () => {
+    if (pathname?.startsWith('/app/transacciones')) {
+      window.dispatchEvent(new CustomEvent(SHORTCUT_EVENTS.newTransaction))
+    } else {
+      router.push('/app/transacciones?new=1')
+    }
   }
 
   return (
@@ -72,8 +81,8 @@ export function MobileTabBar() {
         <li className="flex items-end justify-center">
           <button
             type="button"
-            onClick={triggerAssign}
-            aria-label="Asignar dinero"
+            onClick={triggerNewTransaction}
+            aria-label="Nueva transacción"
             className="-mt-7 w-[58px] h-[58px] rounded-full gradient-bg text-[#0B0B0C] flex items-center justify-center shadow-[0_12px_32px_rgba(61,220,151,0.45)] active:scale-95 transition-transform"
           >
             <Plus size={26} strokeWidth={2.6} />

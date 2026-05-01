@@ -711,16 +711,18 @@ export function TransactionFormModal({
             </div>
           ))}
 
-          <Field label="Memo" hint="opcional">
-            <textarea
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              placeholder="Notas adicionales..."
-              maxLength={200}
-              rows={2}
-              className="w-full !text-[16px] sm:!text-[14px] !py-3 sm:!py-2.5 !px-4 !rounded-xl resize-none"
-            />
-          </Field>
+          <div className="hidden lg:block">
+            <Field label="Memo" hint="opcional">
+              <textarea
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                placeholder="Notas adicionales..."
+                maxLength={200}
+                rows={2}
+                className="w-full !text-[16px] sm:!text-[14px] !py-3 sm:!py-2.5 !px-4 !rounded-xl resize-none"
+              />
+            </Field>
+          </div>
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
