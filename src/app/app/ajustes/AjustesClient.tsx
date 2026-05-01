@@ -112,8 +112,22 @@ export function AjustesClient({
     })
   }
 
-  const handleSaveBudget = () => {
+  const handleSaveBudget = async () => {
     if (!budget || !budgetDirty || !budgetName.trim()) return
+
+    // Changing the currency relabels every existing amount in the app
+    // (DOP balances stay numeric but get displayed with $ instead of
+    // RD$). Confirm explicitly to avoid accidental clicks.
+    if (currency !== budget.currency) {
+      const ok = await confirm({
+        title: '¿Cambiar la moneda del presupuesto?',
+        description: `Pasar de ${budget.currency} a ${currency} cambia cómo mostramos todas tus cifras. Tus saldos numéricos no se recalculan; solo cambia el símbolo y la conversión que usamos para cuentas en otra moneda.`,
+        confirmLabel: 'Sí, cambiar',
+        tone: 'danger',
+      })
+      if (!ok) return
+    }
+
     setBudgetError(null)
     setBudgetSaving(true)
     startSave(async () => {

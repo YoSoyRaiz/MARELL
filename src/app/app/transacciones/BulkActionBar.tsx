@@ -29,6 +29,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hint, setHint] = useState<string | null>(null)
+  const [pendingAction, setPendingAction] = useState<'delete' | 'recategorize' | null>(null)
 
   const handleDelete = async () => {
     const ok = await confirm({
@@ -41,8 +42,10 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
     if (!ok) return
     setError(null)
     setHint(null)
+    setPendingAction('delete')
     startTransition(async () => {
       const r: BulkResult = await bulkDeleteTransactions(ids)
+      setPendingAction(null)
       if (r.error) {
         setError(r.error)
         return
@@ -55,8 +58,10 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
   const handleRecategorize = (categoryId: string | null) => {
     setError(null)
     setHint(null)
+    setPendingAction('recategorize')
     startTransition(async () => {
       const r: BulkResult = await bulkUpdateCategory(ids, categoryId)
+      setPendingAction(null)
       if (r.error) {
         setError(r.error)
         return
@@ -109,13 +114,22 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
               disabled={pending}
               className="w-full h-10 px-3 text-[12px] font-semibold rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
             >
-              <FolderInput size={13} strokeWidth={2.2} />
-              Recategorizar
-              <ChevronDown
-                size={12}
-                strokeWidth={2.4}
-                className={`transition-transform ${pickerOpen ? 'rotate-180' : ''}`}
-              />
+              {pendingAction === 'recategorize' ? (
+                <>
+                  <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  Aplicando…
+                </>
+              ) : (
+                <>
+                  <FolderInput size={13} strokeWidth={2.2} />
+                  Recategorizar
+                  <ChevronDown
+                    size={12}
+                    strokeWidth={2.4}
+                    className={`transition-transform ${pickerOpen ? 'rotate-180' : ''}`}
+                  />
+                </>
+              )}
             </button>
             {pickerOpen && (
               <div className="absolute bottom-full mb-2 left-0 right-0 max-h-[250px] overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
@@ -152,8 +166,17 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
             disabled={pending}
             className="h-10 px-3 text-[12px] font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral)] border border-[var(--coral)]/30 transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
           >
-            <Trash2 size={13} strokeWidth={2.2} />
-            Borrar
+            {pendingAction === 'delete' ? (
+              <>
+                <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-[var(--coral)]/30 border-t-[var(--coral)] animate-spin" />
+                Borrando…
+              </>
+            ) : (
+              <>
+                <Trash2 size={13} strokeWidth={2.2} />
+                Borrar
+              </>
+            )}
           </button>
         </div>
 
