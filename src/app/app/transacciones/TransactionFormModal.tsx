@@ -221,6 +221,48 @@ export function TransactionFormModal({
     })
   }
 
+  /**
+   * Distribute the parent amount equally across every split row,
+   * sweeping any rounding remainder into the last row so the sum
+   * matches exactly. Common case: 50/50, 33/33/33, etc.
+   */
+  const equalizeSplits = () => {
+    if (amount === null || amount <= 0) return
+    setSplits((prev) => {
+      if (prev.length === 0) return prev
+      const each = Math.floor((amount / prev.length) * 100) / 100
+      const sumExceptLast = each * (prev.length - 1)
+      const lastAmount = Math.round((amount - sumExceptLast) * 100) / 100
+      return prev.map((r, i) => ({
+        ...r,
+        amount: i === prev.length - 1 ? lastAmount : each,
+      }))
+    })
+  }
+
+  /**
+   * Apply a percentage distribution to the rows. `percentages` length
+   * must match splits.length and total ~100. Last row absorbs any
+   * rounding drift so the sum equals the parent total.
+   */
+  const distributeByPercentages = (percentages: number[]) => {
+    if (amount === null || amount <= 0) return
+    if (percentages.length !== splits.length) return
+    const total = percentages.reduce((s, p) => s + p, 0)
+    if (Math.abs(total - 100) > 0.5) return
+    setSplits((prev) => {
+      const computed = percentages.map((p) =>
+        Math.floor(((amount * p) / 100) * 100) / 100,
+      )
+      const sumExceptLast = computed.slice(0, -1).reduce((s, n) => s + n, 0)
+      const lastAmount = Math.round((amount - sumExceptLast) * 100) / 100
+      return prev.map((r, i) => ({
+        ...r,
+        amount: i === prev.length - 1 ? lastAmount : computed[i],
+      }))
+    })
+  }
+
   const handleSubmit = () => {
     if (!valid || amount === null) return
     setError(null)
@@ -570,15 +612,54 @@ export function TransactionFormModal({
                 ))}
               </div>
 
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={addSplitRow}
-                  className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-2)] transition-colors"
-                >
-                  <Plus size={12} strokeWidth={2.4} />
-                  Añadir categoría
-                </button>
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="inline-flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={addSplitRow}
+                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-2)] transition-colors"
+                  >
+                    <Plus size={12} strokeWidth={2.4} />
+                    Añadir categoría
+                  </button>
+                  {amount !== null && amount > 0 && (
+                    <button
+                      type="button"
+                      onClick={equalizeSplits}
+                      className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-2)] transition-colors"
+                      title="Distribuir el monto en partes iguales"
+                    >
+                      Igualar
+                    </button>
+                  )}
+                  {amount !== null && amount > 0 && splits.length === 2 && (
+                    <div className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-[var(--muted2)]">
+                      <button
+                        type="button"
+                        onClick={() => distributeByPercentages([50, 50])}
+                        className="hover:text-[var(--brand-2)] transition-colors"
+                      >
+                        50/50
+                      </button>
+                      <span>·</span>
+                      <button
+                        type="button"
+                        onClick={() => distributeByPercentages([60, 40])}
+                        className="hover:text-[var(--brand-2)] transition-colors"
+                      >
+                        60/40
+                      </button>
+                      <span>·</span>
+                      <button
+                        type="button"
+                        onClick={() => distributeByPercentages([70, 30])}
+                        className="hover:text-[var(--brand-2)] transition-colors"
+                      >
+                        70/30
+                      </button>
+                    </div>
+                  )}
+                </div>
                 {amount !== null && amount > 0 && (
                   <div className="text-[11px] tabular-nums num">
                     {splitsBalanced ? (
