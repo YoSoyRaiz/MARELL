@@ -39,6 +39,16 @@ type Profile = {
   updated_at: string
   email_notifications: boolean
   notifications_last_seen: string | null
+  // Billing fields — added by migration 2026_05_02_billing.sql
+  subscription_provider: 'azul' | 'paypal' | null
+  subscription_status: 'active' | 'past_due' | 'canceled' | 'trialing' | null
+  subscription_external_id: string | null
+  subscription_card_token: string | null
+  subscription_card_last4: string | null
+  subscription_card_brand: string | null
+  last_payment_at: string | null
+  next_billing_at: string | null
+  subscription_canceled_at: string | null
 }
 
 type Budget = {
@@ -169,6 +179,19 @@ type Table<Row> = {
   Relationships: []
 }
 
+type PaymentEvent = {
+  id: string
+  profile_id: string
+  provider: 'azul' | 'paypal'
+  external_id: string | null
+  amount: number
+  currency: 'DOP' | 'USD'
+  status: 'success' | 'failed' | 'pending' | 'refunded'
+  error_message: string | null
+  raw_payload: Record<string, unknown> | null
+  created_at: string
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -183,6 +206,7 @@ export type Database = {
       transactions: Table<Transaction>
       subtransactions: Table<Subtransaction>
       scheduled_transactions: Table<ScheduledTransaction>
+      payment_events: Table<PaymentEvent>
     }
     Views: Record<string, never>
     Functions: {

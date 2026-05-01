@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/update-fx-rate",
       "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/azul-renewals",
+      "schedule": "0 16 * * *"
     }
   ]
 }

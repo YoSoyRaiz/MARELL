@@ -13,7 +13,9 @@ import {
   Download,
   FileJson,
   FileSpreadsheet,
+  Sparkles,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { logout } from '@/app/(auth)/actions'
 import {
@@ -313,6 +315,34 @@ export function AjustesClient({
               }`}
             />
           </button>
+        </div>
+      </Section>
+
+      {/* Plan / billing */}
+      <Section title="Plan y suscripción" Icon={Sparkles}>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="text-[14px] font-medium text-[var(--text)]">
+              {plan === 'pro'
+                ? 'MARELL Pro activo'
+                : plan === 'trial'
+                  ? 'Prueba gratuita activa'
+                  : 'Plan gratis'}
+            </div>
+            <p className="text-[12px] text-[var(--muted)] leading-relaxed mt-1">
+              {plan === 'pro'
+                ? 'Todas las funciones desbloqueadas. Cancela cuando quieras.'
+                : plan === 'trial'
+                  ? 'Disfruta todas las funciones gratis. Cuando termine, pasa a Pro por RD$999/mes.'
+                  : 'Activa Pro para recuperar acceso a metas, programadas, reportes e importadores.'}
+            </p>
+          </div>
+          <Link
+            href="/app/upgrade"
+            className="h-10 px-4 text-[13px] font-semibold rounded-xl gradient-bg text-[#0B0B0C] hover:brightness-105 inline-flex items-center gap-2 transition-[filter] shrink-0"
+          >
+            {plan === 'pro' ? 'Administrar' : 'Pasar a Pro'}
+          </Link>
         </div>
       </Section>
 
