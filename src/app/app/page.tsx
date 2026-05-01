@@ -103,7 +103,12 @@ export default async function ResumenPage() {
   // Materialize any due scheduled transactions before fetching dashboard data
   // so the recurring income/expenses are reflected in account balances and the
   // current month's totals immediately when the user opens the app.
-  await materializeDue(budget.id as string)
+  // Wrapped: a failure here shouldn't 500 the entire dashboard.
+  try {
+    await materializeDue(budget.id as string)
+  } catch (err) {
+    console.error('[materializeDue] failed', err)
+  }
 
   const currency = parseCurrency(budget.currency as string | null)
   const fmtMoney = (n: number) => fmtMoneyWithCurrency(n, currency)

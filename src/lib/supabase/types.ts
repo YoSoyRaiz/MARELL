@@ -230,6 +230,10 @@ export type Database = {
         Args: { target_id: string }
         Returns: void
       }
+      admin_delete_user: {
+        Args: { target_id: string }
+        Returns: void
+      }
     }
     Enums: Record<string, never>
   }

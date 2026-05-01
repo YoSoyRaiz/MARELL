@@ -263,22 +263,30 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                     </button>
                   </div>
 
-                  {/* Progress bar */}
+                  {/* Remaining hero */}
                   <div>
-                    <div className="flex items-baseline justify-between mb-2">
-                      <div className="text-[18px] font-bold tabular-nums num text-[var(--text)]">
-                        {fmtMoney(g.current)}
+                    <div className="flex items-baseline justify-between mb-2 gap-3">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                          {isComplete ? 'Meta cumplida' : 'Te falta'}
+                        </div>
+                        <div
+                          className={`text-[20px] font-bold tabular-nums num leading-none mt-0.5 ${
+                            isComplete ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                          }`}
+                        >
+                          {fmtMoney(remaining)}
+                        </div>
                       </div>
-                      <div className="text-[11px] text-[var(--muted)] tabular-nums">
-                        de {fmtMoney(g.goalAmount)} ·{' '}
-                        <span className="text-[var(--text2)] font-semibold">
-                          {Math.round(pct * 100)}%
-                        </span>
+                      <div className="text-[11px] text-[var(--muted)] tabular-nums num text-right">
+                        {fmtMoney(g.current)}
+                        <br />
+                        <span className="text-[var(--muted2)]">de {fmtMoney(g.goalAmount)}</span>
                       </div>
                     </div>
                     <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
                       <div
-                        className={`h-full ${isComplete ? 'gradient-bg' : 'gradient-bg'} transition-[width] duration-500`}
+                        className="h-full gradient-bg transition-[width] duration-500"
                         style={{ width: `${pct * 100}%` }}
                       />
                     </div>

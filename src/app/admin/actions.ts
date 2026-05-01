@@ -84,3 +84,15 @@ export async function setFree(targetId: string): Promise<ActionResult> {
   revalidatePath('/admin', 'page')
   return { ok: true }
 }
+
+export async function deleteUser(targetId: string): Promise<ActionResult> {
+  const { supabase, error } = await requireAdmin()
+  if (error) return { error }
+  if (!targetId) return { error: 'ID requerido' }
+  const { error: rpcErr } = await supabase.rpc('admin_delete_user', {
+    target_id: targetId,
+  })
+  if (rpcErr) return { error: rpcErr.message }
+  revalidatePath('/admin', 'page')
+  return { ok: true }
+}

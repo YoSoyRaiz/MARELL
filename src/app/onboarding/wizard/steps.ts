@@ -22,10 +22,6 @@ import { Step20AccountsRecap } from './steps/Step20AccountsRecap'
 import { Step21FundIntro } from './steps/Step21FundIntro'
 import { Step22SavingsAllocation } from './steps/Step22SavingsAllocation'
 import { Step23ZeroBased } from './steps/Step23ZeroBased'
-import { Step24Tutorial1 } from './steps/Step24Tutorial1'
-import { Step25Tutorial2 } from './steps/Step25Tutorial2'
-import { Step26Tutorial3 } from './steps/Step26Tutorial3'
-import { Step27Tutorial4 } from './steps/Step27Tutorial4'
 import { Step28Final } from './steps/Step28Final'
 
 export const STEPS: StepDef[] = [
@@ -164,26 +160,6 @@ export const STEPS: StepDef[] = [
     phase: 'Paso 3 de 3 · Asignación',
     primaryLabel: 'Hora de asignar',
     Component: Step23ZeroBased,
-  },
-  {
-    id: 'tutorial-1',
-    phase: '¡Listo!',
-    Component: Step24Tutorial1,
-  },
-  {
-    id: 'tutorial-2',
-    phase: '¡Listo!',
-    Component: Step25Tutorial2,
-  },
-  {
-    id: 'tutorial-3',
-    phase: '¡Listo!',
-    Component: Step26Tutorial3,
-  },
-  {
-    id: 'tutorial-4',
-    phase: '¡Listo!',
-    Component: Step27Tutorial4,
   },
   {
     id: 'final',

@@ -2,8 +2,8 @@
 // Edit this file when launching new tiers / changing the destination
 // account; everything user-facing in /pricing reads from here.
 
-export const PRO_PRICE_MONTH_DOP = 199
-export const PRO_PRICE_YEAR_DOP = 1800
+export const PRO_PRICE_MONTH_DOP = 999
+export const PRO_PRICE_YEAR_DOP = 9990
 export const PRO_PRICE_YEAR_SAVINGS_PCT = Math.round(
   (1 - PRO_PRICE_YEAR_DOP / (PRO_PRICE_MONTH_DOP * 12)) * 100,
 )
@@ -24,18 +24,18 @@ export const PAYMENT_ACCOUNTS: BankAccount[] = [
     holder: 'MAXWELL HERBERT',
     rnc: null,
     type: 'Cuenta de Ahorros',
-    number: '000000000',
+    number: '766500417',
   },
   {
-    bank: 'BanReservas',
+    bank: 'BHD',
     holder: 'MAXWELL HERBERT',
     rnc: null,
     type: 'Cuenta de Ahorros',
-    number: '000000000',
+    number: '20887000018',
   },
 ]
 
-export const PAYMENT_SUPPORT_EMAIL = 'soporte@marell.app'
+export const PAYMENT_SUPPORT_EMAIL = 'notificaciones@marell.app'
 
 /**
  * Per-user reference code that the user includes in the transfer concept

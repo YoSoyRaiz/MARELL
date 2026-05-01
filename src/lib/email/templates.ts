@@ -162,7 +162,7 @@ export function trialEndingEmail(
       : `Tu trial gratuito vence en <strong>${daysLeft} días</strong>. Asegura tu acceso continuo activando Pro.`}
 </p>
 <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:${TEXT_MUTED};">
-  Pro cuesta RD$199/mes o RD$1,800/año. Pago por transferencia bancaria — te activamos dentro de 24 horas.
+  Pro cuesta RD$999/mes o RD$9,990/año. Pago por transferencia bancaria — te activamos dentro de 24 horas.
 </p>
 ${buttonHtml('Pasar a Pro', `${appUrl}/pricing`)}
 `.trim()
@@ -176,7 +176,7 @@ ${buttonHtml('Pasar a Pro', `${appUrl}/pricing`)}
         ? 'Tu trial gratuito vence MAÑANA.'
         : `Tu trial gratuito vence en ${daysLeft} días.`,
     '',
-    'Pro: RD$199/mes o RD$1,800/año. Pago por transferencia.',
+    'Pro: RD$999/mes o RD$9,990/año. Pago por transferencia.',
     `Pasar a Pro: ${appUrl}/pricing`,
   ].join('\n')
 

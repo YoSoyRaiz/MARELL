@@ -13,6 +13,7 @@ import {
   ArrowDownToLine,
   Users,
   AlertTriangle,
+  Trash2,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import {
@@ -20,6 +21,7 @@ import {
   extendTrial,
   setApproved,
   setFree,
+  deleteUser,
 } from './actions'
 
 export interface AdminUser {
@@ -199,6 +201,23 @@ export function AdminClient({ users }: Props) {
     })
   }
 
+  const handleDelete = async (u: AdminUser) => {
+    const ok = await confirm({
+      title: `¿Eliminar permanentemente a ${u.email}?`,
+      description:
+        'Esto borra el usuario, su perfil, presupuesto, cuentas, transacciones, metas y recurrencias. No se puede deshacer.',
+      confirmLabel: 'Eliminar usuario',
+      tone: 'danger',
+    })
+    if (!ok) return
+    setError(null)
+    startMutate(async () => {
+      const r = await deleteUser(u.id)
+      if (r.error) setError(r.error)
+      else refresh()
+    })
+  }
+
   return (
     <>
       <div className="space-y-6">
@@ -373,6 +392,12 @@ export function AdminClient({ users }: Props) {
                         label={u.approved ? 'Bloquear' : 'Aprobar'}
                         tone={u.approved ? 'danger' : 'default'}
                         onClick={() => handleBlock(u)}
+                      />
+                      <ActionButton
+                        Icon={Trash2}
+                        label="Eliminar"
+                        tone="danger"
+                        onClick={() => handleDelete(u)}
                       />
                     </div>
                   </li>

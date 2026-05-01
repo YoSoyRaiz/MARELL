@@ -31,7 +31,12 @@ export default async function ProgramadasPage() {
 
   // Materialize anything due before showing the list, so the user sees
   // the up-to-date "next" dates and the new transactions appear immediately.
-  await materializeDue(budget.id as string)
+  // Defensive: a failure here shouldn't 500 the entire page.
+  try {
+    await materializeDue(budget.id as string)
+  } catch (err) {
+    console.error('[materializeDue] failed', err)
+  }
 
   const [schedRes, acctsRes, catsRes, groupsRes] = await Promise.all([
     supabase

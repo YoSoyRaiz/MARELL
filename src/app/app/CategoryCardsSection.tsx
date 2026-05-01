@@ -122,13 +122,20 @@ export function CategoryCardsSection({
                   </>
                 ) : (
                   <>
-                    <div className="text-[18px] font-bold tabular-nums num text-[var(--text)]">
-                      {fmtMoneyShort(g.spent)}
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                      Restante
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] mt-0.5">
-                      de {fmtMoneyShort(g.assigned)}
+                    <div
+                      className={`text-[20px] font-bold tabular-nums num leading-none mt-0.5 ${
+                        g.spent > g.assigned ? 'text-[var(--coral)]' : 'gradient-text'
+                      }`}
+                    >
+                      {fmtMoneyShort(Math.max(0, g.assigned - g.spent))}
                     </div>
-                    <div className="mt-3 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+                    <div className="text-[11px] text-[var(--muted)] mt-1.5 num tabular-nums">
+                      {fmtMoneyShort(g.spent)} gastado · {fmtMoneyShort(g.assigned)} asignado
+                    </div>
+                    <div className="mt-2.5 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
                       <div
                         className="h-full gradient-bg transition-[width] duration-500"
                         style={{ width: `${pct * 100}%` }}

@@ -368,8 +368,9 @@ export async function materializeDue(budgetId: string) {
     }
   }
 
-  if (created > 0) {
-    revalidatePath('/app', 'layout')
-  }
+  // Note: callers from a server component (page.tsx) re-fetch their data
+  // in the same request, so revalidatePath here would be redundant and can
+  // throw "revalidatePath is only available inside server actions" on some
+  // Next.js versions. Skip it intentionally.
   return { created }
 }
