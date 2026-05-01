@@ -105,12 +105,16 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
       .finally(() => setLoading(false))
   }, [open, ctx])
 
-  // Focus the input when the popover opens.
+  // Focus the amount input when the popover opens — desktop only. On
+  // mobile we skip auto-focus so the on-screen keyboard doesn't pop up
+  // and cover half the sheet; the user taps the field when they're
+  // ready to type.
   useEffect(() => {
-    if (open) {
-      const id = window.requestAnimationFrame(() => inputRef.current?.focus())
-      return () => window.cancelAnimationFrame(id)
-    }
+    if (!open) return
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+    if (!isDesktop) return
+    const id = window.requestAnimationFrame(() => inputRef.current?.focus())
+    return () => window.cancelAnimationFrame(id)
   }, [open])
 
   // Click-outside + Esc.
@@ -362,7 +366,6 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               value={amountText}
               onChange={(e) => setAmountText(formatTyping(e.target.value))}
               placeholder="0.00"
-              autoFocus
               className="w-full mt-1 !text-[28px] sm:!text-[24px] !font-bold !py-4 !px-4 !rounded-xl tabular-nums num"
             />
           </div>

@@ -52,7 +52,7 @@ export function TopBar({
   return (
     <header className="border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md px-4 py-3 sm:px-6 md:px-8 md:py-4 sticky top-0 z-30">
       <div className="flex items-center justify-between gap-3 md:gap-6">
-        {/* Hamburger (mobile) + greeting */}
+        {/* Left: hamburger (mobile) + greeting (desktop) */}
         <div className="flex items-center gap-3 min-w-0 shrink-0">
           <button
             type="button"
@@ -63,7 +63,7 @@ export function TopBar({
             <Menu size={18} strokeWidth={2.2} />
           </button>
 
-          <div className="min-w-0">
+          <div className="hidden lg:block min-w-0">
             <div className="text-[16px] sm:text-[20px] md:text-[24px] font-bold leading-tight tracking-tight text-[var(--text)] truncate">
               Hola, {firstName ?? 'amigo'} <span aria-hidden>👋</span>
             </div>
@@ -73,8 +73,10 @@ export function TopBar({
           </div>
         </div>
 
-        {/* Right cluster: pill + bell */}
-        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        {/* Cluster: pill + bell. Centered on mobile (since the greeting
+            is hidden — the bottom tab bar already shows the user name),
+            right-aligned on desktop. */}
+        <div className="flex-1 flex items-center justify-center lg:justify-end lg:flex-initial gap-2 md:gap-3 min-w-0">
           <NotificationBell
             notifications={notifications}
             lastSeenAt={notificationsLastSeen}
@@ -157,6 +159,10 @@ export function TopBar({
             />
           </form>
         </div>
+
+        {/* Spacer on mobile only — mirrors the hamburger width so the
+            centered cluster stays optically centered. */}
+        <div className="lg:hidden w-9 shrink-0" aria-hidden />
       </div>
     </header>
   )
