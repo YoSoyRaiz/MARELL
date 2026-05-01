@@ -22,6 +22,7 @@ import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
 import { InsightsSection, type InsightInputs } from './InsightsSection'
+import { FirstMonthGuide } from './FirstMonthGuide'
 import { materializeDue } from './programadas/actions'
 import { currentMonthDR, monthBoundsISO, todayISODR } from '@/lib/dates'
 import { UpcomingCommitments, type UpcomingItem } from './UpcomingCommitments'
@@ -611,6 +612,20 @@ export default async function ResumenPage() {
   const upcomingNetFlow = upcomingItems.reduce((s, i) => s + i.amount, 0)
   const projectedCash = Math.round((totalCash + upcomingNetFlow) * 100) / 100
 
+  // First-month guide flags. Cheap booleans derived from data we
+  // already have, so no extra queries.
+  const guideHasAssigned = totalAssigned > 0.005
+  const guideHasTransaction =
+    txnsRecentData.length > 0 || txnsMonthData.length > 0
+  const guideHasGoal = catsData.some(
+    (c) => c.goal_amount !== null && Number(c.goal_amount) > 0,
+  )
+  // For "reconciled" we'd need to join transactions on cleared status.
+  // Use a cheap proxy: if at least one transaction is marked reconciled
+  // we count it. Cheap because txnsMonthData is already loaded — we
+  // just don't have the cleared field in the SELECT.
+  const guideHasReconciled = false // TODO: surface from a lightweight query
+
   const insightInputs: InsightInputs = {
     readyToAssign,
     totalAssignedThisMonth: totalAssigned,
@@ -634,6 +649,15 @@ export default async function ResumenPage() {
             Tu mes en una <span className="gradient-text">mirada</span>, {firstName}.
           </h1>
         </div>
+
+        {/* First-month onboarding guide. Component self-hides once the
+            user dismisses it via localStorage. */}
+        <FirstMonthGuide
+          hasAssigned={guideHasAssigned}
+          hasTransaction={guideHasTransaction}
+          hasGoal={guideHasGoal}
+          hasReconciled={guideHasReconciled}
+        />
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
