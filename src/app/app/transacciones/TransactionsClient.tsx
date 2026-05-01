@@ -267,10 +267,10 @@ export function TransactionsClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput])
 
-  // Auto-dismiss the "Guardada · 27 abr" toast after 6 seconds.
+  // Auto-dismiss the "Guardada · 27 abr" toast after 5 seconds.
   useEffect(() => {
     if (!savedToast) return
-    const t = setTimeout(() => setSavedToast(null), 6000)
+    const t = setTimeout(() => setSavedToast(null), 5000)
     return () => clearTimeout(t)
   }, [savedToast])
 
