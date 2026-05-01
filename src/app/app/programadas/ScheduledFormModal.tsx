@@ -9,6 +9,8 @@ import {
   AlertCircle,
   Repeat,
   Gift,
+  Calculator,
+  CreditCard,
 } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import {
@@ -188,6 +190,38 @@ export function ScheduledFormModal({
     setMemo('Sueldo #13 — derecho laboral RD')
   }
 
+  const [installmentOpen, setInstallmentOpen] = useState(false)
+  const [installmentTotal, setInstallmentTotal] = useState<string>('')
+  const [installmentCount, setInstallmentCount] = useState<string>('')
+  const [installmentRate, setInstallmentRate] = useState<string>('')
+
+  const installmentTotalNum = parseFloat(installmentTotal.replace(/[, ]/g, '')) || 0
+  const installmentCountNum = parseInt(installmentCount, 10) || 0
+  const installmentRateNum = parseFloat(installmentRate.replace(/,/g, '.')) || 0
+  /**
+   * Standard amortizing-loan formula: P = (i × PV) / (1 − (1+i)^-n) where
+   * i is the monthly rate. With i=0 it collapses to PV / n.
+   */
+  const computedCuota = (() => {
+    if (installmentTotalNum <= 0 || installmentCountNum <= 0) return 0
+    if (installmentRateNum <= 0) return installmentTotalNum / installmentCountNum
+    const i = installmentRateNum / 100 / 12
+    const n = installmentCountNum
+    return (i * installmentTotalNum) / (1 - Math.pow(1 + i, -n))
+  })()
+
+  const applyInstallmentPreset = () => {
+    setType('expense')
+    setFrequency('monthly')
+    setMemo('Cuota mensual — financiamiento')
+  }
+
+  const applyCuotaToAmount = () => {
+    if (computedCuota > 0) {
+      setAmount(Math.round(computedCuota * 100) / 100)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
@@ -240,23 +274,128 @@ export function ScheduledFormModal({
               <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold mb-2">
                 Plantillas RD
               </div>
-              <button
-                type="button"
-                onClick={applyRegaliaPreset}
-                className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn)] flex items-center justify-center shrink-0">
-                  <Gift size={14} strokeWidth={2.2} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-semibold text-[var(--text)] leading-tight">
-                    Regalía pascual
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={applyRegaliaPreset}
+                  className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn)] flex items-center justify-center shrink-0">
+                    <Gift size={14} strokeWidth={2.2} />
                   </div>
-                  <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
-                    Llena tipo, frecuencia, fecha (24-dic) y memo. Solo añade el monto y la cuenta.
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-semibold text-[var(--text)] leading-tight">
+                      Regalía pascual
+                    </div>
+                    <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                      Llena tipo, frecuencia, fecha (24-dic) y memo. Solo añade el monto y la cuenta.
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    applyInstallmentPreset()
+                    setInstallmentOpen(true)
+                  }}
+                  className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[rgba(255,122,89,0.10)] text-[var(--coral)] flex items-center justify-center shrink-0">
+                    <CreditCard size={14} strokeWidth={2.2} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-semibold text-[var(--text)] leading-tight">
+                      Cuota mensual
+                    </div>
+                    <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                      Financiamiento a plazos: calcula la cuota y la programa cada mes.
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {/* Cuotas calculator: input total + n + interest, output the
+                  monthly payment. Standard amortizing-loan formula. */}
+              {installmentOpen && (
+                <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3.5 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--brand-2)] font-semibold inline-flex items-center gap-1.5">
+                      <Calculator size={11} strokeWidth={2.4} />
+                      Calculadora de cuotas
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInstallmentOpen(false)}
+                      className="text-[var(--muted)] hover:text-[var(--text)]"
+                      aria-label="Cerrar calculadora"
+                    >
+                      <X size={12} strokeWidth={2.4} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <label className="block">
+                      <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                        Total
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={installmentTotal}
+                        onChange={(e) => setInstallmentTotal(e.target.value)}
+                        placeholder="60,000"
+                        className="w-full mt-1 !text-[13px] !py-2 !px-2 !rounded-lg tabular-nums num"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                        # cuotas
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={installmentCount}
+                        onChange={(e) => setInstallmentCount(e.target.value)}
+                        placeholder="12"
+                        className="w-full mt-1 !text-[13px] !py-2 !px-2 !rounded-lg tabular-nums num"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                        Tasa anual %
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={installmentRate}
+                        onChange={(e) => setInstallmentRate(e.target.value)}
+                        placeholder="0"
+                        className="w-full mt-1 !text-[13px] !py-2 !px-2 !rounded-lg tabular-nums num"
+                      />
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <div className="text-[11px] text-[var(--muted)]">
+                      Cuota mensual:{' '}
+                      <span className="text-[var(--text)] font-semibold tabular-nums num">
+                        {computedCuota > 0
+                          ? `$${computedCuota.toLocaleString('en-US', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}`
+                          : '—'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={applyCuotaToAmount}
+                      disabled={computedCuota <= 0}
+                      className="text-[11px] font-semibold text-[var(--brand-2)] hover:underline disabled:opacity-40"
+                    >
+                      Usar este monto
+                    </button>
                   </div>
                 </div>
-              </button>
+              )}
             </div>
           )}
 
