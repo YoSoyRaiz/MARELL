@@ -303,7 +303,7 @@ export type Database = {
         Returns: void
       }
       increment_ocr_usage: {
-        Args: { p_limit: number }
+        Args: Record<string, never>
         Returns: Array<{
           allowed: boolean
           used: number

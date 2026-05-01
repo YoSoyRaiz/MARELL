@@ -6,20 +6,14 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const MAX_BYTES = 5 * 1024 * 1024
+// Anthropic accepts up to 5 MB base64-encoded; raw bytes inflate ~33%
+// when encoded, so we cap raw input at ~3.5 MB to leave headroom.
+const VISION_MAX_BYTES = 3_500_000
 const ALLOWED_MEDIA = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 
-// Per-plan monthly OCR cap. Tweak here, no migration needed.
-const PLAN_LIMITS: Record<string, number> = {
-  free: 3,
-  trial: 15,
-  pro: 50,
-}
-const DEFAULT_LIMIT = PLAN_LIMITS.free
-
-function limitForPlan(plan: string | null | undefined): number {
-  if (!plan) return DEFAULT_LIMIT
-  return PLAN_LIMITS[plan] ?? DEFAULT_LIMIT
-}
+// Per-plan monthly OCR cap is enforced server-side in
+// `increment_ocr_usage()`. The route doesn't pass a limit anymore —
+// the SQL function looks up the caller's plan and decides.
 
 const SYSTEM_PROMPT = `Eres un parser de recibos de la República Dominicana. Recibirás una foto de un recibo o factura y debes extraer los datos. Devuelve EXCLUSIVAMENTE un objeto JSON sin markdown, sin texto adicional, sin code fences, con esta forma exacta:
 
@@ -64,35 +58,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
   }
 
-  // Check the user's plan to know their monthly cap, then atomically
-  // claim a slot. If the cap is hit, bail out before paying Anthropic.
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan')
-    .eq('id', user.id)
-    .single()
-  const limit = limitForPlan(profile?.plan as string | null | undefined)
-
-  const { data: usage, error: usageErr } = await supabase
-    .rpc('increment_ocr_usage', { p_limit: limit })
-    .single<{ allowed: boolean; used: number; limit_value: number }>()
-  if (usageErr) {
-    return NextResponse.json(
-      { error: `quota check failed: ${usageErr.message}` },
-      { status: 500 },
-    )
-  }
-  if (!usage?.allowed) {
-    return NextResponse.json(
-      {
-        error: 'quota_exceeded',
-        used: usage?.used ?? limit,
-        limit: limit,
-      },
-      { status: 429 },
-    )
-  }
-
+  // Validate the upload BEFORE consuming a quota slot — bad mime or
+  // oversize files shouldn't burn the user's monthly OCR budget.
   let form: FormData
   try {
     form = await request.formData()
@@ -106,10 +73,42 @@ export async function POST(request: NextRequest) {
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: 'imagen demasiado grande' }, { status: 400 })
   }
+  if (file.size > VISION_MAX_BYTES) {
+    return NextResponse.json(
+      {
+        error: 'image_too_large_for_ocr',
+        message: 'La foto es demasiado grande para lectura automática. Escribe los datos a mano.',
+      },
+      { status: 413 },
+    )
+  }
   if (!ALLOWED_MEDIA.has(file.type)) {
     return NextResponse.json(
       { error: `formato no soportado: ${file.type}` },
       { status: 400 },
+    )
+  }
+
+  // Atomically claim a slot. The SQL function knows the caller's plan
+  // and returns the matching cap; if the cap is hit we bail out before
+  // paying Anthropic.
+  const { data: usage, error: usageErr } = await supabase
+    .rpc('increment_ocr_usage')
+    .single<{ allowed: boolean; used: number; limit_value: number }>()
+  if (usageErr) {
+    return NextResponse.json(
+      { error: `quota check failed: ${usageErr.message}` },
+      { status: 500 },
+    )
+  }
+  if (!usage?.allowed) {
+    return NextResponse.json(
+      {
+        error: 'quota_exceeded',
+        used: usage?.used ?? 0,
+        limit: usage?.limit_value ?? 3,
+      },
+      { status: 429 },
     )
   }
 

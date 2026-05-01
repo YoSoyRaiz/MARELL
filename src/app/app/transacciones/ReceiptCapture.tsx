@@ -68,21 +68,21 @@ export function ReceiptCapture({
     void (async () => {
       try {
         const supabase = createClient()
-        const { data } = await supabase.rpc('get_ocr_usage').single<{
-          used: number
-          year_month: string
-        }>()
-        if (cancelled || !data) return
-        // Limit comes back from the parse call. We initialize with a
-        // plan-agnostic placeholder; the real limit lands after the
-        // first parse attempt or via the 429 payload.
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('plan')
-          .single()
-        const plan = (profile?.plan as string | null) ?? 'free'
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user || cancelled) return
+        const [usageResp, profileResp] = await Promise.all([
+          supabase.rpc('get_ocr_usage').single<{
+            used: number
+            year_month: string
+          }>(),
+          supabase.from('profiles').select('plan').eq('id', user.id).single(),
+        ])
+        if (cancelled || !usageResp.data) return
+        const plan = (profileResp.data?.plan as string | null) ?? 'free'
         const planLimit = plan === 'pro' ? 50 : plan === 'trial' ? 15 : 3
-        setUsage({ used: data.used, limit: planLimit })
+        setUsage({ used: usageResp.data.used, limit: planLimit })
       } catch {
         // Non-fatal — the UI just won't show the counter.
       }
@@ -116,6 +116,12 @@ export function ReceiptCapture({
         if (body.used !== undefined && body.limit !== undefined) {
           setUsage({ used: body.used, limit: body.limit })
         }
+        setQuotaHit(true)
+        return
+      }
+      if (resp.status === 413) {
+        // Too large for vision — the upload still succeeds, we just
+        // can't run OCR on it. Show the same hint as quota-hit.
         setQuotaHit(true)
         return
       }

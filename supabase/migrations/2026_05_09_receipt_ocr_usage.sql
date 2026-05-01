@@ -32,31 +32,51 @@ create policy "ocr_usage_owner_select"
 -- Writes go through the security-definer function below, so we don't
 -- expose insert/update to clients directly.
 
+-- Plan-to-cap mapping. Hardcoded in SQL so the client can't lie about
+-- their plan limit when calling increment_ocr_usage directly.
+create or replace function _ocr_limit_for(p_plan text)
+returns integer
+language sql
+immutable
+as $$
+  select case
+    when p_plan = 'pro'   then 50
+    when p_plan = 'trial' then 15
+    else                       3   -- free / null / anything unknown
+  end;
+$$;
+
 -- ────────────────────────────────────────────────────────────
 -- Atomic check-and-increment.
--- Returns allowed=true and the new count if the user is under the
--- caller-supplied limit; otherwise allowed=false and the existing
--- count without incrementing.
+-- Looks up the caller's plan internally and uses the matching cap, so
+-- a hostile client cannot pass an inflated limit. Returns allowed=true
+-- and the new count if under cap; otherwise allowed=false and the
+-- existing count without incrementing.
 --
 -- Why server-side: doing the check + upsert + increment in two
 -- separate calls from the API route would race two simultaneous
 -- uploads from the same user (e.g. both pass the check, both
 -- increment, count ends 2 over the cap).
 -- ────────────────────────────────────────────────────────────
-create or replace function increment_ocr_usage(p_limit integer)
+create or replace function increment_ocr_usage()
 returns table(allowed boolean, used integer, limit_value integer)
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  v_user uuid := auth.uid();
-  v_ym   text := to_char(now() at time zone 'UTC', 'YYYY-MM');
+  v_user  uuid := auth.uid();
+  v_ym    text := to_char(now() at time zone 'UTC', 'YYYY-MM');
+  v_plan  text;
+  v_limit integer;
   v_count integer;
 begin
   if v_user is null then
     raise exception 'unauthenticated';
   end if;
+
+  select plan into v_plan from profiles where id = v_user;
+  v_limit := _ocr_limit_for(v_plan);
 
   -- Upsert the row, taking a row lock so a concurrent call from the
   -- same user blocks here until we're done.
@@ -66,8 +86,8 @@ begin
     set updated_at = receipt_ocr_usage.updated_at
   returning count into v_count;
 
-  if v_count >= p_limit then
-    return query select false, v_count, p_limit;
+  if v_count >= v_limit then
+    return query select false, v_count, v_limit;
     return;
   end if;
 
@@ -78,11 +98,14 @@ begin
      and year_month = v_ym
   returning count into v_count;
 
-  return query select true, v_count, p_limit;
+  return query select true, v_count, v_limit;
 end;
 $$;
 
-grant execute on function increment_ocr_usage(integer) to authenticated;
+grant execute on function increment_ocr_usage() to authenticated;
+-- Drop the old signature so old clients can't keep calling the unsafe
+-- one. Safe to run repeatedly.
+drop function if exists increment_ocr_usage(integer);
 
 -- Read-only helper for the UI: "how many do I have left?".
 create or replace function get_ocr_usage()
