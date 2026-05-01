@@ -148,7 +148,11 @@ export default async function ResumenPage() {
     supabase
       .from('categories')
       .select('id, name, group_id, goal_amount, goal_type, goal_date')
-      .eq('budget_id', budget.id),
+      .eq('budget_id', budget.id)
+      // Hidden categories shouldn't appear in the dashboard cards or
+      // contribute to its totals — they're "archived" from the user's
+      // perspective. The plan view already filters them; aligning here.
+      .eq('hidden', false),
     supabase
       .from('accounts')
       .select('id, name, type, balance, currency, closed')
@@ -249,22 +253,29 @@ export default async function ResumenPage() {
     const accCurrency = parseCurrency(a.currency)
     return convertAmount(Number(a.balance), accCurrency, budgetMoneyCurrency, fxRate)
   }
+  // Closed accounts are user-archived — their balance shouldn't count
+  // toward the dashboard's "this is what I have" totals. Without this
+  // filter a long-closed checking account would inflate totalCash and
+  // throw off Ready-to-Assign math derived from it.
+  const isOpen = (a: { closed: boolean | null }) =>
+    !(a.closed === true)
+
   const totalCash = accountsData
-    .filter((a) => cashTypes.includes(a.type as string))
+    .filter((a) => cashTypes.includes(a.type as string) && isOpen(a))
     .reduce(
       (s, a) =>
         s + accountBalanceInBudget({ balance: Number(a.balance), currency: (a.currency as string | null) ?? null }),
       0,
     )
   const totalSavings = accountsData
-    .filter((a) => a.type === 'savings')
+    .filter((a) => a.type === 'savings' && isOpen(a))
     .reduce(
       (s, a) =>
         s + accountBalanceInBudget({ balance: Number(a.balance), currency: (a.currency as string | null) ?? null }),
       0,
     )
   const totalDebt = accountsData
-    .filter((a) => debtTypes.includes(a.type as string))
+    .filter((a) => debtTypes.includes(a.type as string) && isOpen(a))
     .reduce(
       (s, a) =>
         s +
@@ -277,7 +288,7 @@ export default async function ResumenPage() {
       0,
     )
   const totalInvestments = accountsData
-    .filter((a) => investmentTypes.includes(a.type as string))
+    .filter((a) => investmentTypes.includes(a.type as string) && isOpen(a))
     .reduce(
       (s, a) =>
         s + accountBalanceInBudget({ balance: Number(a.balance), currency: (a.currency as string | null) ?? null }),

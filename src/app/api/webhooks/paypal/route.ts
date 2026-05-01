@@ -46,6 +46,13 @@ export async function POST(request: NextRequest) {
   const resource = event.resource ?? {}
   const eventId = event.id
 
+  // Defense in depth: only accept UUIDs as profile_id from the
+  // webhook payload. Anything else is dropped before we hit the DB.
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const rawCustom = (resource.custom_id ?? resource.custom) as string | undefined
+  const profileIdSafe =
+    rawCustom && UUID_RE.test(rawCustom) ? rawCustom : undefined
+
   // Idempotency: PayPal sends each event with a stable `id`. If we
   // already recorded a payment_event with that external_id we ack
   // without re-applying the side-effects.
@@ -61,9 +68,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, deduped: true })
     }
   }
-  const profileId = (resource.custom_id ?? resource.custom) as
-    | string
-    | undefined
+  const profileId = profileIdSafe
   const subId =
     (resource.id as string | undefined) ??
     ((resource.billing_agreement_id as string | undefined) ?? undefined)

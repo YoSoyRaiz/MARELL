@@ -115,10 +115,17 @@ export async function GET(request: NextRequest) {
 
   const supabase = createAdminClient()
   const today = new Date().toISOString().slice(0, 10)
-  const { error: lockErr } = await supabase
-    .from('cron_runs')
-    .insert({ route: 'update-fx-rate', run_date: today } as never)
-  if (lockErr) {
+  type LockRpcArgs = { p_route: string; p_run_date: string }
+  const lockResp = await (supabase as unknown as {
+    rpc: (
+      fn: string,
+      args: LockRpcArgs,
+    ) => Promise<{ data: boolean | null; error: unknown }>
+  }).rpc('acquire_cron_lock', {
+    p_route: 'update-fx-rate',
+    p_run_date: today,
+  })
+  if (!lockResp.data) {
     return NextResponse.json({ ok: true, deduped: true })
   }
 

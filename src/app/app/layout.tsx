@@ -96,7 +96,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     const [accountsRes, assignsRes, txnsRes, subsRes] = await Promise.all([
       supabase
         .from('accounts')
-        .select('balance, type, currency')
+        .select('balance, type, currency, closed')
         .eq('budget_id', budget.id),
       supabase.from('monthly_assignments').select('assigned').eq('budget_id', budget.id),
       supabase
@@ -118,9 +118,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     )
     // USD-denominated accounts in a DOP budget (or vice versa) get
     // normalized into the budget's currency before summing so the topbar
-    // pill never lies about how much cash actually buys.
+    // pill never lies about how much cash actually buys. Closed accounts
+    // are archived and their balance is irrelevant to current cash.
     const totalCash = (accountsRes.data ?? [])
-      .filter((a) => cashTypes.includes(a.type as string))
+      .filter((a) => cashTypes.includes(a.type as string) && a.closed !== true)
       .reduce((s, a) => {
         const accCurrency = parseCurrency(a.currency as string | null)
         const native = Number(a.balance)

@@ -31,17 +31,21 @@ export async function GET(request: NextRequest) {
   const supabase = createAdminClient()
   const now = new Date()
 
-  // Cron lock: insert into cron_runs (route, run_date) which has a
-  // unique constraint. If Vercel retries the cron the second insert
-  // fails and we abort — preventing double-charges.
+  // Cron lock via the `acquire_cron_lock` RPC (migration 2026_05_05).
+  // Returns false if today's run is already in flight; cleans up
+  // locks older than 12h so a failed run doesn't stay locked forever.
   const today = now.toISOString().slice(0, 10)
-  const { error: lockErr } = await supabase
-    .from('cron_runs')
-    .insert({
-      route: 'azul-renewals',
-      run_date: today,
-    } as never)
-  if (lockErr) {
+  type LockRpcArgs = { p_route: string; p_run_date: string }
+  const lockResp = await (supabase as unknown as {
+    rpc: (
+      fn: string,
+      args: LockRpcArgs,
+    ) => Promise<{ data: boolean | null; error: unknown }>
+  }).rpc('acquire_cron_lock', {
+    p_route: 'azul-renewals',
+    p_run_date: today,
+  })
+  if (!lockResp.data) {
     return NextResponse.json({ ok: true, deduped: true })
   }
 
