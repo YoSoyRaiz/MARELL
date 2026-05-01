@@ -53,7 +53,7 @@ export function AppShell({
               notifications={notifications}
               notificationsLastSeen={notificationsLastSeen}
             />
-            <main className="flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-7 max-w-[1400px] w-full mx-auto">
+            <main className="flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-7 max-w-[1700px] w-full mx-auto">
               {children}
             </main>
           </div>

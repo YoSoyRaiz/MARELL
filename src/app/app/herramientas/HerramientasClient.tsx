@@ -122,7 +122,7 @@ export function HerramientasClient() {
       {/* Header */}
       <div className="space-y-2">
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Herramientas
+          Cálculos
         </div>
         <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
           Cálculos hechos para <span className="gradient-text">RD</span>.

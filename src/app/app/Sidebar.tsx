@@ -33,7 +33,7 @@ const NAV = [
   { id: 'transacciones', label: 'Transacciones', href: '/app/transacciones', icon: ArrowLeftRight },
   { id: 'programadas', label: 'Programadas', href: '/app/programadas', icon: Repeat },
   { id: 'metas', label: 'Metas', href: '/app/metas', icon: Target },
-  { id: 'herramientas', label: 'Herramientas', href: '/app/herramientas', icon: Calculator },
+  { id: 'herramientas', label: 'Cálculos', href: '/app/herramientas', icon: Calculator },
 ] as const
 
 interface SidebarProps {
