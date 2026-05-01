@@ -217,6 +217,39 @@ ${buttonHtml('Renovar Pro', `${appUrl}/pricing`)}
   return { subject, html: shell(subject, body), text }
 }
 
+export function budgetInvitationEmail(
+  inviterName: string,
+  budgetName: string,
+  acceptUrl: string,
+): EmailContent {
+  const subject = `${inviterName} te invitó a su presupuesto en MARELL`
+  const body = `
+<h1 style="margin:0 0 12px;font-size:22px;font-weight:700;color:${TEXT_PRIMARY};">Tienes una invitación</h1>
+<p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:${TEXT_PRIMARY};">
+  <strong>${escapeHtml(inviterName)}</strong> quiere que veas y edites el presupuesto
+  <strong>${escapeHtml(budgetName)}</strong> en MARELL.
+</p>
+<p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${TEXT_MUTED};">
+  Verás todas las cuentas, transacciones, metas y categorías del presupuesto compartido.
+  Puedes registrar gastos y mover dinero como cualquier miembro.
+</p>
+${buttonHtml('Aceptar invitación', acceptUrl)}
+<p style="margin:20px 0 0;font-size:12px;color:${TEXT_MUTED};">
+  Si no esperabas esta invitación puedes ignorar el correo. La invitación expira en 14 días.
+</p>
+`.trim()
+
+  const text = [
+    'Tienes una invitación a un presupuesto compartido en MARELL.',
+    '',
+    `${inviterName} te invitó a "${budgetName}".`,
+    '',
+    `Aceptar: ${acceptUrl}`,
+  ].join('\n')
+
+  return { subject, html: shell(subject, body), text }
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')

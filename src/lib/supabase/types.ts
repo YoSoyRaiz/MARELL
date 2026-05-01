@@ -179,6 +179,19 @@ type Table<Row> = {
   Relationships: []
 }
 
+type BudgetInvitation = {
+  id: string
+  budget_id: string
+  invited_by: string
+  email: string
+  role: MemberRole
+  token: string
+  accepted_at: string | null
+  accepted_by: string | null
+  expires_at: string
+  created_at: string
+}
+
 type PaymentEvent = {
   id: string
   profile_id: string
@@ -206,6 +219,7 @@ export type Database = {
       transactions: Table<Transaction>
       subtransactions: Table<Subtransaction>
       scheduled_transactions: Table<ScheduledTransaction>
+      budget_invitations: Table<BudgetInvitation>
       payment_events: Table<PaymentEvent>
     }
     Views: Record<string, never>

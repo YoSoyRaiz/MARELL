@@ -17,6 +17,7 @@ const NAV_SHORTCUTS: { sequence: string; href: string; label: string }[] = [
   { sequence: 'gm', href: '/app/metas', label: 'Metas' },
   { sequence: 'gs', href: '/app/programadas', label: 'Programadas' },
   { sequence: 'ge', href: '/app/analisis', label: 'Análisis' },
+  { sequence: 'gf', href: '/app/familia', label: 'Familia' },
   { sequence: 'gh', href: '/app/herramientas', label: 'Cálculos' },
 ]
 
@@ -28,6 +29,7 @@ const HELP_LIST: ShortcutDef[] = [
   { keys: 'g  m', label: 'Ir a Metas' },
   { keys: 'g  s', label: 'Ir a Programadas' },
   { keys: 'g  e', label: 'Ir a Análisis' },
+  { keys: 'g  f', label: 'Ir a Familia' },
   { keys: 'g  h', label: 'Ir a Cálculos' },
   { keys: 'n', label: 'Nueva transacción' },
   { keys: 'a', label: 'Asignar dinero' },
