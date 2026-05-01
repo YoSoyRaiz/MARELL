@@ -118,6 +118,14 @@ export default async function ResumenPage() {
     return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`
   })()
 
+  // Previous month label + bounds — drives the "Mes pasado" review card.
+  const prevMonth = (() => {
+    const [y, m] = month.split('-').map(Number)
+    const d = new Date(y, m - 2, 1)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  })()
+  const prevBounds = monthBounds(prevMonth)
+
   const [
     groupsRes,
     catsRes,
@@ -129,6 +137,7 @@ export default async function ResumenPage() {
     subsLifetimeRes,
     txnsRecentRes,
     upcomingRes,
+    txnsPrevMonthRes,
   ] = await Promise.all([
     supabase
       .from('category_groups')
@@ -195,6 +204,15 @@ export default async function ResumenPage() {
       .gte('next_date', today)
       .lte('next_date', horizonDate)
       .order('next_date', { ascending: true }),
+    // Previous month's parent transactions — used by the "Mes pasado"
+    // review card. We don't bother with subtransactions here; for the
+    // review we want headline ingresos vs gastos, not per-category math.
+    supabase
+      .from('transactions')
+      .select('amount, category_id, transfer_account_id')
+      .eq('budget_id', budget.id)
+      .gte('date', prevBounds.first)
+      .lte('date', prevBounds.last),
   ])
 
   const groupsData = groupsRes.data ?? []
@@ -515,6 +533,18 @@ export default async function ResumenPage() {
     }
   })()
 
+  // Previous-month review numbers for the "Mes pasado" card.
+  const prevMonthData = txnsPrevMonthRes.data ?? []
+  const prevMonthNonTransfer = prevMonthData.filter((t) => !t.transfer_account_id)
+  const prevMonthIncome = prevMonthNonTransfer
+    .filter((t) => Number(t.amount) > 0)
+    .reduce((s, t) => s + Number(t.amount), 0)
+  const prevMonthExpenses = prevMonthNonTransfer
+    .filter((t) => Number(t.amount) < 0)
+    .reduce((s, t) => s + Math.abs(Number(t.amount)), 0)
+  const prevMonthSavings = prevMonthIncome - prevMonthExpenses
+  const prevMonthHadActivity = prevMonthData.length > 0
+
   // Upcoming scheduled transactions (next 14 days).
   const accountNameById = new Map<string, string>()
   for (const a of accountsData) {
@@ -709,6 +739,51 @@ export default async function ResumenPage() {
           projectedCash={projectedCash}
           netFlow={upcomingNetFlow}
         />
+
+        {/* Mes pasado review — quick reflection card. Hidden when there's
+            no activity to summarize (fresh accounts, future months). */}
+        {prevMonthHadActivity && (
+          <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+            <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
+              <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
+                Cierre de {formatMonthLabel(prevMonth)}
+              </h2>
+              <Link
+                href="/app/analisis"
+                className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
+              >
+                Ver análisis
+                <ArrowRight size={12} strokeWidth={2.4} />
+              </Link>
+            </header>
+            <ul className="divide-y divide-[var(--border)]">
+              <li className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[13px] text-[var(--text2)]">Ingresos</span>
+                <span className="text-[14px] tabular-nums num font-semibold text-[var(--brand-2)]">
+                  {fmtMoney(prevMonthIncome)}
+                </span>
+              </li>
+              <li className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[13px] text-[var(--text2)]">Gastos</span>
+                <span className="text-[14px] tabular-nums num font-semibold text-[var(--text)]">
+                  {fmtMoney(prevMonthExpenses)}
+                </span>
+              </li>
+              <li className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[13px] text-[var(--text2)]">
+                  {prevMonthSavings >= 0 ? 'Ahorrado' : 'Excedido'}
+                </span>
+                <span
+                  className={`text-[14px] tabular-nums num font-semibold ${
+                    prevMonthSavings >= 0 ? 'gradient-text' : 'text-[var(--coral)]'
+                  }`}
+                >
+                  {fmtMoney(Math.abs(prevMonthSavings))}
+                </span>
+              </li>
+            </ul>
+          </section>
+        )}
 
         {/* Metas preview */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
