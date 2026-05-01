@@ -21,6 +21,7 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { ImportTransactionsModal } from './ImportTransactionsModal'
+import { BulkActionBar } from './BulkActionBar'
 import { deleteTransaction } from './actions'
 import { useFormatMoney } from '../CurrencyProvider'
 
@@ -170,6 +171,17 @@ export function TransactionsClient({
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [, startDelete] = useTransition()
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  const toggleSelected = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  const clearSelection = () => setSelected(new Set())
 
   const toggleExpand = (id: string) => {
     setExpanded((prev) => {
@@ -439,7 +451,31 @@ export function TransactionsClient({
               navPending ? 'opacity-60' : ''
             }`}
           >
-            <div className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-2.5 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
+            <div className="hidden md:grid grid-cols-[28px_80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-2.5 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)] items-center">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selected.size === transactions.length && transactions.length > 0) {
+                      clearSelection()
+                    } else {
+                      setSelected(new Set(transactions.map((t) => t.id)))
+                    }
+                  }}
+                  aria-label="Seleccionar todas"
+                  className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-colors ${
+                    transactions.length > 0 && selected.size === transactions.length
+                      ? 'gradient-bg border-transparent'
+                      : 'border-[var(--border2)] hover:border-[var(--brand-2)]'
+                  }`}
+                >
+                  {transactions.length > 0 && selected.size === transactions.length && (
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               <div>Fecha</div>
               <div>Pagado a</div>
               <div>Categoría</div>
@@ -459,8 +495,30 @@ export function TransactionsClient({
                     {/* Mobile card layout (<md) */}
                     <div
                       onClick={() => setEditing(t)}
-                      className="md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.04] transition-colors cursor-pointer"
+                      className={`md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.04] transition-colors cursor-pointer ${
+                        selected.has(t.id) ? 'bg-[rgba(61,220,151,0.04)]' : ''
+                      }`}
                     >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleSelected(t.id)
+                        }}
+                        aria-label={selected.has(t.id) ? 'Quitar selección' : 'Seleccionar'}
+                        aria-pressed={selected.has(t.id)}
+                        className={`w-5 h-5 mt-1 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          selected.has(t.id)
+                            ? 'gradient-bg border-transparent'
+                            : 'border-[var(--border2)] hover:border-[var(--brand-2)]'
+                        }`}
+                      >
+                        {selected.has(t.id) && (
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
                       <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0 mt-0.5">
                         {t.is_transfer ? (
                           <ArrowLeftRight size={15} strokeWidth={2} className="text-[var(--info)]" />
@@ -533,8 +591,30 @@ export function TransactionsClient({
                     {/* Desktop table row (md+) */}
                     <div
                       onClick={() => setEditing(t)}
-                      className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer"
+                      className={`hidden md:grid grid-cols-[28px_80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer ${
+                        selected.has(t.id) ? 'bg-[rgba(61,220,151,0.04)]' : ''
+                      }`}
                     >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleSelected(t.id)
+                        }}
+                        aria-label={selected.has(t.id) ? 'Quitar selección' : 'Seleccionar'}
+                        aria-pressed={selected.has(t.id)}
+                        className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-colors ${
+                          selected.has(t.id)
+                            ? 'gradient-bg border-transparent'
+                            : 'border-[var(--border2)] hover:border-[var(--brand-2)]'
+                        }`}
+                      >
+                        {selected.has(t.id) && (
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
                       <div className="text-[12px] text-[var(--muted)] tabular-nums num">
                         {formatDate(t.date)}
                       </div>
@@ -636,8 +716,11 @@ export function TransactionsClient({
                                   </div>
                                 </div>
 
-                                {/* Desktop: aligned table grid */}
-                                <div className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 items-center">
+                                {/* Desktop: aligned table grid — leading
+                                    empty cells reserve the checkbox + date
+                                    columns. */}
+                                <div className="hidden md:grid grid-cols-[28px_80px_1fr_180px_180px_120px_40px] gap-4 items-center">
+                                  <div />
                                   <div />
                                   <div className="flex items-center gap-3 min-w-0 pl-11">
                                     <span className="text-[var(--muted2)] text-[14px]">↳</span>
@@ -695,6 +778,14 @@ export function TransactionsClient({
         accounts={accounts}
         categories={categories}
       />
+
+      {selected.size > 0 && (
+        <BulkActionBar
+          ids={Array.from(selected)}
+          categories={categories}
+          onClear={clearSelection}
+        />
+      )}
     </>
   )
 }

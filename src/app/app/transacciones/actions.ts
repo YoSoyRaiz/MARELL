@@ -766,6 +766,287 @@ export async function deleteTransaction(transactionId: string) {
   return { success: true as const }
 }
 
+// ── Bulk operations ─────────────────────────────────────────────
+
+export interface BulkResult {
+  error?: string
+  succeeded?: number
+  skipped?: number
+  reasonSummary?: string
+}
+
+/**
+ * Bulk-recategorize plain (non-split, non-transfer) transactions in
+ * one round trip per row. Splits and transfers are skipped — they
+ * carry per-child or per-leg semantics that can't be recategorized
+ * blindly. CC bucket math is reversed and re-applied for each row so
+ * the YNAB-style payment category stays in sync.
+ */
+export async function bulkUpdateCategory(
+  ids: string[],
+  newCategoryId: string | null,
+): Promise<BulkResult> {
+  if (!ids || ids.length === 0) return { error: 'Sin transacciones seleccionadas' }
+  if (ids.length > 500) return { error: 'Máximo 500 por lote' }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // If a target category is given, validate it + look up its budget.
+  let budgetId: string | null = null
+  if (newCategoryId) {
+    const { data: cat } = await supabase
+      .from('categories')
+      .select('id, budget_id')
+      .eq('id', newCategoryId)
+      .single()
+    if (!cat) return { error: 'Categoría no encontrada' }
+    const { data: bud } = await supabase
+      .from('budgets')
+      .select('id')
+      .eq('id', cat.budget_id as string)
+      .eq('created_by', user.id)
+      .single()
+    if (!bud) return { error: 'Sin acceso al presupuesto' }
+    budgetId = cat.budget_id as string
+  }
+
+  const { data: rows } = await supabase
+    .from('transactions')
+    .select(
+      'id, account_id, amount, budget_id, category_id, is_split, transfer_account_id, date',
+    )
+    .in('id', ids)
+  if (!rows) return { error: 'No se pudo leer transacciones' }
+
+  // Pre-fetch involved accounts so we can answer "is this a credit_card?"
+  // without an N+1 against the accounts table.
+  const accountIds = Array.from(new Set(rows.map((r) => r.account_id as string)))
+  const accountTypeById = new Map<string, string>()
+  if (accountIds.length > 0) {
+    const { data: accs } = await supabase
+      .from('accounts')
+      .select('id, type')
+      .in('id', accountIds)
+    for (const a of accs ?? []) {
+      accountTypeById.set(a.id as string, a.type as string)
+    }
+  }
+
+  let succeeded = 0
+  let skipped = 0
+  for (const t of rows) {
+    if (t.is_split || t.transfer_account_id) {
+      skipped += 1
+      continue
+    }
+    if (budgetId && t.budget_id !== budgetId) {
+      skipped += 1
+      continue
+    }
+    // Sanity: every row must belong to a budget the user owns. We rely on
+    // RLS to filter foreign rows out of the SELECT, so any rows that
+    // came back are owned.
+
+    const oldCategoryId = (t.category_id as string | null) ?? null
+    if (oldCategoryId === newCategoryId) {
+      // No-op — count as success.
+      succeeded += 1
+      continue
+    }
+
+    const { error: updErr } = await supabase
+      .from('transactions')
+      .update({ category_id: newCategoryId })
+      .eq('id', t.id as string)
+    if (updErr) {
+      skipped += 1
+      continue
+    }
+
+    // CC bucket sync for this row only — the bucket is keyed off the
+    // category presence, not the specific category. So adding/removing a
+    // category can flip whether the bucket counts this charge.
+    const accountType = accountTypeById.get(t.account_id as string) ?? null
+    if (accountType === 'credit_card') {
+      const month = monthFromDate(t.date as string)
+      const signed = Number(t.amount)
+      // Reverse old bucket contribution if the OLD category existed.
+      if (oldCategoryId !== null) {
+        const oldDelta = ccBucketDelta([
+          { amount: signed, categoryId: oldCategoryId },
+        ])
+        if (Math.abs(oldDelta) >= 0.005) {
+          await applyCcBucketDelta(supabase, t.budget_id as string, month, -oldDelta, oldCategoryId)
+        }
+      }
+      // Apply new bucket contribution if the NEW category exists.
+      if (newCategoryId !== null) {
+        const newDelta = ccBucketDelta([
+          { amount: signed, categoryId: newCategoryId },
+        ])
+        if (Math.abs(newDelta) >= 0.005) {
+          await applyCcBucketDelta(supabase, t.budget_id as string, month, newDelta, newCategoryId)
+        }
+      }
+    }
+    succeeded += 1
+  }
+
+  revalidatePath('/app', 'layout')
+  return {
+    succeeded,
+    skipped,
+    reasonSummary:
+      skipped > 0
+        ? 'Se omitieron splits y transferencias — esas categorías se editan una a una.'
+        : undefined,
+  }
+}
+
+/**
+ * Bulk-delete plain transactions and transfer pairs. For each row:
+ * rolls back the affected account balance(s), reverses any CC bucket
+ * contribution, and removes both legs of a transfer pair atomically
+ * even if only one leg is in the selection.
+ */
+export async function bulkDeleteTransactions(ids: string[]): Promise<BulkResult> {
+  if (!ids || ids.length === 0) return { error: 'Sin transacciones seleccionadas' }
+  if (ids.length > 500) return { error: 'Máximo 500 por lote' }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Pull every selected row plus enough context to handle transfers and
+  // CC buckets in one go.
+  const { data: rows } = await supabase
+    .from('transactions')
+    .select(
+      'id, account_id, amount, budget_id, category_id, is_split, date, transfer_transaction_id',
+    )
+    .in('id', ids)
+  if (!rows) return { error: 'No se pudo leer transacciones' }
+
+  // Expand transfer pairs: if one leg is selected, drag the twin too.
+  const targetIds = new Set<string>(rows.map((r) => r.id as string))
+  const twinFetchIds: string[] = []
+  for (const r of rows) {
+    if (r.transfer_transaction_id && !targetIds.has(r.transfer_transaction_id as string)) {
+      twinFetchIds.push(r.transfer_transaction_id as string)
+    }
+  }
+  if (twinFetchIds.length > 0) {
+    const { data: twins } = await supabase
+      .from('transactions')
+      .select(
+        'id, account_id, amount, budget_id, category_id, is_split, date, transfer_transaction_id',
+      )
+      .in('id', twinFetchIds)
+    for (const t of twins ?? []) {
+      rows.push(t)
+      targetIds.add(t.id as string)
+    }
+  }
+
+  // Pre-fetch account types for CC bucket checks.
+  const accountIds = Array.from(new Set(rows.map((r) => r.account_id as string)))
+  const accountTypeById = new Map<string, string>()
+  if (accountIds.length > 0) {
+    const { data: accs } = await supabase
+      .from('accounts')
+      .select('id, type')
+      .in('id', accountIds)
+    for (const a of accs ?? []) {
+      accountTypeById.set(a.id as string, a.type as string)
+    }
+  }
+
+  // Snapshot subtransactions so we can reverse split CC buckets.
+  const splitRowIds = rows.filter((r) => r.is_split).map((r) => r.id as string)
+  let subsByParent: Map<
+    string,
+    Array<{ category_id: string | null; amount: number }>
+  > = new Map()
+  if (splitRowIds.length > 0) {
+    const { data: subs } = await supabase
+      .from('subtransactions')
+      .select('transaction_id, category_id, amount')
+      .in('transaction_id', splitRowIds)
+    for (const s of subs ?? []) {
+      const arr = subsByParent.get(s.transaction_id as string) ?? []
+      arr.push({
+        category_id: (s.category_id as string | null) ?? null,
+        amount: Number(s.amount),
+      })
+      subsByParent.set(s.transaction_id as string, arr)
+    }
+  }
+
+  // Roll back balances. Read each account fresh so multiple deletions
+  // against the same account compose correctly.
+  for (const r of rows) {
+    const { data: acc } = await supabase
+      .from('accounts')
+      .select('balance')
+      .eq('id', r.account_id as string)
+      .single()
+    if (!acc) continue
+    const newBalance =
+      Math.round((Number(acc.balance) - Number(r.amount)) * 100) / 100
+    await supabase
+      .from('accounts')
+      .update({ balance: newBalance })
+      .eq('id', r.account_id as string)
+  }
+
+  // Reverse CC buckets where applicable.
+  for (const r of rows) {
+    const accountType = accountTypeById.get(r.account_id as string) ?? null
+    if (accountType !== 'credit_card') continue
+    const contribs: AutoBucketContribution[] = r.is_split
+      ? (subsByParent.get(r.id as string) ?? []).map((s) => ({
+          amount: Number(s.amount),
+          categoryId: s.category_id,
+        }))
+      : [
+          {
+            amount: Number(r.amount),
+            categoryId: (r.category_id as string | null) ?? null,
+          },
+        ]
+    const delta = ccBucketDelta(contribs)
+    if (Math.abs(delta) >= 0.005) {
+      await applyCcBucketDelta(
+        supabase,
+        r.budget_id as string,
+        monthFromDate(r.date as string),
+        -delta,
+        r.is_split ? null : ((r.category_id as string | null) ?? null),
+      )
+    }
+  }
+
+  // Now actually delete (cascade handles subtransactions).
+  const { error: delErr } = await supabase
+    .from('transactions')
+    .delete()
+    .in('id', Array.from(targetIds))
+  if (delErr) return { error: delErr.message }
+
+  revalidatePath('/app', 'layout')
+  const skipped = ids.length - rows.filter((r) => ids.includes(r.id as string)).length
+  return {
+    succeeded: targetIds.size,
+    skipped,
+  }
+}
+
 // ── Transfers ───────────────────────────────────────────────────
 //
 // A transfer is two linked transactions (one per account) that point to each
