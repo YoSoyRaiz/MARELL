@@ -144,6 +144,11 @@ type Transaction = {
   transfer_transaction_id: string | null
   scheduled_transaction_id: string | null
   import_id: string | null
+  // Receipt attachment — added by migration 2026_05_07_receipts.sql.
+  // Public URL (signed) for display, plus the bucket path so we can
+  // delete the file when the transaction is deleted.
+  receipt_url: string | null
+  receipt_path: string | null
   created_at: string
 }
 

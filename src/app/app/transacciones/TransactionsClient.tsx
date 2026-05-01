@@ -95,6 +95,8 @@ export interface ListTransaction {
   is_transfer: boolean
   /** When is_transfer=true, the OTHER side's account id. */
   transfer_account_id: string | null
+  receipt_url: string | null
+  receipt_path: string | null
   subtransactions: ListSubtransaction[]
 }
 
@@ -143,6 +145,8 @@ const toInitial = (t: ListTransaction): InitialTransaction => {
     payeeName: t.payee_name ?? '',
     amount: Math.abs(t.amount),
     memo: t.memo,
+    receiptUrl: t.receipt_url,
+    receiptPath: t.receipt_path,
     splits:
       t.is_split && t.subtransactions.length >= 2
         ? t.subtransactions.map((s) => ({

@@ -115,6 +115,11 @@ export interface CreateTransactionInput {
   memo: string | null
   type: TransactionType
   splits?: SplitInput[] // when present and length > 1, transaction is split
+  /** Receipt photo metadata. URL is signed for display, path is the
+   *  storage key so we can delete on transaction-delete. Both null when
+   *  no receipt was attached. */
+  receiptUrl?: string | null
+  receiptPath?: string | null
 }
 
 const isValidDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s)
@@ -269,6 +274,8 @@ export async function createTransaction(input: CreateTransactionInput) {
       category_id: split ? null : input.categoryId,
       memo: input.memo?.trim() || null,
       amount: signedAmount,
+      receipt_url: input.receiptUrl ?? null,
+      receipt_path: input.receiptPath ?? null,
       cleared: 'uncleared',
       approved: true,
       is_split: split,
@@ -438,6 +445,8 @@ export async function updateTransaction(input: UpdateTransactionInput) {
       memo: input.memo?.trim() || null,
       amount: newSignedAmount,
       is_split: split,
+      receipt_url: input.receiptUrl ?? null,
+      receipt_path: input.receiptPath ?? null,
     })
     .eq('id', input.id)
   if (updateErr) return { error: updateErr.message }
@@ -610,7 +619,7 @@ export async function deleteTransaction(transactionId: string) {
   const { data: txn } = await supabase
     .from('transactions')
     .select(
-      'id, account_id, amount, budget_id, transfer_transaction_id, category_id, is_split, date',
+      'id, account_id, amount, budget_id, transfer_transaction_id, category_id, is_split, date, receipt_path',
     )
     .eq('id', transactionId)
     .single()
@@ -699,6 +708,14 @@ export async function deleteTransaction(transactionId: string) {
         txn.is_split ? null : ((txn.category_id as string | null) ?? null),
       )
     }
+  }
+
+  // Tidy up the receipt attachment so it doesn't linger as orphaned
+  // storage. Best-effort — if the storage delete fails (file already
+  // gone, network blip) we don't fail the whole operation.
+  const receiptPath = (txn as { receipt_path?: string | null }).receipt_path
+  if (receiptPath) {
+    await supabase.storage.from('receipts').remove([receiptPath])
   }
 
   revalidatePath('/app', 'layout')

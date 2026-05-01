@@ -22,6 +22,7 @@ import {
   type SplitInput,
   type TransactionType,
 } from './actions'
+import { ReceiptCapture } from './ReceiptCapture'
 
 type EntryType = TransactionType | 'transfer'
 
@@ -49,6 +50,8 @@ export interface InitialTransaction {
   payeeName: string
   amount: number // positive value (sign is in `type`)
   memo: string | null
+  receiptUrl?: string | null
+  receiptPath?: string | null
   splits?: SplitRow[] // when the transaction is already split
 }
 
@@ -97,6 +100,9 @@ export function TransactionFormModal({
   const [splits, setSplits] = useState<SplitRow[]>([newSplit(), newSplit()])
   const [error, setError] = useState<string | null>(null)
   const [suggestedFromPayee, setSuggestedFromPayee] = useState<string | null>(null)
+  const [receipt, setReceipt] = useState<{ url: string; path: string } | null>(
+    null,
+  )
   const isTransfer = type === 'transfer'
 
   // Pre-fill on open: from `initial` in edit mode, blank in add mode.
@@ -111,6 +117,11 @@ export function TransactionFormModal({
       setPayeeName(initial.payeeName)
       setAmount(initial.amount)
       setMemo(initial.memo ?? '')
+      setReceipt(
+        initial.receiptUrl && initial.receiptPath
+          ? { url: initial.receiptUrl, path: initial.receiptPath }
+          : null,
+      )
       const hasSplits = (initial.splits?.length ?? 0) >= 2
       setSplitMode(hasSplits)
       setSplits(hasSplits ? initial.splits! : [newSplit(), newSplit()])
@@ -123,6 +134,7 @@ export function TransactionFormModal({
       setPayeeName('')
       setAmount(null)
       setMemo('')
+      setReceipt(null)
       setSplitMode(false)
       setSplits([newSplit(), newSplit()])
     }
@@ -312,6 +324,8 @@ export function TransactionFormModal({
         memo,
         type: type as TransactionType,
         splits: splitPayload,
+        receiptUrl: receipt?.url ?? null,
+        receiptPath: receipt?.path ?? null,
       }
       const result =
         mode === 'edit' && initial
@@ -696,6 +710,19 @@ export function TransactionFormModal({
               className="w-full !text-[14px] !py-2.5 !px-4 !rounded-xl resize-none"
             />
           </Field>
+
+          {/* Receipt photo — opens the rear camera on mobile, file
+              picker on desktop. Hidden for transfers since they don't
+              correspond to a single physical receipt. */}
+          {!isTransfer && (
+            <Field label="Recibo" hint="opcional">
+              <ReceiptCapture
+                initialUrl={initial?.receiptUrl ?? null}
+                initialPath={initial?.receiptPath ?? null}
+                onChange={(next) => setReceipt(next)}
+              />
+            </Field>
+          )}
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
