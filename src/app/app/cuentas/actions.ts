@@ -205,5 +205,157 @@ export async function deleteAccount(accountId: string) {
   return { success: true as const }
 }
 
+// ── Reconciliation ──────────────────────────────────────────────
+
+export interface ReconcileResult {
+  error?: string
+  adjustmentAmount?: number
+  reconciledCount?: number
+}
+
+/**
+ * Reconciles an account against an externally-known balance (e.g. what the
+ * bank app says). Three things happen:
+ *
+ * 1. If `actualBalance` differs from MARELL's stored balance, create an
+ *    uncategorized adjustment transaction dated today for the diff. This
+ *    keeps the account's running total honest without forcing the user to
+ *    pick a category.
+ *
+ * 2. Every transaction in the account up to today (cleared or uncleared)
+ *    is locked to `reconciled`. YNAB calls this "locking the past".
+ *
+ * 3. The account's `balance` column is set to `actualBalance`.
+ *
+ * Currently scoped to cash-style accounts (checking / savings / cash) since
+ * debt-account sign handling needs more thought before we expose it.
+ */
+export async function reconcileAccount(
+  accountId: string,
+  actualBalance: number,
+): Promise<ReconcileResult> {
+  if (!Number.isFinite(actualBalance)) return { error: 'Balance inválido' }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: account } = await supabase
+    .from('accounts')
+    .select('id, budget_id, balance, type')
+    .eq('id', accountId)
+    .single()
+  if (!account) return { error: 'Cuenta no encontrada' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', account.budget_id)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  const allowedTypes = ['checking', 'savings', 'cash']
+  if (!allowedTypes.includes(account.type as string)) {
+    return { error: 'Por ahora solo cuentas de efectivo se pueden reconciliar.' }
+  }
+
+  const currentBalance = Number(account.balance)
+  const diff = Math.round((actualBalance - currentBalance) * 100) / 100
+
+  // 1. Adjustment txn if needed.
+  if (Math.abs(diff) >= 0.005) {
+    // Use today (DR-aware) — server runs UTC on Vercel so we explicitly
+    // localize. monthBoundsISO uses the same logic; reusing currentMonthDR
+    // shape for date-only here.
+    const now = new Date()
+    const drNow = new Date(now.getTime() - 4 * 60 * 60 * 1000)
+    const today = `${drNow.getUTCFullYear()}-${String(drNow.getUTCMonth() + 1).padStart(2, '0')}-${String(drNow.getUTCDate()).padStart(2, '0')}`
+
+    const { error: insertErr } = await supabase.from('transactions').insert({
+      budget_id: budget.id,
+      account_id: accountId,
+      date: today,
+      amount: diff,
+      payee_name: 'Ajuste de reconciliación',
+      memo: 'Generado automáticamente al reconciliar',
+      cleared: 'reconciled',
+      category_id: null,
+    } as never)
+    if (insertErr) return { error: insertErr.message }
+  }
+
+  // 2. Lock all non-reconciled transactions in this account.
+  const { data: locked, error: lockErr } = await supabase
+    .from('transactions')
+    .update({ cleared: 'reconciled' } as never)
+    .eq('account_id', accountId)
+    .neq('cleared', 'reconciled')
+    .select('id')
+  if (lockErr) return { error: lockErr.message }
+
+  // 3. Sync the cached balance.
+  const { error: balErr } = await supabase
+    .from('accounts')
+    .update({ balance: actualBalance })
+    .eq('id', accountId)
+  if (balErr) return { error: balErr.message }
+
+  revalidatePath('/app', 'layout')
+  return {
+    adjustmentAmount: diff,
+    reconciledCount: locked?.length ?? 0,
+  }
+}
+
+/**
+ * Toggle a single transaction's cleared state. Used by the transactions
+ * list to mark items as cleared one-by-one before a full reconcile.
+ */
+export async function setTransactionCleared(
+  transactionId: string,
+  status: 'uncleared' | 'cleared',
+) {
+  if (status !== 'uncleared' && status !== 'cleared') {
+    return { error: 'Estado inválido' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: txn } = await supabase
+    .from('transactions')
+    .select('id, budget_id, cleared')
+    .eq('id', transactionId)
+    .single()
+  if (!txn) return { error: 'Transacción no encontrada' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', txn.budget_id)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  if (txn.cleared === 'reconciled') {
+    return { error: 'No se puede modificar una transacción reconciliada' }
+  }
+
+  const { error } = await supabase
+    .from('transactions')
+    .update({ cleared: status } as never)
+    .eq('id', transactionId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/app', 'layout')
+  return { success: true as const }
+}
+
 // Helper exposed for the client component
 export { accountCategoryFromType }

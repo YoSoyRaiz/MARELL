@@ -8,7 +8,9 @@ import {
   Home,
   TrendingUp,
   Archive,
+  Scale,
 } from 'lucide-react'
+import { ReconcileModal } from './ReconcileModal'
 import type { LucideIcon } from 'lucide-react'
 import {
   accountCategoryFromType,
@@ -50,6 +52,7 @@ interface Props {
 export function CuentasClient({ accounts, hasBudget }: Props) {
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<ListAccount | null>(null)
+  const [reconciling, setReconciling] = useState<ListAccount | null>(null)
   const fmtMoney = useFormatMoney()
 
   const grouped = CATEGORY_BLOCKS.map((block) => ({
@@ -186,6 +189,11 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
                     <ul className="divide-y divide-[var(--border)]">
                       {g.items.map((a) => {
                         const isDebt = g.key === 'credit' || g.key === 'loan'
+                        const canReconcile =
+                          !a.closed &&
+                          (a.type === 'checking' ||
+                            a.type === 'savings' ||
+                            a.type === 'cash')
                         return (
                           <li
                             key={a.id}
@@ -214,6 +222,21 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
                                 {a.note && <> · {a.note}</>}
                               </div>
                             </div>
+                            {canReconcile && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setReconciling(a)
+                                }}
+                                title="Reconciliar contra el banco"
+                                aria-label={`Reconciliar ${a.name}`}
+                                className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text2)] hover:text-[var(--brand-2)] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors"
+                              >
+                                <Scale size={12} strokeWidth={2.4} />
+                                <span className="hidden sm:inline">Reconciliar</span>
+                              </button>
+                            )}
                             <div
                               className={`text-[15px] tabular-nums num font-semibold shrink-0 ${
                                 isDebt
@@ -235,6 +258,16 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
           </div>
         )}
       </div>
+
+      {reconciling && (
+        <ReconcileModal
+          isOpen={true}
+          onClose={() => setReconciling(null)}
+          accountId={reconciling.id}
+          accountName={reconciling.name}
+          currentBalance={reconciling.balance}
+        />
+      )}
 
       <AccountFormModal
         isOpen={addOpen || editing !== null}
