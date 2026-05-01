@@ -6,6 +6,7 @@ import { TopBar } from './TopBar'
 import { ReadyToAssignProvider } from './ReadyToAssignProvider'
 import { MobileNavProvider } from './MobileNavProvider'
 import { CurrencyProvider } from './CurrencyProvider'
+import { KeyboardShortcuts } from './KeyboardShortcuts'
 
 interface AppShellProps {
   displayName: string | null
@@ -47,6 +48,7 @@ export function AppShell({
             </main>
           </div>
         </div>
+        <KeyboardShortcuts />
       </MobileNavProvider>
     </ReadyToAssignProvider>
     </CurrencyProvider>
