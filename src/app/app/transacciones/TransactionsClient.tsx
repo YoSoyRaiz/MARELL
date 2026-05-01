@@ -54,6 +54,15 @@ const formatMonthLabel = (month: string) => {
   return `${MONTH_NAMES[m - 1]} ${y}`
 }
 
+const SHORT_MONTHS_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+const formatShortDate = (iso: string): string => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
+  if (!m) return iso
+  const [, , mm, dd] = m
+  const monthIdx = parseInt(mm, 10) - 1
+  return `${parseInt(dd, 10)} ${SHORT_MONTHS_ES[monthIdx] ?? ''}`.trim()
+}
+
 const adjustMonth = (month: string, delta: number) => {
   if (month === 'all') {
     // Coming back from "Todas": land on current month
@@ -175,6 +184,11 @@ export function TransactionsClient({
   // FAB version hides Categoría/Split/Memo to keep the form short;
   // the in-page "+ Agregar" button shows everything.
   const [addCompact, setAddCompact] = useState(false)
+  // After-save toast. Holds the readable label like "Guardada el 27 abr"
+  // for ~4s then auto-dismisses. Avoids forcing the user to a different
+  // month filter — they can navigate themselves if they want to see the
+  // row.
+  const [savedToast, setSavedToast] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
   const [editing, setEditing] = useState<ListTransaction | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -251,6 +265,13 @@ export function TransactionsClient({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput])
+
+  // Auto-dismiss the "Guardada · 27 abr" toast after 4 seconds.
+  useEffect(() => {
+    if (!savedToast) return
+    const t = setTimeout(() => setSavedToast(null), 4000)
+    return () => clearTimeout(t)
+  }, [savedToast])
 
   const pushParams = (updates: Record<string, string | null>) => {
     const sp = new URLSearchParams(searchParams?.toString() ?? '')
@@ -816,13 +837,10 @@ export function TransactionsClient({
         initial={editing ? toInitial(editing) : undefined}
         compactMobile={!editing && addCompact}
         onSaved={(savedDate) => {
-          // savedDate is YYYY-MM-DD; the filter speaks YYYY-MM. If the
-          // user just created a transaction in a month different from
-          // what they're viewing, jump to that month so they see it.
-          const targetMonth = savedDate.slice(0, 7)
-          if (filters.month !== 'all' && filters.month !== targetMonth) {
-            pushParams({ month: targetMonth })
-          }
+          // Don't force a month switch — show a toast instead. The user
+          // can navigate to the saved month manually if they want to
+          // see the row right now.
+          setSavedToast(`Guardada · ${formatShortDate(savedDate)}`)
         }}
       />
 
@@ -839,6 +857,19 @@ export function TransactionsClient({
           categories={categories}
           onClear={clearSelection}
         />
+      )}
+
+      {/* Save confirmation toast — sits above the mobile tab bar and
+          below the topbar pill on desktop. Auto-dismisses after 4s. */}
+      {savedToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 -translate-x-1/2 z-40 bottom-[calc(80px+env(safe-area-inset-bottom))] lg:bottom-6 px-4 py-3 rounded-2xl border border-[var(--brand-2)]/30 bg-[var(--s1)]/95 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.4)] text-[13px] font-medium text-[var(--text)] animate-step inline-flex items-center gap-2 max-w-[90vw]"
+        >
+          <span className="w-2 h-2 rounded-full gradient-bg shrink-0" />
+          {savedToast}
+        </div>
       )}
     </>
   )
