@@ -533,6 +533,46 @@ export default async function ResumenPage() {
     }
   })()
 
+  // ── Predictive insight: spending projection ────────────────
+  // For each category with both an assignment and current spend, project
+  // how much they're on pace to spend by month-end (linearly). If the
+  // projection exceeds the assignment by 10%+, that's a "you're going
+  // to overspend" signal — surfaced as the most actionable insight
+  // because the user can still course-correct mid-month.
+  const todayDate = new Date(today + 'T00:00:00')
+  const daysElapsed = Math.max(1, todayDate.getDate())
+  const totalDaysInMonth = (() => {
+    const [y, m] = month.split('-').map(Number)
+    return new Date(y, m, 0).getDate()
+  })()
+  let projectedOverspend: {
+    name: string
+    assigned: number
+    spent: number
+    projected: number
+  } | null = null
+  for (const g of sectionGroups) {
+    for (const c of g.categories) {
+      if (c.assigned <= 0.005) continue
+      const spent = c.activity < 0 ? Math.abs(c.activity) : 0
+      if (spent <= 0.005) continue
+      const projected = (spent / daysElapsed) * totalDaysInMonth
+      if (projected <= c.assigned * 1.1) continue
+      const overrun = projected - c.assigned
+      if (
+        !projectedOverspend ||
+        overrun > projectedOverspend.projected - projectedOverspend.assigned
+      ) {
+        projectedOverspend = {
+          name: c.name,
+          assigned: c.assigned,
+          spent,
+          projected: Math.round(projected * 100) / 100,
+        }
+      }
+    }
+  }
+
   // Previous-month review numbers for the "Mes pasado" card.
   const prevMonthData = txnsPrevMonthRes.data ?? []
   const prevMonthNonTransfer = prevMonthData.filter((t) => !t.transfer_account_id)
@@ -578,6 +618,7 @@ export default async function ResumenPage() {
     undermetGoalsCount,
     topExpense: topExpenseEntry,
     closestGoal: closestGoalEntry,
+    projectedOverspend,
   }
 
   return (

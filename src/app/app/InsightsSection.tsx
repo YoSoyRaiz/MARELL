@@ -37,6 +37,15 @@ export interface InsightInputs {
     progress: number
     remaining: number
   } | null
+  /** When the user is on pace to blow past a category's assignment
+   *  before month-end, the page surfaces this as the most actionable
+   *  insight. Linear projection of current spend rate. */
+  projectedOverspend: {
+    name: string
+    assigned: number
+    spent: number
+    projected: number
+  } | null
 }
 
 interface InsightsSectionProps {
@@ -161,6 +170,12 @@ function buildInsights(input: {
     progress: number
     remaining: number
   } | null
+  projectedOverspend: {
+    name: string
+    assigned: number
+    spent: number
+    projected: number
+  } | null
   fmtMoney: (n: number) => string
   fmtMoneyShort: (n: number) => string
 }): Insight[] {
@@ -172,9 +187,28 @@ function buildInsights(input: {
     undermetGoalsCount,
     topExpense,
     closestGoal,
+    projectedOverspend,
     fmtMoney,
     fmtMoneyShort,
   } = input
+
+  // Predictive insight goes first — most actionable because the user
+  // can still adjust spending or move money before month-end.
+  if (projectedOverspend) {
+    const overrun = Math.max(
+      0,
+      projectedOverspend.projected - projectedOverspend.assigned,
+    )
+    out.push({
+      id: 'projected-overspend',
+      severity: 'warn',
+      title: `Vas en camino a exceder ${projectedOverspend.name}`,
+      message: `Al ritmo actual gastarás ${fmtMoney(projectedOverspend.projected)} (${fmtMoney(overrun)} sobre lo asignado). Frena o mueve dinero desde otra categoría.`,
+      href: '/app/plan',
+      ctaLabel: 'Ajustar plan',
+      icon: 'flame',
+    })
+  }
 
   if (readyToAssign < -0.005) {
     out.push({
