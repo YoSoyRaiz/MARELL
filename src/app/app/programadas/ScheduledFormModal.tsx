@@ -8,6 +8,7 @@ import {
   ArrowUpRight,
   AlertCircle,
   Repeat,
+  Gift,
 } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import {
@@ -168,6 +169,25 @@ export function ScheduledFormModal({
 
   const isEdit = mode === 'edit'
 
+  // Pick the next 24-Dec — current year if still ahead, otherwise the
+  // following year. Used by the regalía preset.
+  const nextDecember24 = (() => {
+    const today = new Date()
+    const y =
+      today.getMonth() < 11 || (today.getMonth() === 11 && today.getDate() <= 24)
+        ? today.getFullYear()
+        : today.getFullYear() + 1
+    return `${y}-12-24`
+  })()
+
+  const applyRegaliaPreset = () => {
+    setType('income')
+    setFrequency('yearly')
+    setNextDate(nextDecember24)
+    setPayeeName('Regalía pascual')
+    setMemo('Sueldo #13 — derecho laboral RD')
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
@@ -213,6 +233,33 @@ export function ScheduledFormModal({
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          {/* Plantillas RD — only visible in add mode to avoid surprising
+              users mid-edit. */}
+          {!isEdit && (
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold mb-2">
+                Plantillas RD
+              </div>
+              <button
+                type="button"
+                onClick={applyRegaliaPreset}
+                className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn)] flex items-center justify-center shrink-0">
+                  <Gift size={14} strokeWidth={2.2} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-semibold text-[var(--text)] leading-tight">
+                    Regalía pascual
+                  </div>
+                  <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                    Llena tipo, frecuencia, fecha (24-dic) y memo. Solo añade el monto y la cuenta.
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
+
           {/* Type segmented */}
           <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--bg)] rounded-xl">
             <button
