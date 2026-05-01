@@ -10,6 +10,9 @@ import {
   AlertCircle,
   Check,
   Bell,
+  Download,
+  FileJson,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { logout } from '@/app/(auth)/actions'
@@ -17,6 +20,8 @@ import {
   updateProfile,
   updateBudgetSettings,
   setEmailNotifications,
+  exportBudgetJSON,
+  exportTransactionsCSV,
   deleteMyAccount,
   type Currency,
 } from './actions'
@@ -283,6 +288,9 @@ export function AjustesClient({
         </div>
       </Section>
 
+      {/* Data export */}
+      <ExportSection />
+
       {/* Session */}
       <Section title="Sesión" Icon={LogOut}>
         <p className="text-[13px] text-[var(--text2)] leading-relaxed">
@@ -428,5 +436,92 @@ function SaveBar({
         )}
       </button>
     </div>
+  )
+}
+
+function ExportSection() {
+  const [pendingType, setPendingType] = useState<'json' | 'csv' | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const triggerDownload = (filename: string, payload: string, mimeType: string) => {
+    const blob = new Blob([payload], { type: `${mimeType};charset=utf-8` })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleJson = async () => {
+    setError(null)
+    setPendingType('json')
+    const r = await exportBudgetJSON()
+    setPendingType(null)
+    if (r.error || !r.payload || !r.filename || !r.mimeType) {
+      setError(r.error ?? 'No se pudo exportar')
+      return
+    }
+    triggerDownload(r.filename, r.payload, r.mimeType)
+  }
+
+  const handleCsv = async () => {
+    setError(null)
+    setPendingType('csv')
+    const r = await exportTransactionsCSV()
+    setPendingType(null)
+    if (r.error || !r.payload || !r.filename || !r.mimeType) {
+      setError(r.error ?? 'No se pudo exportar')
+      return
+    }
+    triggerDownload(r.filename, r.payload, r.mimeType)
+  }
+
+  return (
+    <Section title="Tus datos" Icon={Download} error={error}>
+      <p className="text-[13px] text-[var(--text2)] leading-relaxed">
+        Descarga tu información cuando quieras. Es tuya, sin candados.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={handleJson}
+          disabled={pendingType !== null}
+          className="text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-4 py-3 flex items-start gap-3 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+        >
+          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+            <FileJson size={16} strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-semibold text-[var(--text)]">
+              Backup JSON
+            </div>
+            <div className="text-[11px] text-[var(--muted)] leading-relaxed mt-0.5">
+              {pendingType === 'json' ? 'Generando…' : 'Todo: presupuesto, cuentas, transacciones, metas.'}
+            </div>
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={handleCsv}
+          disabled={pendingType !== null}
+          className="text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-4 py-3 flex items-start gap-3 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+        >
+          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+            <FileSpreadsheet size={16} strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-semibold text-[var(--text)]">
+              Transacciones CSV
+            </div>
+            <div className="text-[11px] text-[var(--muted)] leading-relaxed mt-0.5">
+              {pendingType === 'csv' ? 'Generando…' : 'Para Excel, Numbers o Google Sheets.'}
+            </div>
+          </div>
+        </button>
+      </div>
+    </Section>
   )
 }
