@@ -93,12 +93,14 @@ async function applyCcBucketDelta(
  * For splits, walks each subtransaction so the bucket math reflects the
  * actual category spend, not the parent total.
  */
-type AutoBucketContribution = {
+export type AutoBucketContribution = {
   amount: number // signed (negative = expense)
   categoryId: string | null
 }
 
-function ccBucketDelta(
+// Exported for unit testing — the surrounding actions are server-only
+// but the math is pure and worth covering.
+export function ccBucketDelta(
   contributions: AutoBucketContribution[],
 ): number {
   // Only categorized contributions move the bucket — uncategorized
