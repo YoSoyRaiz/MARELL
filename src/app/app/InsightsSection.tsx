@@ -109,7 +109,7 @@ export function InsightsSection({ inputs }: InsightsSectionProps) {
 
   return (
     <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 space-y-3">
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-2 pb-[10px]">
         <div className="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center text-[#0B0B0C]">
           <Sparkles size={12} strokeWidth={2.4} />
         </div>
