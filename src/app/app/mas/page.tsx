@@ -170,7 +170,7 @@ export default async function MasPage() {
       </Link>
 
       {/* Quick grid */}
-      <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {ITEMS.map((item) => {
           const Icon = item.icon
           return (
