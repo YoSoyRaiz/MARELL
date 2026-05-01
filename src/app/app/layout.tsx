@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { convertAmount, parseCurrency, type Currency } from '@/lib/money'
 import { AppShell } from './AppShell'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -23,7 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: budget } = await supabase
     .from('budgets')
-    .select('id, name, currency')
+    .select('id, name, currency, usd_to_dop_rate')
     .eq('created_by', user.id)
     .order('created_at', { ascending: true })
     .limit(1)
@@ -38,7 +39,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // category. Carry-over of unspent balances + overspending coverage
     // both fall out of this naturally.
     const [accountsRes, assignsRes, txnsRes, subsRes] = await Promise.all([
-      supabase.from('accounts').select('balance, type').eq('budget_id', budget.id),
+      supabase
+        .from('accounts')
+        .select('balance, type, currency')
+        .eq('budget_id', budget.id),
       supabase.from('monthly_assignments').select('assigned').eq('budget_id', budget.id),
       supabase
         .from('transactions')
@@ -53,9 +57,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ])
 
     const cashTypes = ['checking', 'savings', 'cash']
+    const budgetCurrency: Currency = parseCurrency(budget.currency as string | null)
+    const fxRate = Number(
+      (budget as { usd_to_dop_rate?: number | null }).usd_to_dop_rate ?? 60,
+    )
+    // USD-denominated accounts in a DOP budget (or vice versa) get
+    // normalized into the budget's currency before summing so the topbar
+    // pill never lies about how much cash actually buys.
     const totalCash = (accountsRes.data ?? [])
       .filter((a) => cashTypes.includes(a.type as string))
-      .reduce((s, a) => s + Number(a.balance), 0)
+      .reduce((s, a) => {
+        const accCurrency = parseCurrency(a.currency as string | null)
+        const native = Number(a.balance)
+        return s + convertAmount(native, accCurrency, budgetCurrency, fxRate)
+      }, 0)
 
     const totalAssignedLifetime = (assignsRes.data ?? []).reduce(
       (s, a) => s + Number(a.assigned),

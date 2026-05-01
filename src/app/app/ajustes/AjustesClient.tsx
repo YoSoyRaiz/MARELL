@@ -30,6 +30,7 @@ interface BudgetData {
   id: string
   name: string
   currency: Currency
+  usdToDopRate: number
 }
 
 interface Props {
@@ -79,12 +80,18 @@ export function AjustesClient({
   // Budget section state
   const [budgetName, setBudgetName] = useState(budget?.name ?? '')
   const [currency, setCurrency] = useState<Currency>(budget?.currency ?? 'DOP')
+  const [usdRate, setUsdRate] = useState<string>(
+    String(budget?.usdToDopRate ?? 60),
+  )
   const [budgetSaving, setBudgetSaving] = useState(false)
   const [budgetSavedAt, setBudgetSavedAt] = useState<number | null>(null)
   const [budgetError, setBudgetError] = useState<string | null>(null)
+  const usdRateNum = parseFloat(usdRate.replace(',', '.'))
   const budgetDirty =
     !!budget &&
-    (budgetName.trim() !== budget.name.trim() || currency !== budget.currency)
+    (budgetName.trim() !== budget.name.trim() ||
+      currency !== budget.currency ||
+      Math.abs((Number.isFinite(usdRateNum) ? usdRateNum : 0) - budget.usdToDopRate) > 0.0001)
 
   const handleSaveProfile = () => {
     if (!profileDirty || !name.trim()) return
@@ -112,6 +119,7 @@ export function AjustesClient({
         budgetId: budget.id,
         name: budgetName,
         currency,
+        usdToDopRate: Number.isFinite(usdRateNum) ? usdRateNum : 60,
       })
       setBudgetSaving(false)
       if ('error' in r && r.error) {
@@ -243,6 +251,25 @@ export function AjustesClient({
               <span className="num">$1,234.56</span>.
             </p>
           </Field>
+          <Field label="Tipo de cambio USD↔DOP">
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] text-[var(--text2)] tabular-nums num shrink-0">
+                1 USD =
+              </span>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={usdRate}
+                onChange={(e) => setUsdRate(e.target.value)}
+                placeholder="60.00"
+                className="w-32 !text-[14px] !py-2.5 !px-3 !rounded-xl tabular-nums num text-right"
+              />
+              <span className="text-[12px] text-[var(--text2)] shrink-0">DOP</span>
+            </div>
+            <p className="text-[11px] text-[var(--muted)] mt-1.5 leading-relaxed">
+              Lo usamos para convertir cuentas en moneda distinta al presupuesto. Refresca cuando el cambio se mueva más de 2-3%.
+            </p>
+          </Field>
           <SaveBar
             dirty={budgetDirty}
             pending={budgetSaving}
@@ -250,6 +277,7 @@ export function AjustesClient({
             onReset={() => {
               setBudgetName(budget.name)
               setCurrency(budget.currency)
+              setUsdRate(String(budget.usdToDopRate))
             }}
           />
         </Section>

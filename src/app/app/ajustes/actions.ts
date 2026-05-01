@@ -31,6 +31,7 @@ export async function updateBudgetSettings(input: {
   budgetId: string
   name: string
   currency: Currency
+  usdToDopRate: number
 }) {
   const name = input.name.trim()
   if (!input.budgetId) return { error: 'Presupuesto requerido' }
@@ -38,6 +39,15 @@ export async function updateBudgetSettings(input: {
   if (name.length > 80) return { error: 'Nombre demasiado largo (máx. 80)' }
   if (input.currency !== 'DOP' && input.currency !== 'USD') {
     return { error: 'Moneda inválida' }
+  }
+  // Sanity check the rate — enough latitude to handle DOP volatility but
+  // catch obvious typos like "6" or "600".
+  if (
+    !Number.isFinite(input.usdToDopRate) ||
+    input.usdToDopRate < 10 ||
+    input.usdToDopRate > 500
+  ) {
+    return { error: 'Tasa USD↔DOP fuera de rango' }
   }
 
   const supabase = await createClient()
@@ -57,7 +67,11 @@ export async function updateBudgetSettings(input: {
 
   const { error } = await supabase
     .from('budgets')
-    .update({ name, currency: input.currency })
+    .update({
+      name,
+      currency: input.currency,
+      usd_to_dop_rate: Math.round(input.usdToDopRate * 10000) / 10000,
+    } as never)
     .eq('id', input.budgetId)
   if (error) return { error: error.message }
 

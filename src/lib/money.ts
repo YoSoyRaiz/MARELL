@@ -34,3 +34,25 @@ export function formatMoneyShort(n: number, currency: Currency = 'DOP'): string 
 export function parseCurrency(value: string | null | undefined): Currency {
   return value === 'USD' ? 'USD' : 'DOP'
 }
+
+/**
+ * Convert an amount expressed in `from` currency into `to`, using the
+ * user-supplied USD↔DOP rate. The rate represents how many DOP one USD
+ * buys (e.g. 60 means 1 USD = 60 DOP).
+ *
+ * - DOP → DOP / USD → USD: identity
+ * - USD → DOP: amount * rate
+ * - DOP → USD: amount / rate
+ */
+export function convertAmount(
+  amount: number,
+  from: Currency,
+  to: Currency,
+  usdToDopRate: number,
+): number {
+  if (from === to) return amount
+  if (!Number.isFinite(usdToDopRate) || usdToDopRate <= 0) return amount
+  if (from === 'USD' && to === 'DOP') return amount * usdToDopRate
+  if (from === 'DOP' && to === 'USD') return amount / usdToDopRate
+  return amount
+}

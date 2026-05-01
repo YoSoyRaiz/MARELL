@@ -45,6 +45,9 @@ type Budget = {
   id: string
   name: string
   currency: Currency
+  /** Rate the user has set for converting USD↔DOP across mixed-
+      currency accounts. Default 60. Updated via Ajustes. */
+  usd_to_dop_rate: number
   created_by: string
   created_at: string
 }

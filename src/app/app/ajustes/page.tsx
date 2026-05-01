@@ -18,7 +18,7 @@ export default async function AjustesPage() {
       .single(),
     supabase
       .from('budgets')
-      .select('id, name, currency')
+      .select('id, name, currency, usd_to_dop_rate')
       .eq('created_by', user.id)
       .order('created_at', { ascending: true })
       .limit(1)
@@ -42,6 +42,10 @@ export default async function AjustesPage() {
                 ((budgetRes.data.currency as string) === 'USD'
                   ? 'USD'
                   : 'DOP') as Currency,
+              usdToDopRate: Number(
+                (budgetRes.data as { usd_to_dop_rate?: number | null })
+                  .usd_to_dop_rate ?? 60,
+              ),
             }
           : null
       }

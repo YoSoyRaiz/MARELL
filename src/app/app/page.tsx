@@ -15,6 +15,8 @@ import {
   formatMoney as fmtMoneyWithCurrency,
   formatMoneyShort as fmtMoneyShortWithCurrency,
   parseCurrency,
+  convertAmount,
+  type Currency as MoneyCurrency,
 } from '@/lib/money'
 import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
@@ -139,7 +141,7 @@ export default async function ResumenPage() {
       .eq('budget_id', budget.id),
     supabase
       .from('accounts')
-      .select('id, name, type, balance, closed')
+      .select('id, name, type, balance, currency, closed')
       .eq('budget_id', budget.id)
       .order('sort_order'),
     supabase
@@ -217,18 +219,51 @@ export default async function ResumenPage() {
   ]
   const investmentTypes = ['asset', 'investment']
 
+  // Normalize each account balance into the budget's currency before
+  // summing. Mixed-currency portfolios (e.g. DOP corriente + USD ahorros)
+  // would otherwise produce nonsense totals.
+  const fxRate = Number(
+    (budget as { usd_to_dop_rate?: number | null }).usd_to_dop_rate ?? 60,
+  )
+  const budgetMoneyCurrency: MoneyCurrency = currency
+  const accountBalanceInBudget = (a: { balance: number; currency: string | null }) => {
+    const accCurrency = parseCurrency(a.currency)
+    return convertAmount(Number(a.balance), accCurrency, budgetMoneyCurrency, fxRate)
+  }
   const totalCash = accountsData
     .filter((a) => cashTypes.includes(a.type as string))
-    .reduce((s, a) => s + Number(a.balance), 0)
+    .reduce(
+      (s, a) =>
+        s + accountBalanceInBudget({ balance: Number(a.balance), currency: (a.currency as string | null) ?? null }),
+      0,
+    )
   const totalSavings = accountsData
     .filter((a) => a.type === 'savings')
-    .reduce((s, a) => s + Number(a.balance), 0)
+    .reduce(
+      (s, a) =>
+        s + accountBalanceInBudget({ balance: Number(a.balance), currency: (a.currency as string | null) ?? null }),
+      0,
+    )
   const totalDebt = accountsData
     .filter((a) => debtTypes.includes(a.type as string))
-    .reduce((s, a) => s + Math.abs(Number(a.balance)), 0)
+    .reduce(
+      (s, a) =>
+        s +
+        Math.abs(
+          accountBalanceInBudget({
+            balance: Number(a.balance),
+            currency: (a.currency as string | null) ?? null,
+          }),
+        ),
+      0,
+    )
   const totalInvestments = accountsData
     .filter((a) => investmentTypes.includes(a.type as string))
-    .reduce((s, a) => s + Number(a.balance), 0)
+    .reduce(
+      (s, a) =>
+        s + accountBalanceInBudget({ balance: Number(a.balance), currency: (a.currency as string | null) ?? null }),
+      0,
+    )
 
   const netWorth = totalCash + totalInvestments - totalDebt
 
