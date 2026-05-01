@@ -45,6 +45,64 @@ function validateSplits(splits: SplitInput[], total: number): string | null {
   return null
 }
 
+/**
+ * Look up the most-recently used category for a given payee name in the
+ * current user's first budget. Returns the category id (or null when no
+ * categorized history exists). Used by the form to prefill the category
+ * field as the user types a payee.
+ */
+export async function suggestCategoryForPayee(
+  payeeName: string,
+): Promise<{ categoryId: string | null }> {
+  const trimmed = payeeName.trim()
+  if (trimmed.length < 2) return { categoryId: null }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { categoryId: null }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('created_by', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  if (!budget) return { categoryId: null }
+
+  // Pull the last few categorized transactions matching this payee and
+  // pick whichever category appears most often. Most-frequent beats
+  // most-recent because YNAB-style budgets get noisy edits.
+  const { data } = await supabase
+    .from('transactions')
+    .select('category_id')
+    .eq('budget_id', budget.id)
+    .ilike('payee_name', trimmed)
+    .not('category_id', 'is', null)
+    .eq('is_split', false)
+    .order('date', { ascending: false })
+    .limit(20)
+
+  if (!data || data.length === 0) return { categoryId: null }
+
+  const counts = new Map<string, number>()
+  for (const row of data) {
+    const id = row.category_id as string
+    counts.set(id, (counts.get(id) ?? 0) + 1)
+  }
+  let best: string | null = null
+  let bestCount = 0
+  for (const [id, count] of counts) {
+    if (count > bestCount) {
+      best = id
+      bestCount = count
+    }
+  }
+  return { categoryId: best }
+}
+
 export async function createTransaction(input: CreateTransactionInput) {
   if (!input.accountId) return { error: 'Cuenta requerida' }
   if (!isValidDate(input.date)) return { error: 'Fecha inválida' }

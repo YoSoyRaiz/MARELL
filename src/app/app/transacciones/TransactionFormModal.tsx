@@ -17,6 +17,7 @@ import {
   createTransaction,
   createTransfer,
   updateTransaction,
+  suggestCategoryForPayee,
   type SplitInput,
   type TransactionType,
 } from './actions'
@@ -90,6 +91,7 @@ export function TransactionFormModal({
   const [splitMode, setSplitMode] = useState(false)
   const [splits, setSplits] = useState<SplitRow[]>([newSplit(), newSplit()])
   const [error, setError] = useState<string | null>(null)
+  const [suggestedFromPayee, setSuggestedFromPayee] = useState<string | null>(null)
   const isTransfer = type === 'transfer'
 
   // Pre-fill on open: from `initial` in edit mode, blank in add mode.
@@ -121,6 +123,35 @@ export function TransactionFormModal({
     }
     setError(null)
   }, [isOpen, mode, initial, accounts])
+
+  // Auto-categorize: when the user types a payee name, look up the most
+  // common category from prior transactions and auto-fill if the user
+  // hasn't picked one yet. Skipped while editing (the existing category
+  // is the source of truth) and for transfers/splits.
+  useEffect(() => {
+    if (!isOpen) return
+    if (mode === 'edit') return
+    if (isTransfer || splitMode) return
+    if (categoryId !== '') return
+    const name = payeeName.trim()
+    if (name.length < 2) {
+      setSuggestedFromPayee(null)
+      return
+    }
+    let cancelled = false
+    const timer = window.setTimeout(async () => {
+      const r = await suggestCategoryForPayee(name)
+      if (cancelled) return
+      if (r.categoryId && categoryId === '') {
+        setCategoryId(r.categoryId)
+        setSuggestedFromPayee(r.categoryId)
+      }
+    }, 350)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [isOpen, mode, isTransfer, splitMode, payeeName, categoryId])
 
   // Esc + body scroll lock
   useEffect(() => {
@@ -402,8 +433,22 @@ export function TransactionFormModal({
           )}
 
           {!isTransfer && (!splitMode ? (
-            <Field label="Categoría" hint="opcional">
-              <NativeSelect value={categoryId} onChange={setCategoryId} ariaLabel="Categoría">
+            <Field
+              label="Categoría"
+              hint={
+                suggestedFromPayee && categoryId === suggestedFromPayee
+                  ? 'sugerida'
+                  : 'opcional'
+              }
+            >
+              <NativeSelect
+                value={categoryId}
+                onChange={(v) => {
+                  setCategoryId(v)
+                  if (v !== suggestedFromPayee) setSuggestedFromPayee(null)
+                }}
+                ariaLabel="Categoría"
+              >
                 <option value="">Sin categoría</option>
                 {Object.entries(groupedCategories).map(([groupName, cats]) => (
                   <optgroup key={groupName} label={groupName}>
@@ -415,6 +460,11 @@ export function TransactionFormModal({
                   </optgroup>
                 ))}
               </NativeSelect>
+              {suggestedFromPayee && categoryId === suggestedFromPayee && (
+                <p className="text-[11px] text-[var(--brand-2)] mt-1.5 leading-relaxed">
+                  Auto-rellenada según tus transacciones anteriores con este pagado.
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => {
