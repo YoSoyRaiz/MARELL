@@ -112,6 +112,17 @@ export function ImportTransactionsModal({
       const detection = detectBank(text)
       setBankDetection(detection.bank === 'unknown' ? null : detection)
       const result = parseCSV(text)
+      // Hard cap row count to match the server's `bulkCreateTransactions`
+      // 1,000-row limit — surfacing the error here saves a round trip
+      // and lets us suggest splitting the file before they hit Import.
+      const MAX_ROWS = 1000
+      if (result.rows.length > MAX_ROWS) {
+        setError(
+          `Demasiadas filas (${result.rows.length.toLocaleString('en-US')}). Máximo ${MAX_ROWS.toLocaleString('en-US')} por importación. Divide el archivo en varias partes.`,
+        )
+        setParseResult(null)
+        return
+      }
       setParseResult(result)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error leyendo el archivo')

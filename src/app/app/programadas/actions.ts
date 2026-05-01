@@ -322,14 +322,9 @@ export async function materializeDue(budgetId: string) {
     const cap = 366 // hard cap on iterations per scheduled per call
 
     while (nextDate <= today && safety < cap) {
-      // Read latest balance just-in-time so successive fires stack correctly.
-      const { data: account } = await supabase
-        .from('accounts')
-        .select('balance')
-        .eq('id', s.account_id as string)
-        .single()
-      if (!account) break
-
+      // The trigger maintains accounts.balance for us; no need to read
+      // it before each insert. Saves one query per fire — meaningful
+      // when materializing months of weekly schedules.
       const amount = Number(s.amount)
 
       const { error: insertErr } = await supabase.from('transactions').insert({

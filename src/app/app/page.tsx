@@ -635,7 +635,15 @@ export default async function ResumenPage() {
   // Use a cheap proxy: if at least one transaction is marked reconciled
   // we count it. Cheap because txnsMonthData is already loaded — we
   // just don't have the cleared field in the SELECT.
-  const guideHasReconciled = false // TODO: surface from a lightweight query
+  // Cheap existence check: HEAD-only query for any reconciled txn in
+  // this budget. We don't care about counts, only whether the user
+  // has ever finished a reconciliation.
+  const { count: reconciledCount } = await supabase
+    .from('transactions')
+    .select('id', { count: 'exact', head: true })
+    .eq('budget_id', budget.id)
+    .eq('cleared', 'reconciled')
+  const guideHasReconciled = (reconciledCount ?? 0) > 0
 
   const insightInputs: InsightInputs = {
     readyToAssign,
