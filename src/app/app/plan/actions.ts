@@ -171,6 +171,140 @@ export async function quickAssign(
   }
 }
 
+// ── Auto-assign templates (YNAB-style "Auto" tab) ─────────────────
+
+export type AutoTemplate =
+  | 'assigned_last_month'
+  | 'spent_last_month'
+  | 'reset_assigned'
+
+export interface AutoAssignResult {
+  error?: string
+  changedCount?: number
+  totalDelta?: number
+}
+
+function previousMonth(month: string): string {
+  const [y, m] = month.split('-').map(Number)
+  const d = new Date(y, m - 2, 1) // m-1 then -1
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+/**
+ * Bulk-assign across all categories using a YNAB-style preset.
+ *  - 'assigned_last_month' overwrites this month with each category's
+ *    previous-month assignment.
+ *  - 'spent_last_month' overwrites this month with last month's spending
+ *    (so you "fund what you actually used").
+ *  - 'reset_assigned' wipes every current-month assignment back to 0.
+ */
+export async function applyAutoAssign(
+  budgetId: string,
+  month: string,
+  template: AutoTemplate,
+): Promise<AutoAssignResult> {
+  if (!isValidMonth(month)) return { error: 'Mes inválido' }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', budgetId)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Presupuesto no encontrado' }
+
+  // Get this month's existing assignments so we can compute deltas.
+  const { data: thisMonthAssignsRaw } = await supabase
+    .from('monthly_assignments')
+    .select('category_id, assigned')
+    .eq('budget_id', budgetId)
+    .eq('month', month)
+  const thisMonth = new Map<string, number>()
+  for (const a of thisMonthAssignsRaw ?? []) {
+    thisMonth.set(a.category_id as string, Number(a.assigned))
+  }
+
+  // Build the target map: cat_id → desired assignment for this month.
+  const targets = new Map<string, number>()
+
+  if (template === 'reset_assigned') {
+    for (const [id] of thisMonth) targets.set(id, 0)
+  } else if (template === 'assigned_last_month') {
+    const prev = previousMonth(month)
+    const { data: prevAssigns } = await supabase
+      .from('monthly_assignments')
+      .select('category_id, assigned')
+      .eq('budget_id', budgetId)
+      .eq('month', prev)
+    for (const a of prevAssigns ?? []) {
+      targets.set(a.category_id as string, Number(a.assigned))
+    }
+  } else if (template === 'spent_last_month') {
+    const prev = previousMonth(month)
+    const [y, m] = prev.split('-').map(Number)
+    const first = `${y}-${String(m).padStart(2, '0')}-01`
+    const last = new Date(y, m, 0)
+    const lastStr = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`
+    const [txnsRes, subsRes] = await Promise.all([
+      supabase
+        .from('transactions')
+        .select('category_id, amount')
+        .eq('budget_id', budgetId)
+        .gte('date', first)
+        .lte('date', lastStr)
+        .lt('amount', 0)
+        .not('category_id', 'is', null),
+      supabase
+        .from('subtransactions')
+        .select('category_id, amount, transactions!inner(budget_id, date)')
+        .eq('transactions.budget_id', budgetId)
+        .gte('transactions.date', first)
+        .lte('transactions.date', lastStr)
+        .lt('amount', 0)
+        .not('category_id', 'is', null),
+    ])
+    for (const t of txnsRes.data ?? []) {
+      const id = t.category_id as string
+      targets.set(id, (targets.get(id) ?? 0) + Math.abs(Number(t.amount)))
+    }
+    for (const s of subsRes.data ?? []) {
+      const id = s.category_id as string
+      targets.set(id, (targets.get(id) ?? 0) + Math.abs(Number(s.amount)))
+    }
+  }
+
+  // Apply: upsert each target. Track delta for the topbar update.
+  let totalDelta = 0
+  let changedCount = 0
+  for (const [categoryId, value] of targets) {
+    const rounded = Math.round(value * 100) / 100
+    const previous = thisMonth.get(categoryId) ?? 0
+    if (Math.abs(rounded - previous) < 0.005) continue
+    const { error } = await supabase
+      .from('monthly_assignments')
+      .upsert(
+        {
+          budget_id: budgetId,
+          category_id: categoryId,
+          month,
+          assigned: rounded,
+        },
+        { onConflict: 'category_id,month' },
+      )
+    if (error) return { error: error.message }
+    totalDelta += rounded - previous
+    changedCount += 1
+  }
+
+  return { changedCount, totalDelta: Math.round(totalDelta * 100) / 100 }
+}
+
 export async function updateAssignment(
   budgetId: string,
   categoryId: string,

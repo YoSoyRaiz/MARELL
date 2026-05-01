@@ -16,11 +16,17 @@ import {
   Sparkles,
   CheckCircle2,
   AlertCircle,
+  Zap,
+  RotateCcw,
+  Calendar,
+  Receipt,
 } from 'lucide-react'
 import {
   fetchAssignContext,
   quickAssign,
+  applyAutoAssign,
   type AssignContextCategory,
+  type AutoTemplate,
 } from './plan/actions'
 import { useReadyToAssign } from './ReadyToAssignProvider'
 import { useFormatMoney } from './CurrencyProvider'
@@ -33,6 +39,7 @@ interface AssignPopoverProps {
 }
 
 type Mode = 'add' | 'set'
+type Tab = 'manual' | 'auto'
 
 interface LoadedContext {
   budgetId: string
@@ -69,6 +76,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
   const [error, setError] = useState<string | null>(null)
   const [okMessage, setOkMessage] = useState<string | null>(null)
 
+  const [tab, setTab] = useState<Tab>('manual')
   const [mode, setMode] = useState<Mode>('add')
   const [categoryId, setCategoryId] = useState('')
   const [amountText, setAmountText] = useState('')
@@ -207,6 +215,37 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
         </p>
       </header>
 
+      {/* Tab switcher */}
+      {ctx !== null && (
+        <div className="px-5 pt-3">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-[var(--bg)] rounded-xl">
+            <button
+              type="button"
+              onClick={() => setTab('manual')}
+              className={`py-1.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
+                tab === 'manual'
+                  ? 'gradient-bg text-[#0B0B0C]'
+                  : 'text-[var(--text2)] hover:text-[var(--text)]'
+              }`}
+            >
+              Manual
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab('auto')}
+              className={`py-1.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
+                tab === 'auto'
+                  ? 'gradient-bg text-[#0B0B0C]'
+                  : 'text-[var(--text2)] hover:text-[var(--text)]'
+              }`}
+            >
+              <Zap size={12} strokeWidth={2.4} />
+              Auto
+            </button>
+          </div>
+        </div>
+      )}
+
       {loading && !ctx ? (
         <div className="px-5 py-8 text-center text-[13px] text-[var(--muted)]">
           Cargando categorías…
@@ -215,6 +254,24 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
         <div className="px-5 py-8 text-center text-[13px] text-[var(--muted)]">
           No tienes presupuesto activo.
         </div>
+      ) : tab === 'auto' ? (
+        <AutoTabContent
+          budgetId={ctx.budgetId}
+          month={ctx.month}
+          onError={setError}
+          onSuccess={(message, totalDelta) => {
+            setOkMessage(message)
+            if (totalDelta !== 0) rta?.adjust(-totalDelta)
+            // Refresh categories cache so the manual tab reflects new
+            // totals immediately.
+            fetchAssignContext().then((r) => {
+              if (r.budgetId) {
+                setCtx({ budgetId: r.budgetId, month: r.month, categories: r.categories })
+              }
+            })
+            router.refresh()
+          }}
+        />
       ) : (
         <form onSubmit={handleSubmit} className="px-5 py-4 space-y-4">
           {/* Mode toggle */}
@@ -313,6 +370,12 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
             <ArrowRight size={14} strokeWidth={2.4} />
           </button>
 
+        </form>
+      )}
+
+      {/* Shared status messages (manual + auto tabs both write here). */}
+      {(okMessage || error) && (
+        <div className="px-5 pb-4 space-y-2">
           {okMessage && (
             <div className="rounded-xl border border-[var(--success)]/40 bg-[rgba(61,220,151,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
               <CheckCircle2
@@ -323,7 +386,6 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               <span>{okMessage}</span>
             </div>
           )}
-
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
               <AlertCircle
@@ -334,7 +396,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               <span>{error}</span>
             </div>
           )}
-        </form>
+        </div>
       )}
 
       <footer className="px-5 py-3 border-t border-[var(--border)] flex items-center justify-between gap-3 text-[12px]">
@@ -351,6 +413,103 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <ArrowRight size={11} strokeWidth={2.4} />
         </Link>
       </footer>
+    </div>
+  )
+}
+
+interface AutoTabContentProps {
+  budgetId: string
+  month: string
+  onError: (msg: string | null) => void
+  onSuccess: (message: string, totalDelta: number) => void
+}
+
+interface TemplateOption {
+  template: AutoTemplate
+  label: string
+  description: string
+  icon: typeof Calendar
+  successLabel: string
+}
+
+const TEMPLATE_OPTIONS: TemplateOption[] = [
+  {
+    template: 'assigned_last_month',
+    label: 'Asignar como mes pasado',
+    description: 'Copia lo que asignaste a cada categoría el mes anterior.',
+    icon: Calendar,
+    successLabel: 'Asignaciones del mes pasado aplicadas',
+  },
+  {
+    template: 'spent_last_month',
+    label: 'Lo que gastaste el mes pasado',
+    description: 'Asigna a cada categoría lo que realmente gastaste en ella.',
+    icon: Receipt,
+    successLabel: 'Gasto del mes pasado replicado',
+  },
+  {
+    template: 'reset_assigned',
+    label: 'Reiniciar este mes',
+    description: 'Vuelve todas las asignaciones de este mes a cero.',
+    icon: RotateCcw,
+    successLabel: 'Asignaciones reiniciadas',
+  },
+]
+
+function AutoTabContent({ budgetId, month, onError, onSuccess }: AutoTabContentProps) {
+  const [pendingTemplate, setPendingTemplate] = useState<AutoTemplate | null>(null)
+
+  const handleClick = async (option: TemplateOption) => {
+    onError(null)
+    setPendingTemplate(option.template)
+    const r = await applyAutoAssign(budgetId, month, option.template)
+    setPendingTemplate(null)
+    if (r.error) {
+      onError(r.error)
+      return
+    }
+    const changed = r.changedCount ?? 0
+    if (changed === 0) {
+      onSuccess('Sin cambios — todo ya estaba en su lugar.', 0)
+      return
+    }
+    const message = `${option.successLabel} · ${changed} ${changed === 1 ? 'categoría' : 'categorías'}`
+    onSuccess(message, r.totalDelta ?? 0)
+  }
+
+  return (
+    <div className="px-5 py-4 space-y-2">
+      {TEMPLATE_OPTIONS.map((opt) => {
+        const Icon = opt.icon
+        const isPending = pendingTemplate === opt.template
+        const disabled = pendingTemplate !== null && !isPending
+        return (
+          <button
+            key={opt.template}
+            type="button"
+            onClick={() => handleClick(opt)}
+            disabled={disabled}
+            className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/[0.04] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+              <Icon size={14} strokeWidth={2.2} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-semibold text-[var(--text)] leading-tight">
+                {opt.label}
+              </div>
+              <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                {isPending ? 'Aplicando…' : opt.description}
+              </div>
+            </div>
+            <ArrowRight
+              size={14}
+              strokeWidth={2.4}
+              className="text-[var(--muted2)] shrink-0 mt-1"
+            />
+          </button>
+        )
+      })}
     </div>
   )
 }
