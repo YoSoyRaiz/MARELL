@@ -112,7 +112,7 @@ export function LandingHero() {
           </div>
 
           {/* Right: real product screenshot. Replace
-              /public/landing/dashboard-hero.png with a fresh capture
+              /public/landing/dashboard-hero.jpg with a fresh capture
               whenever the dashboard's UI changes meaningfully. */}
           <div className="relative">
             <div
@@ -128,10 +128,10 @@ export function LandingHero() {
               surface="rounded-[28px] border border-white/[0.13] bg-gradient-to-b from-white/[0.08] to-white/[0.03] p-2 shadow-[0_30px_80px_rgba(0,0,0,.45)]"
             >
               <Image
-                src="/landing/dashboard-hero.png"
+                src="/landing/dashboard-hero.jpg"
                 alt="Dashboard de MARELL — vista de Resumen con KPIs, categorías y transacciones"
-                width={2000}
-                height={1080}
+                width={2400}
+                height={1298}
                 priority
                 sizes="(min-width: 1024px) 55vw, 100vw"
                 className="rounded-[22px] w-full h-auto"
