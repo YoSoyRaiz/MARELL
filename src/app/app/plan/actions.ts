@@ -305,6 +305,100 @@ export async function applyAutoAssign(
   return { changedCount, totalDelta: Math.round(totalDelta * 100) / 100 }
 }
 
+// ── Move money between categories (YNAB "Where's-Available-Money") ─
+
+export type MoveMoneyResult =
+  | { error: string }
+  | {
+      success: true
+      fromAssigned: number
+      toAssigned: number
+    }
+
+/**
+ * Reassigns `amount` from one category to another for a given month.
+ * Implemented as: from.assigned -= amount, to.assigned += amount. Net
+ * Ready-to-Assign delta is zero so the topbar pill doesn't move.
+ *
+ * The source can go negative (YNAB-style "took back from prior carry-
+ * over"); that surfaces as overspent in the row.
+ */
+export async function moveMoneyBetweenCategories(
+  budgetId: string,
+  fromCategoryId: string,
+  toCategoryId: string,
+  month: string,
+  amount: number,
+): Promise<MoveMoneyResult> {
+  if (!isValidMonth(month)) return { error: 'Mes inválido' }
+  if (!Number.isFinite(amount) || amount <= 0) return { error: 'Monto inválido' }
+  if (fromCategoryId === toCategoryId) {
+    return { error: 'Origen y destino deben ser distintos' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', budgetId)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Presupuesto no encontrado' }
+
+  const { data: cats } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('budget_id', budgetId)
+    .in('id', [fromCategoryId, toCategoryId])
+  if (!cats || cats.length !== 2) return { error: 'Categoría no encontrada' }
+
+  const { data: existing } = await supabase
+    .from('monthly_assignments')
+    .select('category_id, assigned')
+    .eq('budget_id', budgetId)
+    .eq('month', month)
+    .in('category_id', [fromCategoryId, toCategoryId])
+  const current = new Map<string, number>()
+  for (const row of existing ?? []) {
+    current.set(row.category_id as string, Number(row.assigned))
+  }
+
+  const fromPrev = current.get(fromCategoryId) ?? 0
+  const toPrev = current.get(toCategoryId) ?? 0
+  const fromNext = Math.round((fromPrev - amount) * 100) / 100
+  const toNext = Math.round((toPrev + amount) * 100) / 100
+
+  const { error } = await supabase.from('monthly_assignments').upsert(
+    [
+      {
+        budget_id: budgetId,
+        category_id: fromCategoryId,
+        month,
+        assigned: fromNext,
+      },
+      {
+        budget_id: budgetId,
+        category_id: toCategoryId,
+        month,
+        assigned: toNext,
+      },
+    ],
+    { onConflict: 'category_id,month' },
+  )
+  if (error) return { error: error.message }
+
+  return {
+    success: true,
+    fromAssigned: fromNext,
+    toAssigned: toNext,
+  }
+}
+
 export async function updateAssignment(
   budgetId: string,
   categoryId: string,

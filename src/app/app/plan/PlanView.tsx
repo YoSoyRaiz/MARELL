@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, ChevronDown, AlertCircle } from 'lucide-reac
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './InlineMoneyEdit'
 import { AnimatedNumber } from './AnimatedNumber'
+import { MoveMoneyModal } from './MoveMoneyModal'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
@@ -76,7 +77,11 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
   const [navPending, startNav] = useTransition()
   const [filter, setFilter] = useState<Filter>('todas')
   const [overrides, setOverrides] = useState<Record<string, number>>({})
+  // Local override of `available` after a money-move so both rows reflect
+  // the new state until the next router.refresh() repopulates `groups`.
+  const [availableOverrides, setAvailableOverrides] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
+  const [moveSourceId, setMoveSourceId] = useState<string | null>(null)
   const [collapsed, setCollapsed] = useState<Set<string>>(
     () => new Set(groups.map((g) => g.id)),
   )
@@ -92,6 +97,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
 
   const goToMonth = (next: string) => {
     setOverrides({}) // navigation refetches; clear local overrides
+    setAvailableOverrides({})
     startNav(() => {
       router.push(`/app/plan?month=${next}`)
     })
@@ -128,10 +134,39 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
 
   // Available shown in the row reflects lifetime carry-over + any local
   // override on this month's assignment. delta is positive when the user
-  // bumped the assignment up via InlineMoneyEdit.
+  // bumped the assignment up via InlineMoneyEdit. Money-moves write into
+  // `availableOverrides` so both source and destination rows update without
+  // round-tripping the whole grid.
   const computeAvailable = (c: PlanCategory) => {
+    if (availableOverrides[c.id] !== undefined) return availableOverrides[c.id]
     const delta = getAssigned(c) - c.assigned
     return c.available + delta
+  }
+
+  const handleMoved = (
+    fromId: string,
+    toId: string,
+    fromAssigned: number,
+    toAssigned: number,
+  ) => {
+    // Available shifts by exactly the assigned delta on each side
+    // (lifetime available = Σ assignments + Σ activity, and only
+    // assignments changed here).
+    const fromCat = groups.flatMap((g) => g.categories).find((x) => x.id === fromId)
+    const toCat = groups.flatMap((g) => g.categories).find((x) => x.id === toId)
+    if (fromCat && toCat) {
+      const fromAvailBefore = computeAvailable(fromCat)
+      const toAvailBefore = computeAvailable(toCat)
+      const fromDelta = fromAssigned - getAssigned(fromCat)
+      const toDelta = toAssigned - getAssigned(toCat)
+      setAvailableOverrides((p) => ({
+        ...p,
+        [fromId]: fromAvailBefore + fromDelta,
+        [toId]: toAvailBefore + toDelta,
+      }))
+    }
+    setOverrides((p) => ({ ...p, [fromId]: fromAssigned, [toId]: toAssigned }))
+    router.refresh()
   }
 
   const filteredGroups = useMemo(() => {
@@ -412,9 +447,14 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                               {c.activity === 0 ? '—' : fmtMoney(c.activity)}
                             </span>
                           </span>
-                          <span className={`tabular-nums num font-semibold ${availableColor}`}>
+                          <button
+                            type="button"
+                            onClick={() => setMoveSourceId(c.id)}
+                            className={`tabular-nums num font-semibold underline-offset-4 hover:underline ${availableColor}`}
+                            aria-label={`Mover dinero desde ${c.name}`}
+                          >
                             {fmtMoney(available)}
-                          </span>
+                          </button>
                         </div>
                       </div>
 
@@ -443,10 +483,15 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                         <div className="text-right text-[14px] tabular-nums num text-[var(--muted)]">
                           {c.activity === 0 ? '—' : fmtMoney(c.activity)}
                         </div>
-                        <div
-                          className={`text-right text-[14px] tabular-nums num font-semibold ${availableColor}`}
-                        >
-                          {fmtMoney(available)}
+                        <div className="text-right">
+                          <button
+                            type="button"
+                            onClick={() => setMoveSourceId(c.id)}
+                            className={`text-[14px] tabular-nums num font-semibold underline-offset-4 hover:underline ${availableColor}`}
+                            aria-label={`Mover dinero desde ${c.name}`}
+                          >
+                            {fmtMoney(available)}
+                          </button>
                         </div>
                       </div>
                     </li>
@@ -459,6 +504,25 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
           )
         })}
       </div>
+
+      {moveSourceId && budgetId && (() => {
+        const sourceCat = groups
+          .flatMap((g) => g.categories)
+          .find((c) => c.id === moveSourceId)
+        if (!sourceCat) return null
+        return (
+          <MoveMoneyModal
+            isOpen={true}
+            onClose={() => setMoveSourceId(null)}
+            budgetId={budgetId}
+            month={month}
+            fromCategoryId={moveSourceId}
+            groups={groups}
+            fromAvailable={computeAvailable(sourceCat)}
+            onMoved={handleMoved}
+          />
+        )
+      })()}
     </div>
   )
 }
