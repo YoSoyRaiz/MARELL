@@ -3,6 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
+import {
+  ccBucketDelta,
+  type AutoBucketContribution,
+} from './ccBucketMath'
 
 export type TransactionType = 'income' | 'expense'
 
@@ -84,35 +88,8 @@ async function applyCcBucketDelta(
   )
 }
 
-/**
- * For a credit-card-account transaction, returns the signed delta to
- * apply to the CC payment bucket. The bucket moves opposite to the
- * transaction sign so a -500 charge bumps the bucket by +500 (more to
- * pay) and a +200 refund knocks it down by 200.
- *
- * For splits, walks each subtransaction so the bucket math reflects the
- * actual category spend, not the parent total.
- */
-export type AutoBucketContribution = {
-  amount: number // signed (negative = expense)
-  categoryId: string | null
-}
-
-// Exported for unit testing — the surrounding actions are server-only
-// but the math is pure and worth covering.
-export function ccBucketDelta(
-  contributions: AutoBucketContribution[],
-): number {
-  // Only categorized contributions move the bucket — uncategorized
-  // entries (e.g. a stray inflow with no category) stay neutral so we
-  // don't bucket money that hasn't entered the budget yet.
-  let delta = 0
-  for (const c of contributions) {
-    if (!c.categoryId) continue
-    delta += -c.amount // bucket grows when we charge (negative amount)
-  }
-  return Math.round(delta * 100) / 100
-}
+// Helpers for the CC bucket math live in `./ccBucketMath` (sync; this
+// file is `'use server'` so it can't host non-async exports).
 
 export interface SplitInput {
   categoryId: string | null

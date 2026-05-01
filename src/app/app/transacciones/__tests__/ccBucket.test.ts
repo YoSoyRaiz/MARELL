@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ccBucketDelta, type AutoBucketContribution } from '../actions'
+import { ccBucketDelta, type AutoBucketContribution } from '../ccBucketMath'
 
 describe('ccBucketDelta', () => {
   it('returns 0 for an empty contribution list', () => {
