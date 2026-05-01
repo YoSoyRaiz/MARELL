@@ -41,8 +41,16 @@ export interface PlanCategory {
   id: string
   name: string
   goal_amount: number | null
+  /** This month's assignment (the InlineMoneyEdit value). */
   assigned: number
+  /** This month's activity (signed; negative for expenses). */
   activity: number
+  /**
+   * Lifetime available: Σ(assignments all months) + Σ(activity all time).
+   * This is the YNAB "Available" — carry-over from prior months is folded
+   * in here. We adjust it client-side when the user overrides `assigned`.
+   */
+  available: number
 }
 
 export interface PlanGroup {
@@ -54,6 +62,7 @@ export interface PlanGroup {
 interface PlanViewProps {
   budgetId: string | null
   month: string
+  /** Kept for backward-compat — no longer used since ReadyToAssign is sourced from the global provider. */
   totalCash: number
   groups: PlanGroup[]
 }
@@ -110,14 +119,20 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
     }
   }
 
-  const totalAssigned = useMemo(
-    () =>
-      groups
-        .flatMap((g) => g.categories)
-        .reduce((s, c) => s + getAssigned(c), 0),
-    [groups, getAssigned],
-  )
-  const readyToAssign = totalCash - totalAssigned
+  // Hero "Por asignar" mirrors the topbar pill so the user sees a
+  // consistent number across the app. The pill is driven by
+  // ReadyToAssignProvider which gets the YNAB-style lifetime calculation
+  // from the layout. InlineMoneyEdit pushes delta updates into it
+  // optimistically so the hero animates as the user assigns.
+  const readyToAssign = rtaCtx?.readyToAssign ?? 0
+
+  // Available shown in the row reflects lifetime carry-over + any local
+  // override on this month's assignment. delta is positive when the user
+  // bumped the assignment up via InlineMoneyEdit.
+  const computeAvailable = (c: PlanCategory) => {
+    const delta = getAssigned(c) - c.assigned
+    return c.available + delta
+  }
 
   const filteredGroups = useMemo(() => {
     if (filter === 'todas') return groups
@@ -126,7 +141,8 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
         ...g,
         categories: g.categories.filter((c) => {
           const assigned = getAssigned(c)
-          const available = assigned + c.activity
+          const delta = assigned - c.assigned
+          const available = c.available + delta
           if (filter === 'subfondeadas') {
             if (c.goal_amount && c.goal_amount > 0) return assigned < c.goal_amount
             return available < 0
@@ -277,7 +293,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
         {filteredGroups.map((g) => {
           const groupAssigned = g.categories.reduce((s, c) => s + getAssigned(c), 0)
           const groupAvailable = g.categories.reduce(
-            (s, c) => s + getAssigned(c) + c.activity,
+            (s, c) => s + computeAvailable(c),
             0,
           )
           const isCollapsed = collapsed.has(g.id)
@@ -355,7 +371,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                 {g.categories.map((c) => {
                   const Icon = iconForCategoryName(c.name)
                   const assigned = getAssigned(c)
-                  const available = assigned + c.activity
+                  const available = computeAvailable(c)
                   const availableColor =
                     available > 0.005
                       ? 'gradient-text'

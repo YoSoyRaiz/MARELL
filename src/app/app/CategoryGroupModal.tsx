@@ -11,8 +11,12 @@ import { useFormatMoney } from './CurrencyProvider'
 export interface ModalCategory {
   id: string
   name: string
+  /** This month's assignment. */
   assigned: number
+  /** This month's activity (signed). */
   activity: number
+  /** Lifetime available (carry-over from prior months folded in). */
+  available: number
   goal_amount: number | null
 }
 
@@ -150,7 +154,10 @@ export function CategoryGroupModal({
             {group.categories.map((c) => {
               const Icon = iconForCategoryName(c.name)
               const assigned = getAssigned(c)
-              const available = assigned + c.activity
+              // Lifetime available + delta from any unsaved local edit on
+              // this month's assignment.
+              const delta = assigned - c.assigned
+              const available = c.available + delta
               const availColor =
                 available > 0.005
                   ? 'gradient-text'

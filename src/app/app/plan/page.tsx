@@ -37,7 +37,21 @@ export default async function PlanPage({
 
   const { first, last } = monthBounds(month)
 
-  const [groupsRes, categoriesRes, assignmentsRes, txnsRes, accountsRes] = await Promise.all([
+  // Pull this-month assignments + activity for the columns the user sees,
+  // PLUS lifetime data so we can compute carry-over correctly. Lifetime
+  // available = sum(all months' assignments) + sum(all activity ever),
+  // mirroring YNAB's "Available" column. Without this, every new month
+  // starts a category at $0 and previously saved balances disappear.
+  const [
+    groupsRes,
+    categoriesRes,
+    assignmentsThisMonthRes,
+    assignmentsLifetimeRes,
+    txnsThisMonthRes,
+    txnsLifetimeRes,
+    subsLifetimeRes,
+    accountsRes,
+  ] = await Promise.all([
     supabase
       .from('category_groups')
       .select('id, name, sort_order')
@@ -54,6 +68,10 @@ export default async function PlanPage({
       .eq('budget_id', budget.id)
       .eq('month', month),
     supabase
+      .from('monthly_assignments')
+      .select('category_id, assigned')
+      .eq('budget_id', budget.id),
+    supabase
       .from('transactions')
       .select(
         'id, date, category_id, amount, is_split, subtransactions(category_id, amount)',
@@ -61,26 +79,58 @@ export default async function PlanPage({
       .eq('budget_id', budget.id)
       .gte('date', first)
       .lte('date', last),
+    supabase
+      .from('transactions')
+      .select('id, date, category_id, amount')
+      .eq('budget_id', budget.id)
+      .not('category_id', 'is', null),
+    supabase
+      .from('subtransactions')
+      .select('category_id, amount, transactions!inner(budget_id)')
+      .eq('transactions.budget_id', budget.id)
+      .not('category_id', 'is', null),
     supabase.from('accounts').select('balance, type').eq('budget_id', budget.id),
   ])
 
   const groupsRaw = groupsRes.data ?? []
   const categoriesRaw = categoriesRes.data ?? []
-  const assignmentsRaw = assignmentsRes.data ?? []
-  const txnsRaw = txnsRes.data ?? []
+  const assignmentsThisMonth = assignmentsThisMonthRes.data ?? []
+  const assignmentsLifetime = assignmentsLifetimeRes.data ?? []
+  const txnsThisMonth = txnsThisMonthRes.data ?? []
+  const txnsLifetime = txnsLifetimeRes.data ?? []
+  const subsLifetime = subsLifetimeRes.data ?? []
   const accountsRaw = accountsRes.data ?? []
 
-  // Index assignments and activity by category id
-  const assignedById = new Map<string, number>()
-  for (const a of assignmentsRaw) {
-    assignedById.set(a.category_id as string, Number(a.assigned))
+  // Index this-month assignment + activity by category id (the columns
+  // the user reads in the Plan view's table).
+  const assignedThisMonthById = new Map<string, number>()
+  for (const a of assignmentsThisMonth) {
+    assignedThisMonthById.set(a.category_id as string, Number(a.assigned))
   }
 
-  const activityById = new Map<string, number>()
-  for (const c of expandToCategoryContributions(txnsRaw)) {
+  const activityThisMonthById = new Map<string, number>()
+  for (const c of expandToCategoryContributions(txnsThisMonth)) {
     if (!c.category_id) continue
-    const prev = activityById.get(c.category_id) ?? 0
-    activityById.set(c.category_id, prev + c.amount)
+    const prev = activityThisMonthById.get(c.category_id) ?? 0
+    activityThisMonthById.set(c.category_id, prev + c.amount)
+  }
+
+  // Index lifetime assignment + activity by category id (used for the
+  // "Disponible" column — carries balance forward from prior months).
+  const assignedLifetimeById = new Map<string, number>()
+  for (const a of assignmentsLifetime) {
+    const id = a.category_id as string
+    assignedLifetimeById.set(id, (assignedLifetimeById.get(id) ?? 0) + Number(a.assigned))
+  }
+
+  const activityLifetimeById = new Map<string, number>()
+  for (const t of txnsLifetime) {
+    const id = t.category_id as string
+    activityLifetimeById.set(id, (activityLifetimeById.get(id) ?? 0) + Number(t.amount))
+  }
+  for (const s of subsLifetime) {
+    const id = s.category_id as string
+    activityLifetimeById.set(id, (activityLifetimeById.get(id) ?? 0) + Number(s.amount))
   }
 
   // Build the group → categories tree
@@ -88,14 +138,18 @@ export default async function PlanPage({
     const cats: PlanCategory[] = categoriesRaw
       .filter((c) => c.group_id === g.id)
       .map((c) => {
-        const assigned = assignedById.get(c.id as string) ?? 0
-        const activity = activityById.get(c.id as string) ?? 0
+        const id = c.id as string
+        const assigned = assignedThisMonthById.get(id) ?? 0
+        const activity = activityThisMonthById.get(id) ?? 0
+        const available =
+          (assignedLifetimeById.get(id) ?? 0) + (activityLifetimeById.get(id) ?? 0)
         return {
-          id: c.id as string,
+          id,
           name: c.name as string,
           goal_amount: c.goal_amount === null ? null : Number(c.goal_amount),
           assigned,
           activity,
+          available: Math.round(available * 100) / 100,
         }
       })
     return {

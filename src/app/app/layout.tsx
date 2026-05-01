@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppShell } from './AppShell'
-import { currentMonthDR } from '@/lib/dates'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -33,25 +32,41 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   let readyToAssign = 0
 
   if (budget) {
-    const { data: accounts } = await supabase
-      .from('accounts')
-      .select('balance, type')
-      .eq('budget_id', budget.id)
+    // Ready to Assign = total_cash − Σ(category.available_lifetime)
+    // where category.available = lifetime_assignments + lifetime_activity.
+    // This is the YNAB formula: cash that hasn't been earmarked to a
+    // category. Carry-over of unspent balances + overspending coverage
+    // both fall out of this naturally.
+    const [accountsRes, assignsRes, txnsRes, subsRes] = await Promise.all([
+      supabase.from('accounts').select('balance, type').eq('budget_id', budget.id),
+      supabase.from('monthly_assignments').select('assigned').eq('budget_id', budget.id),
+      supabase
+        .from('transactions')
+        .select('amount, category_id')
+        .eq('budget_id', budget.id)
+        .not('category_id', 'is', null),
+      supabase
+        .from('subtransactions')
+        .select('amount, transactions!inner(budget_id)')
+        .eq('transactions.budget_id', budget.id)
+        .not('category_id', 'is', null),
+    ])
 
     const cashTypes = ['checking', 'savings', 'cash']
-    const totalCash = (accounts ?? [])
+    const totalCash = (accountsRes.data ?? [])
       .filter((a) => cashTypes.includes(a.type as string))
       .reduce((s, a) => s + Number(a.balance), 0)
 
-    const month = currentMonthDR()
-    const { data: assignments } = await supabase
-      .from('monthly_assignments')
-      .select('assigned')
-      .eq('budget_id', budget.id)
-      .eq('month', month)
+    const totalAssignedLifetime = (assignsRes.data ?? []).reduce(
+      (s, a) => s + Number(a.assigned),
+      0,
+    )
+    const totalCategorizedActivity =
+      (txnsRes.data ?? []).reduce((s, t) => s + Number(t.amount), 0) +
+      (subsRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0)
 
-    const totalAssigned = (assignments ?? []).reduce((s, a) => s + Number(a.assigned), 0)
-    readyToAssign = totalCash - totalAssigned
+    const sumCategoryAvailable = totalAssignedLifetime + totalCategorizedActivity
+    readyToAssign = Math.round((totalCash - sumCategoryAvailable) * 100) / 100
   }
 
   return (

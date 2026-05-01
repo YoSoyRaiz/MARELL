@@ -31,8 +31,16 @@ const iconForGroup = (name: string): LucideIcon => {
 }
 
 export interface SectionGroup extends ModalGroup {
+  /** Sum of this-month assignments across the group's categories. */
   assigned: number
+  /** Sum of this-month spending (positive number). */
   spent: number
+  /**
+   * Lifetime "Available" — Σ(assignments all months) + Σ(activity all time).
+   * This is what's actually left to spend, including carry-over from prior
+   * months. Negative when overspent.
+   */
+  available: number
 }
 
 interface CategoryCardsSectionProps {
@@ -96,7 +104,14 @@ export function CategoryCardsSection({
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
           {displayGroups.map((g) => {
             const Icon = iconForGroup(g.name)
-            const isUnassigned = g.assigned <= 0.005 && g.spent <= 0.005
+            // Use lifetime available (carry-over folded in) so a group with
+            // saved-up balance from previous months doesn't read as "Aún
+            // sin asignar" just because nothing was assigned this month.
+            const isUnassigned =
+              g.assigned <= 0.005 &&
+              g.spent <= 0.005 &&
+              Math.abs(g.available) <= 0.005
+            const isOverspent = g.available < -0.005
             const pct = g.assigned > 0 ? Math.min(1, g.spent / g.assigned) : 0
             return (
               <button
@@ -123,17 +138,18 @@ export function CategoryCardsSection({
                 ) : (
                   <>
                     <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
-                      Restante
+                      {isOverspent ? 'Excedido' : 'Disponible'}
                     </div>
                     <div
                       className={`text-[20px] font-bold tabular-nums num leading-none mt-0.5 ${
-                        g.spent > g.assigned ? 'text-[var(--coral)]' : 'gradient-text'
+                        isOverspent ? 'text-[var(--coral)]' : 'gradient-text'
                       }`}
                     >
-                      {fmtMoneyShort(Math.max(0, g.assigned - g.spent))}
+                      {fmtMoneyShort(g.available)}
                     </div>
                     <div className="text-[11px] text-[var(--muted)] mt-1.5 num tabular-nums">
-                      {fmtMoneyShort(g.spent)} gastado · {fmtMoneyShort(g.assigned)} asignado
+                      {fmtMoneyShort(g.spent)} gastado este mes · {fmtMoneyShort(g.assigned)}{' '}
+                      asignado
                     </div>
                     <div className="mt-2.5 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
                       <div

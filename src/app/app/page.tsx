@@ -106,46 +106,73 @@ export default async function ResumenPage() {
   const month = currentMonth()
   const { first, last } = monthBounds(month)
 
-  const [groupsRes, catsRes, accountsRes, assignmentsRes, txnsMonthRes, txnsRecentRes] =
-    await Promise.all([
-      supabase
-        .from('category_groups')
-        .select('id, name, sort_order')
-        .eq('budget_id', budget.id)
-        .order('sort_order'),
-      supabase
-        .from('categories')
-        .select('id, name, group_id, goal_amount, goal_type, goal_date')
-        .eq('budget_id', budget.id),
-      supabase
-        .from('accounts')
-        .select('id, name, type, balance, closed')
-        .eq('budget_id', budget.id)
-        .order('sort_order'),
-      supabase
-        .from('monthly_assignments')
-        .select('category_id, assigned')
-        .eq('budget_id', budget.id)
-        .eq('month', month),
-      // Full month — drives totals (income / expense) and per-category activity.
-      supabase
-        .from('transactions')
-        .select(
-          'date, category_id, amount, is_split, transfer_account_id, subtransactions(category_id, amount)',
-        )
-        .eq('budget_id', budget.id)
-        .gte('date', first)
-        .lte('date', last),
-      // Just the 5 most recent for the "Transacciones recientes" widget.
-      supabase
-        .from('transactions')
-        .select('id, date, payee_name, category_id, amount')
-        .eq('budget_id', budget.id)
-        .gte('date', first)
-        .lte('date', last)
-        .order('date', { ascending: false })
-        .limit(5),
-    ])
+  const [
+    groupsRes,
+    catsRes,
+    accountsRes,
+    assignmentsRes,
+    assignmentsLifetimeRes,
+    txnsMonthRes,
+    txnsLifetimeRes,
+    subsLifetimeRes,
+    txnsRecentRes,
+  ] = await Promise.all([
+    supabase
+      .from('category_groups')
+      .select('id, name, sort_order')
+      .eq('budget_id', budget.id)
+      .order('sort_order'),
+    supabase
+      .from('categories')
+      .select('id, name, group_id, goal_amount, goal_type, goal_date')
+      .eq('budget_id', budget.id),
+    supabase
+      .from('accounts')
+      .select('id, name, type, balance, closed')
+      .eq('budget_id', budget.id)
+      .order('sort_order'),
+    supabase
+      .from('monthly_assignments')
+      .select('category_id, assigned')
+      .eq('budget_id', budget.id)
+      .eq('month', month),
+    // Lifetime assignments — needed for carry-over math on the dashboard
+    // category cards so they reflect what's actually available, not just
+    // what was assigned this month.
+    supabase
+      .from('monthly_assignments')
+      .select('category_id, assigned')
+      .eq('budget_id', budget.id),
+    // Full month — drives totals (income / expense) and per-category activity.
+    supabase
+      .from('transactions')
+      .select(
+        'date, category_id, amount, is_split, transfer_account_id, subtransactions(category_id, amount)',
+      )
+      .eq('budget_id', budget.id)
+      .gte('date', first)
+      .lte('date', last),
+    // Lifetime categorized activity — for carry-over.
+    supabase
+      .from('transactions')
+      .select('category_id, amount')
+      .eq('budget_id', budget.id)
+      .not('category_id', 'is', null),
+    supabase
+      .from('subtransactions')
+      .select('category_id, amount, transactions!inner(budget_id)')
+      .eq('transactions.budget_id', budget.id)
+      .not('category_id', 'is', null),
+    // Just the 5 most recent for the "Transacciones recientes" widget.
+    supabase
+      .from('transactions')
+      .select('id, date, payee_name, category_id, amount')
+      .eq('budget_id', budget.id)
+      .gte('date', first)
+      .lte('date', last)
+      .order('date', { ascending: false })
+      .limit(5),
+  ])
 
   const groupsData = groupsRes.data ?? []
   const catsData = catsRes.data ?? []
@@ -227,6 +254,24 @@ export default async function ResumenPage() {
   // month set, not the 5-row recent slice.
   const txnContributions = expandToCategoryContributions(txnsMonthData)
 
+  // Lifetime per-category aggregates for carry-over (used by the dashboard
+  // category cards). Different from the savings-goal lifetime maps below
+  // because that section uses absolute-value spent semantics.
+  const carryAssignedById = new Map<string, number>()
+  for (const a of assignmentsLifetimeRes.data ?? []) {
+    const id = a.category_id as string
+    carryAssignedById.set(id, (carryAssignedById.get(id) ?? 0) + Number(a.assigned))
+  }
+  const carryActivityById = new Map<string, number>()
+  for (const t of txnsLifetimeRes.data ?? []) {
+    const id = t.category_id as string
+    carryActivityById.set(id, (carryActivityById.get(id) ?? 0) + Number(t.amount))
+  }
+  for (const s of subsLifetimeRes.data ?? []) {
+    const id = s.category_id as string
+    carryActivityById.set(id, (carryActivityById.get(id) ?? 0) + Number(s.amount))
+  }
+
   // Per-group + per-category breakdown for the categorías cards (used by the modal)
   const sectionGroups: SectionGroup[] = groupsData.map((g) => {
     const groupCats = catsData.filter((c) => c.group_id === g.id)
@@ -235,11 +280,15 @@ export default async function ResumenPage() {
       const activity = txnContributions
         .filter((t) => t.category_id === c.id)
         .reduce((s, t) => s + t.amount, 0)
+      const available =
+        (carryAssignedById.get(c.id as string) ?? 0) +
+        (carryActivityById.get(c.id as string) ?? 0)
       return {
         id: c.id as string,
         name: c.name as string,
         assigned: Number(a?.assigned ?? 0),
         activity,
+        available: Math.round(available * 100) / 100,
         goal_amount: c.goal_amount === null ? null : Number(c.goal_amount),
       }
     })
@@ -247,12 +296,14 @@ export default async function ResumenPage() {
     const spent = categories
       .filter((c) => c.activity < 0)
       .reduce((s, c) => s + Math.abs(c.activity), 0)
+    const available = categories.reduce((s, c) => s + c.available, 0)
     return {
       id: g.id as string,
       name: g.name as string,
       categories,
       assigned,
       spent,
+      available: Math.round(available * 100) / 100,
     }
   })
 
