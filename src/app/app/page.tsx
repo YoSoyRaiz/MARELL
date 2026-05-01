@@ -21,7 +21,8 @@ import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
 import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { materializeDue } from './programadas/actions'
-import { currentMonthDR, monthBoundsISO } from '@/lib/dates'
+import { currentMonthDR, monthBoundsISO, todayISODR } from '@/lib/dates'
+import { UpcomingCommitments, type UpcomingItem } from './UpcomingCommitments'
 
 const currentMonth = currentMonthDR
 const monthBounds = monthBoundsISO
@@ -106,6 +107,15 @@ export default async function ResumenPage() {
   const month = currentMonth()
   const { first, last } = monthBounds(month)
 
+  // 14-day window for the cash-flow forecast widget.
+  const today = todayISODR()
+  const horizonDate = (() => {
+    const [y, m, d] = today.split('-').map(Number)
+    const dt = new Date(Date.UTC(y, m - 1, d))
+    dt.setUTCDate(dt.getUTCDate() + 14)
+    return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`
+  })()
+
   const [
     groupsRes,
     catsRes,
@@ -116,6 +126,7 @@ export default async function ResumenPage() {
     txnsLifetimeRes,
     subsLifetimeRes,
     txnsRecentRes,
+    upcomingRes,
   ] = await Promise.all([
     supabase
       .from('category_groups')
@@ -172,6 +183,16 @@ export default async function ResumenPage() {
       .lte('date', last)
       .order('date', { ascending: false })
       .limit(5),
+    // Upcoming scheduled transactions in the next 14 days — drives the
+    // "Próximos compromisos" cash-flow forecast widget.
+    supabase
+      .from('scheduled_transactions')
+      .select('id, payee_name, category_id, account_id, amount, next_date, frequency')
+      .eq('budget_id', budget.id)
+      .eq('active', true)
+      .gte('next_date', today)
+      .lte('next_date', horizonDate)
+      .order('next_date', { ascending: true }),
   ])
 
   const groupsData = groupsRes.data ?? []
@@ -180,6 +201,7 @@ export default async function ResumenPage() {
   const assignmentsData = assignmentsRes.data ?? []
   const txnsMonthData = txnsMonthRes.data ?? []
   const txnsRecentData = txnsRecentRes.data ?? []
+  const upcomingData = upcomingRes.data ?? []
 
   // KPI computations
   const cashTypes = ['checking', 'savings', 'cash']
@@ -444,6 +466,32 @@ export default async function ResumenPage() {
     }
   })()
 
+  // Upcoming scheduled transactions (next 14 days).
+  const accountNameById = new Map<string, string>()
+  for (const a of accountsData) {
+    accountNameById.set(a.id as string, a.name as string)
+  }
+  const upcomingItems: UpcomingItem[] = upcomingData.map((s) => {
+    const catName = s.category_id
+      ? ((catsData.find((c) => c.id === s.category_id)?.name as string | undefined) ?? null)
+      : null
+    return {
+      id: s.id as string,
+      date: s.next_date as string,
+      payeeName: (s.payee_name as string | null) ?? null,
+      categoryName: catName,
+      accountName: accountNameById.get(s.account_id as string) ?? '—',
+      amount: Number(s.amount ?? 0),
+      frequency: s.frequency as string,
+    }
+  })
+
+  // Projected end-of-window cash: today's cash + sum of upcoming amounts.
+  // Inflows are positive, outflows negative; the running balance shows the
+  // user whether they'll be in the red before the 14 days end.
+  const upcomingNetFlow = upcomingItems.reduce((s, i) => s + i.amount, 0)
+  const projectedCash = Math.round((totalCash + upcomingNetFlow) * 100) / 100
+
   const insightInputs: InsightInputs = {
     readyToAssign,
     totalAssignedThisMonth: totalAssigned,
@@ -605,6 +653,13 @@ export default async function ResumenPage() {
 
         {/* Real-data insights replace the old single-message placeholder. */}
         <InsightsSection inputs={insightInputs} />
+
+        {/* 14-day cash-flow forecast from scheduled transactions. */}
+        <UpcomingCommitments
+          items={upcomingItems}
+          projectedCash={projectedCash}
+          netFlow={upcomingNetFlow}
+        />
 
         {/* Metas preview */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
