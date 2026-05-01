@@ -16,6 +16,7 @@ import {
   ChevronDown,
   Split,
   X,
+  CheckCircle2,
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
@@ -266,10 +267,10 @@ export function TransactionsClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput])
 
-  // Auto-dismiss the "Guardada · 27 abr" toast after 4 seconds.
+  // Auto-dismiss the "Guardada · 27 abr" toast after 6 seconds.
   useEffect(() => {
     if (!savedToast) return
-    const t = setTimeout(() => setSavedToast(null), 4000)
+    const t = setTimeout(() => setSavedToast(null), 6000)
     return () => clearTimeout(t)
   }, [savedToast])
 
@@ -859,16 +860,22 @@ export function TransactionsClient({
         />
       )}
 
-      {/* Save confirmation toast — sits above the mobile tab bar and
-          below the topbar pill on desktop. Auto-dismisses after 4s. */}
+      {/* Save confirmation toast — centered on screen, large enough to
+          read at a glance. Auto-dismisses after 6s. */}
       {savedToast && (
         <div
           role="status"
           aria-live="polite"
-          className="fixed left-1/2 -translate-x-1/2 z-40 bottom-[calc(80px+env(safe-area-inset-bottom))] lg:bottom-6 px-4 py-3 rounded-2xl border border-[var(--brand-2)]/30 bg-[var(--s1)]/95 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.4)] text-[13px] font-medium text-[var(--text)] animate-step inline-flex items-center gap-2 max-w-[90vw]"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 px-7 py-5 rounded-3xl border border-[var(--brand-2)]/40 bg-[var(--s1)]/95 backdrop-blur-md shadow-[0_24px_64px_rgba(0,0,0,0.5)] animate-step inline-flex items-center gap-3 max-w-[90vw] pointer-events-none"
         >
-          <span className="w-2 h-2 rounded-full gradient-bg shrink-0" />
-          {savedToast}
+          <CheckCircle2
+            size={28}
+            strokeWidth={2.2}
+            className="text-[var(--brand-2)] shrink-0"
+          />
+          <span className="text-[18px] sm:text-[20px] font-bold text-[var(--text)] tracking-tight">
+            {savedToast}
+          </span>
         </div>
       )}
     </>
