@@ -544,6 +544,11 @@ export function TransactionFormModal({
           </Field>
           )}
 
+          {/* Categoría + split: oculto en móvil para que el modal del FAB
+              quepa sin scroll. El usuario puede categorizar la
+              transacción luego desde la lista de Movimientos. En
+              desktop sigue visible como siempre. */}
+          <div className="hidden lg:block">
           {!isTransfer && (!splitMode ? (
             <Field
               label="Categoría"
@@ -728,6 +733,7 @@ export function TransactionFormModal({
               </div>
             </div>
           ))}
+          </div>
 
           <div className="hidden lg:block">
             <Field label="Memo" hint="opcional">
