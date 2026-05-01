@@ -1,9 +1,116 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 
 export type TransactionType = 'income' | 'expense'
+
+// ── Credit-card auto-bucket ─────────────────────────────────────
+//
+// YNAB pattern: when you charge a credit card, the budget category gets
+// debited AND the "card payment" category gets credited by the same
+// amount, so available net stays the same and you build up the money to
+// pay the card. The reverse happens on a refund.
+//
+// MARELL implements this by looking up a single category named
+// "Pago tarjeta de crédito" (created during onboarding when the user has
+// any credit card) for the budget. We bump its monthly_assignment up by
+// abs(charge) on each CC charge and down on each refund. Multi-card
+// budgets share one bucket; per-card buckets would need a column on
+// `accounts.payment_category_id` (not added yet).
+//
+// If the category doesn't exist (legacy budgets created before this hook,
+// or user deleted it), the helper silently no-ops — the rest of the
+// transaction flow keeps working.
+
+const CC_PAYMENT_CATEGORY_NAME = 'Pago tarjeta de crédito'
+
+function monthFromDate(iso: string): string {
+  return iso.slice(0, 7)
+}
+
+async function findCreditCardPaymentCategoryId(
+  supabase: SupabaseClient,
+  budgetId: string,
+): Promise<string | null> {
+  const { data } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('budget_id', budgetId)
+    .ilike('name', CC_PAYMENT_CATEGORY_NAME)
+    .maybeSingle()
+  return data ? (data.id as string) : null
+}
+
+/**
+ * Apply `delta` (signed) to the credit-card payment category's assignment
+ * for the given month. Used to reverse old contributions and apply new
+ * ones whenever a CC-account transaction is created, updated, or deleted.
+ *
+ * Skips silently when there's no payment category in the budget or when
+ * the category being charged IS the payment category itself (don't
+ * double-bucket internal payments).
+ */
+async function applyCcBucketDelta(
+  supabase: SupabaseClient,
+  budgetId: string,
+  month: string,
+  delta: number,
+  excludeCategoryId: string | null = null,
+) {
+  if (!Number.isFinite(delta) || Math.abs(delta) < 0.005) return
+  const paymentCatId = await findCreditCardPaymentCategoryId(supabase, budgetId)
+  if (!paymentCatId) return
+  if (excludeCategoryId && excludeCategoryId === paymentCatId) return
+
+  const { data: existing } = await supabase
+    .from('monthly_assignments')
+    .select('assigned')
+    .eq('budget_id', budgetId)
+    .eq('category_id', paymentCatId)
+    .eq('month', month)
+    .maybeSingle()
+  const previous = Number(existing?.assigned ?? 0)
+  const next = Math.round((previous + delta) * 100) / 100
+  await supabase.from('monthly_assignments').upsert(
+    {
+      budget_id: budgetId,
+      category_id: paymentCatId,
+      month,
+      assigned: next,
+    },
+    { onConflict: 'category_id,month' },
+  )
+}
+
+/**
+ * For a credit-card-account transaction, returns the signed delta to
+ * apply to the CC payment bucket. The bucket moves opposite to the
+ * transaction sign so a -500 charge bumps the bucket by +500 (more to
+ * pay) and a +200 refund knocks it down by 200.
+ *
+ * For splits, walks each subtransaction so the bucket math reflects the
+ * actual category spend, not the parent total.
+ */
+type AutoBucketContribution = {
+  amount: number // signed (negative = expense)
+  categoryId: string | null
+}
+
+function ccBucketDelta(
+  contributions: AutoBucketContribution[],
+): number {
+  // Only categorized contributions move the bucket — uncategorized
+  // entries (e.g. a stray inflow with no category) stay neutral so we
+  // don't bucket money that hasn't entered the budget yet.
+  let delta = 0
+  for (const c of contributions) {
+    if (!c.categoryId) continue
+    delta += -c.amount // bucket grows when we charge (negative amount)
+  }
+  return Math.round(delta * 100) / 100
+}
 
 export interface SplitInput {
   categoryId: string | null
@@ -205,6 +312,33 @@ export async function createTransaction(input: CreateTransactionInput) {
     .eq('id', input.accountId)
   if (updateErr) return { error: updateErr.message }
 
+  // Credit-card auto-bucket: when this charge lands on a credit_card
+  // account, move the same amount into the payment category for the
+  // transaction's month. Splits propagate per-child.
+  const { data: accountWithType } = await supabase
+    .from('accounts')
+    .select('type')
+    .eq('id', input.accountId)
+    .single()
+  if (accountWithType?.type === 'credit_card') {
+    const contributions: AutoBucketContribution[] = split
+      ? input.splits!.map((s) => ({
+          amount: sign * Math.abs(s.amount),
+          categoryId: s.categoryId,
+        }))
+      : [{ amount: signedAmount, categoryId: input.categoryId }]
+    const delta = ccBucketDelta(contributions)
+    if (Math.abs(delta) >= 0.005) {
+      await applyCcBucketDelta(
+        supabase,
+        budget.id as string,
+        monthFromDate(input.date),
+        delta,
+        split ? null : input.categoryId,
+      )
+    }
+  }
+
   revalidatePath('/app', 'layout')
   return { success: true as const }
 }
@@ -228,10 +362,11 @@ export async function updateTransaction(input: UpdateTransactionInput) {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  // Fetch the existing transaction (to know how to roll back the balance).
+  // Fetch the existing transaction (to know how to roll back the balance
+  // and reverse the old credit-card auto-bucket contribution).
   const { data: existing } = await supabase
     .from('transactions')
-    .select('id, account_id, amount, budget_id')
+    .select('id, account_id, amount, budget_id, category_id, is_split, date')
     .eq('id', input.id)
     .single()
   if (!existing) return { error: 'Transacción no encontrada' }
@@ -248,12 +383,33 @@ export async function updateTransaction(input: UpdateTransactionInput) {
   // The new account must belong to the same budget.
   const { data: newAccount } = await supabase
     .from('accounts')
-    .select('id, budget_id, balance')
+    .select('id, budget_id, balance, type')
     .eq('id', input.accountId)
     .single()
   if (!newAccount || newAccount.budget_id !== existing.budget_id) {
     return { error: 'Cuenta inválida' }
   }
+
+  // Capture the old account's type so we know whether to reverse the old
+  // CC bucket contribution. Same lookup if the account hasn't changed.
+  let oldAccountType: string | null = newAccount.type as string
+  if (existing.account_id !== input.accountId) {
+    const { data: oldAcc } = await supabase
+      .from('accounts')
+      .select('type')
+      .eq('id', existing.account_id)
+      .single()
+    oldAccountType = oldAcc ? (oldAcc.type as string) : null
+  }
+
+  // Pre-fetch old subtransactions before they get rebuilt below — needed
+  // to compute the old CC bucket contribution accurately.
+  const { data: oldSubsRows } = existing.is_split
+    ? await supabase
+        .from('subtransactions')
+        .select('category_id, amount')
+        .eq('transaction_id', input.id)
+    : { data: null as Array<{ category_id: string | null; amount: number }> | null }
 
   const split = isSplit(input)
   if (split) {
@@ -344,6 +500,53 @@ export async function updateTransaction(input: UpdateTransactionInput) {
       .from('accounts')
       .update({ balance: applied })
       .eq('id', input.accountId)
+  }
+
+  // Credit-card auto-bucket sync: reverse the old contribution at its
+  // old month, then apply the new contribution at the new month. Months
+  // can differ when the user changes the txn date across a boundary.
+  const budgetIdStr = budget.id as string
+  if (oldAccountType === 'credit_card') {
+    const oldContribs: AutoBucketContribution[] =
+      existing.is_split && oldSubsRows
+        ? oldSubsRows.map((r) => ({
+            amount: Number(r.amount),
+            categoryId: r.category_id,
+          }))
+        : [
+            {
+              amount: oldSignedAmount,
+              categoryId: (existing.category_id as string | null) ?? null,
+            },
+          ]
+    const oldDelta = ccBucketDelta(oldContribs)
+    if (Math.abs(oldDelta) >= 0.005) {
+      await applyCcBucketDelta(
+        supabase,
+        budgetIdStr,
+        monthFromDate(existing.date as string),
+        -oldDelta,
+        existing.is_split ? null : ((existing.category_id as string | null) ?? null),
+      )
+    }
+  }
+  if (newAccount.type === 'credit_card') {
+    const newContribs: AutoBucketContribution[] = split
+      ? input.splits!.map((s) => ({
+          amount: sign * Math.abs(s.amount),
+          categoryId: s.categoryId,
+        }))
+      : [{ amount: newSignedAmount, categoryId: input.categoryId }]
+    const newDelta = ccBucketDelta(newContribs)
+    if (Math.abs(newDelta) >= 0.005) {
+      await applyCcBucketDelta(
+        supabase,
+        budgetIdStr,
+        monthFromDate(input.date),
+        newDelta,
+        split ? null : input.categoryId,
+      )
+    }
   }
 
   revalidatePath('/app', 'layout')
@@ -450,13 +653,32 @@ export async function deleteTransaction(transactionId: string) {
 
   // Get the transaction (with account info) to roll back the balance.
   // Pull transfer_transaction_id too so we can delete the twin if it's a
-  // transfer pair.
+  // transfer pair, and category_id/is_split/date so we can reverse the
+  // CC bucket contribution.
   const { data: txn } = await supabase
     .from('transactions')
-    .select('id, account_id, amount, budget_id, transfer_transaction_id')
+    .select(
+      'id, account_id, amount, budget_id, transfer_transaction_id, category_id, is_split, date',
+    )
     .eq('id', transactionId)
     .single()
   if (!txn) return { error: 'Transacción no encontrada' }
+
+  // Snapshot subtransactions for split bucket reversal before the
+  // cascade delete wipes them.
+  const { data: subSnap } = txn.is_split
+    ? await supabase
+        .from('subtransactions')
+        .select('category_id, amount')
+        .eq('transaction_id', transactionId)
+    : { data: null as Array<{ category_id: string | null; amount: number }> | null }
+
+  // Snapshot the account type for CC reversal.
+  const { data: accSnap } = await supabase
+    .from('accounts')
+    .select('type')
+    .eq('id', txn.account_id as string)
+    .single()
 
   // Verify ownership
   const { data: budget } = await supabase
@@ -512,6 +734,32 @@ export async function deleteTransaction(transactionId: string) {
       .from('accounts')
       .update({ balance: newBalance })
       .eq('id', u.account_id)
+  }
+
+  // Reverse the CC bucket contribution if this was a credit-card charge.
+  if (accSnap?.type === 'credit_card') {
+    const contribs: AutoBucketContribution[] =
+      txn.is_split && subSnap
+        ? subSnap.map((r) => ({
+            amount: Number(r.amount),
+            categoryId: r.category_id,
+          }))
+        : [
+            {
+              amount: Number(txn.amount),
+              categoryId: (txn.category_id as string | null) ?? null,
+            },
+          ]
+    const delta = ccBucketDelta(contribs)
+    if (Math.abs(delta) >= 0.005) {
+      await applyCcBucketDelta(
+        supabase,
+        budget.id as string,
+        monthFromDate(txn.date as string),
+        -delta,
+        txn.is_split ? null : ((txn.category_id as string | null) ?? null),
+      )
+    }
   }
 
   revalidatePath('/app', 'layout')
