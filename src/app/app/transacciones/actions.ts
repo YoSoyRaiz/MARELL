@@ -10,6 +10,22 @@ import {
 
 export type TransactionType = 'income' | 'expense'
 
+// When the user saves a transaction without filling "Pagado a" (e.g.
+// from the mobile FAB quick-add when the OCR didn't catch the merchant
+// name), build a readable fallback from the date so the row isn't
+// blank in the list.
+const SHORT_MONTHS_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+function payeeOrFallback(name: string, date: string): string {
+  const trimmed = name.trim()
+  if (trimmed) return trimmed
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
+  if (!m) return 'Recibo'
+  const [, , mm, dd] = m
+  const monthIdx = parseInt(mm, 10) - 1
+  const month = SHORT_MONTHS_ES[monthIdx] ?? ''
+  return month ? `Recibo del ${parseInt(dd, 10)} ${month}` : 'Recibo'
+}
+
 // ── Credit-card auto-bucket ─────────────────────────────────────
 //
 // YNAB pattern: when you charge a credit card, the budget category gets
@@ -206,10 +222,10 @@ export async function suggestCategoryForPayee(
 export async function createTransaction(input: CreateTransactionInput) {
   if (!input.accountId) return { error: 'Cuenta requerida' }
   if (!isValidDate(input.date)) return { error: 'Fecha inválida' }
-  if (!input.payeeName.trim()) return { error: 'Pagado a requerido' }
   if (!Number.isFinite(input.amount) || input.amount <= 0) {
     return { error: 'Monto inválido' }
   }
+  const finalPayee = payeeOrFallback(input.payeeName, input.date)
 
   const supabase = await createClient()
   const {
@@ -269,7 +285,7 @@ export async function createTransaction(input: CreateTransactionInput) {
       account_id: input.accountId,
       budget_id: budget.id,
       date: input.date,
-      payee_name: input.payeeName.trim(),
+      payee_name: finalPayee,
       // Splits never carry a category on the parent — the children do.
       category_id: split ? null : input.categoryId,
       memo: input.memo?.trim() || null,
@@ -342,10 +358,10 @@ export async function updateTransaction(input: UpdateTransactionInput) {
   if (!input.id) return { error: 'ID requerido' }
   if (!input.accountId) return { error: 'Cuenta requerida' }
   if (!isValidDate(input.date)) return { error: 'Fecha inválida' }
-  if (!input.payeeName.trim()) return { error: 'Pagado a requerido' }
   if (!Number.isFinite(input.amount) || input.amount <= 0) {
     return { error: 'Monto inválido' }
   }
+  const finalPayee = payeeOrFallback(input.payeeName, input.date)
 
   const supabase = await createClient()
   const {
@@ -441,7 +457,7 @@ export async function updateTransaction(input: UpdateTransactionInput) {
       // Splits never carry a category on the parent.
       category_id: split ? null : input.categoryId,
       date: input.date,
-      payee_name: input.payeeName.trim(),
+      payee_name: finalPayee,
       memo: input.memo?.trim() || null,
       amount: newSignedAmount,
       is_split: split,

@@ -199,6 +199,9 @@ export function TransactionFormModal({
     amount !== null && Math.abs(splitsSum - (amount ?? 0)) < 0.005
   const splitsRemainder = amount !== null ? Math.round((amount - splitsSum) * 100) / 100 : 0
 
+  // Compact mode (mobile FAB) lets the user save without a payee — we
+  // fill in a sensible fallback server-side. Outside compact mode the
+  // payee stays required as before.
   const valid = isTransfer
     ? accountId !== '' &&
       toAccountId !== '' &&
@@ -207,11 +210,34 @@ export function TransactionFormModal({
       amount > 0 &&
       /^\d{4}-\d{2}-\d{2}$/.test(date)
     : accountId !== '' &&
-      payeeName.trim().length > 0 &&
+      (compactMobile || payeeName.trim().length > 0) &&
       amount !== null &&
       amount > 0 &&
       /^\d{4}-\d{2}-\d{2}$/.test(date) &&
       (!splitMode || (splits.length >= 2 && splitsBalanced && splits.every((s) => s.amount > 0)))
+
+  // Spell out which fields are missing so the user knows why the
+  // Agregar button is greyed out — saves the "no sé por qué no me deja"
+  // back-and-forth.
+  const missingFields: string[] = []
+  if (accountId === '') missingFields.push('cuenta')
+  if (amount === null || amount <= 0) missingFields.push('monto')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) missingFields.push('fecha válida')
+  if (isTransfer) {
+    if (toAccountId === '') missingFields.push('cuenta destino')
+    if (accountId !== '' && accountId === toAccountId) missingFields.push('cuentas distintas')
+  } else {
+    if (!compactMobile && payeeName.trim().length === 0) {
+      missingFields.push('comercio')
+    }
+    if (splitMode) {
+      if (splits.length < 2 || !splits.every((s) => s.amount > 0)) {
+        missingFields.push('split completo')
+      } else if (!splitsBalanced) {
+        missingFields.push('split cuadrado')
+      }
+    }
+  }
 
   const groupedCategories = categories.reduce<Record<string, CategoryOption[]>>((acc, c) => {
     const key = c.group_name
@@ -759,6 +785,12 @@ export function TransactionFormModal({
             </div>
           )}
         </div>
+
+        {!valid && missingFields.length > 0 && (
+          <div className="px-6 pb-2 text-[11px] text-[var(--muted)] leading-snug">
+            Falta: <span className="text-[var(--text2)]">{missingFields.join(' · ')}</span>
+          </div>
+        )}
 
         <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--s1)] sticky bottom-0">
           <button
