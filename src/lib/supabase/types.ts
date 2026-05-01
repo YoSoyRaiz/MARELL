@@ -197,6 +197,17 @@ type BudgetInvitation = {
   created_at: string
 }
 
+type PushSubscription = {
+  id: string
+  user_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  user_agent: string | null
+  created_at: string
+  last_seen_at: string
+}
+
 type CronRun = {
   id: string
   route: string
@@ -236,6 +247,7 @@ export type Database = {
       budget_invitations: Table<BudgetInvitation>
       payment_events: Table<PaymentEvent>
       cron_runs: Table<CronRun>
+      push_subscriptions: Table<PushSubscription>
     }
     Views: Record<string, never>
     Functions: {

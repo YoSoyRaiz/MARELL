@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   User,
@@ -330,6 +330,9 @@ export function AjustesClient({
             />
           </button>
         </div>
+        <div className="pt-3 mt-3 border-t border-[var(--border)]">
+          <PushToggle />
+        </div>
       </Section>
 
       {/* Plan / billing */}
@@ -595,5 +598,82 @@ function ExportSection() {
         </button>
       </div>
     </Section>
+  )
+}
+
+
+function PushToggle() {
+  const [enabled, setEnabled] = useState<boolean | null>(null)
+  const [pending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+
+  // Reflect current browser state on mount.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setEnabled(false)
+      return
+    }
+    navigator.serviceWorker.ready.then(async (reg) => {
+      const sub = await reg.pushManager.getSubscription()
+      setEnabled(!!sub && Notification.permission === 'granted')
+    })
+  }, [])
+
+  const handleToggle = async (next: boolean) => {
+    setError(null)
+    startTransition(async () => {
+      if (next) {
+        const { registerPushNotifications } = await import('@/lib/push/register')
+        const r = await registerPushNotifications()
+        if (!r.ok) {
+          const msg = r.reason === 'denied'
+            ? 'Permiso denegado. Habilítalo en ajustes del navegador.'
+            : r.reason === 'unsupported'
+              ? 'Tu navegador no soporta notificaciones push.'
+              : r.reason === 'no-vapid-key'
+                ? 'Configuración pendiente del servidor.'
+                : 'No se pudo activar.'
+          setError(msg)
+          return
+        }
+        setEnabled(true)
+      } else {
+        const { unregisterPushNotifications } = await import('@/lib/push/register')
+        await unregisterPushNotifications()
+        setEnabled(false)
+      }
+    })
+  }
+
+  if (enabled === null) return null
+  return (
+    <>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <p className="text-[14px] font-medium text-[var(--text)]">
+            Notificaciones push
+          </p>
+          <p className="text-[12px] text-[var(--muted)] leading-relaxed mt-1">
+            Recibe alertas en tu teléfono o navegador cuando se asignan pagos, vencen metas o se acerca una transacción programada.
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          disabled={pending}
+          onClick={() => handleToggle(!enabled)}
+          className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${enabled ? "bg-[var(--success)]" : "bg-white/[0.10]"} disabled:opacity-50`}
+        >
+          <span
+            className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform ${enabled ? "translate-x-5" : ""}`}
+          />
+        </button>
+      </div>
+      {error && (
+        <p className="text-[11px] text-[var(--coral)] mt-2 leading-relaxed">{error}</p>
+      )}
+    </>
   )
 }

@@ -90,7 +90,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
   )
 
   return (
-    <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:left-auto z-40 max-w-md mx-auto sm:mx-0">
+    <div className="fixed bottom-[calc(68px+env(safe-area-inset-bottom)+16px)] lg:bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:left-auto z-40 max-w-md mx-auto sm:mx-0">
       <div className="rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] p-3 space-y-2">
         <div className="flex items-center justify-between gap-3">
           <div className="text-[12px] text-[var(--text)] font-semibold">
