@@ -4,7 +4,7 @@
 --
 -- Token-based invite flow for shared budgets. The owner creates an
 -- invitation with the invitee's email; we email them a link to
--- /accept-invite?token=… and on acceptance we insert a row into
+-- /aceptar-invitacion?token=… and on acceptance we insert a row into
 -- budget_members and mark the invitation accepted.
 --
 -- Run once in Supabase SQL Editor. Idempotent.
@@ -33,8 +33,12 @@ create index if not exists budget_invitations_email_idx
 
 alter table budget_invitations enable row level security;
 
+-- Drop-then-recreate so reruns don't error. Postgres doesn't support
+-- CREATE POLICY IF NOT EXISTS.
+
 -- Owner of the budget can fully manage invitations for that budget.
-create policy if not exists "owner_manage_invitations"
+drop policy if exists "owner_manage_invitations" on budget_invitations;
+create policy "owner_manage_invitations"
   on budget_invitations for all
   using (exists (
     select 1 from budgets
@@ -44,6 +48,7 @@ create policy if not exists "owner_manage_invitations"
 -- Anyone can SELECT a single invitation by token (needed for the
 -- acceptance flow before they're a member yet). The token itself is
 -- the auth — it's a long random string.
-create policy if not exists "public_read_by_token"
+drop policy if exists "public_read_by_token" on budget_invitations;
+create policy "public_read_by_token"
   on budget_invitations for select
   using (true);
