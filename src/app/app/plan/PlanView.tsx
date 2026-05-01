@@ -7,6 +7,7 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './InlineMoneyEdit'
 import { AnimatedNumber } from './AnimatedNumber'
 import { MoveMoneyModal } from './MoveMoneyModal'
+import { CategoryDrillModal } from './CategoryDrillModal'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
@@ -82,6 +83,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
   const [availableOverrides, setAvailableOverrides] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
   const [moveSourceId, setMoveSourceId] = useState<string | null>(null)
+  const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
   const [collapsed, setCollapsed] = useState<Set<string>>(
     () => new Set(groups.map((g) => g.id)),
   )
@@ -421,17 +423,28 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                       {/* Mobile layout: stacked rows */}
                       <div className="md:hidden px-4 py-3 space-y-2">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setDrillCategoryId(c.id)}
+                            aria-label={`Ver historial de ${c.name}`}
+                            className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0 hover:text-[var(--brand-2)] transition-colors"
+                          >
                             <Icon size={16} strokeWidth={2} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-[14px] text-[var(--text)] truncate">{c.name}</div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDrillCategoryId(c.id)}
+                            className="min-w-0 flex-1 text-left"
+                          >
+                            <div className="text-[14px] text-[var(--text)] truncate hover:text-[var(--brand-2)] transition-colors">
+                              {c.name}
+                            </div>
                             {c.goal_amount && c.goal_amount > 0 && (
                               <div className="text-[11px] text-[var(--muted)] num">
                                 meta: ${c.goal_amount.toLocaleString('en-US')}
                               </div>
                             )}
-                          </div>
+                          </button>
                           <div className="shrink-0">
                             <InlineMoneyEdit
                               value={assigned}
@@ -460,19 +473,25 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
 
                       {/* Desktop layout: 4-col grid */}
                       <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px] gap-2 px-5 py-3.5 items-center">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setDrillCategoryId(c.id)}
+                          className="flex items-center gap-3 min-w-0 text-left group"
+                        >
+                          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-2)] transition-colors">
                             <Icon size={16} strokeWidth={2} />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[14px] text-[var(--text)] truncate">{c.name}</div>
+                            <div className="text-[14px] text-[var(--text)] truncate group-hover:text-[var(--brand-2)] transition-colors">
+                              {c.name}
+                            </div>
                             {c.goal_amount && c.goal_amount > 0 && (
                               <div className="text-[11px] text-[var(--muted)] num">
                                 meta: ${c.goal_amount.toLocaleString('en-US')}
                               </div>
                             )}
                           </div>
-                        </div>
+                        </button>
                         <div className="text-right">
                           <InlineMoneyEdit
                             value={assigned}
@@ -504,6 +523,14 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
           )
         })}
       </div>
+
+      {drillCategoryId && (
+        <CategoryDrillModal
+          isOpen={true}
+          onClose={() => setDrillCategoryId(null)}
+          categoryId={drillCategoryId}
+        />
+      )}
 
       {moveSourceId && budgetId && (() => {
         const sourceCat = groups

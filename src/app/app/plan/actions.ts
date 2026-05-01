@@ -305,6 +305,218 @@ export async function applyAutoAssign(
   return { changedCount, totalDelta: Math.round(totalDelta * 100) / 100 }
 }
 
+// ── Category drill-down ─────────────────────────────────────────
+
+export interface CategoryHistoryMonth {
+  month: string // YYYY-MM
+  assigned: number
+  spent: number // positive number (sum of abs(negative txns + subs))
+  income: number // positive inflows in that category for the month
+}
+
+export interface CategoryHistoryTxn {
+  id: string
+  date: string
+  payeeName: string | null
+  accountName: string
+  amount: number // signed
+  memo: string | null
+  isSplit: boolean
+}
+
+export interface CategoryHistoryResult {
+  error?: string
+  category?: {
+    id: string
+    name: string
+    groupName: string
+    goalAmount: number | null
+    goalType: string | null
+    goalDate: string | null
+  }
+  months?: CategoryHistoryMonth[]
+  transactions?: CategoryHistoryTxn[]
+  /** Lifetime totals for the stats strip. */
+  totals?: {
+    assigned: number
+    spent: number
+    available: number
+    avgMonthlySpend: number
+    monthsWithActivity: number
+  }
+}
+
+function shiftMonth(month: string, delta: number): string {
+  const [y, m] = month.split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+/**
+ * Pull the last `windowMonths` of activity for a category: monthly
+ * assigned-vs-spent buckets plus the most recent transactions hitting
+ * this category (parents and split children are merged into a single
+ * timeline). Powers the drill-down modal.
+ */
+export async function fetchCategoryHistory(
+  categoryId: string,
+  windowMonths: number = 12,
+): Promise<CategoryHistoryResult> {
+  if (!categoryId) return { error: 'Categoría requerida' }
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: cat } = await supabase
+    .from('categories')
+    .select('id, name, budget_id, group_id, goal_amount, goal_type, goal_date')
+    .eq('id', categoryId)
+    .single()
+  if (!cat) return { error: 'Categoría no encontrada' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', cat.budget_id)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  const { data: group } = await supabase
+    .from('category_groups')
+    .select('name')
+    .eq('id', cat.group_id as string)
+    .single()
+
+  const thisMonth = currentMonthDR()
+  const startMonth = shiftMonth(thisMonth, -(windowMonths - 1))
+  const startDate = `${startMonth}-01`
+
+  const [assignsRes, txnsRes, subsRes, recentRes] = await Promise.all([
+    supabase
+      .from('monthly_assignments')
+      .select('month, assigned')
+      .eq('budget_id', budget.id)
+      .eq('category_id', categoryId)
+      .gte('month', startMonth),
+    supabase
+      .from('transactions')
+      .select('date, amount')
+      .eq('budget_id', budget.id)
+      .eq('category_id', categoryId)
+      .gte('date', startDate),
+    supabase
+      .from('subtransactions')
+      .select('amount, transactions!inner(date, budget_id)')
+      .eq('category_id', categoryId)
+      .eq('transactions.budget_id', budget.id)
+      .gte('transactions.date', startDate),
+    supabase
+      .from('transactions')
+      .select(
+        'id, date, payee_name, account_id, amount, memo, is_split, accounts(name)',
+      )
+      .eq('budget_id', budget.id)
+      .eq('category_id', categoryId)
+      .order('date', { ascending: false })
+      .limit(50),
+  ])
+
+  // Build per-month buckets in chronological order.
+  const buckets = new Map<string, CategoryHistoryMonth>()
+  for (let i = 0; i < windowMonths; i++) {
+    const m = shiftMonth(startMonth, i)
+    buckets.set(m, { month: m, assigned: 0, spent: 0, income: 0 })
+  }
+  for (const a of assignsRes.data ?? []) {
+    const m = a.month as string
+    const b = buckets.get(m)
+    if (b) b.assigned = Number(a.assigned)
+  }
+  for (const t of txnsRes.data ?? []) {
+    const m = (t.date as string).slice(0, 7)
+    const b = buckets.get(m)
+    if (!b) continue
+    const amt = Number(t.amount)
+    if (amt < 0) b.spent += Math.abs(amt)
+    else b.income += amt
+  }
+  type SubRow = { amount: number; transactions: { date: string } | { date: string }[] }
+  for (const s of (subsRes.data ?? []) as unknown as SubRow[]) {
+    const dateField = Array.isArray(s.transactions)
+      ? s.transactions[0]?.date
+      : s.transactions?.date
+    if (!dateField) continue
+    const m = dateField.slice(0, 7)
+    const b = buckets.get(m)
+    if (!b) continue
+    const amt = Number(s.amount)
+    if (amt < 0) b.spent += Math.abs(amt)
+    else b.income += amt
+  }
+  const months = Array.from(buckets.values())
+  for (const b of months) {
+    b.assigned = Math.round(b.assigned * 100) / 100
+    b.spent = Math.round(b.spent * 100) / 100
+    b.income = Math.round(b.income * 100) / 100
+  }
+
+  type RecentRow = {
+    id: string
+    date: string
+    payee_name: string | null
+    account_id: string
+    amount: number
+    memo: string | null
+    is_split: boolean
+    accounts: { name: string } | { name: string }[] | null
+  }
+  const recentTransactions: CategoryHistoryTxn[] = (
+    (recentRes.data ?? []) as unknown as RecentRow[]
+  ).map((t) => {
+    const accName = Array.isArray(t.accounts)
+      ? (t.accounts[0]?.name ?? '—')
+      : (t.accounts?.name ?? '—')
+    return {
+      id: t.id,
+      date: t.date,
+      payeeName: t.payee_name,
+      accountName: accName,
+      amount: Number(t.amount),
+      memo: t.memo,
+      isSplit: !!t.is_split,
+    }
+  })
+
+  const lifetimeAssigned = months.reduce((s, b) => s + b.assigned, 0)
+  const lifetimeSpent = months.reduce((s, b) => s + b.spent, 0)
+  const monthsWithActivity = months.filter((b) => b.spent > 0.005).length
+  const avgMonthlySpend =
+    monthsWithActivity > 0 ? lifetimeSpent / monthsWithActivity : 0
+
+  return {
+    category: {
+      id: cat.id as string,
+      name: cat.name as string,
+      groupName: (group?.name as string | undefined) ?? '—',
+      goalAmount: cat.goal_amount === null ? null : Number(cat.goal_amount),
+      goalType: (cat.goal_type as string | null) ?? null,
+      goalDate: (cat.goal_date as string | null) ?? null,
+    },
+    months,
+    transactions: recentTransactions,
+    totals: {
+      assigned: Math.round(lifetimeAssigned * 100) / 100,
+      spent: Math.round(lifetimeSpent * 100) / 100,
+      available: Math.round((lifetimeAssigned - lifetimeSpent) * 100) / 100,
+      avgMonthlySpend: Math.round(avgMonthlySpend * 100) / 100,
+      monthsWithActivity,
+    },
+  }
+}
+
 // ── Move money between categories (YNAB "Where's-Available-Money") ─
 
 export type MoveMoneyResult =
