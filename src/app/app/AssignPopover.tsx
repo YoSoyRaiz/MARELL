@@ -7,6 +7,7 @@ import {
   useTransition,
   type FormEvent,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -133,6 +134,19 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
     }
   }, [open, onClose, anchorRef])
 
+  // Lock body scroll on mobile while the sheet is open so the page
+  // underneath doesn't peek through when the keyboard pushes content.
+  useEffect(() => {
+    if (!open) return
+    const isMobile = window.matchMedia('(max-width: 1023px)').matches
+    if (!isMobile) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [open])
+
   if (!open) return null
 
   const grouped = (() => {
@@ -199,12 +213,20 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
     })
   }
 
-  return (
+  // On mobile we portal to <body> so the sheet escapes the TopBar's
+  // sticky stacking context and the iOS keyboard can't shove the page
+  // underneath into view above it. On desktop we keep the popover
+  // anchored to the trigger via `lg:absolute`.
+  const isMobile =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(max-width: 1023px)').matches
+
+  const node = (
     <>
       {/* Backdrop only on mobile — desktop uses click-outside on the
           popover itself. */}
       <div
-        className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-40 animate-step"
+        className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -219,7 +241,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           // Desktop: anchored popover under the topbar pill.
           'lg:absolute lg:inset-x-auto lg:bottom-auto lg:right-0 lg:top-full lg:mt-2 lg:w-[400px] lg:max-h-[80vh] lg:rounded-2xl lg:pb-0',
           // Common.
-          'overflow-y-auto border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] lg:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step z-50',
+          'overflow-y-auto border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] lg:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step z-[100]',
         ].join(' ')}
       >
         {/* Drag handle on mobile to signal "swipe down to close" — purely
@@ -438,6 +460,11 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
       </div>
     </>
   )
+
+  if (isMobile && typeof document !== 'undefined') {
+    return createPortal(node, document.body)
+  }
+  return node
 }
 
 interface AutoTabContentProps {

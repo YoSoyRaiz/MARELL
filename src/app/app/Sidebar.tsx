@@ -119,17 +119,17 @@ export function Sidebar({
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[280px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-[240px] lg:translate-x-0 lg:bg-[var(--s1)]/60 ${
+        className={`fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[340px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-[240px] lg:max-w-none lg:translate-x-0 lg:bg-[var(--s1)]/60 ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
         aria-hidden={!drawerOpen ? undefined : false}>
       {/* Logo */}
-      <div className="px-5 pt-6 pb-[50px]">
+      <div className="px-6 pt-7 pb-10 lg:px-5 lg:pt-6 lg:pb-[50px]">
         <Logo height={50} />
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-4 lg:px-3 space-y-1.5 lg:space-y-1 overflow-y-auto">
         {NAV.map((item, idx) => {
           const isActive =
             item.href === '/app' ? pathname === '/app' : pathname.startsWith(item.href)
@@ -138,7 +138,7 @@ export function Sidebar({
             <Link
               key={item.id}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 ${
+              className={`flex items-center gap-3 px-3.5 py-3 lg:py-2.5 rounded-xl text-[14px] transition-all duration-200 ${
                 isActive
                   ? 'gradient-bg text-[#0B0B0C] font-semibold shadow-[0_4px_16px_rgba(61,220,151,.18)]'
                   : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04]'

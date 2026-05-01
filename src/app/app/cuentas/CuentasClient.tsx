@@ -131,7 +131,7 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
 
         {/* Net worth summary */}
         {!isEmpty && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <SummaryCard label="Disponible" value={totalCash} positive />
             <SummaryCard label="Inversiones" value={totalAssets} positive />
             <SummaryCard label="Deudas" value={-totalDebt} />
