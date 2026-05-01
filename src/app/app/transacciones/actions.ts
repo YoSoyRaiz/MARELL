@@ -884,3 +884,168 @@ export async function createTransfer(input: CreateTransferInput) {
   revalidatePath('/app', 'layout')
   return { success: true as const }
 }
+
+export interface UpdateTransferInput extends CreateTransferInput {
+  id: string // either side of the pair
+}
+
+/**
+ * Edit an existing transfer in place: the user can change accounts,
+ * amount, date, or memo and we keep both legs in sync.
+ *
+ * Strategy: roll back the old amounts on whatever accounts the legs
+ * currently sit on, update both rows to point to the new accounts /
+ * amounts / date / memo, then apply the new amounts. Names on the
+ * `payee_name` field are regenerated to reflect the (possibly new)
+ * account names.
+ */
+export async function updateTransfer(input: UpdateTransferInput) {
+  if (!input.id) return { error: 'ID requerido' }
+  if (!input.fromAccountId) return { error: 'Cuenta origen requerida' }
+  if (!input.toAccountId) return { error: 'Cuenta destino requerida' }
+  if (input.fromAccountId === input.toAccountId) {
+    return { error: 'Las cuentas deben ser diferentes' }
+  }
+  if (!isValidDate(input.date)) return { error: 'Fecha inválida' }
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    return { error: 'Monto inválido' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Pull the seed leg + its twin to capture old state.
+  const { data: seed } = await supabase
+    .from('transactions')
+    .select('id, account_id, amount, budget_id, transfer_transaction_id, transfer_account_id')
+    .eq('id', input.id)
+    .single()
+  if (!seed) return { error: 'Transferencia no encontrada' }
+  if (!seed.transfer_transaction_id) {
+    return { error: 'Transacción no es una transferencia' }
+  }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', seed.budget_id)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  const { data: twin } = await supabase
+    .from('transactions')
+    .select('id, account_id, amount, transfer_account_id')
+    .eq('id', seed.transfer_transaction_id as string)
+    .single()
+  if (!twin) return { error: 'Pareja de transferencia no encontrada' }
+
+  // Determine which leg is source (negative) and which is destination
+  // (positive) so we update the correct rows with the new amount sign.
+  const seedIsSource = Number(seed.amount) < 0
+  const sourceLeg = seedIsSource ? seed : twin
+  const destLeg = seedIsSource ? twin : seed
+
+  // The new accounts must belong to the same budget.
+  const { data: accts } = await supabase
+    .from('accounts')
+    .select('id, name, budget_id, balance')
+    .in('id', [input.fromAccountId, input.toAccountId])
+  if (!accts || accts.length !== 2) return { error: 'Cuenta no encontrada' }
+  const fromAcct = accts.find((a) => a.id === input.fromAccountId)
+  const toAcct = accts.find((a) => a.id === input.toAccountId)
+  if (!fromAcct || !toAcct) return { error: 'Cuenta no encontrada' }
+  if (
+    fromAcct.budget_id !== seed.budget_id ||
+    toAcct.budget_id !== seed.budget_id
+  ) {
+    return { error: 'Cuenta de otro presupuesto' }
+  }
+
+  const newAmount = Math.round(input.amount * 100) / 100
+  const memo = input.memo?.trim() || null
+
+  // 1. Roll back the old amounts on the OLD accounts.
+  const oldSourceAmount = Number(sourceLeg.amount) // negative
+  const oldDestAmount = Number(destLeg.amount) // positive
+
+  const { data: oldSrcAcc } = await supabase
+    .from('accounts')
+    .select('balance')
+    .eq('id', sourceLeg.account_id as string)
+    .single()
+  const { data: oldDstAcc } = await supabase
+    .from('accounts')
+    .select('balance')
+    .eq('id', destLeg.account_id as string)
+    .single()
+  if (oldSrcAcc) {
+    const rolled = Math.round((Number(oldSrcAcc.balance) - oldSourceAmount) * 100) / 100
+    await supabase
+      .from('accounts')
+      .update({ balance: rolled })
+      .eq('id', sourceLeg.account_id as string)
+  }
+  if (oldDstAcc) {
+    const rolled = Math.round((Number(oldDstAcc.balance) - oldDestAmount) * 100) / 100
+    await supabase
+      .from('accounts')
+      .update({ balance: rolled })
+      .eq('id', destLeg.account_id as string)
+  }
+
+  // 2. Update both legs in-place with the new accounts/amount/date/memo.
+  const { error: srcUpdErr } = await supabase
+    .from('transactions')
+    .update({
+      account_id: fromAcct.id,
+      transfer_account_id: toAcct.id,
+      amount: -newAmount,
+      date: input.date,
+      memo,
+      payee_name: `Transferencia a ${toAcct.name}`,
+    })
+    .eq('id', sourceLeg.id as string)
+  if (srcUpdErr) return { error: srcUpdErr.message }
+
+  const { error: dstUpdErr } = await supabase
+    .from('transactions')
+    .update({
+      account_id: toAcct.id,
+      transfer_account_id: fromAcct.id,
+      amount: newAmount,
+      date: input.date,
+      memo,
+      payee_name: `Transferencia desde ${fromAcct.name}`,
+    })
+    .eq('id', destLeg.id as string)
+  if (dstUpdErr) return { error: dstUpdErr.message }
+
+  // 3. Apply the new amounts to the NEW accounts (read fresh balances —
+  // they may be the same accounts as before, in which case the numbers
+  // already reflect the rollback).
+  const { data: freshFrom } = await supabase
+    .from('accounts')
+    .select('balance')
+    .eq('id', fromAcct.id)
+    .single()
+  const { data: freshTo } = await supabase
+    .from('accounts')
+    .select('balance')
+    .eq('id', toAcct.id)
+    .single()
+  if (freshFrom) {
+    const applied = Math.round((Number(freshFrom.balance) - newAmount) * 100) / 100
+    await supabase.from('accounts').update({ balance: applied }).eq('id', fromAcct.id)
+  }
+  if (freshTo) {
+    const applied = Math.round((Number(freshTo.balance) + newAmount) * 100) / 100
+    await supabase.from('accounts').update({ balance: applied }).eq('id', toAcct.id)
+  }
+
+  revalidatePath('/app', 'layout')
+  return { success: true as const }
+}

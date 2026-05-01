@@ -17,6 +17,7 @@ import {
   createTransaction,
   createTransfer,
   updateTransaction,
+  updateTransfer,
   suggestCategoryForPayee,
   type SplitInput,
   type TransactionType,
@@ -37,9 +38,13 @@ interface CategoryOption {
 
 export interface InitialTransaction {
   id: string
-  type: TransactionType
+  /** Discriminator for the form. 'transfer' lets the user edit a paired
+      transfer's amount/accounts/date/memo. */
+  type: TransactionType | 'transfer'
   date: string
   accountId: string
+  /** Only meaningful when type='transfer'. The other side of the pair. */
+  toAccountId?: string
   categoryId: string | null
   payeeName: string
   amount: number // positive value (sign is in `type`)
@@ -101,7 +106,7 @@ export function TransactionFormModal({
       setType(initial.type)
       setDate(initial.date)
       setAccountId(initial.accountId)
-      setToAccountId(accounts[1]?.id ?? '')
+      setToAccountId(initial.toAccountId ?? accounts[1]?.id ?? '')
       setCategoryId(initial.categoryId ?? '')
       setPayeeName(initial.payeeName)
       setAmount(initial.amount)
@@ -220,15 +225,25 @@ export function TransactionFormModal({
     if (!valid || amount === null) return
     setError(null)
     startTransition(async () => {
-      // Transfer: create a linked pair via createTransfer.
+      // Transfer: create or update the linked pair.
       if (isTransfer) {
-        const result = await createTransfer({
-          fromAccountId: accountId,
-          toAccountId,
-          amount,
-          date,
-          memo,
-        })
+        const result =
+          mode === 'edit' && initial
+            ? await updateTransfer({
+                id: initial.id,
+                fromAccountId: accountId,
+                toAccountId,
+                amount,
+                date,
+                memo,
+              })
+            : await createTransfer({
+                fromAccountId: accountId,
+                toAccountId,
+                amount,
+                date,
+                memo,
+              })
         if (result && 'error' in result && result.error) {
           setError(result.error)
           return
@@ -314,42 +329,54 @@ export function TransactionFormModal({
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           {/* Type segmented — Gasto / Ingreso / Transferencia.
-              In edit mode the transfer option is hidden because editing a
-              transfer pair atomically isn't supported yet (the user can
-              delete + recreate). */}
+              When creating: all three tabs.
+              When editing a regular txn: only Gasto/Ingreso (can't morph
+              into a transfer in place — would need to spawn a paired leg).
+              When editing a transfer: only the Transferencia label so the
+              user can change accounts/amount/date/memo but not switch
+              type. */}
           <div
             className={`grid gap-2 p-1 bg-[var(--bg)] rounded-xl ${
-              isEdit ? 'grid-cols-2' : 'grid-cols-3'
+              isEdit
+                ? isTransfer
+                  ? 'grid-cols-1'
+                  : 'grid-cols-2'
+                : 'grid-cols-3'
             }`}
           >
-            <button
-              type="button"
-              onClick={() => setType('expense')}
-              className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
-                type === 'expense'
-                  ? 'bg-[var(--coral)]/15 text-[var(--coral)]'
-                  : 'text-[var(--text2)] hover:text-[var(--text)]'
-              }`}
-            >
-              <ArrowDownRight size={14} strokeWidth={2.2} />
-              Gasto
-            </button>
-            <button
-              type="button"
-              onClick={() => setType('income')}
-              className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
-                type === 'income'
-                  ? 'gradient-bg text-[#0B0B0C]'
-                  : 'text-[var(--text2)] hover:text-[var(--text)]'
-              }`}
-            >
-              <ArrowUpRight size={14} strokeWidth={2.2} />
-              Ingreso
-            </button>
-            {!isEdit && (
+            {(!isEdit || !isTransfer) && (
               <button
                 type="button"
-                onClick={() => setType('transfer')}
+                onClick={() => setType('expense')}
+                className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                  type === 'expense'
+                    ? 'bg-[var(--coral)]/15 text-[var(--coral)]'
+                    : 'text-[var(--text2)] hover:text-[var(--text)]'
+                }`}
+              >
+                <ArrowDownRight size={14} strokeWidth={2.2} />
+                Gasto
+              </button>
+            )}
+            {(!isEdit || !isTransfer) && (
+              <button
+                type="button"
+                onClick={() => setType('income')}
+                className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                  type === 'income'
+                    ? 'gradient-bg text-[#0B0B0C]'
+                    : 'text-[var(--text2)] hover:text-[var(--text)]'
+                }`}
+              >
+                <ArrowUpRight size={14} strokeWidth={2.2} />
+                Ingreso
+              </button>
+            )}
+            {(!isEdit || isTransfer) && (
+              <button
+                type="button"
+                onClick={() => !isEdit && setType('transfer')}
+                disabled={isEdit && isTransfer}
                 className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   isTransfer
                     ? 'bg-[var(--info)]/15 text-[var(--info)]'

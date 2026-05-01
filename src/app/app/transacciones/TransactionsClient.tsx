@@ -91,6 +91,8 @@ export interface ListTransaction {
   memo: string | null
   is_split: boolean
   is_transfer: boolean
+  /** When is_transfer=true, the OTHER side's account id. */
+  transfer_account_id: string | null
   subtransactions: ListSubtransaction[]
 }
 
@@ -113,24 +115,42 @@ interface Props {
   filters: FilterState
 }
 
-const toInitial = (t: ListTransaction): InitialTransaction => ({
-  id: t.id,
-  type: t.amount >= 0 ? 'income' : 'expense',
-  date: t.date,
-  accountId: t.account_id,
-  categoryId: t.category_id,
-  payeeName: t.payee_name ?? '',
-  amount: Math.abs(t.amount),
-  memo: t.memo,
-  splits:
-    t.is_split && t.subtransactions.length >= 2
-      ? t.subtransactions.map((s) => ({
-          categoryId: s.category_id,
-          amount: Math.abs(s.amount),
-          memo: s.memo,
-        }))
-      : undefined,
-})
+const toInitial = (t: ListTransaction): InitialTransaction => {
+  if (t.is_transfer) {
+    // For transfer edits, treat the SOURCE leg (negative amount) as the
+    // "from" so the form's accountId/toAccountId match user mental model.
+    const isSource = t.amount < 0
+    return {
+      id: t.id,
+      type: 'transfer',
+      date: t.date,
+      accountId: isSource ? t.account_id : (t.transfer_account_id ?? t.account_id),
+      toAccountId: isSource ? (t.transfer_account_id ?? '') : t.account_id,
+      categoryId: null,
+      payeeName: t.payee_name ?? '',
+      amount: Math.abs(t.amount),
+      memo: t.memo,
+    }
+  }
+  return {
+    id: t.id,
+    type: t.amount >= 0 ? 'income' : 'expense',
+    date: t.date,
+    accountId: t.account_id,
+    categoryId: t.category_id,
+    payeeName: t.payee_name ?? '',
+    amount: Math.abs(t.amount),
+    memo: t.memo,
+    splits:
+      t.is_split && t.subtransactions.length >= 2
+        ? t.subtransactions.map((s) => ({
+            categoryId: s.category_id,
+            amount: Math.abs(s.amount),
+            memo: s.memo,
+          }))
+        : undefined,
+  }
+}
 
 export function TransactionsClient({
   transactions,
@@ -438,10 +458,8 @@ export function TransactionsClient({
                   <li key={t.id} className={dimmed}>
                     {/* Mobile card layout (<md) */}
                     <div
-                      onClick={() => !t.is_transfer && setEditing(t)}
-                      className={`md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.04] transition-colors ${
-                        t.is_transfer ? 'cursor-default' : 'cursor-pointer'
-                      }`}
+                      onClick={() => setEditing(t)}
+                      className="md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.04] transition-colors cursor-pointer"
                     >
                       <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0 mt-0.5">
                         {t.is_transfer ? (
@@ -514,10 +532,8 @@ export function TransactionsClient({
 
                     {/* Desktop table row (md+) */}
                     <div
-                      onClick={() => !t.is_transfer && setEditing(t)}
-                      className={`hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors ${
-                        t.is_transfer ? 'cursor-default' : 'cursor-pointer'
-                      }`}
+                      onClick={() => setEditing(t)}
+                      className="hidden md:grid grid-cols-[80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer"
                     >
                       <div className="text-[12px] text-[var(--muted)] tabular-nums num">
                         {formatDate(t.date)}
