@@ -3,11 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { MetasClient, type ListGoal } from './MetasClient'
 import type { CategoryOption } from './GoalFormModal'
 import type { GoalType } from './actions'
+import { currentMonthDR } from '@/lib/dates'
 
-const currentMonth = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
+const currentMonth = currentMonthDR
 
 export default async function MetasPage() {
   const supabase = await createClient()

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { todayISODR } from '@/lib/dates'
 
 export type Frequency =
   | 'once'
@@ -292,7 +293,7 @@ export async function materializeDue(budgetId: string) {
     .single()
   if (!budget) return { created: 0 }
 
-  const today = toISO(new Date())
+  const today = todayISODR()
 
   const { data: due } = await supabase
     .from('scheduled_transactions')

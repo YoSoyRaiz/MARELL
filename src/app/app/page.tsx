@@ -21,21 +21,10 @@ import { DonutChart } from './DonutChart'
 import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
 import { materializeDue } from './programadas/actions'
+import { currentMonthDR, monthBoundsISO } from '@/lib/dates'
 
-const currentMonth = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-const monthBounds = (month: string) => {
-  const [y, m] = month.split('-').map(Number)
-  const first = `${y}-${String(m).padStart(2, '0')}-01`
-  const last = new Date(y, m, 0)
-  const lastStr = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(
-    last.getDate(),
-  ).padStart(2, '0')}`
-  return { first, last: lastStr }
-}
+const currentMonth = currentMonthDR
+const monthBounds = monthBoundsISO
 
 const MONTH_NAMES = [
   'Enero',

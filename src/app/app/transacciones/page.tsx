@@ -7,21 +7,10 @@ import {
   type CategoryOption,
   type FilterState,
 } from './TransactionsClient'
+import { currentMonthDR, monthBoundsISO } from '@/lib/dates'
 
-const currentMonth = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-const monthBounds = (month: string) => {
-  const [y, m] = month.split('-').map(Number)
-  const first = `${y}-${String(m).padStart(2, '0')}-01`
-  const last = new Date(y, m, 0)
-  const lastStr = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(
-    last.getDate(),
-  ).padStart(2, '0')}`
-  return { first, last: lastStr }
-}
+const currentMonth = currentMonthDR
+const monthBounds = monthBoundsISO
 
 const isValidMonth = (s: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
 

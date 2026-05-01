@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppShell } from './AppShell'
+import { currentMonthDR } from '@/lib/dates'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -42,8 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       .filter((a) => cashTypes.includes(a.type as string))
       .reduce((s, a) => s + Number(a.balance), 0)
 
-    const now = new Date()
-    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const month = currentMonthDR()
     const { data: assignments } = await supabase
       .from('monthly_assignments')
       .select('assigned')
