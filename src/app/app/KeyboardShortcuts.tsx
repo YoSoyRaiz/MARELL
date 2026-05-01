@@ -27,9 +27,22 @@ const HELP_LIST: ShortcutDef[] = [
   { keys: 'g  m', label: 'Ir a Metas' },
   { keys: 'g  s', label: 'Ir a Programadas' },
   { keys: 'g  e', label: 'Ir a Reflejo' },
+  { keys: 'n', label: 'Nueva transacción' },
+  { keys: 'a', label: 'Asignar dinero' },
   { keys: '?', label: 'Mostrar atajos' },
   { keys: 'Esc', label: 'Cerrar diálogos' },
 ]
+
+/**
+ * Custom-event names the shortcut handler dispatches. Components mount
+ * a window listener for the events relevant to them — only one handler
+ * should be active per page (TopBar for assign, the active page for
+ * new-transaction).
+ */
+export const SHORTCUT_EVENTS = {
+  newTransaction: 'marell:new-transaction',
+  assignMoney: 'marell:assign-money',
+} as const
 
 const PREFIX_TIMEOUT_MS = 1200
 
@@ -93,6 +106,18 @@ export function KeyboardShortcuts() {
       if (k === 'g') {
         prefix = 'g'
         prefixTimer = window.setTimeout(clearPrefix, PREFIX_TIMEOUT_MS)
+        return
+      }
+
+      if (k === 'n') {
+        e.preventDefault()
+        window.dispatchEvent(new CustomEvent(SHORTCUT_EVENTS.newTransaction))
+        return
+      }
+
+      if (k === 'a') {
+        e.preventDefault()
+        window.dispatchEvent(new CustomEvent(SHORTCUT_EVENTS.assignMoney))
         return
       }
     }

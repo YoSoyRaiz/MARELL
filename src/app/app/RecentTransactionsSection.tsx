@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { TransactionFormModal } from './transacciones/TransactionFormModal'
 import { ImportTransactionsModal } from './transacciones/ImportTransactionsModal'
+import { SHORTCUT_EVENTS } from './KeyboardShortcuts'
 import { useFormatMoney } from './CurrencyProvider'
 
 export interface RecentTxn {
@@ -48,6 +49,15 @@ export function RecentTransactionsSection({
   const [importOpen, setImportOpen] = useState(false)
   const canAdd = accounts.length > 0
   const fmtMoney = useFormatMoney()
+
+  // "n" anywhere on Resumen opens the new-transaction modal here.
+  useEffect(() => {
+    const onNewKey = () => {
+      if (canAdd) setAddOpen(true)
+    }
+    window.addEventListener(SHORTCUT_EVENTS.newTransaction, onNewKey)
+    return () => window.removeEventListener(SHORTCUT_EVENTS.newTransaction, onNewKey)
+  }, [canAdd])
 
   return (
     <>

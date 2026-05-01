@@ -22,6 +22,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { ImportTransactionsModal } from './ImportTransactionsModal'
 import { BulkActionBar } from './BulkActionBar'
+import { SHORTCUT_EVENTS } from '../KeyboardShortcuts'
 import { deleteTransaction } from './actions'
 import { useFormatMoney } from '../CurrencyProvider'
 
@@ -172,6 +173,16 @@ export function TransactionsClient({
   const [, startDelete] = useTransition()
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  // "n" anywhere on /transacciones opens a fresh new-transaction modal.
+  useEffect(() => {
+    const onNewKey = () => {
+      setEditing(null)
+      setAddOpen(true)
+    }
+    window.addEventListener(SHORTCUT_EVENTS.newTransaction, onNewKey)
+    return () => window.removeEventListener(SHORTCUT_EVENTS.newTransaction, onNewKey)
+  }, [])
 
   const toggleSelected = (id: string) => {
     setSelected((prev) => {

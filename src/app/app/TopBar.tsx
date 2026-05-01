@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Menu, Search, ArrowRight, ChevronDown } from 'lucide-react'
 import { AnimatedNumber } from './plan/AnimatedNumber'
@@ -8,6 +8,7 @@ import { useReadyToAssign } from './ReadyToAssignProvider'
 import { useMobileNav } from './MobileNavProvider'
 import { useFormatMoney } from './CurrencyProvider'
 import { AssignPopover } from './AssignPopover'
+import { SHORTCUT_EVENTS } from './KeyboardShortcuts'
 
 interface TopBarProps {
   displayName: string | null
@@ -23,6 +24,13 @@ export function TopBar({ displayName }: TopBarProps) {
   const [query, setQuery] = useState('')
   const [assignOpen, setAssignOpen] = useState(false)
   const assignTriggerRef = useRef<HTMLDivElement>(null)
+
+  // Listen for the global "a" keyboard shortcut to open the popover.
+  useEffect(() => {
+    const onAssignKey = () => setAssignOpen((v) => !v)
+    window.addEventListener(SHORTCUT_EVENTS.assignMoney, onAssignKey)
+    return () => window.removeEventListener(SHORTCUT_EVENTS.assignMoney, onAssignKey)
+  }, [])
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault()
