@@ -6,7 +6,7 @@ const navItems = [
   { label: 'Cómo funciona', href: '#como-funciona' },
   { label: 'El problema', href: '#problema' },
   { label: 'Control total', href: '#producto' },
-  { label: 'Solución', href: '#cta' },
+  { label: 'Descargar app', href: '#descargar' },
 ]
 
 export function LandingHeader() {
