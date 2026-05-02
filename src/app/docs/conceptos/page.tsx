@@ -96,9 +96,11 @@ export default function Conceptos() {
         <strong>Por asignar</strong> o moviendo dinero desde otra categoría.
       </p>
 
-      <h2>5. La filosofía YNAB adaptada a RD</h2>
+      <h2>5. Las cuatro reglas del modelo saludable</h2>
       <p>
-        MARELL sigue las cuatro reglas de YNAB, traducidas:
+        MARELL sigue cuatro reglas probadas — el modelo financiero
+        saludable que generaciones han usado para vivir tranquilas con su
+        dinero. Las trajimos al contexto dominicano y al móvil de hoy:
       </p>
       <ol>
         <li>

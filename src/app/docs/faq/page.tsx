@@ -13,14 +13,23 @@ export default function FaqDocs() {
       }
       lead="Las dudas más comunes que recibimos. Si no encuentras la tuya, escríbenos a soporte@marell.app."
     >
-      <h2>¿Cómo se diferencia MARELL de YNAB?</h2>
+      <h2>¿Por qué MARELL y no otra app de presupuesto?</h2>
       <p>
-        MARELL toma la filosofía de YNAB ("dale trabajo a cada peso") y la
-        adapta a República Dominicana: pesos como moneda principal, formato
-        de fecha local, soporte para tarjetas de crédito en RD$, integración
-        con BCRD para tasas, calculadoras de salario/ISR/cesantía
-        dominicanas, y precio en DOP. Todo el cuerpo de la app está en
-        español.
+        Tomamos el <strong>modelo financiero saludable</strong> que ya tiene
+        décadas de evidencia — darle un trabajo a cada peso, vivir con lo
+        del mes pasado, ajustar sin culpa — y lo construimos para tu
+        realidad: pesos como moneda principal, fecha DD/MM/YYYY, ITBIS,
+        tarjetas de crédito en RD$, integración con BCRD para tasas,
+        calculadoras de salario/ISR/cesantía dominicanas, todo en español, y
+        precio en DOP. Sin pelearle al sistema, sin traducir mentalmente, y
+        sin pagar en dólares.
+      </p>
+      <p>
+        Pero más importante: lo modernizamos. Recibos por foto que se leen
+        solos, notificaciones push que te recuerdan reconciliar, modo
+        offline cuando se va el internet, y un FAB que registra una
+        transacción en 4 toques desde la pantalla bloqueada. La filosofía es
+        clásica; la experiencia es de 2026.
       </p>
 
       <h2>¿Mis datos están seguros?</h2>
@@ -66,9 +75,9 @@ export default function FaqDocs() {
         cumplirse el período.
       </p>
 
-      <h2>¿Puedo importar de YNAB / Mint?</h2>
+      <h2>¿Puedo importar mi historial desde otra app?</h2>
       <p>
-        Sí. Exporta tus datos a CSV desde YNAB / Mint y úsalos en{' '}
+        Sí. Exporta tus datos a CSV desde donde los tengas y úsalos en{' '}
         <code>/app/transacciones</code> → Importar. El formato es genérico
         (fecha, descripción, monto) y MARELL detecta duplicados antes de
         insertar.

@@ -82,8 +82,8 @@ export default function Empezar() {
 
       <h2>Si vienes de otra app</h2>
       <p>
-        ¿Usabas YNAB, Mint, una hoja de Excel u otra app? MARELL tiene{' '}
-        <strong>importación CSV</strong> para traer tu historial. Ve a
+        ¿Manejabas tus finanzas en otra app o en una hoja de Excel? MARELL
+        tiene <strong>importación CSV</strong> para traer tu historial. Ve a
         Movimientos → Importar y carga el archivo. El mapeo de columnas se
         autocompleta y solo confirmas.
       </p>

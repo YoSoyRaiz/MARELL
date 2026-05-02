@@ -43,9 +43,11 @@ export default function AnalisisDocs() {
 
       <h2>Age of Money</h2>
       <p>
-        El reporte estrella de YNAB. Mide cuántos días en promedio pasa cada
+        El reporte que separa a quien <em>tiene</em> dinero de quien{' '}
+        <em>vive con</em> dinero. Mide cuántos días en promedio pasa cada
         peso en tus cuentas antes de gastarlo. Más alto = más colchón = más
-        libertad. La meta a largo plazo es 30+ días.
+        libertad. La meta a largo plazo es 30+ días — vivir hoy con lo que
+        ganaste el mes pasado.
       </p>
 
       <h2>Filtros y exportar</h2>

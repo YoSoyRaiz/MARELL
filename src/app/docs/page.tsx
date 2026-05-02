@@ -36,8 +36,8 @@ export default function DocsHome() {
           </h2>
           <p className="mt-2 text-[14px] text-[var(--text2)] leading-relaxed">
             Si nunca has presupuestado antes, empieza por{' '}
-            <Link href="/docs/conceptos">Conceptos básicos</Link>. Si vienes de
-            YNAB, Mint o una hoja de Excel, salta a{' '}
+            <Link href="/docs/conceptos">Conceptos básicos</Link>. Si vienes
+            de otra app o de una hoja de Excel, salta a{' '}
             <Link href="/docs/empezar">Cómo empezar</Link>.
           </p>
           <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
@@ -102,12 +102,24 @@ export default function DocsHome() {
         </FeatureCard>
       </FeatureGrid>
 
-      <h2>Cómo está construida MARELL</h2>
+      <h2>Nuestra filosofía</h2>
       <p>
-        MARELL adopta el método YNAB (Give Every Dollar a Job) y lo adapta al
-        contexto dominicano: peso como moneda principal, formato de fecha
-        DD/MM/YYYY, ITBIS, soporte nativo de tarjetas de crédito en pesos, y
-        herramientas de cálculo locales.
+        Tomamos lo mejor del <strong>modelo financiero saludable</strong>{' '}
+        que ya probó funcionar — darle un trabajo a cada peso, vivir con lo
+        que ganaste el mes pasado, ajustar sin culpa — y lo trajimos al
+        mundo de hoy. Sin hojas de cálculo gigantes, sin apps en inglés que
+        cobran en dólares, sin fórmulas hechas para otra economía.
+      </p>
+      <p>
+        MARELL es para el bolsillo dominicano: peso como moneda principal,
+        fecha DD/MM/YYYY, ITBIS, tarjetas de crédito en pesos, salario neto
+        con TSS e ISR locales, y una interfaz en español pensada para cómo
+        usamos el celular hoy — recibos por foto, notificaciones push, modo
+        offline, y un FAB que registra una transacción en 4 toques.
+      </p>
+      <p>
+        Tu dinero merece un sistema que entienda tu realidad, no uno que te
+        haga adaptarte a la suya.
       </p>
 
       <Callout tone="tip" title="¿Apenas estás empezando?">
