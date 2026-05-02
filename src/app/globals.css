@@ -240,6 +240,107 @@
   }
 }
 
+/* ─────────────────────────────────────────────
+   Docs prose — content typography for /docs
+   ───────────────────────────────────────────── */
+.docs-prose {
+  color: var(--text);
+  font-size: 15.5px;
+  line-height: 1.75;
+}
+.docs-prose > * + * { margin-top: 1.1em; }
+.docs-prose h2 {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-top: 2.4em;
+  margin-bottom: 0.6em;
+  scroll-margin-top: 96px;
+}
+.docs-prose h3 {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin-top: 1.8em;
+  margin-bottom: 0.4em;
+  scroll-margin-top: 96px;
+}
+.docs-prose h2 + h3 { margin-top: 0.8em; }
+.docs-prose p { color: var(--text2); }
+.docs-prose strong { color: var(--text); font-weight: 600; }
+.docs-prose a {
+  color: var(--brand-2);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-2) 35%, transparent);
+  transition: border-color .15s;
+}
+.docs-prose a:hover { border-bottom-color: var(--brand-2); }
+.docs-prose ul, .docs-prose ol {
+  padding-left: 1.4em;
+  color: var(--text2);
+}
+.docs-prose ul { list-style-type: disc; }
+.docs-prose ol { list-style-type: decimal; }
+.docs-prose li + li { margin-top: 0.35em; }
+.docs-prose li::marker { color: var(--brand-2); }
+.docs-prose code:not(pre code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88em;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.docs-prose pre {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text);
+}
+.docs-prose blockquote {
+  border-left: 3px solid var(--brand-2);
+  padding-left: 1em;
+  color: var(--text2);
+  font-style: italic;
+}
+.docs-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.4em 0;
+}
+.docs-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 1.4em 0;
+}
+.docs-prose th, .docs-prose td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.docs-prose th {
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(255,255,255,0.02);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+/* Numbered step bullets — counter-based so the index is automatic. */
+.docs-article ol.list-none.counter-reset-step { counter-reset: step; }
+.doc-step { counter-increment: step; }
+.doc-step .doc-step-bullet::before {
+  content: counter(step);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .01ms !important;
