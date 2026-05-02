@@ -2,9 +2,10 @@ import { Logo } from '@/components/ui/Logo'
 
 /**
  * Splash screen shown while the /app subtree streams server data on
- * first load (and on slow navigations between segments). Mirrors the
- * mobile mockup: centered logo + the brand tagline + a thin animated
- * progress bar at the bottom.
+ * first load (and on slow navigations between segments). Centered
+ * logo + tagline + three subtle pulsing dots — no full-width gradient
+ * bar that could stack visually with hot-reload indicators or extend
+ * past the viewport on small screens.
  *
  * Next.js renders this automatically as a Suspense boundary fallback;
  * we don't import it anywhere.
@@ -12,27 +13,27 @@ import { Logo } from '@/components/ui/Logo'
 export default function AppLoading() {
   return (
     <div className="fixed inset-0 z-40 bg-[var(--bg)] flex flex-col items-center justify-center px-8">
-      <div className="flex flex-col items-center gap-4 mb-12">
+      <div className="flex flex-col items-center gap-4">
         <Logo variant="icon" height={72} />
-        <div className="flex items-center gap-2">
-          <span className="text-[20px] font-bold tracking-[0.2em] text-[var(--text)]">
-            MARELL
-          </span>
-        </div>
+        <span className="text-[20px] font-bold tracking-[0.2em] text-[var(--text)]">
+          MARELL
+        </span>
       </div>
-      <div className="text-center space-y-1">
+      <div className="text-center space-y-1 mt-6">
         <p className="text-[14px] text-[var(--text)] font-medium">
           Tu dinero. Tu futuro.
         </p>
         <p className="text-[12px] text-[var(--muted)]">Bajo control.</p>
       </div>
-      <div className="absolute bottom-16 inset-x-12 h-[2px] rounded-full bg-white/[0.06] overflow-hidden">
-        <div className="h-full w-1/3 gradient-bg animate-[loading_1.4s_ease-in-out_infinite]" />
+      <div className="mt-10 flex items-center gap-2" aria-label="Cargando">
+        <span className="w-2 h-2 rounded-full gradient-bg animate-[marellDot_1.2s_ease-in-out_infinite] [animation-delay:0s]" />
+        <span className="w-2 h-2 rounded-full gradient-bg animate-[marellDot_1.2s_ease-in-out_infinite] [animation-delay:0.2s]" />
+        <span className="w-2 h-2 rounded-full gradient-bg animate-[marellDot_1.2s_ease-in-out_infinite] [animation-delay:0.4s]" />
       </div>
       <style>
-        {`@keyframes loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(400%); }
+        {`@keyframes marellDot {
+          0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+          40% { opacity: 1; transform: scale(1); }
         }`}
       </style>
     </div>
