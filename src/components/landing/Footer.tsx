@@ -50,7 +50,6 @@ const columns = [
   {
     heading: 'Aprende',
     links: [
-      { label: 'Documentación',     href: '/docs' },
       { label: 'Empezar gratis',    href: '/signup' },
       { label: 'Cómo funciona',     href: '#como-funciona' },
       { label: 'Iniciar sesión',    href: '/login' },
