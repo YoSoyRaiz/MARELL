@@ -24,9 +24,22 @@ export function Step19AccountForm() {
   const [type, setType] = useState<AccountType | null>(null)
   const [balance, setBalance] = useState<number | null>(null)
   const [interestRate, setInterestRate] = useState<number | null>(null)
+  const [cycleCloseDay, setCycleCloseDay] = useState<string>('')
 
   const isDebt = type ? isDebtType(type) : false
-  const valid = name.trim().length > 0 && type !== null && balance !== null
+  const isCreditCard = type === 'credit_card'
+  const cycleCloseDayNum =
+    cycleCloseDay.trim() === '' ? null : Number(cycleCloseDay)
+  const cycleCloseDayValid =
+    cycleCloseDayNum === null ||
+    (Number.isInteger(cycleCloseDayNum) &&
+      cycleCloseDayNum >= 1 &&
+      cycleCloseDayNum <= 31)
+  const valid =
+    name.trim().length > 0 &&
+    type !== null &&
+    balance !== null &&
+    cycleCloseDayValid
 
   const submit = () => {
     if (!valid || type === null || balance === null) return
@@ -36,6 +49,8 @@ export function Step19AccountForm() {
       type,
       balance,
       interestRate: isDebt && interestRate !== null ? interestRate : undefined,
+      cycleCloseDay:
+        isCreditCard && cycleCloseDayNum !== null ? cycleCloseDayNum : undefined,
     }
     setAnswer('accounts', [...accounts, account])
     next()
@@ -106,6 +121,36 @@ export function Step19AccountForm() {
             <p className="text-[12px] text-[var(--muted)] mt-2 leading-relaxed">
               Con esto podemos calcular cuánto te toma pagar la deuda.
             </p>
+          </div>
+        )}
+
+        {/* Día de corte (solo tarjeta de crédito) */}
+        {isCreditCard && (
+          <div className="animate-step">
+            <label className="block text-[13px] text-[var(--text2)] font-medium mb-2">
+              Día de corte{' '}
+              <span className="text-[var(--muted)] font-normal">(opcional)</span>
+            </label>
+            <input
+              type="number"
+              inputMode="numeric"
+              step="1"
+              min="1"
+              max="31"
+              value={cycleCloseDay}
+              onChange={(e) => setCycleCloseDay(e.target.value)}
+              placeholder="20"
+              className="w-full !text-[16px] !py-3.5 !px-4 !rounded-xl tabular-nums num"
+            />
+            <p className="text-[12px] text-[var(--muted)] mt-2 leading-relaxed">
+              Día del mes en que cierra el estado de cuenta (1–31). Te avisamos
+              antes de cada corte.
+            </p>
+            {!cycleCloseDayValid && (
+              <p className="text-[12px] text-[var(--coral)] mt-1.5">
+                Debe ser un número entre 1 y 31.
+              </p>
+            )}
           </div>
         )}
       </div>
