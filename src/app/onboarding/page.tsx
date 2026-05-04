@@ -43,5 +43,10 @@ export default async function OnboardingPage() {
     }
   }
 
-  return <OnboardingWizardClient initialName={profile?.display_name ?? null} />
+  return (
+    <OnboardingWizardClient
+      initialName={profile?.display_name ?? null}
+      userId={user.id}
+    />
+  )
 }

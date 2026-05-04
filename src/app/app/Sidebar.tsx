@@ -23,6 +23,7 @@ import {
 import { Logo } from '@/components/ui/Logo'
 import { logout } from '@/app/(auth)/actions'
 import { resetOnboarding } from '@/app/onboarding/actions'
+import { useOnboardingStore } from '@/app/onboarding/wizard/store'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { useMobileNav } from './MobileNavProvider'
 
@@ -99,6 +100,10 @@ export function Sidebar({
       tone: 'danger',
     })
     if (!ok) return
+    // Clear the persisted wizard state in this browser so the user
+    // lands on step 0 instead of the last step they finished. The DB
+    // wipe happens server-side; this clears the client mirror.
+    useOnboardingStore.getState().reset()
     startReset(async () => {
       const r = await resetOnboarding()
       if (!r || !('error' in r) || !r.error) {
