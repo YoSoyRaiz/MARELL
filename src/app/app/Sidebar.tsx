@@ -92,10 +92,10 @@ export function Sidebar({
   const handleReset = async () => {
     setMenuOpen(false)
     const ok = await confirm({
-      title: '¿Rehacer el onboarding?',
+      title: '¿Borrar todo y rehacer el onboarding?',
       description:
-        'Esto borra tu plan actual (categorías, cuentas, asignaciones) y te lleva de vuelta al wizard. No se puede deshacer.',
-      confirmLabel: 'Borrar y rehacer',
+        'Esto elimina permanentemente TODOS tus registros: presupuestos, categorías, cuentas, transacciones, metas, programadas, fotos de recibos y el contador mensual de OCR. Quedas como un usuario nuevo. No se puede deshacer.',
+      confirmLabel: 'Sí, borrar todo',
       tone: 'danger',
     })
     if (!ok) return

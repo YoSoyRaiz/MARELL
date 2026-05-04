@@ -217,11 +217,40 @@ export async function resetOnboarding() {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  // Borrar todos los budgets del user (cascade limpia el resto).
-  const { error: dErr } = await supabase.from('budgets').delete().eq('created_by', user.id)
+  // 1. Borrar TODAS las fotos de recibos del bucket. El cascade en DB
+  //    no toca Storage, así que borramos manualmente antes de tirar
+  //    los budgets (mientras todavía podemos asociar archivos a este
+  //    usuario).
+  try {
+    const { data: files } = await supabase.storage
+      .from('receipts')
+      .list(user.id, { limit: 1000 })
+    if (files && files.length > 0) {
+      const paths = files.map((f) => `${user.id}/${f.name}`)
+      // Failures here son no fatales — el archivo huérfano queda y
+      // ocupa espacio, pero la cuenta del usuario ya quedó limpia.
+      await supabase.storage.from('receipts').remove(paths)
+    }
+  } catch {
+    // Continúa con el reset aunque storage falle.
+  }
+
+  // 2. Borrar todos los budgets del user. ON DELETE CASCADE en DB se
+  //    encarga de category_groups, categories, accounts, transactions,
+  //    monthly_assignments, scheduled_transactions, budget_members y
+  //    budget_invitations.
+  const { error: dErr } = await supabase
+    .from('budgets')
+    .delete()
+    .eq('created_by', user.id)
   if (dErr) return { error: dErr.message }
 
-  // Resetear el flag de onboarded para que /onboarding deje pasar.
+  // 3. Resetear el contador mensual de OCR para que la cuenta nueva
+  //    arranque con su cupo intacto. La tabla está keyed por user, no
+  //    por budget, así que el cascade no la toca.
+  await supabase.from('receipt_ocr_usage').delete().eq('user_id', user.id)
+
+  // 4. Resetear el flag de onboarded para que /onboarding deje pasar.
   const { error: pErr } = await supabase
     .from('profiles')
     .update({ onboarded: false })
