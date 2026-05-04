@@ -83,6 +83,10 @@ type Account = {
   sort_order: number
   note: string | null
   created_at: string
+  /** APR percent, e.g. 36.50. Optional. Used for credit cards and loans. */
+  interest_rate_apr: number | null
+  /** Day-of-month (1-31) when the credit card cycle closes. Optional. */
+  cycle_close_day: number | null
 }
 
 type CategoryGroup = {

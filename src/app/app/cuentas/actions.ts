@@ -29,6 +29,11 @@ export interface AccountInput {
   type: AccountType
   balance: number // user-entered absolute value; sign is handled per type
   note: string | null
+  currency?: 'DOP' | 'USD'
+  /** APR percent, optional. */
+  interestRateApr?: number | null
+  /** Day of month 1-31 for credit card statement close. */
+  cycleCloseDay?: number | null
 }
 
 export async function createAccount(input: AccountInput) {
@@ -71,11 +76,17 @@ export async function createAccount(input: AccountInput) {
     budget_id: budget.id,
     name: input.name.trim(),
     type: input.type as string,
-    currency: 'DOP',
+    currency: input.currency ?? 'DOP',
     balance: Math.round(balance * 100) / 100,
     is_budget_account: !isTracking,
     sort_order: nextSort,
     note: input.note?.trim() || null,
+    interest_rate_apr:
+      input.interestRateApr != null
+        ? Math.round(input.interestRateApr * 100) / 100
+        : null,
+    cycle_close_day:
+      input.cycleCloseDay != null ? Math.trunc(input.cycleCloseDay) : null,
   } as never
 
   const { error } = await supabase.from('accounts').insert(insertRow)
@@ -127,9 +138,16 @@ export async function updateAccount(input: UpdateAccountInput) {
   const updates = {
     name: input.name.trim(),
     type: input.type as string,
+    currency: input.currency ?? 'DOP',
     balance: Math.round(balance * 100) / 100,
     is_budget_account: !isTracking,
     note: input.note?.trim() || null,
+    interest_rate_apr:
+      input.interestRateApr != null
+        ? Math.round(input.interestRateApr * 100) / 100
+        : null,
+    cycle_close_day:
+      input.cycleCloseDay != null ? Math.trunc(input.cycleCloseDay) : null,
   } as never
 
   const { error } = await supabase

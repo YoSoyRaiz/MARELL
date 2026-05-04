@@ -11,6 +11,8 @@ import {
   Archive,
   Scale,
   Unlock,
+  Pencil,
+  ChevronDown,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { unreconcileAccount } from './actions'
@@ -23,15 +25,24 @@ import {
 } from '@/app/onboarding/wizard/types'
 import { labelForAccountType } from '@/app/onboarding/wizard/components/AccountTypeSelect'
 import { AccountFormModal, type InitialAccount } from './AccountFormModal'
+import { AccountTransactionsDropdown } from './AccountTransactionsDropdown'
 import { useFormatMoney } from '../CurrencyProvider'
 
 export interface ListAccount {
   id: string
   name: string
   type: AccountType
+  /** Balance in the account's native currency. Already signed
+   *  (negative for debts). */
   balance: number
   note: string | null
   closed: boolean
+  /** 'DOP' or 'USD'. USD balances are converted to DOP for totals. */
+  currency: 'DOP' | 'USD'
+  /** APR percent — credit cards / loans. */
+  interestRateApr: number | null
+  /** Day-of-month (1-31) — credit card statement close. */
+  cycleCloseDay: number | null
 }
 
 interface CategoryBlock {
@@ -51,15 +62,25 @@ const CATEGORY_BLOCKS: CategoryBlock[] = [
 interface Props {
   accounts: ListAccount[]
   hasBudget: boolean
+  /** Latest BCRD-published USD→DOP rate. Used to convert USD account
+   *  balances into DOP for the totals shown in this view. */
+  usdToDopRate: number
 }
 
-export function CuentasClient({ accounts, hasBudget }: Props) {
+// Convert any account balance to DOP for total math. USD accounts use
+// the supplied BCRD rate; DOP accounts pass through unchanged.
+function toDop(amount: number, currency: 'DOP' | 'USD', rate: number): number {
+  return currency === 'USD' ? amount * rate : amount
+}
+
+export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
   const router = useRouter()
   const confirm = useConfirm()
   const [, startUnreconcile] = useTransition()
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<ListAccount | null>(null)
   const [reconciling, setReconciling] = useState<ListAccount | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const fmtMoney = useFormatMoney()
 
   const handleUnreconcile = async (a: ListAccount) => {
@@ -82,9 +103,11 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
     items: accounts.filter((a) => accountCategoryFromType(a.type) === block.key),
   }))
 
+  // All totals are computed in DOP — USD balances are converted using
+  // the BCRD rate so the user sees a single consolidated number.
   const totalCash = accounts
     .filter((a) => accountCategoryFromType(a.type) === 'cash' && !a.closed)
-    .reduce((s, a) => s + a.balance, 0)
+    .reduce((s, a) => s + toDop(a.balance, a.currency, usdToDopRate), 0)
   const totalDebt = accounts
     .filter(
       (a) =>
@@ -92,10 +115,13 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
           accountCategoryFromType(a.type) === 'loan') &&
         !a.closed,
     )
-    .reduce((s, a) => s + Math.abs(a.balance), 0)
+    .reduce(
+      (s, a) => s + Math.abs(toDop(a.balance, a.currency, usdToDopRate)),
+      0,
+    )
   const totalAssets = accounts
     .filter((a) => accountCategoryFromType(a.type) === 'tracking' && !a.closed)
-    .reduce((s, a) => s + a.balance, 0)
+    .reduce((s, a) => s + toDop(a.balance, a.currency, usdToDopRate), 0)
   const netWorth = totalCash + totalAssets - totalDebt
 
   const isEmpty = accounts.length === 0
@@ -172,11 +198,12 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
               .map((g) => {
                 const groupTotal = g.items
                   .filter((a) => !a.closed)
-                  .reduce(
-                    (s, a) =>
-                      s + (g.key === 'credit' || g.key === 'loan' ? Math.abs(a.balance) : a.balance),
-                    0,
-                  )
+                  .reduce((s, a) => {
+                    const dop = toDop(a.balance, a.currency, usdToDopRate)
+                    return (
+                      s + (g.key === 'credit' || g.key === 'loan' ? Math.abs(dop) : dop)
+                    )
+                  }, 0)
                 const totalLabel =
                   g.key === 'credit' || g.key === 'loan'
                     ? `−${fmtMoney(groupTotal)}`
@@ -225,74 +252,127 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
                         const canReconcile =
                           !a.closed &&
                           (cashTypes.includes(a.type) || debtTypes.includes(a.type))
+                        const isExpanded = expandedId === a.id
+                        // Show the account balance in its native currency.
+                        // The header total above already aggregates in DOP.
+                        const currencySymbol = a.currency === 'USD' ? 'US$' : 'RD$'
+                        const balanceText = `${a.balance < 0 ? '−' : ''}${currencySymbol}${Math.abs(
+                          a.balance,
+                        ).toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}`
                         return (
-                          <li
-                            key={a.id}
-                            onClick={() => setEditing(a)}
-                            className={`px-5 py-3.5 flex items-center gap-4 cursor-pointer transition-colors ${
-                              a.closed
-                                ? 'opacity-50 hover:bg-white/[0.02]'
-                                : 'hover:bg-white/[0.04]'
-                            }`}
-                          >
-                            <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
-                              <g.Icon size={14} strokeWidth={2} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-[14px] text-[var(--text)] truncate flex items-center gap-2">
-                                {a.name}
-                                {a.closed && (
-                                  <span className="text-[10px] uppercase tracking-[0.15em] text-[var(--muted2)] inline-flex items-center gap-1">
-                                    <Archive size={10} strokeWidth={2} />
-                                    Cerrada
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-[11px] text-[var(--muted)] truncate">
-                                {labelForAccountType(a.type)}
-                                {a.note && <> · {a.note}</>}
-                              </div>
-                            </div>
-                            {canReconcile && (
-                              <div className="shrink-0 inline-flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setReconciling(a)
-                                  }}
-                                  title="Reconciliar contra el banco"
-                                  aria-label={`Reconciliar ${a.name}`}
-                                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text2)] hover:text-[var(--brand-2)] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors"
-                                >
-                                  <Scale size={12} strokeWidth={2.4} />
-                                  <span className="hidden sm:inline">Reconciliar</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleUnreconcile(a)
-                                  }}
-                                  title="Desreconciliar (deshacer la última reconciliación)"
-                                  aria-label={`Desreconciliar ${a.name}`}
-                                  className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] inline-flex items-center justify-center transition-colors"
-                                >
-                                  <Unlock size={12} strokeWidth={2.4} />
-                                </button>
-                              </div>
-                            )}
+                          <li key={a.id} className="contents">
                             <div
-                              className={`text-[15px] tabular-nums num font-semibold shrink-0 ${
-                                isDebt
-                                  ? 'text-[var(--coral)]'
-                                  : a.balance < -0.005
-                                    ? 'text-[var(--coral)]'
-                                    : 'text-[var(--text)]'
-                              }`}
+                              onClick={() =>
+                                setExpandedId(isExpanded ? null : a.id)
+                              }
+                              role="button"
+                              tabIndex={0}
+                              aria-expanded={isExpanded}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  setExpandedId(isExpanded ? null : a.id)
+                                }
+                              }}
+                              className={`px-5 py-3.5 flex items-center gap-4 cursor-pointer transition-colors ${
+                                a.closed
+                                  ? 'opacity-50 hover:bg-white/[0.02]'
+                                  : 'hover:bg-white/[0.04]'
+                              } ${isExpanded ? 'bg-white/[0.03]' : ''}`}
                             >
-                              {fmtMoney(a.balance)}
+                              <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                                <g.Icon size={14} strokeWidth={2} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[14px] text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
+                                  {a.name}
+                                  {a.currency === 'USD' && (
+                                    <span className="text-[9px] uppercase tracking-[0.15em] text-[var(--info)] bg-[rgba(77,168,255,0.12)] px-1.5 py-0.5 rounded">
+                                      USD
+                                    </span>
+                                  )}
+                                  {a.closed && (
+                                    <span className="text-[10px] uppercase tracking-[0.15em] text-[var(--muted2)] inline-flex items-center gap-1">
+                                      <Archive size={10} strokeWidth={2} />
+                                      Cerrada
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[11px] text-[var(--muted)] truncate">
+                                  {labelForAccountType(a.type)}
+                                  {a.interestRateApr != null && <> · {a.interestRateApr.toFixed(2)}% APR</>}
+                                  {a.cycleCloseDay != null && <> · corte día {a.cycleCloseDay}</>}
+                                  {a.note && <> · {a.note}</>}
+                                </div>
+                              </div>
+                              {canReconcile && (
+                                <div className="shrink-0 inline-flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setReconciling(a)
+                                    }}
+                                    title="Reconciliar contra el banco"
+                                    aria-label={`Reconciliar ${a.name}`}
+                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text2)] hover:text-[var(--brand-2)] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors"
+                                  >
+                                    <Scale size={12} strokeWidth={2.4} />
+                                    <span className="hidden sm:inline">Reconciliar</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleUnreconcile(a)
+                                    }}
+                                    title="Desreconciliar (deshacer la última reconciliación)"
+                                    aria-label={`Desreconciliar ${a.name}`}
+                                    className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] inline-flex items-center justify-center transition-colors"
+                                  >
+                                    <Unlock size={12} strokeWidth={2.4} />
+                                  </button>
+                                </div>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setEditing(a)
+                                }}
+                                title="Editar cuenta"
+                                aria-label={`Editar ${a.name}`}
+                                className="shrink-0 w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--brand-2)] hover:bg-white/[0.06] inline-flex items-center justify-center transition-colors"
+                              >
+                                <Pencil size={12} strokeWidth={2.4} />
+                              </button>
+                              <div
+                                className={`text-[15px] tabular-nums num font-semibold shrink-0 ${
+                                  isDebt
+                                    ? 'text-[var(--coral)]'
+                                    : a.balance < -0.005
+                                      ? 'text-[var(--coral)]'
+                                      : 'text-[var(--text)]'
+                                }`}
+                              >
+                                {balanceText}
+                              </div>
+                              <ChevronDown
+                                size={14}
+                                strokeWidth={2.2}
+                                className={`shrink-0 text-[var(--muted)] transition-transform ${
+                                  isExpanded ? 'rotate-180' : ''
+                                }`}
+                              />
                             </div>
+                            <AccountTransactionsDropdown
+                              accountId={a.id}
+                              currency={a.currency}
+                              open={isExpanded}
+                            />
                           </li>
                         )
                       })}
@@ -334,6 +414,9 @@ export function CuentasClient({ accounts, hasBudget }: Props) {
                 balance: editing.balance,
                 note: editing.note,
                 closed: editing.closed,
+                currency: editing.currency,
+                interestRateApr: editing.interestRateApr,
+                cycleCloseDay: editing.cycleCloseDay,
               } satisfies InitialAccount)
             : undefined
         }

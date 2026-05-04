@@ -12,30 +12,52 @@ export default async function CuentasPage() {
 
   const { data: budget } = await supabase
     .from('budgets')
-    .select('id')
+    .select('id, usd_to_dop_rate')
     .eq('created_by', user.id)
     .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle()
 
   if (!budget) {
-    return <CuentasClient accounts={[]} hasBudget={false} />
+    return <CuentasClient accounts={[]} hasBudget={false} usdToDopRate={60} />
   }
 
   const { data: accountsRaw } = await supabase
     .from('accounts')
-    .select('id, name, type, balance, note, closed, sort_order')
+    .select(
+      'id, name, type, balance, note, closed, sort_order, currency, interest_rate_apr, cycle_close_day',
+    )
     .eq('budget_id', budget.id)
     .order('sort_order', { ascending: true })
 
-  const accounts: ListAccount[] = (accountsRaw ?? []).map((a) => ({
-    id: a.id as string,
-    name: a.name as string,
-    type: a.type as AccountType,
-    balance: Number(a.balance),
-    note: (a.note as string | null) ?? null,
-    closed: Boolean(a.closed),
-  }))
+  const accounts: ListAccount[] = (accountsRaw ?? []).map((a) => {
+    const row = a as Record<string, unknown>
+    return {
+      id: row.id as string,
+      name: row.name as string,
+      type: row.type as AccountType,
+      balance: Number(row.balance),
+      note: (row.note as string | null) ?? null,
+      closed: Boolean(row.closed),
+      currency: ((row.currency as string | null) ?? 'DOP') as 'DOP' | 'USD',
+      interestRateApr:
+        row.interest_rate_apr != null ? Number(row.interest_rate_apr) : null,
+      cycleCloseDay:
+        row.cycle_close_day != null ? Number(row.cycle_close_day) : null,
+    }
+  })
 
-  return <CuentasClient accounts={accounts} hasBudget={true} />
+  // The display layer needs to convert USD → DOP for "patrimonio neto" totals.
+  // We pull the rate from the budget row (refreshed daily by the BCRD cron).
+  const usdToDopRate = Number(
+    (budget as { usd_to_dop_rate?: number | null }).usd_to_dop_rate ?? 60,
+  )
+
+  return (
+    <CuentasClient
+      accounts={accounts}
+      hasBudget={true}
+      usdToDopRate={usdToDopRate}
+    />
+  )
 }
