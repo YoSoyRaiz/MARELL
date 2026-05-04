@@ -28,7 +28,6 @@ export type Transport =
   | 'public'
   | 'rideshare'
   | 'motorcycle'
-  | 'wheelchair'
 
 export type RegularSpending =
   | 'groceries'

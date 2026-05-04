@@ -1,6 +1,6 @@
 'use client'
 
-import { Car, Bus, Waypoints, Zap, Bike, Footprints, Accessibility } from 'lucide-react'
+import { Car, Bus, Waypoints, Zap, Bike, Footprints } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { SelectCard } from '../components/SelectCard'
@@ -14,7 +14,6 @@ const OPTIONS: { id: Transport; Icon: LucideIcon; title: string }[] = [
   { id: 'motorcycle', Icon: Zap, title: 'Motor' },
   { id: 'bike', Icon: Bike, title: 'Bicicleta' },
   { id: 'walk', Icon: Footprints, title: 'Camino' },
-  { id: 'wheelchair', Icon: Accessibility, title: 'Silla de ruedas' },
 ]
 
 export function Step08Transport() {
