@@ -110,7 +110,9 @@ export async function completeOnboarding(answers: OnboardingAnswers) {
       }
     }
 
-    // 5. Insertar accounts (sin mapeo: los 13 tipos pasan directo a DB)
+    // 5. Insertar accounts (sin mapeo: los 13 tipos pasan directo a DB).
+    //    Mapea también interestRate y cycleCloseDay si Step19 los recolectó —
+    //    antes se descartaban silenciosamente.
     if (answers.accounts.length > 0) {
       const accountInserts = answers.accounts.map((a, i) => {
         const isDebt = DEBT_TYPES.includes(a.type)
@@ -119,10 +121,18 @@ export async function completeOnboarding(answers: OnboardingAnswers) {
           budget_id: budget.id,
           name: a.name,
           type: a.type,
-          currency: 'DOP',
+          currency: a.currency ?? 'DOP',
           balance: isDebt ? -Math.abs(a.balance) : a.balance,
           is_budget_account: !isTracking,
           sort_order: i,
+          interest_rate_apr:
+            typeof a.interestRate === 'number'
+              ? Math.round(a.interestRate * 100) / 100
+              : null,
+          cycle_close_day:
+            typeof a.cycleCloseDay === 'number'
+              ? Math.trunc(a.cycleCloseDay)
+              : null,
         }
       })
       const { error: aErr } = await supabase.from('accounts').insert(accountInserts)

@@ -87,7 +87,13 @@ export interface AccountInput {
   name: string
   type: AccountType
   balance: number
+  /** APR percent (e.g. 36.50). Persisted as accounts.interest_rate_apr. */
   interestRate?: number
+  /** Day of month 1-31 the credit card cycle closes. Persisted as
+   *  accounts.cycle_close_day. Optional. */
+  cycleCloseDay?: number
+  /** 'DOP' or 'USD'. Default 'DOP'. */
+  currency?: 'DOP' | 'USD'
 }
 
 // Targets and assignments are keyed by `${groupName}::${categoryName}`
