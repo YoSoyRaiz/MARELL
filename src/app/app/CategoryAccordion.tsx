@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ChevronDown, ArrowRight } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useFormatMoney } from './CurrencyProvider'
+import { CategoryDrillModal } from './plan/CategoryDrillModal'
 import type { SectionGroup } from './CategoryCardsSection'
 
 interface CategoryAccordionProps {
@@ -26,6 +27,9 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
   const initialOpen =
     groups.find((g) => g.categories.length > 0)?.id ?? groups[0]?.id ?? null
   const [openId, setOpenId] = useState<string | null>(initialOpen)
+  // When the user clicks a row, we surface the same drill modal that
+  // /app/plan uses (12-month history + totals + transactions).
+  const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
 
   if (groups.length === 0) {
     return (
@@ -111,28 +115,35 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
                         return (
                           <li
                             key={c.id}
-                            className="px-5 py-2.5 flex items-center gap-3 border-b border-[var(--border)] last:border-b-0"
+                            className="border-b border-[var(--border)] last:border-b-0"
                           >
-                            <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
-                              <Icon size={12} strokeWidth={2} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-[13px] text-[var(--text)] truncate">
-                                {c.name}
-                              </div>
-                              <div className="text-[10px] text-[var(--muted)] tabular-nums num">
-                                Asignado {fmtMoney(c.assigned)}
-                              </div>
-                            </div>
-                            <span
-                              className={`text-[12px] font-semibold tabular-nums num shrink-0 ${
-                                catOver
-                                  ? 'text-[var(--coral-text)]'
-                                  : 'text-[var(--text)]'
-                              }`}
+                            <button
+                              type="button"
+                              onClick={() => setDrillCategoryId(c.id)}
+                              aria-label={`Ver historial de ${c.name}`}
+                              className="w-full px-5 py-2.5 flex items-center gap-3 text-left hover:bg-[var(--overlay-1)] transition-colors"
                             >
-                              {fmtMoney(c.available)}
-                            </span>
+                              <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
+                                <Icon size={12} strokeWidth={2} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[13px] text-[var(--text)] truncate">
+                                  {c.name}
+                                </div>
+                                <div className="text-[10px] text-[var(--muted)] tabular-nums num">
+                                  Asignado {fmtMoney(c.assigned)}
+                                </div>
+                              </div>
+                              <span
+                                className={`text-[12px] font-semibold tabular-nums num shrink-0 ${
+                                  catOver
+                                    ? 'text-[var(--coral-text)]'
+                                    : 'text-[var(--text)]'
+                                }`}
+                              >
+                                {fmtMoney(c.available)}
+                              </span>
+                            </button>
                           </li>
                         )
                       })}
@@ -144,6 +155,17 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
           )
         })}
       </ul>
+
+      {/* Drill modal — same component used in /app/plan: 12-month
+          history, totals (asignado / gastado / disponible / promedio)
+          y lista de transacciones. */}
+      {drillCategoryId && (
+        <CategoryDrillModal
+          isOpen={drillCategoryId !== null}
+          onClose={() => setDrillCategoryId(null)}
+          categoryId={drillCategoryId}
+        />
+      )}
     </section>
   )
 }
