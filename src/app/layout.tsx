@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, IBM_Plex_Sans, Varela_Round } from 'next/font/google'
 import './globals.css'
 import { ConfirmProvider } from '@/components/ui/ConfirmDialog'
+import { ThemeProvider, THEME_INIT_SCRIPT } from '@/components/ui/ThemeProvider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -56,9 +57,20 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${inter.variable} ${ibmPlex.variable} ${varelaRound.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Set data-theme before paint so light-mode users don't see
+            a dark flash on first load. The script reads localStorage
+            and falls back to OS preference. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
+      </head>
       <body suppressHydrationWarning>
-        <ConfirmProvider>{children}</ConfirmProvider>
+        <ThemeProvider>
+          <ConfirmProvider>{children}</ConfirmProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -58,7 +58,7 @@ export function TopBar({
             type="button"
             onClick={toggleDrawer}
             aria-label="Abrir menú"
-            className="lg:hidden w-10 h-10 -ml-1 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="lg:hidden w-10 h-10 -ml-1 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <Menu size={18} strokeWidth={2.2} />
           </button>

@@ -10,7 +10,8 @@
    MARELL — Brand Tokens (v1.0, mayo 2024)
    ───────────────────────────────────────────── */
 
-:root {
+:root,
+:root[data-theme='dark'] {
   /* Surfaces */
   --bg:            #0B0B0C;
   --s1:            #161617;
@@ -21,6 +22,14 @@
   --border:        rgba(255,255,255,.06);
   --border2:       rgba(255,255,255,.10);
   --border3:       rgba(255,255,255,.16);
+
+  /* Theme-aware overlay tokens. Replace ad-hoc bg-white/[0.04] with
+     bg-[var(--overlay-1)] in components that need to flip in light. */
+  --overlay-1:     rgba(255,255,255,.04);
+  --overlay-2:     rgba(255,255,255,.06);
+  --overlay-3:     rgba(255,255,255,.08);
+  --overlay-4:     rgba(255,255,255,.12);
+  --scrim:         rgba(0,0,0,.70);
 
   /* Type */
   --text:          #F7F7F5;
@@ -52,6 +61,40 @@
 }
 
 /* ─────────────────────────────────────────────
+   Light theme — opt-in via data-theme="light".
+   The dark theme above is still the default.
+   ───────────────────────────────────────────── */
+:root[data-theme='light'] {
+  /* Surfaces — paper-white with very soft greens to keep the brand
+     identity visible in the background. Cards step up subtly. */
+  --bg:            #F7F7F5;
+  --s1:            #FFFFFF;
+  --s2:            #F1F1ED;
+  --s3:            #E6E6E0;
+  --marell-green:  #E5F8EE;
+
+  --border:        rgba(11,11,12,.08);
+  --border2:       rgba(11,11,12,.12);
+  --border3:       rgba(11,11,12,.18);
+
+  --overlay-1:     rgba(11,11,12,.03);
+  --overlay-2:     rgba(11,11,12,.05);
+  --overlay-3:     rgba(11,11,12,.07);
+  --overlay-4:     rgba(11,11,12,.10);
+  --scrim:         rgba(11,11,12,.50);
+
+  /* Type — inverted scale, with text2/muted darker so they keep AA
+     contrast on a white surface. */
+  --text:          #0B0B0C;
+  --text2:         #2F2F2C;
+  --muted:         #6E6E66;
+  --muted2:        #4F4F48;
+
+  /* Brand stays the same. Status colors stay the same — they read
+     well on both themes because the saturation is high enough. */
+}
+
+/* ─────────────────────────────────────────────
    Base layer — participates in Tailwind cascade
    so utilities (px-*, mx-*, gap-*) can override
    the universal reset.
@@ -69,8 +112,8 @@
   }
 
   html {
-    background: #0B0B0C;
-    color: #F7F7F5;
+    background: var(--bg);
+    color: var(--text);
     font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -79,7 +122,7 @@
 
   body {
     min-height: 100vh;
-    background: #0B0B0C;
+    background: var(--bg);
     background-image:
       radial-gradient(ellipse 60% 40% at 50% 0%, rgba(61,220,151,.06), transparent 70%);
   }

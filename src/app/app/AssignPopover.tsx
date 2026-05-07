@@ -229,7 +229,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
       {/* Backdrop only on mobile — desktop uses click-outside on the
           popover itself. */}
       <div
-        className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] animate-step"
+        className="lg:hidden fixed inset-0 bg-[var(--scrim)] backdrop-blur-sm z-[90] animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -250,7 +250,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
         {/* Drag handle on mobile to signal "swipe down to close" — purely
             visual; tap anywhere outside also closes. */}
         <div className="lg:hidden flex justify-center pt-2 pb-1">
-          <div className="w-10 h-1 rounded-full bg-white/[0.15]" />
+          <div className="w-10 h-1 rounded-full bg-[var(--overlay-4)]" />
         </div>
         <header className="px-5 pt-3 pb-3 border-b border-[var(--border)]">
           <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-2)]">
@@ -519,7 +519,7 @@ function AutoTabContent({ budgetId, month, onError, onSuccess }: AutoTabContentP
             disabled={disabled}
             className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors disabled:opacity-40 disabled:pointer-events-none"
           >
-            <div className="w-8 h-8 rounded-lg bg-white/[0.04] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[var(--overlay-1)] text-[var(--brand-2)] flex items-center justify-center shrink-0">
               <Icon size={14} strokeWidth={2.2} />
             </div>
             <div className="min-w-0 flex-1">

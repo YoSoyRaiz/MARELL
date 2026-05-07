@@ -14,7 +14,11 @@ import {
   FileJson,
   FileSpreadsheet,
   Sparkles,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react'
+import { useTheme, type ThemeMode } from '@/components/ui/ThemeProvider'
 import Link from 'next/link'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { logout } from '@/app/(auth)/actions'
@@ -334,6 +338,9 @@ export function AjustesClient({
           <PushToggle />
         </div>
       </Section>
+
+      {/* Apariencia */}
+      <ThemeSection />
 
       {/* Plan / billing */}
       <Section title="Plan y suscripción" Icon={Sparkles}>
@@ -675,5 +682,54 @@ function PushToggle() {
         <p className="text-[11px] text-[var(--coral)] mt-2 leading-relaxed">{error}</p>
       )}
     </>
+  )
+}
+
+/**
+ * Apariencia: light / dark / system. Lives in the user's browser
+ * (localStorage), no server roundtrip — same device, same setting.
+ * Tres opciones tipo segmented control con icono y label.
+ */
+function ThemeSection() {
+  const { mode, setMode } = useTheme()
+  const options: { id: ThemeMode; label: string; Icon: typeof Sun }[] = [
+    { id: 'light', label: 'Claro', Icon: Sun },
+    { id: 'dark', label: 'Oscuro', Icon: Moon },
+    { id: 'system', label: 'Sistema', Icon: Monitor },
+  ]
+
+  return (
+    <Section title="Apariencia" Icon={Sun}>
+      <p className="text-[12px] text-[var(--muted)] mb-3 leading-relaxed">
+        Elige el tema que prefieras. "Sistema" sigue la configuración de
+        tu dispositivo.
+      </p>
+      <div
+        role="radiogroup"
+        aria-label="Tema"
+        className="grid grid-cols-3 gap-2 p-1 bg-[var(--overlay-1)] rounded-xl"
+      >
+        {options.map((opt) => {
+          const active = mode === opt.id
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setMode(opt.id)}
+              className={`h-11 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
+                active
+                  ? 'gradient-bg text-[#0B0B0C] shadow-[0_4px_16px_rgba(61,220,151,0.18)]'
+                  : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'
+              }`}
+            >
+              <opt.Icon size={14} strokeWidth={2.2} />
+              {opt.label}
+            </button>
+          )
+        })}
+      </div>
+    </Section>
   )
 }

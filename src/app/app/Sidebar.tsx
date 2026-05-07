@@ -117,7 +117,7 @@ export function Sidebar({
       {/* Mobile backdrop */}
       <div
         onClick={closeDrawer}
-        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-200 lg:hidden ${
+        className={`fixed inset-0 z-40 bg-[var(--scrim)] backdrop-blur-sm transition-opacity duration-200 lg:hidden ${
           drawerOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         aria-hidden
@@ -146,7 +146,7 @@ export function Sidebar({
               className={`flex items-center gap-3 px-3.5 py-3 lg:py-2.5 rounded-xl text-[14px] transition-all duration-200 ${
                 isActive
                   ? 'gradient-bg text-[#0B0B0C] font-semibold shadow-[0_4px_16px_rgba(61,220,151,.18)]'
-                  : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04]'
+                  : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
               }`}
             >
               <span
@@ -197,7 +197,7 @@ export function Sidebar({
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors ${
-            menuOpen ? 'bg-white/[0.05]' : 'hover:bg-white/[0.04]'
+            menuOpen ? 'bg-[var(--overlay-1)]' : 'hover:bg-[var(--overlay-1)]'
           }`}
         >
           <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-[13px] shrink-0">
@@ -244,7 +244,7 @@ export function Sidebar({
                 </div>
               </div>
               <div className="mt-3 inline-flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-white/[0.04] border border-[var(--border)] text-[10px] uppercase tracking-[0.15em] font-semibold text-[var(--text2)]">
+                <span className="px-2 py-0.5 rounded-full bg-[var(--overlay-1)] border border-[var(--border)] text-[10px] uppercase tracking-[0.15em] font-semibold text-[var(--text2)]">
                   {plan}
                 </span>
                 {trialDaysLeft !== null && (
@@ -267,7 +267,7 @@ export function Sidebar({
                 href="/app/ajustes"
                 onClick={() => setMenuOpen(false)}
                 role="menuitem"
-                className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-white/[0.04] transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
               >
                 <CircleUser size={14} strokeWidth={2} className="text-[var(--text2)]" />
                 Ajustes de cuenta
@@ -277,7 +277,7 @@ export function Sidebar({
                   href="/admin"
                   onClick={() => setMenuOpen(false)}
                   role="menuitem"
-                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-white/[0.04] transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
                 >
                   <ShieldCheck size={14} strokeWidth={2} className="text-[var(--brand-2)]" />
                   Panel de admin
@@ -287,7 +287,7 @@ export function Sidebar({
                 type="button"
                 onClick={handleReset}
                 role="menuitem"
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-white/[0.04] transition-colors text-left"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors text-left"
               >
                 <RotateCcw size={14} strokeWidth={2} className="text-[var(--text2)]" />
                 Rehacer onboarding
