@@ -60,21 +60,22 @@ export function MonthStatusHero({
 
   const tone = isNegative ? 'coral' : isPositive ? 'brand' : 'neutral'
 
+  // The hero is the most prominent surface on the dashboard. Use a
+  // solid surface (--s1) so it stays clearly delimited from the page
+  // bg in both themes — the soft tinted gradients we tried first
+  // disappeared in light mode and made the card boundary fuzzy.
   const borderColor =
     tone === 'coral'
-      ? 'border-[var(--coral)]/35'
+      ? 'border-[var(--coral)]/45'
       : tone === 'brand'
-        ? 'border-[var(--brand-2)]/30'
+        ? 'border-[var(--brand-2)]/40'
         : 'border-[var(--border2)]'
-  const bgGradient =
-    tone === 'coral'
-      ? 'bg-gradient-to-br from-[rgba(255,122,89,0.08)] to-transparent'
-      : tone === 'brand'
-        ? 'bg-gradient-to-br from-[rgba(61,220,151,0.06)] to-transparent'
-        : 'bg-[var(--s1)]'
+  const bgGradient = 'bg-[var(--s1)]'
+  // Big numbers use *-text variants so green stays readable in light
+  // mode (darkened stops) without losing the gradient feel in dark.
   const valueColor =
     tone === 'coral'
-      ? 'text-[var(--coral)]'
+      ? 'text-[var(--coral-text)]'
       : tone === 'brand'
         ? 'gradient-text'
         : 'text-[var(--text2)]'
@@ -89,8 +90,8 @@ export function MonthStatusHero({
           <div
             className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
               tone === 'coral'
-                ? 'text-[var(--coral)]'
-                : 'text-[var(--brand-2)]'
+                ? 'text-[var(--coral-text)]'
+                : 'text-[var(--brand-text)]'
             }`}
           >
             Por asignar
@@ -168,12 +169,18 @@ interface StatusChipProps {
 }
 
 function StatusChip({ tone, label, Icon, href }: StatusChipProps) {
+  // Chips use the *-text shades so labels stay readable on light bg.
+  // The bg tints are bumped slightly so the chip surface still reads
+  // as "branded" against paper white (it'd disappear at 6% on white).
   const palette = {
-    success: 'border-[var(--brand-2)]/25 bg-[rgba(61,220,151,0.06)] text-[var(--brand-2)]',
-    warn: 'border-[var(--warn)]/30 bg-[rgba(245,200,66,0.06)] text-[var(--warn)]',
-    coral: 'border-[var(--coral)]/35 bg-[rgba(255,122,89,0.06)] text-[var(--coral)]',
+    success:
+      'border-[var(--brand-2)]/35 bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)]',
+    warn:
+      'border-[var(--warn)]/40 bg-[rgba(245,200,66,0.10)] text-[var(--warn-text)]',
+    coral:
+      'border-[var(--coral)]/45 bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)]',
     neutral:
-      'border-[var(--border2)] bg-white/[0.03] text-[var(--text2)]',
+      'border-[var(--border2)] bg-[var(--overlay-1)] text-[var(--text2)]',
   }[tone]
 
   const inner = (

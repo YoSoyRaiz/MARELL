@@ -16,6 +16,7 @@ import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsS
 import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { FirstMonthGuide } from './FirstMonthGuide'
 import { MonthStatusHero } from './MonthStatusHero'
+import { CategoryAccordion } from './CategoryAccordion'
 import { materializeDue } from './programadas/actions'
 import { currentMonthDR, monthBoundsISO, todayISODR } from '@/lib/dates'
 import { UpcomingCommitments, type UpcomingItem } from './UpcomingCommitments'
@@ -702,38 +703,12 @@ export default async function ResumenPage() {
 
       {/* RIGHT COLUMN */}
       <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-        {/* Resumen del mes */}
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
-          <header className="px-5 py-4 border-b border-[var(--border)]">
-            <h2 className="text-[14px] font-semibold text-[var(--text)]">
-              Resumen de {formatMonthLabel(month).split(' ')[0]}
-            </h2>
-          </header>
-          <ul className="divide-y divide-[var(--border)]">
-            <li className="px-5 py-3 flex items-center justify-between">
-              <span className="text-[13px] text-[var(--text2)]">Ingresos</span>
-              <span className="text-[14px] tabular-nums num font-semibold text-[var(--brand-2)]">
-                {fmtMoney(totalIncome)}
-              </span>
-            </li>
-            <li className="px-5 py-3 flex items-center justify-between">
-              <span className="text-[13px] text-[var(--text2)]">Gastos</span>
-              <span className="text-[14px] tabular-nums num font-semibold text-[var(--text)]">
-                {fmtMoney(totalExpenses)}
-              </span>
-            </li>
-            <li className="px-5 py-3 flex items-center justify-between">
-              <span className="text-[13px] text-[var(--text2)]">Disponible para asignar</span>
-              <span
-                className={`text-[14px] tabular-nums num font-semibold ${
-                  readyToAssign > 0.005 ? 'gradient-text' : 'text-[var(--text2)]'
-                }`}
-              >
-                {fmtMoney(readyToAssign)}
-              </span>
-            </li>
-          </ul>
-        </section>
+        {/* Categorías en acordeón — reemplaza el viejo "Resumen de
+            Mayo" que repetía el monto Por asignar del hero. Ahora la
+            barra lateral responde "¿dónde está mi dinero?" sin tener
+            que ir a Plan. Primer grupo abierto, scroll interno cuando
+            hay muchas categorías. */}
+        <CategoryAccordion groups={sectionGroups} />
 
         {/* Donut */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">

@@ -42,7 +42,18 @@
   --brand-2:       #3DDC97;
   --brand-3:       #8AC926;
   --gradient:      linear-gradient(135deg, #2EC4B6 0%, #3DDC97 60%, #8AC926 100%);
+  /* Same gradient but used specifically for *text* — light theme overrides
+     this with darker stops so the readable contrast survives on white. */
+  --gradient-text: linear-gradient(135deg, #2EC4B6 0%, #3DDC97 60%, #8AC926 100%);
   --gradient-soft: linear-gradient(135deg, rgba(46,196,182,.15), rgba(61,220,151,.10), rgba(138,201,38,.08));
+
+  /* Brand-as-text fallback. Same as --brand-2 in dark; darker shade in
+     light. Use this for inline text accents like "Disponible: $X" or
+     status chips so green-on-light has AA contrast. */
+  --brand-text:    #3DDC97;
+  --coral-text:    #FF7A59;
+  --warn-text:     #F5C842;
+  --info-text:     #4DA8FF;
 
   /* Status */
   --success:       #3DDC97;
@@ -90,8 +101,17 @@
   --muted:         #6E6E66;
   --muted2:        #4F4F48;
 
-  /* Brand stays the same. Status colors stay the same — they read
-     well on both themes because the saturation is high enough. */
+  /* Brand-as-text — darker, saturated stops so they hit ≥4.5:1 on
+     paper white. The vivid gradient (--gradient) keeps living on
+     buttons / icon tiles / decorative surfaces. */
+  --brand-text:    #0E9C68;
+  --coral-text:    #C24A2C;
+  --warn-text:     #8A6A00;
+  --info-text:     #0F6FCF;
+
+  /* Text-only gradient: darker mid stops so .gradient-text is
+     legible on light surfaces. */
+  --gradient-text: linear-gradient(135deg, #138B82 0%, #0E9C68 55%, #5B8A19 100%);
 }
 
 /* ─────────────────────────────────────────────
@@ -201,11 +221,11 @@
 
 @layer utilities {
   .gradient-text {
-    background: var(--gradient);
+    background: var(--gradient-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    color: #3DDC97;
+    color: var(--brand-text);
   }
 
   .gradient-bg {
@@ -215,7 +235,7 @@
   .gradient-border {
     position: relative;
     background:
-      linear-gradient(#0B0B0C, #0B0B0C) padding-box,
+      linear-gradient(var(--bg), var(--bg)) padding-box,
       var(--gradient) border-box;
     border: 1px solid transparent;
   }

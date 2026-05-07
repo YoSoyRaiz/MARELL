@@ -11,6 +11,7 @@ import { AssignPopover } from './AssignPopover'
 import { SHORTCUT_EVENTS } from './KeyboardShortcuts'
 import { NotificationBell, type NotificationItem } from './NotificationBell'
 import { markNotificationsSeen } from './ajustes/actions'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 interface TopBarProps {
   displayName: string | null
@@ -77,6 +78,7 @@ export function TopBar({
             is hidden — the bottom tab bar already shows the user name),
             right-aligned on desktop. */}
         <div className="flex-1 flex items-center justify-center lg:justify-end lg:flex-initial gap-2 md:gap-3 min-w-0">
+          <ThemeToggle />
           <NotificationBell
             notifications={notifications}
             lastSeenAt={notificationsLastSeen}
