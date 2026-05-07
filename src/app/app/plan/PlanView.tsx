@@ -84,8 +84,10 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
   const [error, setError] = useState<string | null>(null)
   const [moveSourceId, setMoveSourceId] = useState<string | null>(null)
   const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
+  // Default-open the first group, collapse the rest. Lets the user
+  // see actionable rows immediately without expandir manualmente.
   const [collapsed, setCollapsed] = useState<Set<string>>(
-    () => new Set(groups.map((g) => g.id)),
+    () => new Set(groups.slice(1).map((g) => g.id)),
   )
 
   const toggleGroup = (id: string) => {

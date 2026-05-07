@@ -108,46 +108,69 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
                       Este grupo aún no tiene categorías.
                     </p>
                   ) : (
-                    <ul className="max-h-[280px] overflow-y-auto">
-                      {g.categories.map((c) => {
-                        const Icon = iconForCategoryName(c.name)
-                        const catOver = c.available < -0.005
-                        return (
-                          <li
-                            key={c.id}
-                            className="border-b border-[var(--border)] last:border-b-0"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => setDrillCategoryId(c.id)}
-                              aria-label={`Ver historial de ${c.name}`}
-                              className="w-full px-5 py-2.5 flex items-center gap-3 text-left hover:bg-[var(--overlay-1)] transition-colors"
+                    <div className="max-h-[320px] overflow-y-auto">
+                      {/* Column headers — same trio (asignado /
+                          actividad / disponible) que en /app/plan
+                          para que el usuario vea la misma información
+                          sin cambiar de mental model. */}
+                      <div className="grid grid-cols-[1fr_80px_60px_80px] gap-2 px-5 py-2 text-[9px] uppercase tracking-[0.16em] text-[var(--muted2)] border-b border-[var(--border)]">
+                        <div>Categoría</div>
+                        <div className="text-right">Asignado</div>
+                        <div className="text-right">Actividad</div>
+                        <div className="text-right">Disponible</div>
+                      </div>
+                      <ul>
+                        {g.categories.map((c) => {
+                          const Icon = iconForCategoryName(c.name)
+                          const catOver = c.available < -0.005
+                          const activity = c.activity ?? 0
+                          const hasActivity = Math.abs(activity) > 0.005
+                          return (
+                            <li
+                              key={c.id}
+                              className="border-b border-[var(--border)] last:border-b-0"
                             >
-                              <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
-                                <Icon size={12} strokeWidth={2} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-[13px] text-[var(--text)] truncate">
-                                  {c.name}
-                                </div>
-                                <div className="text-[10px] text-[var(--muted)] tabular-nums num">
-                                  Asignado {fmtMoney(c.assigned)}
-                                </div>
-                              </div>
-                              <span
-                                className={`text-[12px] font-semibold tabular-nums num shrink-0 ${
-                                  catOver
-                                    ? 'text-[var(--coral-text)]'
-                                    : 'text-[var(--text)]'
-                                }`}
+                              <button
+                                type="button"
+                                onClick={() => setDrillCategoryId(c.id)}
+                                aria-label={`Ver historial de ${c.name}`}
+                                className="w-full grid grid-cols-[1fr_80px_60px_80px] gap-2 items-center px-5 py-2.5 text-left hover:bg-[var(--overlay-1)] transition-colors"
                               >
-                                {fmtMoney(c.available)}
-                              </span>
-                            </button>
-                          </li>
-                        )
-                      })}
-                    </ul>
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
+                                    <Icon size={12} strokeWidth={2} />
+                                  </div>
+                                  <span className="text-[13px] text-[var(--text)] truncate">
+                                    {c.name}
+                                  </span>
+                                </div>
+                                <span className="text-[12px] tabular-nums num text-[var(--text2)] text-right">
+                                  {fmtMoney(c.assigned)}
+                                </span>
+                                <span
+                                  className={`text-[12px] tabular-nums num text-right ${
+                                    hasActivity
+                                      ? 'text-[var(--text2)]'
+                                      : 'text-[var(--muted)]'
+                                  }`}
+                                >
+                                  {hasActivity ? fmtMoney(activity) : '—'}
+                                </span>
+                                <span
+                                  className={`text-[12px] font-semibold tabular-nums num text-right ${
+                                    catOver
+                                      ? 'text-[var(--coral-text)]'
+                                      : 'text-[var(--text)]'
+                                  }`}
+                                >
+                                  {fmtMoney(c.available)}
+                                </span>
+                              </button>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
                   )}
                 </div>
               )}
