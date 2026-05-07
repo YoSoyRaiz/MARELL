@@ -5,31 +5,68 @@ import Link from 'next/link'
 import { ChevronDown, ArrowRight } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useFormatMoney } from './CurrencyProvider'
+import { useReadyToAssign } from './ReadyToAssignProvider'
+import { InlineMoneyEdit } from './plan/InlineMoneyEdit'
+import { updateAssignment } from './plan/actions'
 import { CategoryDrillModal } from './plan/CategoryDrillModal'
 import type { SectionGroup } from './CategoryCardsSection'
 
 interface CategoryAccordionProps {
   groups: SectionGroup[]
+  /** Required for inline editing — passed to updateAssignment when
+   *  the user commits a new amount on a category row. */
+  budgetId: string
+  month: string
 }
 
 /**
  * Right-rail accordion that lists category groups; opens the first
- * group by default. The point is to give the dashboard a quick "where
- * is my money" answer without having to leave for /app/plan. Long
- * lists scroll inside the open group instead of pushing the page.
+ * group by default. Mirrors the Plan view: each row exposes the
+ * Asignado / Actividad / Disponible columns and the Asignado cell is
+ * editable in-place via InlineMoneyEdit. Click on the category name
+ * area opens the same 12-month drill modal that /app/plan uses.
  */
-export function CategoryAccordion({ groups }: CategoryAccordionProps) {
+export function CategoryAccordion({
+  groups,
+  budgetId,
+  month,
+}: CategoryAccordionProps) {
   const fmtMoney = useFormatMoney()
+  const rtaCtx = useReadyToAssign()
 
-  // Default-open the first non-empty group; falls back to the first
-  // entry if every group is empty (rare — happens right after
-  // onboarding before any category exists).
   const initialOpen =
     groups.find((g) => g.categories.length > 0)?.id ?? groups[0]?.id ?? null
   const [openId, setOpenId] = useState<string | null>(initialOpen)
-  // When the user clicks a row, we surface the same drill modal that
-  // /app/plan uses (12-month history + totals + transactions).
   const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
+
+  // Local optimistic state for inline edits — same pattern Plan uses.
+  // Override map by categoryId for the assigned amount; we add the
+  // delta to the row's lifetime available so both numbers stay
+  // consistent until the next router.refresh().
+  const [overrides, setOverrides] = useState<Record<string, number>>({})
+  const [error, setError] = useState<string | null>(null)
+
+  const getAssigned = (catId: string, fallback: number) =>
+    overrides[catId] !== undefined ? overrides[catId] : fallback
+
+  const handleSave = async (
+    catId: string,
+    previousAssigned: number,
+    next: number,
+  ) => {
+    const delta = next - previousAssigned
+    setOverrides((p) => ({ ...p, [catId]: next }))
+    setError(null)
+    rtaCtx?.adjust(delta)
+    const result = await updateAssignment(budgetId, catId, month, next)
+    if ('error' in result && result.error) {
+      // Rollback
+      setOverrides((p) => ({ ...p, [catId]: previousAssigned }))
+      rtaCtx?.adjust(-delta)
+      setError(result.error)
+      window.setTimeout(() => setError(null), 5000)
+    }
+  }
 
   if (groups.length === 0) {
     return (
@@ -54,10 +91,26 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
         </Link>
       </header>
 
+      {error && (
+        <div className="px-5 py-2 bg-[rgba(255,122,89,0.08)] border-b border-[var(--coral)]/30 text-[12px] text-[var(--coral-text)]">
+          No pudimos guardar: {error}
+        </div>
+      )}
+
       <ul className="divide-y divide-[var(--border)]">
         {groups.map((g) => {
           const isOpen = openId === g.id
-          const overspent = g.available < -0.005
+          // Group totals reflect any local overrides on its categories
+          // so the header math stays in sync while the user edits.
+          const groupAssigned = g.categories.reduce(
+            (s, c) => s + getAssigned(c.id, c.assigned),
+            0,
+          )
+          const groupAvailable = g.categories.reduce((s, c) => {
+            const delta = getAssigned(c.id, c.assigned) - c.assigned
+            return s + (c.available + delta)
+          }, 0)
+          const overspent = groupAvailable < -0.005
           return (
             <li key={g.id}>
               <button
@@ -77,7 +130,7 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
                     {g.categories.length}{' '}
                     {g.categories.length === 1 ? 'categoría' : 'categorías'}
                     {' · '}
-                    Asignado {fmtMoney(g.assigned)}
+                    Asignado {fmtMoney(groupAssigned)}
                   </div>
                 </div>
                 <span
@@ -87,7 +140,7 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
                       : 'text-[var(--brand-text)]'
                   }`}
                 >
-                  {fmtMoney(g.available)}
+                  {fmtMoney(groupAvailable)}
                 </span>
                 <ChevronDown
                   size={14}
@@ -109,11 +162,8 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
                     </p>
                   ) : (
                     <div className="max-h-[320px] overflow-y-auto">
-                      {/* Column headers — same trio (asignado /
-                          actividad / disponible) que en /app/plan
-                          para que el usuario vea la misma información
-                          sin cambiar de mental model. */}
-                      <div className="grid grid-cols-[1fr_80px_60px_80px] gap-2 px-5 py-2 text-[9px] uppercase tracking-[0.16em] text-[var(--muted2)] border-b border-[var(--border)]">
+                      {/* Headers — match Plan layout. */}
+                      <div className="grid grid-cols-[1fr_90px_70px_90px] gap-2 px-5 py-2 text-[9px] uppercase tracking-[0.16em] text-[var(--muted2)] border-b border-[var(--border)]">
                         <div>Categoría</div>
                         <div className="text-right">Asignado</div>
                         <div className="text-right">Actividad</div>
@@ -122,50 +172,59 @@ export function CategoryAccordion({ groups }: CategoryAccordionProps) {
                       <ul>
                         {g.categories.map((c) => {
                           const Icon = iconForCategoryName(c.name)
-                          const catOver = c.available < -0.005
+                          const assigned = getAssigned(c.id, c.assigned)
+                          // Local available reflects the override delta
+                          // so the row updates instantly on edit.
+                          const delta = assigned - c.assigned
+                          const available = c.available + delta
+                          const catOver = available < -0.005
                           const activity = c.activity ?? 0
                           const hasActivity = Math.abs(activity) > 0.005
                           return (
                             <li
                               key={c.id}
-                              className="border-b border-[var(--border)] last:border-b-0"
+                              className="grid grid-cols-[1fr_90px_70px_90px] gap-2 items-center px-5 py-2 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--overlay-1)] transition-colors"
                             >
                               <button
                                 type="button"
                                 onClick={() => setDrillCategoryId(c.id)}
                                 aria-label={`Ver historial de ${c.name}`}
-                                className="w-full grid grid-cols-[1fr_80px_60px_80px] gap-2 items-center px-5 py-2.5 text-left hover:bg-[var(--overlay-1)] transition-colors"
+                                className="flex items-center gap-2.5 min-w-0 text-left group"
                               >
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                  <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
-                                    <Icon size={12} strokeWidth={2} />
-                                  </div>
-                                  <span className="text-[13px] text-[var(--text)] truncate">
-                                    {c.name}
-                                  </span>
+                                <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-text)] transition-colors">
+                                  <Icon size={12} strokeWidth={2} />
                                 </div>
-                                <span className="text-[12px] tabular-nums num text-[var(--text2)] text-right">
-                                  {fmtMoney(c.assigned)}
-                                </span>
-                                <span
-                                  className={`text-[12px] tabular-nums num text-right ${
-                                    hasActivity
-                                      ? 'text-[var(--text2)]'
-                                      : 'text-[var(--muted)]'
-                                  }`}
-                                >
-                                  {hasActivity ? fmtMoney(activity) : '—'}
-                                </span>
-                                <span
-                                  className={`text-[12px] font-semibold tabular-nums num text-right ${
-                                    catOver
-                                      ? 'text-[var(--coral-text)]'
-                                      : 'text-[var(--text)]'
-                                  }`}
-                                >
-                                  {fmtMoney(c.available)}
+                                <span className="text-[13px] text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
+                                  {c.name}
                                 </span>
                               </button>
+                              <div className="text-right">
+                                <InlineMoneyEdit
+                                  value={assigned}
+                                  onSave={(next) =>
+                                    handleSave(c.id, assigned, next)
+                                  }
+                                  ariaLabel={`Asignar a ${c.name}`}
+                                />
+                              </div>
+                              <span
+                                className={`text-[12px] tabular-nums num text-right ${
+                                  hasActivity
+                                    ? 'text-[var(--text2)]'
+                                    : 'text-[var(--muted)]'
+                                }`}
+                              >
+                                {hasActivity ? fmtMoney(activity) : '—'}
+                              </span>
+                              <span
+                                className={`text-[12px] font-semibold tabular-nums num text-right ${
+                                  catOver
+                                    ? 'text-[var(--coral-text)]'
+                                    : 'text-[var(--text)]'
+                                }`}
+                              >
+                                {fmtMoney(available)}
+                              </span>
                             </li>
                           )
                         })}

@@ -676,7 +676,11 @@ export default async function ResumenPage() {
             Transacciones recientes. Antes el acordeón vivía en la
             columna derecha; ahora ocupa la posición principal porque
             es lo primero que el usuario quiere ver al entrar. */}
-        <CategoryAccordion groups={sectionGroups} />
+        <CategoryAccordion
+          groups={sectionGroups}
+          budgetId={budget.id as string}
+          month={month}
+        />
 
         {/* Recent transactions (with in-place add modal) */}
         <RecentTransactionsSection
