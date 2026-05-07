@@ -1,14 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import {
-  ArrowRight,
-  PiggyBank,
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  Target,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { ArrowRight, Target } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
 import {
@@ -23,6 +15,7 @@ import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
 import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { FirstMonthGuide } from './FirstMonthGuide'
+import { MonthStatusHero } from './MonthStatusHero'
 import { materializeDue } from './programadas/actions'
 import { currentMonthDR, monthBoundsISO, todayISODR } from '@/lib/dates'
 import { UpcomingCommitments, type UpcomingItem } from './UpcomingCommitments'
@@ -678,46 +671,18 @@ export default async function ResumenPage() {
           hasReconciled={guideHasReconciled}
         />
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-          <KpiCard
-            label="Ingresos"
-            value={totalIncome}
-            Icon={TrendingUp}
-            iconBg="bg-[rgba(61,220,151,0.10)]"
-            iconColor="text-[var(--brand-2)]"
-            sublabel="Este mes"
-            fmtMoney={fmtMoney}
-          />
-          <KpiCard
-            label="Gastos"
-            value={totalExpenses}
-            Icon={TrendingDown}
-            iconBg="bg-[rgba(255,122,89,0.10)]"
-            iconColor="text-[var(--coral)]"
-            sublabel="Este mes"
-            href="/app/plan"
-            fmtMoney={fmtMoney}
-          />
-          <KpiCard
-            label="Ahorros"
-            value={totalSavings}
-            Icon={PiggyBank}
-            iconBg="bg-[rgba(77,168,255,0.10)]"
-            iconColor="text-[var(--info)]"
-            sublabel="Cuentas de ahorro"
-            fmtMoney={fmtMoney}
-          />
-          <KpiCard
-            label="Patrimonio neto"
-            value={netWorth}
-            Icon={Wallet}
-            iconBg="bg-[rgba(245,200,66,0.10)]"
-            iconColor="text-[var(--warn)]"
-            sublabel="Activos − deudas"
-            fmtMoney={fmtMoney}
-          />
-        </div>
+        {/* Hero "Estado del mes" — reemplaza la grilla de 4 KPIs.
+            Los totales detallados (Ingresos / Gastos / Ahorros /
+            Patrimonio) viven ahora en /app/analisis donde tienen
+            sentido como reporte. Aquí mostramos lo que mueve la aguja
+            del día: cuánto dinero falta por asignar y qué fricción
+            hay que resolver. */}
+        <MonthStatusHero
+          overspentCount={overspentCount}
+          undermetGoalsCount={undermetGoalsCount}
+          upcomingCount={upcomingItems.length}
+          readyToAssignFallback={readyToAssign}
+        />
 
         {/* Categories cards (with click-to-edit modal) */}
         <CategoryCardsSection
@@ -941,52 +906,3 @@ export default async function ResumenPage() {
   )
 }
 
-interface KpiCardProps {
-  label: string
-  value: number
-  Icon: LucideIcon
-  iconBg: string
-  iconColor: string
-  sublabel: string
-  href?: string
-  fmtMoney: (n: number) => string
-}
-
-function KpiCard({
-  label,
-  value,
-  Icon,
-  iconBg,
-  iconColor,
-  sublabel,
-  href,
-  fmtMoney,
-}: KpiCardProps) {
-  const inner = (
-    <>
-      <div className="flex items-center justify-between mb-3">
-        <div className={`w-9 h-9 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center`}>
-          <Icon size={16} strokeWidth={2} />
-        </div>
-      </div>
-      <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
-        {label}
-      </div>
-      <div className="text-[18px] sm:text-[22px] font-bold tabular-nums num text-[var(--text)] leading-none break-words">
-        {fmtMoney(value)}
-      </div>
-      <div className="text-[10px] sm:text-[11px] text-[var(--muted2)] mt-1.5 sm:mt-2">{sublabel}</div>
-    </>
-  )
-
-  const className =
-    'rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-4 sm:p-5 transition-all duration-200 hover:border-[var(--border3)] hover:-translate-y-[1px]'
-
-  return href ? (
-    <Link href={href} className={`block ${className}`}>
-      {inner}
-    </Link>
-  ) : (
-    <div className={className}>{inner}</div>
-  )
-}
