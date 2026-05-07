@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   Plus,
@@ -144,15 +145,28 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
                 : `${accounts.length} ${accounts.length === 1 ? 'cuenta' : 'cuentas'}. Click en una para editarla.`}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setAddOpen(true)}
-            disabled={!hasBudget}
-            className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none"
-          >
-            <Plus size={14} strokeWidth={2.4} />
-            Agregar cuenta
-          </button>
+          {/* Dos CTAs en el header: agregar cuenta (primario, brand)
+              y agregar transacción (secundario, outlined). El segundo
+              navega a /app/transacciones?new=1 que abre el modal de
+              forma directa. */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Link
+              href="/app/transacciones?new=1"
+              className="h-11 px-4 inline-flex items-center gap-1.5 rounded-xl border border-[var(--border2)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] text-[var(--text)] font-medium text-[13px] transition-colors"
+            >
+              <Plus size={14} strokeWidth={2.4} />
+              Agregar transacción
+            </Link>
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              disabled={!hasBudget}
+              className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <Plus size={14} strokeWidth={2.4} />
+              Agregar cuenta
+            </button>
+          </div>
         </div>
 
         {/* Net worth summary */}

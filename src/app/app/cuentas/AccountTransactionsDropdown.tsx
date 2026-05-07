@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, ArrowUpRight, ArrowDownRight, ArrowLeftRight } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ArrowDownRight,
+  ArrowLeftRight,
+  Plus,
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useFormatMoney } from '../CurrencyProvider'
 
@@ -10,6 +16,7 @@ interface AccountTxRow {
   id: string
   date: string
   payeeName: string
+  categoryName: string | null
   amount: number
 }
 
@@ -36,6 +43,9 @@ function formatShortDate(iso: string): string {
  * Inline panel shown under an account row when the user taps it. Lazy-
  * loads the last 8 transactions for that account so the parent page
  * doesn't have to over-fetch when most accounts are collapsed.
+ *
+ * Layout mimica un estado de cuenta bancario: fecha, comercio +
+ * categoría, monto a la derecha en color signed.
  */
 export function AccountTransactionsDropdown({ accountId, open, currency }: Props) {
   const [rows, setRows] = useState<AccountTxRow[] | null>(null)
@@ -46,7 +56,7 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
   // formatter which already uses the configured locale.
   const formatAmount = (amount: number) => {
     if (currency === 'USD') {
-      const sign = amount < 0 ? '-' : '+'
+      const sign = amount < 0 ? '−' : '+'
       return `${sign}US$${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     }
     const sign = amount < 0 ? '' : '+'
@@ -59,20 +69,26 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
     setLoading(true)
     void (async () => {
       const supabase = createClient()
+      // Join with categories so we can show the category name like a
+      // bank statement does ("Comida · Supermercado Nacional").
       const { data } = await supabase
         .from('transactions')
-        .select('id, date, payee_name, amount')
+        .select(
+          'id, date, payee_name, amount, categories(name)',
+        )
         .eq('account_id', accountId)
         .order('date', { ascending: false })
         .order('created_at', { ascending: false })
-        .limit(8)
+        .limit(10)
       if (cancelled) return
       const list: AccountTxRow[] = (data ?? []).map((t) => {
         const r = t as Record<string, unknown>
+        const cat = r.categories as { name?: string } | null
         return {
           id: r.id as string,
           date: r.date as string,
           payeeName: (r.payee_name as string | null) ?? '',
+          categoryName: cat?.name ?? null,
           amount: Number(r.amount),
         }
       })
@@ -87,44 +103,65 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
   if (!open) return null
 
   return (
-    <div className="px-5 pb-4 pt-1 bg-black/[0.15]">
+    <div className="px-5 pb-4 pt-1 bg-[var(--overlay-1)]">
       {loading && rows === null ? (
         <div className="py-4 text-center text-[12px] text-[var(--muted)]">
           Cargando transacciones…
         </div>
       ) : rows && rows.length > 0 ? (
         <>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted2)] py-2">
-            Últimas transacciones
+          <div className="flex items-center justify-between py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted2)]">
+              Últimas transacciones
+            </div>
+            <Link
+              href={`/app/transacciones?account=${accountId}&new=1`}
+              className="text-[11px] font-medium text-[var(--brand-text)] hover:underline underline-offset-4 inline-flex items-center gap-1"
+            >
+              <Plus size={11} strokeWidth={2.4} />
+              Agregar
+            </Link>
           </div>
-          <ul className="rounded-xl border border-[var(--border)] bg-[var(--bg)]/40 divide-y divide-[var(--border)]">
+          <ul className="rounded-xl border border-[var(--border)] bg-[var(--s1)] divide-y divide-[var(--border)]">
             {rows.map((t) => {
               const isIncome = t.amount > 0
-              const Icon = t.payeeName.startsWith('Transferencia')
+              const isTransfer = t.payeeName.startsWith('Transferencia')
+              const Icon = isTransfer
                 ? ArrowLeftRight
                 : isIncome
                   ? ArrowUpRight
                   : ArrowDownRight
-              const iconColor = isIncome
-                ? 'text-[var(--brand-text)]'
-                : 'text-[var(--coral-text)]'
+              const iconColor = isTransfer
+                ? 'text-[var(--info-text)] bg-[rgba(77,168,255,0.10)]'
+                : isIncome
+                  ? 'text-[var(--brand-text)] bg-[rgba(61,220,151,0.10)]'
+                  : 'text-[var(--coral-text)] bg-[rgba(255,122,89,0.10)]'
               return (
                 <li
                   key={t.id}
-                  className="px-3 py-2.5 grid grid-cols-[28px_1fr_auto] items-center gap-3"
+                  className="px-3 py-2.5 grid grid-cols-[36px_60px_1fr_auto] items-center gap-3"
                 >
-                  <Icon size={14} strokeWidth={2.2} className={iconColor} />
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconColor}`}
+                  >
+                    <Icon size={14} strokeWidth={2.2} />
+                  </div>
+                  <div className="text-[11px] font-medium text-[var(--muted)] num tabular-nums">
+                    {formatShortDate(t.date)}
+                  </div>
                   <div className="min-w-0">
                     <div className="text-[13px] text-[var(--text)] truncate">
                       {t.payeeName || 'Sin descripción'}
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] num tabular-nums">
-                      {formatShortDate(t.date)}
+                    <div className="text-[11px] text-[var(--muted)] truncate">
+                      {t.categoryName ?? (isTransfer ? 'Transferencia' : 'Sin categoría')}
                     </div>
                   </div>
                   <div
-                    className={`text-[13px] font-semibold tabular-nums num ${
-                      isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
+                    className={`text-[13px] font-semibold tabular-nums num text-right ${
+                      isIncome
+                        ? 'text-[var(--brand-text)]'
+                        : 'text-[var(--text)]'
                     }`}
                   >
                     {formatAmount(t.amount)}
@@ -142,8 +179,17 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
           </Link>
         </>
       ) : (
-        <div className="py-4 text-center text-[12px] text-[var(--muted)]">
-          Esta cuenta aún no tiene transacciones.
+        <div className="py-6 text-center space-y-3">
+          <p className="text-[12px] text-[var(--muted)]">
+            Esta cuenta aún no tiene transacciones.
+          </p>
+          <Link
+            href={`/app/transacciones?account=${accountId}&new=1`}
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl border border-[var(--border2)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-2)] text-[var(--text)] text-[12px] font-medium transition-colors"
+          >
+            <Plus size={12} strokeWidth={2.4} />
+            Agregar transacción
+          </Link>
         </div>
       )}
     </div>
