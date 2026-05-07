@@ -671,13 +671,12 @@ export default async function ResumenPage() {
           hasReconciled={guideHasReconciled}
         />
 
-        {/* MonthStatusHero y CategoryCardsSection se quitaron de aquí
-            por feedback del usuario: el "Por asignar" ya está en la
-            barra superior y el acordeón de categorías vive en la
-            columna derecha — duplicar ambos cuesta atención sin
-            agregar información. La Resumen ahora arranca con el guide
-            del primer mes (si aplica) y va directo a transacciones
-            recientes. */}
+        {/* Orden por feedback del usuario: primero Categorías
+            (acordeón con scroll, primer grupo abierto), después
+            Transacciones recientes. Antes el acordeón vivía en la
+            columna derecha; ahora ocupa la posición principal porque
+            es lo primero que el usuario quiere ver al entrar. */}
+        <CategoryAccordion groups={sectionGroups} />
 
         {/* Recent transactions (with in-place add modal) */}
         <RecentTransactionsSection
@@ -690,12 +689,6 @@ export default async function ResumenPage() {
 
       {/* RIGHT COLUMN */}
       <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-        {/* Categorías en acordeón — reemplaza el viejo "Resumen de
-            Mayo" que repetía el monto Por asignar del hero. Ahora la
-            barra lateral responde "¿dónde está mi dinero?" sin tener
-            que ir a Plan. Primer grupo abierto, scroll interno cuando
-            hay muchas categorías. */}
-        <CategoryAccordion groups={sectionGroups} />
 
         {/* Donut */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
