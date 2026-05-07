@@ -12,8 +12,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowRight,
-  Plus,
-  Equal,
   Sparkles,
   CheckCircle2,
   AlertCircle,
@@ -39,7 +37,6 @@ interface AssignPopoverProps {
   anchorRef: React.RefObject<HTMLElement | null>
 }
 
-type Mode = 'add' | 'set'
 type Tab = 'manual' | 'auto'
 
 interface LoadedContext {
@@ -78,7 +75,10 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
   const [okMessage, setOkMessage] = useState<string | null>(null)
 
   const [tab, setTab] = useState<Tab>('manual')
-  const [mode, setMode] = useState<Mode>('add')
+  // Quick-assign always sums to the existing assignment. The
+  // "replace" path was confusing in user testing, so we removed the
+  // toggle; users who need an exact value edit the cell in /app/plan.
+  const mode = 'add' as const
   const [categoryId, setCategoryId] = useState('')
   const [amountText, setAmountText] = useState('')
 
@@ -209,8 +209,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
       )
 
       setOkMessage(
-        `${selectedCategory.name}: ${fmtMoney(newAssigned)} asignado` +
-          (mode === 'add' ? ` (+${fmtMoney(amount)})` : ''),
+        `${selectedCategory.name}: ${fmtMoney(newAssigned)} asignado (+${fmtMoney(amount)})`,
       )
       setAmountText('')
       router.refresh()
@@ -321,34 +320,6 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
         />
       ) : (
         <form onSubmit={handleSubmit} className="px-5 py-4 space-y-4">
-          {/* Mode toggle */}
-          <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--bg)] rounded-xl">
-            <button
-              type="button"
-              onClick={() => setMode('add')}
-              className={`py-2 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
-                mode === 'add'
-                  ? 'gradient-bg text-[#0B0B0C]'
-                  : 'text-[var(--text2)] hover:text-[var(--text)]'
-              }`}
-            >
-              <Plus size={12} strokeWidth={2.4} />
-              Sumar al actual
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('set')}
-              className={`py-2 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
-                mode === 'set'
-                  ? 'bg-[var(--info)]/15 text-[var(--info)]'
-                  : 'text-[var(--text2)] hover:text-[var(--text)]'
-              }`}
-            >
-              <Equal size={12} strokeWidth={2.4} />
-              Reemplazar
-            </button>
-          </div>
-
           {/* Amount */}
           <div>
             <label
@@ -407,13 +378,17 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
             )}
           </div>
 
-          {/* Submit */}
+          {/* Submit — always sums to the existing assignment. To set
+              an exact value the user goes to /app/plan and edits the
+              cell directly. Removing the Sumar/Reemplazar toggle
+              eliminated a confusing decision the testing users kept
+              tripping on. */}
           <button
             type="submit"
             disabled={!selectedCategory || amount <= 0}
             className="w-full h-12 sm:h-11 gradient-bg text-[#0B0B0C] font-semibold text-[15px] sm:text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter] disabled:opacity-40 disabled:pointer-events-none"
           >
-            {mode === 'add' ? 'Sumar' : 'Reemplazar'}
+            Asignar
             <ArrowRight size={14} strokeWidth={2.4} />
           </button>
 
