@@ -11,6 +11,8 @@ import { CategoryDrillModal } from './CategoryDrillModal'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
+import { PayFromAccountMenu } from '../PayFromAccountMenu'
+import { TransactionFormModal } from '../transacciones/TransactionFormModal'
 
 const MONTH_NAMES = [
   'Enero',
@@ -61,17 +63,42 @@ export interface PlanGroup {
   categories: PlanCategory[]
 }
 
+interface PlanAccount {
+  id: string
+  name: string
+}
+
+interface PlanCategoryOption {
+  id: string
+  name: string
+  group_name: string
+}
+
 interface PlanViewProps {
   budgetId: string | null
   month: string
   /** Kept for backward-compat — no longer used since ReadyToAssign is sourced from the global provider. */
   totalCash: number
   groups: PlanGroup[]
+  /** Active accounts feed the per-category "Pagar desde…" dropdown
+   *  and the TransactionFormModal it opens. Optional so existing
+   *  callers (admin, fixtures) keep working. */
+  accounts?: PlanAccount[]
+  /** Categories list used by TransactionFormModal — separate from
+   *  PlanGroup so we don't duplicate the structure. */
+  categoryOptions?: PlanCategoryOption[]
 }
 
 type Filter = 'todas' | 'subfondeadas' | 'con-dinero'
 
-export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) {
+export function PlanView({
+  budgetId,
+  month,
+  totalCash,
+  groups,
+  accounts = [],
+  categoryOptions = [],
+}: PlanViewProps) {
   const router = useRouter()
   const rtaCtx = useReadyToAssign()
   const fmtMoney = useFormatMoney()
@@ -84,6 +111,14 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
   const [error, setError] = useState<string | null>(null)
   const [moveSourceId, setMoveSourceId] = useState<string | null>(null)
   const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
+  // Quick-pay flow: pick an account from a category's "Pagar desde…"
+  // dropdown → opens TransactionFormModal pre-filled with category +
+  // account so the user only has to type the amount and (optionally)
+  // the payee.
+  const [quickPay, setQuickPay] = useState<{
+    categoryId: string
+    accountId: string
+  } | null>(null)
   // Default-open the first group, collapse the rest. Lets the user
   // see actionable rows immediately without expandir manualmente.
   const [collapsed, setCollapsed] = useState<Set<string>>(
@@ -481,25 +516,33 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
 
                       {/* Desktop layout: 4-col grid */}
                       <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px] gap-2 px-5 py-3.5 items-center">
-                        <button
-                          type="button"
-                          onClick={() => setDrillCategoryId(c.id)}
-                          className="flex items-center gap-3 min-w-0 text-left group"
-                        >
-                          <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-text)] transition-colors">
-                            <Icon size={16} strokeWidth={2} />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-[14px] text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
-                              {c.name}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => setDrillCategoryId(c.id)}
+                            className="flex items-center gap-3 min-w-0 text-left group flex-1"
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-text)] transition-colors">
+                              <Icon size={16} strokeWidth={2} />
                             </div>
-                            {c.goal_amount && c.goal_amount > 0 && (
-                              <div className="text-[11px] text-[var(--muted)] num">
-                                meta: ${c.goal_amount.toLocaleString('en-US')}
+                            <div className="min-w-0">
+                              <div className="text-[14px] text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
+                                {c.name}
                               </div>
-                            )}
-                          </div>
-                        </button>
+                              {c.goal_amount && c.goal_amount > 0 && (
+                                <div className="text-[11px] text-[var(--muted)] num">
+                                  meta: ${c.goal_amount.toLocaleString('en-US')}
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                          <PayFromAccountMenu
+                            accounts={accounts}
+                            onSelect={(accountId) =>
+                              setQuickPay({ categoryId: c.id, accountId })
+                            }
+                          />
+                        </div>
                         <div className="text-right">
                           <InlineMoneyEdit
                             value={assigned}
@@ -558,6 +601,23 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
           />
         )
       })()}
+
+      {/* Quick-pay modal — pre-fills category + account so the user
+          only needs to enter amount and (optionally) payee. */}
+      {quickPay && (
+        <TransactionFormModal
+          isOpen={true}
+          onClose={() => setQuickPay(null)}
+          accounts={accounts}
+          categories={categoryOptions}
+          mode="add"
+          defaultCategoryId={quickPay.categoryId}
+          defaultAccountId={quickPay.accountId}
+          onSaved={() => {
+            router.refresh()
+          }}
+        />
+      )}
     </div>
   )
 }

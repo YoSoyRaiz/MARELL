@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ChevronDown, ArrowRight } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useFormatMoney } from './CurrencyProvider'
@@ -9,7 +10,23 @@ import { useReadyToAssign } from './ReadyToAssignProvider'
 import { InlineMoneyEdit } from './plan/InlineMoneyEdit'
 import { updateAssignment } from './plan/actions'
 import { CategoryDrillModal } from './plan/CategoryDrillModal'
+import { PayFromAccountMenu } from './PayFromAccountMenu'
+import {
+  TransactionFormModal,
+  type InitialTransaction,
+} from './transacciones/TransactionFormModal'
 import type { SectionGroup } from './CategoryCardsSection'
+
+interface AccountOption {
+  id: string
+  name: string
+}
+
+interface CategoryOption {
+  id: string
+  name: string
+  group_name: string
+}
 
 interface CategoryAccordionProps {
   groups: SectionGroup[]
@@ -17,6 +34,11 @@ interface CategoryAccordionProps {
    *  the user commits a new amount on a category row. */
   budgetId: string
   month: string
+  /** Active accounts — feeds the "Pagar desde…" dropdown per row and
+   *  the TransactionFormModal it opens. */
+  accounts: AccountOption[]
+  /** Categories list shape required by TransactionFormModal. */
+  categories: CategoryOption[]
 }
 
 /**
@@ -30,7 +52,10 @@ export function CategoryAccordion({
   groups,
   budgetId,
   month,
+  accounts,
+  categories,
 }: CategoryAccordionProps) {
+  const router = useRouter()
   const fmtMoney = useFormatMoney()
   const rtaCtx = useReadyToAssign()
 
@@ -38,6 +63,14 @@ export function CategoryAccordion({
     groups.find((g) => g.categories.length > 0)?.id ?? groups[0]?.id ?? null
   const [openId, setOpenId] = useState<string | null>(initialOpen)
   const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
+  // Quick-pay flow: when the user picks an account from the
+  // "Pagar desde…" dropdown of a category, we open the existing
+  // TransactionFormModal pre-filled with that category + account so
+  // the user only has to type the amount and (optionally) the payee.
+  const [quickPay, setQuickPay] = useState<{
+    categoryId: string
+    accountId: string
+  } | null>(null)
 
   // Local optimistic state for inline edits — same pattern Plan uses.
   // Override map by categoryId for the assigned amount; we add the
@@ -185,19 +218,27 @@ export function CategoryAccordion({
                               key={c.id}
                               className="grid grid-cols-[1fr_90px_70px_90px] gap-2 items-center px-5 py-2 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--overlay-1)] transition-colors"
                             >
-                              <button
-                                type="button"
-                                onClick={() => setDrillCategoryId(c.id)}
-                                aria-label={`Ver historial de ${c.name}`}
-                                className="flex items-center gap-2.5 min-w-0 text-left group"
-                              >
-                                <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-text)] transition-colors">
-                                  <Icon size={12} strokeWidth={2} />
-                                </div>
-                                <span className="text-[13px] text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
-                                  {c.name}
-                                </span>
-                              </button>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <button
+                                  type="button"
+                                  onClick={() => setDrillCategoryId(c.id)}
+                                  aria-label={`Ver historial de ${c.name}`}
+                                  className="flex items-center gap-2.5 min-w-0 text-left group flex-1"
+                                >
+                                  <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-text)] transition-colors">
+                                    <Icon size={12} strokeWidth={2} />
+                                  </div>
+                                  <span className="text-[13px] text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
+                                    {c.name}
+                                  </span>
+                                </button>
+                                <PayFromAccountMenu
+                                  accounts={accounts}
+                                  onSelect={(accountId) =>
+                                    setQuickPay({ categoryId: c.id, accountId })
+                                  }
+                                />
+                              </div>
                               <div className="text-right">
                                 <InlineMoneyEdit
                                   value={assigned}
@@ -246,6 +287,26 @@ export function CategoryAccordion({
           isOpen={drillCategoryId !== null}
           onClose={() => setDrillCategoryId(null)}
           categoryId={drillCategoryId}
+        />
+      )}
+
+      {/* Quick-pay modal — opens with category + account pre-filled
+          when the user selects an account from a category's
+          "Pagar desde…" dropdown. The user types the amount and
+          optionally the payee, then submits. router.refresh() at
+          close keeps the accordion in sync with the new transaction. */}
+      {quickPay && (
+        <TransactionFormModal
+          isOpen={true}
+          onClose={() => setQuickPay(null)}
+          accounts={accounts}
+          categories={categories}
+          mode="add"
+          defaultCategoryId={quickPay.categoryId}
+          defaultAccountId={quickPay.accountId}
+          onSaved={() => {
+            router.refresh()
+          }}
         />
       )}
     </section>

@@ -78,6 +78,12 @@ interface TransactionFormModalProps {
    *  ISO date (YYYY-MM-DD). Lets the parent jump to the right month
    *  filter so the user sees the row they just created. */
   onSaved?: (savedDate: string) => void
+  /** Optional defaults for "add" mode. Used by quick-pay flows that
+   *  open the form from a category row pre-filling category + account
+   *  so the user only needs to type amount + payee. Ignored in edit
+   *  mode (initial has priority). */
+  defaultCategoryId?: string | null
+  defaultAccountId?: string | null
 }
 
 const todayLocal = () => {
@@ -94,6 +100,8 @@ export function TransactionFormModal({
   initial,
   compactMobile = false,
   onSaved,
+  defaultCategoryId = null,
+  defaultAccountId = null,
 }: TransactionFormModalProps) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -138,9 +146,11 @@ export function TransactionFormModal({
     } else {
       setType('expense')
       setDate(todayLocal())
-      setAccountId(accounts[0]?.id ?? '')
+      // Honor caller-provided defaults (quick-pay flow from a
+      // category row); fall back to the first account if none.
+      setAccountId(defaultAccountId ?? accounts[0]?.id ?? '')
       setToAccountId(accounts[1]?.id ?? '')
-      setCategoryId('')
+      setCategoryId(defaultCategoryId ?? '')
       setPayeeName('')
       setAmount(null)
       setMemo('')
@@ -149,7 +159,7 @@ export function TransactionFormModal({
       setSplits([newSplit(), newSplit()])
     }
     setError(null)
-  }, [isOpen, mode, initial, accounts])
+  }, [isOpen, mode, initial, accounts, defaultCategoryId, defaultAccountId])
 
   // Auto-categorize: when the user types a payee name, look up the most
   // common category from prior transactions and auto-fill if the user

@@ -89,7 +89,7 @@ export default async function PlanPage({
       .select('category_id, amount, transactions!inner(budget_id)')
       .eq('transactions.budget_id', budget.id)
       .not('category_id', 'is', null),
-    supabase.from('accounts').select('balance, type').eq('budget_id', budget.id),
+    supabase.from('accounts').select('id, name, balance, type, closed').eq('budget_id', budget.id),
   ])
 
   const groupsRaw = groupsRes.data ?? []
@@ -167,12 +167,30 @@ export default async function PlanPage({
     .filter((a) => cashTypes.includes(a.type as string))
     .reduce((s, a) => s + Number(a.balance), 0)
 
+  // Active accounts for the per-category "Pagar desde…" dropdown.
+  const planAccounts = accountsRaw
+    .filter((a) => a.closed === false || a.closed === null || a.closed === undefined)
+    .map((a) => ({ id: a.id as string, name: a.name as string }))
+
+  // Categories list shape required by TransactionFormModal.
+  const planCategoryOptions = (categoriesRes.data ?? []).map((c) => {
+    const groupName = (groupsRes.data ?? []).find((g) => g.id === c.group_id)
+      ?.name as string | undefined
+    return {
+      id: c.id as string,
+      name: c.name as string,
+      group_name: groupName ?? '—',
+    }
+  })
+
   return (
     <PlanView
       budgetId={budget.id as string}
       month={month}
       totalCash={totalCash}
       groups={groups}
+      accounts={planAccounts}
+      categoryOptions={planCategoryOptions}
     />
   )
 }

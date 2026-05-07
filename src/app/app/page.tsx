@@ -692,6 +692,8 @@ export default async function ResumenPage() {
           groups={sectionGroups}
           budgetId={budget.id as string}
           month={month}
+          accounts={modalAccounts}
+          categories={modalCategories}
         />
 
         {/* Recent transactions (with in-place add modal) */}
