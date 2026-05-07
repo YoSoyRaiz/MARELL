@@ -32,7 +32,7 @@ export default async function PlanPage({
     .maybeSingle()
 
   if (!budget) {
-    return <PlanView budgetId={null} month={month} totalCash={0} groups={[]} />
+    return <PlanView budgetId={null} month={month} groups={[]} />
   }
 
   const { first, last } = monthBounds(month)
@@ -159,38 +159,17 @@ export default async function PlanPage({
     }
   })
 
-  // Cash assignable to categories. The wizard's savingsAside flag isn't
-  // persisted yet, so for now treat all checking/savings/cash balances as
-  // assignable. (TODO: persist aside flag on accounts.)
-  const cashTypes = ['checking', 'savings', 'cash']
-  const totalCash = accountsRaw
-    .filter((a) => cashTypes.includes(a.type as string))
-    .reduce((s, a) => s + Number(a.balance), 0)
-
   // Active accounts for the per-category "Pagar desde…" dropdown.
   const planAccounts = accountsRaw
     .filter((a) => a.closed === false || a.closed === null || a.closed === undefined)
     .map((a) => ({ id: a.id as string, name: a.name as string }))
 
-  // Categories list shape required by TransactionFormModal.
-  const planCategoryOptions = (categoriesRes.data ?? []).map((c) => {
-    const groupName = (groupsRes.data ?? []).find((g) => g.id === c.group_id)
-      ?.name as string | undefined
-    return {
-      id: c.id as string,
-      name: c.name as string,
-      group_name: groupName ?? '—',
-    }
-  })
-
   return (
     <PlanView
       budgetId={budget.id as string}
       month={month}
-      totalCash={totalCash}
       groups={groups}
       accounts={planAccounts}
-      categoryOptions={planCategoryOptions}
     />
   )
 }

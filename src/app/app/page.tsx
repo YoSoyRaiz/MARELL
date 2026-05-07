@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRight, Target, Plus } from 'lucide-react'
+import { ArrowRight, Target } from 'lucide-react'
+import { AddTransactionButton } from './AddTransactionButton'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
 import {
@@ -652,10 +653,9 @@ export default async function ResumenPage() {
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
       {/* LEFT COLUMN */}
       <div className="space-y-7 min-w-0">
-        {/* Greeting + CTA "Agregar transacción" — el link va a
-            /app/transacciones?new=1 que TransactionsClient ya
-            interpreta para abrir el modal automáticamente. Mismo
-            patrón que el FAB móvil. */}
+        {/* Greeting + CTA "Agregar transacción" — abre el modal en
+            sitio (sin navegar a /transacciones) usando los mismos
+            accounts/categories que ya alimentan el resto de la vista. */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div className="space-y-2 min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
@@ -665,13 +665,13 @@ export default async function ResumenPage() {
               Tu mes en una <span className="gradient-text">mirada</span>, {firstName}.
             </h1>
           </div>
-          <Link
-            href="/app/transacciones?new=1"
-            className="shrink-0 h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter]"
-          >
-            <Plus size={14} strokeWidth={2.4} />
-            Agregar transacción
-          </Link>
+          <div className="shrink-0">
+            <AddTransactionButton
+              accounts={modalAccounts}
+              categories={modalCategories}
+              variant="primary"
+            />
+          </div>
         </div>
 
         {/* First-month onboarding guide. Component self-hides once the
@@ -693,7 +693,6 @@ export default async function ResumenPage() {
           budgetId={budget.id as string}
           month={month}
           accounts={modalAccounts}
-          categories={modalCategories}
         />
 
         {/* Recent transactions (with in-place add modal) */}

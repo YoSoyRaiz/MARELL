@@ -1,8 +1,14 @@
 'use client'
 
-import { useState, useMemo, useTransition, useCallback } from 'react'
+import { useEffect, useState, useMemo, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, ChevronDown, AlertCircle } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  AlertCircle,
+  CheckCircle2,
+} from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './InlineMoneyEdit'
 import { AnimatedNumber } from './AnimatedNumber'
@@ -12,7 +18,7 @@ import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
 import { PayFromAccountMenu } from '../PayFromAccountMenu'
-import { TransactionFormModal } from '../transacciones/TransactionFormModal'
+import { createTransaction } from '../transacciones/actions'
 
 const MONTH_NAMES = [
   'Enero',
@@ -39,6 +45,11 @@ const adjustMonth = (month: string, delta: number) => {
   const [y, m] = month.split('-').map(Number)
   const d = new Date(y, m - 1 + delta, 1)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+const todayISO = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 export interface PlanCategory {
@@ -68,25 +79,13 @@ interface PlanAccount {
   name: string
 }
 
-interface PlanCategoryOption {
-  id: string
-  name: string
-  group_name: string
-}
-
 interface PlanViewProps {
   budgetId: string | null
   month: string
-  /** Kept for backward-compat — no longer used since ReadyToAssign is sourced from the global provider. */
-  totalCash: number
   groups: PlanGroup[]
-  /** Active accounts feed the per-category "Pagar desde…" dropdown
-   *  and the TransactionFormModal it opens. Optional so existing
-   *  callers (admin, fixtures) keep working. */
+  /** Active accounts feed the per-category "Pagar desde…" dropdown.
+   *  Optional so existing callers keep working. */
   accounts?: PlanAccount[]
-  /** Categories list used by TransactionFormModal — separate from
-   *  PlanGroup so we don't duplicate the structure. */
-  categoryOptions?: PlanCategoryOption[]
 }
 
 type Filter = 'todas' | 'subfondeadas' | 'con-dinero'
@@ -94,10 +93,8 @@ type Filter = 'todas' | 'subfondeadas' | 'con-dinero'
 export function PlanView({
   budgetId,
   month,
-  totalCash,
   groups,
   accounts = [],
-  categoryOptions = [],
 }: PlanViewProps) {
   const router = useRouter()
   const rtaCtx = useReadyToAssign()
@@ -111,14 +108,61 @@ export function PlanView({
   const [error, setError] = useState<string | null>(null)
   const [moveSourceId, setMoveSourceId] = useState<string | null>(null)
   const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
-  // Quick-pay flow: pick an account from a category's "Pagar desde…"
-  // dropdown → opens TransactionFormModal pre-filled with category +
-  // account so the user only has to type the amount and (optionally)
-  // the payee.
-  const [quickPay, setQuickPay] = useState<{
-    categoryId: string
-    accountId: string
-  } | null>(null)
+  const [, startPay] = useTransition()
+  const [payToast, setPayToast] = useState<string | null>(null)
+  const [payError, setPayError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!payToast) return
+    const t = setTimeout(() => setPayToast(null), 4000)
+    return () => clearTimeout(t)
+  }, [payToast])
+  useEffect(() => {
+    if (!payError) return
+    const t = setTimeout(() => setPayError(null), 6000)
+    return () => clearTimeout(t)
+  }, [payError])
+
+  /**
+   * Auto-pay: registra la transacción al instante usando el monto
+   * presupuestado de la categoría, fecha de hoy, y la cuenta elegida.
+   * Sin modal — el usuario ya tomó 3 decisiones (categoría + Pagar +
+   * cuenta), un form sería redundante.
+   */
+  const handleQuickPay = (
+    catId: string,
+    catName: string,
+    assignedAmount: number,
+    accountId: string,
+    accountName: string,
+  ) => {
+    if (assignedAmount <= 0.005) {
+      setPayError(
+        `${catName} no tiene presupuesto este mes — asigna un monto antes de pagar.`,
+      )
+      return
+    }
+    setPayError(null)
+    startPay(async () => {
+      const r = await createTransaction({
+        accountId,
+        categoryId: catId,
+        date: todayISO(),
+        payeeName: catName,
+        amount: assignedAmount,
+        memo: null,
+        type: 'expense',
+      })
+      if (r && 'error' in r && r.error) {
+        setPayError(r.error)
+        return
+      }
+      setPayToast(
+        `Pagado ${fmtMoney(assignedAmount)} de ${catName} desde ${accountName}.`,
+      )
+      router.refresh()
+    })
+  }
   // Default-open the first group, collapse the rest. Lets the user
   // see actionable rows immediately without expandir manualmente.
   const [collapsed, setCollapsed] = useState<Set<string>>(
@@ -540,9 +584,16 @@ export function PlanView({
                           </button>
                           <PayFromAccountMenu
                             accounts={accounts}
-                            onSelect={(accountId) =>
-                              setQuickPay({ categoryId: c.id, accountId })
-                            }
+                            onSelect={(accountId) => {
+                              const acc = accounts.find((a) => a.id === accountId)
+                              handleQuickPay(
+                                c.id,
+                                c.name,
+                                assigned,
+                                accountId,
+                                acc?.name ?? '',
+                              )
+                            }}
                           />
                         </div>
                         <div className="text-right">
@@ -604,21 +655,32 @@ export function PlanView({
         )
       })()}
 
-      {/* Quick-pay modal — pre-fills category + account so the user
-          only needs to enter amount and (optionally) payee. */}
-      {quickPay && (
-        <TransactionFormModal
-          isOpen={true}
-          onClose={() => setQuickPay(null)}
-          accounts={accounts}
-          categories={categoryOptions}
-          mode="add"
-          defaultCategoryId={quickPay.categoryId}
-          defaultAccountId={quickPay.accountId}
-          onSaved={() => {
-            router.refresh()
-          }}
-        />
+      {/* Toasts del flujo auto-pay. */}
+      {payToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border border-[var(--brand-2)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step pointer-events-none"
+        >
+          <CheckCircle2
+            size={18}
+            strokeWidth={2.4}
+            className="text-[var(--brand-text)] shrink-0"
+          />
+          <span className="text-[14px] font-medium text-[var(--text)]">
+            {payToast}
+          </span>
+        </div>
+      )}
+      {payError && (
+        <div
+          role="alert"
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border border-[var(--coral)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step"
+        >
+          <span className="text-[14px] text-[var(--coral-text)] font-medium">
+            {payError}
+          </span>
+        </div>
       )}
     </div>
   )

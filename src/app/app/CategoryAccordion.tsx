@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, ArrowRight } from 'lucide-react'
+import { ChevronDown, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useFormatMoney } from './CurrencyProvider'
 import { useReadyToAssign } from './ReadyToAssignProvider'
@@ -11,21 +11,12 @@ import { InlineMoneyEdit } from './plan/InlineMoneyEdit'
 import { updateAssignment } from './plan/actions'
 import { CategoryDrillModal } from './plan/CategoryDrillModal'
 import { PayFromAccountMenu } from './PayFromAccountMenu'
-import {
-  TransactionFormModal,
-  type InitialTransaction,
-} from './transacciones/TransactionFormModal'
+import { createTransaction } from './transacciones/actions'
 import type { SectionGroup } from './CategoryCardsSection'
 
 interface AccountOption {
   id: string
   name: string
-}
-
-interface CategoryOption {
-  id: string
-  name: string
-  group_name: string
 }
 
 interface CategoryAccordionProps {
@@ -34,11 +25,15 @@ interface CategoryAccordionProps {
    *  the user commits a new amount on a category row. */
   budgetId: string
   month: string
-  /** Active accounts — feeds the "Pagar desde…" dropdown per row and
-   *  the TransactionFormModal it opens. */
+  /** Active accounts — feeds the "Pagar desde…" dropdown per row.
+   *  When the user picks one, a transaction is created on the spot
+   *  using the category's budgeted (assigned) amount. */
   accounts: AccountOption[]
-  /** Categories list shape required by TransactionFormModal. */
-  categories: CategoryOption[]
+}
+
+const todayISO = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 /**
@@ -53,7 +48,6 @@ export function CategoryAccordion({
   budgetId,
   month,
   accounts,
-  categories,
 }: CategoryAccordionProps) {
   const router = useRouter()
   const fmtMoney = useFormatMoney()
@@ -63,14 +57,63 @@ export function CategoryAccordion({
     groups.find((g) => g.categories.length > 0)?.id ?? groups[0]?.id ?? null
   const [openId, setOpenId] = useState<string | null>(initialOpen)
   const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
-  // Quick-pay flow: when the user picks an account from the
-  // "Pagar desde…" dropdown of a category, we open the existing
-  // TransactionFormModal pre-filled with that category + account so
-  // the user only has to type the amount and (optionally) the payee.
-  const [quickPay, setQuickPay] = useState<{
-    categoryId: string
-    accountId: string
-  } | null>(null)
+  const [, startPay] = useTransition()
+  const [payToast, setPayToast] = useState<string | null>(null)
+  const [payError, setPayError] = useState<string | null>(null)
+
+  // Auto-dismiss toasts after 4s.
+  useEffect(() => {
+    if (!payToast) return
+    const t = setTimeout(() => setPayToast(null), 4000)
+    return () => clearTimeout(t)
+  }, [payToast])
+  useEffect(() => {
+    if (!payError) return
+    const t = setTimeout(() => setPayError(null), 6000)
+    return () => clearTimeout(t)
+  }, [payError])
+
+  /**
+   * Auto-pay: creates a transaction immediately using the category's
+   * budgeted (assigned) amount, today's date, and the chosen account.
+   * No modal — the user already made 3 choices (category + Pagar +
+   * account), opening a form would be redundant. RtA / row available
+   * update via router.refresh() once the server returns.
+   */
+  const handleQuickPay = (
+    catId: string,
+    catName: string,
+    assignedAmount: number,
+    accountId: string,
+    accountName: string,
+  ) => {
+    if (assignedAmount <= 0.005) {
+      setPayError(
+        `${catName} no tiene presupuesto este mes — asigna un monto antes de pagar.`,
+      )
+      return
+    }
+    setPayError(null)
+    startPay(async () => {
+      const r = await createTransaction({
+        accountId,
+        categoryId: catId,
+        date: todayISO(),
+        payeeName: catName,
+        amount: assignedAmount,
+        memo: null,
+        type: 'expense',
+      })
+      if (r && 'error' in r && r.error) {
+        setPayError(r.error)
+        return
+      }
+      setPayToast(
+        `Pagado ${fmtMoney(assignedAmount)} de ${catName} desde ${accountName}.`,
+      )
+      router.refresh()
+    })
+  }
 
   // Local optimistic state for inline edits — same pattern Plan uses.
   // Override map by categoryId for the assigned amount; we add the
@@ -239,9 +282,18 @@ export function CategoryAccordion({
                                 </button>
                                 <PayFromAccountMenu
                                   accounts={accounts}
-                                  onSelect={(accountId) =>
-                                    setQuickPay({ categoryId: c.id, accountId })
-                                  }
+                                  onSelect={(accountId) => {
+                                    const acc = accounts.find(
+                                      (a) => a.id === accountId,
+                                    )
+                                    handleQuickPay(
+                                      c.id,
+                                      c.name,
+                                      assigned,
+                                      accountId,
+                                      acc?.name ?? '',
+                                    )
+                                  }}
                                 />
                               </div>
                               <div className="text-right">
@@ -295,24 +347,34 @@ export function CategoryAccordion({
         />
       )}
 
-      {/* Quick-pay modal — opens with category + account pre-filled
-          when the user selects an account from a category's
-          "Pagar desde…" dropdown. The user types the amount and
-          optionally the payee, then submits. router.refresh() at
-          close keeps the accordion in sync with the new transaction. */}
-      {quickPay && (
-        <TransactionFormModal
-          isOpen={true}
-          onClose={() => setQuickPay(null)}
-          accounts={accounts}
-          categories={categories}
-          mode="add"
-          defaultCategoryId={quickPay.categoryId}
-          defaultAccountId={quickPay.accountId}
-          onSaved={() => {
-            router.refresh()
-          }}
-        />
+      {/* Auto-pay confirmation / error toasts. Centered top so they
+          don't compete with the bottom transaction toast in
+          /app/transacciones. Auto-dismiss in 4–6s. */}
+      {payToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border border-[var(--brand-2)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step pointer-events-none"
+        >
+          <CheckCircle2
+            size={18}
+            strokeWidth={2.4}
+            className="text-[var(--brand-text)] shrink-0"
+          />
+          <span className="text-[14px] font-medium text-[var(--text)]">
+            {payToast}
+          </span>
+        </div>
+      )}
+      {payError && (
+        <div
+          role="alert"
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border border-[var(--coral)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step"
+        >
+          <span className="text-[14px] text-[var(--coral-text)] font-medium">
+            {payError}
+          </span>
+        </div>
       )}
     </section>
   )

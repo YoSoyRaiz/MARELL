@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   Plus,
@@ -28,6 +27,7 @@ import { labelForAccountType } from '@/app/onboarding/wizard/components/AccountT
 import { AccountFormModal, type InitialAccount } from './AccountFormModal'
 import { AccountTransactionsDropdown } from './AccountTransactionsDropdown'
 import { useFormatMoney } from '../CurrencyProvider'
+import { AddTransactionButton } from '../AddTransactionButton'
 
 export interface ListAccount {
   id: string
@@ -60,8 +60,17 @@ const CATEGORY_BLOCKS: CategoryBlock[] = [
   { key: 'tracking', label: 'Seguimiento', Icon: TrendingUp, hint: 'Inversiones y pasivos no presupuestados' },
 ]
 
+interface CategoryOption {
+  id: string
+  name: string
+  group_name: string
+}
+
 interface Props {
   accounts: ListAccount[]
+  /** Categorías (con grupo) para el modal in-place de
+   *  "Agregar transacción" en el header. */
+  categoryOptions: CategoryOption[]
   hasBudget: boolean
   /** Latest BCRD-published USD→DOP rate. Used to convert USD account
    *  balances into DOP for the totals shown in this view. */
@@ -74,7 +83,12 @@ function toDop(amount: number, currency: 'DOP' | 'USD', rate: number): number {
   return currency === 'USD' ? amount * rate : amount
 }
 
-export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
+export function CuentasClient({
+  accounts,
+  categoryOptions,
+  hasBudget,
+  usdToDopRate,
+}: Props) {
   const router = useRouter()
   const confirm = useConfirm()
   const [, startUnreconcile] = useTransition()
@@ -145,18 +159,18 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
                 : `${accounts.length} ${accounts.length === 1 ? 'cuenta' : 'cuentas'}. Click en una para editarla.`}
             </p>
           </div>
-          {/* Dos CTAs en el header: agregar cuenta (primario, brand)
-              y agregar transacción (secundario, outlined). El segundo
-              navega a /app/transacciones?new=1 que abre el modal de
-              forma directa. */}
+          {/* Dos CTAs en el header: agregar transacción (secundario,
+              outlined) abre el modal in-place sin salir de Cuentas;
+              agregar cuenta (primario, brand) abre el modal de cuenta. */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <Link
-              href="/app/transacciones?new=1"
-              className="h-11 px-4 inline-flex items-center gap-1.5 rounded-xl border border-[var(--border2)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] text-[var(--text)] font-medium text-[13px] transition-colors"
-            >
-              <Plus size={14} strokeWidth={2.4} />
-              Agregar transacción
-            </Link>
+            <AddTransactionButton
+              accounts={accounts
+                .filter((a) => !a.closed)
+                .map((a) => ({ id: a.id, name: a.name }))}
+              categories={categoryOptions}
+              variant="outlined"
+              disabled={!hasBudget}
+            />
             <button
               type="button"
               onClick={() => setAddOpen(true)}

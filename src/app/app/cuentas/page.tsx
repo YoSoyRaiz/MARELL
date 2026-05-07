@@ -19,16 +19,35 @@ export default async function CuentasPage() {
     .maybeSingle()
 
   if (!budget) {
-    return <CuentasClient accounts={[]} hasBudget={false} usdToDopRate={60} />
+    return (
+      <CuentasClient
+        accounts={[]}
+        categoryOptions={[]}
+        hasBudget={false}
+        usdToDopRate={60}
+      />
+    )
   }
 
-  const { data: accountsRaw } = await supabase
-    .from('accounts')
-    .select(
-      'id, name, type, balance, note, closed, sort_order, currency, interest_rate_apr, cycle_close_day',
-    )
-    .eq('budget_id', budget.id)
-    .order('sort_order', { ascending: true })
+  const [{ data: accountsRaw }, { data: catsRaw }, { data: groupsRaw }] =
+    await Promise.all([
+      supabase
+        .from('accounts')
+        .select(
+          'id, name, type, balance, note, closed, sort_order, currency, interest_rate_apr, cycle_close_day',
+        )
+        .eq('budget_id', budget.id)
+        .order('sort_order', { ascending: true }),
+      supabase
+        .from('categories')
+        .select('id, name, group_id')
+        .eq('budget_id', budget.id)
+        .order('sort_order', { ascending: true }),
+      supabase
+        .from('category_groups')
+        .select('id, name')
+        .eq('budget_id', budget.id),
+    ])
 
   const accounts: ListAccount[] = (accountsRaw ?? []).map((a) => {
     const row = a as Record<string, unknown>
@@ -53,9 +72,23 @@ export default async function CuentasPage() {
     (budget as { usd_to_dop_rate?: number | null }).usd_to_dop_rate ?? 60,
   )
 
+  // Categorías (con nombre de grupo) para alimentar el modal in-place
+  // de "Agregar transacción". Misma forma que TransactionFormModal espera.
+  const categoryOptions = (catsRaw ?? []).map((c) => {
+    const groupName = (groupsRaw ?? []).find((g) => g.id === c.group_id)?.name as
+      | string
+      | undefined
+    return {
+      id: c.id as string,
+      name: c.name as string,
+      group_name: groupName ?? '—',
+    }
+  })
+
   return (
     <CuentasClient
       accounts={accounts}
+      categoryOptions={categoryOptions}
       hasBudget={true}
       usdToDopRate={usdToDopRate}
     />
