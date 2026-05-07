@@ -127,7 +127,7 @@ export function MoveMoneyModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -140,7 +140,7 @@ export function MoveMoneyModal({
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] inline-flex items-center gap-2">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] inline-flex items-center gap-2">
               <ArrowLeftRight size={12} strokeWidth={2.4} />
               Mover dinero
             </div>
@@ -158,7 +158,7 @@ export function MoveMoneyModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -167,7 +167,7 @@ export function MoveMoneyModal({
         <div className="px-6 py-4 space-y-4">
           {/* Source preview */}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3.5 py-2.5 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
               <SourceIcon size={14} strokeWidth={2} />
             </div>
             <div className="min-w-0 flex-1">
@@ -201,7 +201,7 @@ export function MoveMoneyModal({
               <button
                 type="button"
                 onClick={() => setAmountText(formatTyping(String(fromAvailable.toFixed(2))))}
-                className="mt-1.5 text-[11px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 num tabular-nums"
+                className="mt-1.5 text-[11px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 num tabular-nums"
               >
                 Mover todo: {fmtMoney(fromAvailable)}
               </button>
@@ -242,7 +242,7 @@ export function MoveMoneyModal({
               <AlertCircle
                 size={14}
                 strokeWidth={2.2}
-                className="text-[var(--coral)] shrink-0 mt-0.5"
+                className="text-[var(--coral-text)] shrink-0 mt-0.5"
               />
               <span>{error}</span>
             </div>
@@ -253,7 +253,7 @@ export function MoveMoneyModal({
           <button
             type="button"
             onClick={onClose}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-xl transition-colors"
+            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-xl transition-colors"
           >
             Cancelar
           </button>

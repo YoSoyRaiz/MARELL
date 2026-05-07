@@ -136,7 +136,7 @@ export function AnalisisClient({
               className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
                 active
                   ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-white/[0.04] text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.08]'
+                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
               }`}
             >
               {PERIOD_LABELS[p]}
@@ -152,20 +152,20 @@ export function AnalisisClient({
           value={totalExpenses}
           Icon={TrendingDown}
           iconBg="bg-[rgba(255,122,89,0.10)]"
-          iconColor="text-[var(--coral)]"
+          iconColor="text-[var(--coral-text)]"
         />
         <KpiCard
           label="Ingresos"
           value={totalIncome}
           Icon={TrendingUp}
           iconBg="bg-[rgba(61,220,151,0.10)]"
-          iconColor="text-[var(--brand-2)]"
+          iconColor="text-[var(--brand-text)]"
         />
         <KpiCard
           label="Neto"
           value={net}
           Icon={Wallet}
-          iconBg="bg-white/[0.04]"
+          iconBg="bg-[var(--overlay-1)]"
           iconColor="text-[var(--text2)]"
           highlight={net > 0.005}
         />
@@ -174,7 +174,7 @@ export function AnalisisClient({
           value={allRows.length}
           Icon={ChartPie}
           iconBg="bg-[rgba(77,168,255,0.10)]"
-          iconColor="text-[var(--info)]"
+          iconColor="text-[var(--info-text)]"
           isCount
         />
       </div>
@@ -182,7 +182,7 @@ export function AnalisisClient({
       {/* Donut + ranked list */}
       {!hasData ? (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
             <ChartPie size={22} strokeWidth={2} />
           </div>
           <div className="text-[16px] text-[var(--text)] font-semibold">
@@ -252,7 +252,7 @@ export function AnalisisClient({
                           {r.name}
                         </span>
                       </div>
-                      <div className="mt-2 h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
+                      <div className="mt-2 h-1.5 rounded-full bg-[var(--overlay-1)] overflow-hidden">
                         <div
                           className="h-full rounded-full transition-[width] duration-500"
                           style={{
@@ -307,7 +307,7 @@ function KpiCard({ label, value, Icon, iconBg, iconColor, highlight, isCount }: 
       </div>
       <div
         className={`text-[22px] font-bold tabular-nums num leading-none ${
-          highlight ? 'gradient-text' : value < -0.005 ? 'text-[var(--coral)]' : 'text-[var(--text)]'
+          highlight ? 'gradient-text' : value < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--text)]'
         }`}
       >
         {isCount ? Math.round(value) : fmtMoney(value)}

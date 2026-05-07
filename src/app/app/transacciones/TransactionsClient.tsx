@@ -341,7 +341,7 @@ export function TransactionsClient({
               type="button"
               onClick={() => setImportOpen(true)}
               disabled={!hasBudget || accounts.length === 0}
-              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-white/[0.04] hover:bg-white/[0.08] inline-flex items-center gap-1.5 sm:gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] inline-flex items-center gap-1.5 sm:gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
               <Upload size={14} strokeWidth={2.2} />
               <span className="hidden sm:inline">Importar CSV</span>
@@ -384,7 +384,7 @@ export function TransactionsClient({
                 type="button"
                 onClick={() => setSearchInput('')}
                 aria-label="Limpiar búsqueda"
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/[0.06] flex items-center justify-center transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center transition-colors"
               >
                 <X size={14} strokeWidth={2.2} />
               </button>
@@ -392,7 +392,7 @@ export function TransactionsClient({
           </div>
 
           {/* Type pills */}
-          <div className="flex items-center gap-1 p-1 bg-white/[0.04] rounded-xl">
+          <div className="flex items-center gap-1 p-1 bg-[var(--overlay-1)] rounded-xl">
             {(
               [
                 { id: 'all', label: 'Todas' },
@@ -424,7 +424,7 @@ export function TransactionsClient({
               type="button"
               onClick={() => pushParams({ month: adjustMonth(filters.month, -1) })}
               aria-label="Mes anterior"
-              className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
             >
               <ChevronLeft size={16} strokeWidth={2.2} />
             </button>
@@ -433,7 +433,7 @@ export function TransactionsClient({
               onClick={() =>
                 pushParams({ month: filters.month === 'all' ? null : 'all' })
               }
-              className="h-9 px-3 text-[13px] font-medium tabular-nums rounded-lg hover:bg-white/[0.04] text-[var(--text)] transition-colors min-w-[140px]"
+              className="h-9 px-3 text-[13px] font-medium tabular-nums rounded-lg hover:bg-[var(--overlay-1)] text-[var(--text)] transition-colors min-w-[140px]"
             >
               {formatMonthLabel(filters.month)}
             </button>
@@ -442,7 +442,7 @@ export function TransactionsClient({
               onClick={() => pushParams({ month: adjustMonth(filters.month, 1) })}
               aria-label="Mes siguiente"
               disabled={filters.month === 'all'}
-              className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors disabled:opacity-30 disabled:pointer-events-none"
+              className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors disabled:opacity-30 disabled:pointer-events-none"
             >
               <ChevronRight size={16} strokeWidth={2.2} />
             </button>
@@ -462,7 +462,7 @@ export function TransactionsClient({
         {/* Empty state */}
         {isEmpty && !filtersActive && (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Receipt size={22} strokeWidth={2} />
             </div>
             <div className="text-[16px] text-[var(--text)] font-semibold">
@@ -490,7 +490,7 @@ export function TransactionsClient({
         {/* Empty filtered state */}
         {isEmpty && filtersActive && (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-10 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Search size={20} strokeWidth={2} />
             </div>
             <div className="text-[14px] text-[var(--text)] font-medium">
@@ -503,7 +503,7 @@ export function TransactionsClient({
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-1.5 mt-1 h-9 px-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 mt-1 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors"
             >
               Limpiar filtros
             </button>
@@ -561,7 +561,7 @@ export function TransactionsClient({
                     {/* Mobile card layout (<md) */}
                     <div
                       onClick={() => setEditing(t)}
-                      className={`md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.04] transition-colors cursor-pointer ${
+                      className={`md:hidden flex items-start gap-3 px-4 py-3.5 hover:bg-[var(--overlay-1)] transition-colors cursor-pointer ${
                         selected.has(t.id) ? 'bg-[rgba(61,220,151,0.04)]' : ''
                       }`}
                     >
@@ -585,13 +585,13 @@ export function TransactionsClient({
                           </svg>
                         )}
                       </button>
-                      <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] flex items-center justify-center shrink-0 mt-0.5">
                         {t.is_transfer ? (
-                          <ArrowLeftRight size={15} strokeWidth={2} className="text-[var(--info)]" />
+                          <ArrowLeftRight size={15} strokeWidth={2} className="text-[var(--info-text)]" />
                         ) : isIncome ? (
-                          <ArrowUpRight size={15} strokeWidth={2} className="text-[var(--brand-2)]" />
+                          <ArrowUpRight size={15} strokeWidth={2} className="text-[var(--brand-text)]" />
                         ) : (
-                          <ArrowDownRight size={15} strokeWidth={2} className="text-[var(--coral)]" />
+                          <ArrowDownRight size={15} strokeWidth={2} className="text-[var(--coral-text)]" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -601,7 +601,7 @@ export function TransactionsClient({
                           </div>
                           <div
                             className={`text-[14px] tabular-nums num font-semibold whitespace-nowrap ${
-                              isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                              isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                             }`}
                           >
                             {isIncome ? '+' : '−'}
@@ -618,7 +618,7 @@ export function TransactionsClient({
                                 e.stopPropagation()
                                 toggleExpand(t.id)
                               }}
-                              className="inline-flex items-center gap-1 text-[var(--brand-2)]"
+                              className="inline-flex items-center gap-1 text-[var(--brand-text)]"
                               aria-expanded={isExpanded}
                             >
                               <Split size={10} strokeWidth={2.2} />
@@ -648,7 +648,7 @@ export function TransactionsClient({
                           handleDelete(t.id)
                         }}
                         aria-label="Eliminar transacción"
-                        className="text-[var(--muted)] hover:text-[var(--coral)] p-1.5 -mr-1 rounded-lg hover:bg-white/[0.04] transition-colors shrink-0"
+                        className="text-[var(--muted)] hover:text-[var(--coral-text)] p-1.5 -mr-1 rounded-lg hover:bg-[var(--overlay-1)] transition-colors shrink-0"
                       >
                         <Trash2 size={14} strokeWidth={2} />
                       </button>
@@ -657,7 +657,7 @@ export function TransactionsClient({
                     {/* Desktop table row (md+) */}
                     <div
                       onClick={() => setEditing(t)}
-                      className={`hidden md:grid grid-cols-[28px_80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-white/[0.04] transition-colors cursor-pointer ${
+                      className={`hidden md:grid grid-cols-[28px_80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-3.5 items-center hover:bg-[var(--overlay-1)] transition-colors cursor-pointer ${
                         selected.has(t.id) ? 'bg-[rgba(61,220,151,0.04)]' : ''
                       }`}
                     >
@@ -685,13 +685,13 @@ export function TransactionsClient({
                         {formatDate(t.date)}
                       </div>
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-[var(--overlay-1)] flex items-center justify-center shrink-0">
                           {t.is_transfer ? (
-                            <ArrowLeftRight size={14} strokeWidth={2} className="text-[var(--info)]" />
+                            <ArrowLeftRight size={14} strokeWidth={2} className="text-[var(--info-text)]" />
                           ) : isIncome ? (
-                            <ArrowUpRight size={14} strokeWidth={2} className="text-[var(--brand-2)]" />
+                            <ArrowUpRight size={14} strokeWidth={2} className="text-[var(--brand-text)]" />
                           ) : (
-                            <ArrowDownRight size={14} strokeWidth={2} className="text-[var(--coral)]" />
+                            <ArrowDownRight size={14} strokeWidth={2} className="text-[var(--coral-text)]" />
                           )}
                         </div>
                         <div className="min-w-0">
@@ -711,7 +711,7 @@ export function TransactionsClient({
                               e.stopPropagation()
                               toggleExpand(t.id)
                             }}
-                            className="inline-flex items-center gap-1.5 text-[var(--brand-2)] hover:text-[var(--text)] transition-colors"
+                            className="inline-flex items-center gap-1.5 text-[var(--brand-text)] hover:text-[var(--text)] transition-colors"
                             aria-expanded={isExpanded}
                             aria-label={isExpanded ? 'Ocultar splits' : 'Ver splits'}
                           >
@@ -733,7 +733,7 @@ export function TransactionsClient({
                       <div className="text-[13px] text-[var(--text2)] truncate">{t.account_name}</div>
                       <div
                         className={`text-right text-[14px] tabular-nums num font-semibold ${
-                          isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                          isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                         }`}
                       >
                         {isIncome ? '+' : '−'}
@@ -746,7 +746,7 @@ export function TransactionsClient({
                           handleDelete(t.id)
                         }}
                         aria-label="Eliminar transacción"
-                        className="text-[var(--muted)] hover:text-[var(--coral)] p-2 rounded-lg hover:bg-white/[0.04] transition-colors justify-self-end"
+                        className="text-[var(--muted)] hover:text-[var(--coral-text)] p-2 rounded-lg hover:bg-[var(--overlay-1)] transition-colors justify-self-end"
                       >
                         <Trash2 size={14} strokeWidth={2} />
                       </button>
@@ -774,7 +774,7 @@ export function TransactionsClient({
                                   </div>
                                   <div
                                     className={`text-[12px] tabular-nums num font-medium whitespace-nowrap ${
-                                      s.amount >= 0 ? 'text-[var(--brand-2)]' : 'text-[var(--text2)]'
+                                      s.amount >= 0 ? 'text-[var(--brand-text)]' : 'text-[var(--text2)]'
                                     }`}
                                   >
                                     {s.amount >= 0 ? '+' : '−'}
@@ -807,7 +807,7 @@ export function TransactionsClient({
                                   <div />
                                   <div
                                     className={`text-right text-[12px] tabular-nums num ${
-                                      s.amount >= 0 ? 'text-[var(--brand-2)]' : 'text-[var(--text2)]'
+                                      s.amount >= 0 ? 'text-[var(--brand-text)]' : 'text-[var(--text2)]'
                                     }`}
                                   >
                                     {s.amount >= 0 ? '+' : '−'}
@@ -871,7 +871,7 @@ export function TransactionsClient({
           <CheckCircle2
             size={28}
             strokeWidth={2.2}
-            className="text-[var(--brand-2)] shrink-0"
+            className="text-[var(--brand-text)] shrink-0"
           />
           <span className="text-[18px] sm:text-[20px] font-bold text-[var(--text)] tracking-tight">
             {savedToast}

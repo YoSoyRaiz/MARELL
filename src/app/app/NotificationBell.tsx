@@ -90,7 +90,7 @@ export function NotificationBell({
         onClick={handleOpen}
         aria-label="Notificaciones"
         aria-expanded={open}
-        className="relative w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors"
+        className="relative w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
       >
         <Bell size={16} strokeWidth={2.2} />
         {hasUnseen && (
@@ -101,7 +101,7 @@ export function NotificationBell({
       {open && (
         <div className="absolute right-0 top-full mt-2 w-[340px] sm:w-[380px] max-h-[70vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step z-40">
           <header className="px-5 pt-4 pb-3 border-b border-[var(--border)]">
-            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
               Notificaciones
             </div>
             <p className="text-[12px] text-[var(--muted)] mt-0.5">
@@ -110,7 +110,7 @@ export function NotificationBell({
           </header>
           {notifications.length === 0 ? (
             <div className="px-5 py-8 text-center">
-              <div className="w-12 h-12 rounded-full bg-white/[0.04] text-[var(--text2)] flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 rounded-full bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center mx-auto mb-3">
                 <Bell size={18} strokeWidth={2} />
               </div>
               <p className="text-[13px] text-[var(--muted)] leading-relaxed">
@@ -123,10 +123,10 @@ export function NotificationBell({
                 const Icon = n.icon ? ICON_MAP[n.icon] : Sparkles
                 const tone =
                   n.severity === 'critical'
-                    ? 'text-[var(--coral)]'
+                    ? 'text-[var(--coral-text)]'
                     : n.severity === 'warn'
-                      ? 'text-[var(--warn)]'
-                      : 'text-[var(--info)]'
+                      ? 'text-[var(--warn-text)]'
+                      : 'text-[var(--info-text)]'
                 const Wrapper: React.ElementType = n.href ? Link : 'div'
                 const wrapperProps = n.href ? { href: n.href } : {}
                 return (
@@ -134,10 +134,10 @@ export function NotificationBell({
                     <Wrapper
                       {...wrapperProps}
                       onClick={() => n.href && setOpen(false)}
-                      className="px-5 py-3 flex items-start gap-3 hover:bg-white/[0.04] transition-colors cursor-pointer"
+                      className="px-5 py-3 flex items-start gap-3 hover:bg-[var(--overlay-1)] transition-colors cursor-pointer"
                     >
                       <div
-                        className={`w-8 h-8 rounded-lg bg-white/[0.04] ${tone} flex items-center justify-center shrink-0 mt-0.5`}
+                        className={`w-8 h-8 rounded-lg bg-[var(--overlay-1)] ${tone} flex items-center justify-center shrink-0 mt-0.5`}
                       >
                         <Icon size={14} strokeWidth={2.2} />
                       </div>

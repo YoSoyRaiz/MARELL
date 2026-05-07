@@ -146,7 +146,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
       {/* Invite form */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <UserPlus size={16} strokeWidth={2.2} className="text-[var(--brand-2)]" />
+          <UserPlus size={16} strokeWidth={2.2} className="text-[var(--brand-text)]" />
           <h2 className="text-[15px] font-semibold text-[var(--text)]">Invitar a alguien</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-2">
@@ -180,13 +180,13 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
         </p>
         {error && (
           <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
-            <AlertCircle size={14} strokeWidth={2.2} className="text-[var(--coral)] shrink-0 mt-0.5" />
+            <AlertCircle size={14} strokeWidth={2.2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
         {success && (
           <div className="rounded-xl border border-[var(--success)]/40 bg-[rgba(61,220,151,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
-            <CheckCircle2 size={14} strokeWidth={2.2} className="text-[var(--success)] shrink-0 mt-0.5" />
+            <CheckCircle2 size={14} strokeWidth={2.2} className="text-[var(--brand-text)] shrink-0 mt-0.5" />
             <span>{success}</span>
           </div>
         )}
@@ -196,7 +196,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
       {invitations.length > 0 && (
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
           <header className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-2">
-            <Clock size={14} strokeWidth={2.2} className="text-[var(--warn)]" />
+            <Clock size={14} strokeWidth={2.2} className="text-[var(--warn-text)]" />
             <h2 className="text-[14px] font-semibold text-[var(--text)]">
               Invitaciones pendientes
             </h2>
@@ -204,7 +204,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
           <ul className="divide-y divide-[var(--border)]">
             {invitations.map((inv) => (
               <li key={inv.id} className="px-5 py-3 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
                   <Mail size={14} strokeWidth={2} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -217,7 +217,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
                   type="button"
                   onClick={() => handleRevoke(inv)}
                   disabled={pending}
-                  className="text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0"
+                  className="text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0"
                   aria-label="Cancelar invitación"
                 >
                   <Trash2 size={13} strokeWidth={2} />
@@ -231,7 +231,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
       {/* Members list */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-2">
-          <Users size={14} strokeWidth={2.2} className="text-[var(--brand-2)]" />
+          <Users size={14} strokeWidth={2.2} className="text-[var(--brand-text)]" />
           <h2 className="text-[14px] font-semibold text-[var(--text)]">
             Miembros {budgetName ? `de ${budgetName}` : ''}
           </h2>
@@ -239,9 +239,9 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
         <ul className="divide-y divide-[var(--border)]">
           {members.map((m) => (
             <li key={m.id} className="px-5 py-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
                 {m.role === 'owner' ? (
-                  <Crown size={14} strokeWidth={2} className="text-[var(--warn)]" />
+                  <Crown size={14} strokeWidth={2} className="text-[var(--warn-text)]" />
                 ) : m.role === 'viewer' ? (
                   <Eye size={14} strokeWidth={2} />
                 ) : (
@@ -276,7 +276,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
                     type="button"
                     onClick={() => handleRemove(m)}
                     disabled={pending}
-                    className="text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                    className="text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
                     aria-label="Quitar miembro"
                   >
                     <Trash2 size={13} strokeWidth={2} />

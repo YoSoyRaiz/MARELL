@@ -40,7 +40,7 @@ const kpis = [
     sub: 'Este mes',
     Icon: TrendingUp,
     iconBg: 'bg-[var(--success)]/[0.12]',
-    iconColor: 'text-[var(--success)]',
+    iconColor: 'text-[var(--brand-text)]',
   },
   {
     label: 'Gastos',
@@ -48,7 +48,7 @@ const kpis = [
     sub: 'Este mes',
     Icon: TrendingDown,
     iconBg: 'bg-[var(--coral)]/[0.12]',
-    iconColor: 'text-[var(--coral)]',
+    iconColor: 'text-[var(--coral-text)]',
   },
   {
     label: 'Ahorros',
@@ -111,7 +111,7 @@ export function DashboardPreview() {
         {/* Por asignar pill */}
         <div className="rounded-xl border border-[var(--success)]/40 bg-[var(--success)]/[0.06] px-2.5 py-1.5 flex items-center gap-2">
           <div>
-            <p className="text-[8px] font-semibold uppercase tracking-wider text-[var(--success)]">
+            <p className="text-[8px] font-semibold uppercase tracking-wider text-[var(--brand-text)]">
               Por asignar
             </p>
             <p className="num text-[12px] font-bold leading-tight gradient-text">
@@ -228,7 +228,7 @@ export function DashboardPreview() {
                   Click en un grupo para asignar
                 </p>
               </div>
-              <span className="text-[8px] text-[var(--success)]">Ver plan →</span>
+              <span className="text-[8px] text-[var(--brand-text)]">Ver plan →</span>
             </div>
             <div className="grid grid-cols-3 gap-0 divide-x divide-y divide-white/[0.04]">
               {categories.map((c) => (
@@ -244,7 +244,7 @@ export function DashboardPreview() {
                       <p className="text-[9px] font-semibold text-[var(--muted)]">
                         Aún sin asignar
                       </p>
-                      <p className="text-[7px] text-[var(--success)]">
+                      <p className="text-[7px] text-[var(--brand-text)]">
                         Click para asignar →
                       </p>
                     </>
@@ -269,7 +269,7 @@ export function DashboardPreview() {
           <div className="rounded-md border border-white/[0.05] bg-[#141416]">
             <div className="flex items-baseline justify-between px-2.5 py-2 border-b border-white/[0.05]">
               <p className="text-[10px] font-semibold">Transacciones recientes</p>
-              <span className="text-[8px] text-[var(--success)]">Ver todas →</span>
+              <span className="text-[8px] text-[var(--brand-text)]">Ver todas →</span>
             </div>
             <div className="divide-y divide-white/[0.04]">
               {transactions.map((t) => (
@@ -286,7 +286,7 @@ export function DashboardPreview() {
                   </div>
                   <p
                     className={`num text-[9px] font-semibold ${
-                      t.tone === 'green' ? 'text-[var(--success)]' : 'text-[var(--coral)]'
+                      t.tone === 'green' ? 'text-[var(--brand-text)]' : 'text-[var(--coral-text)]'
                     }`}
                   >
                     {t.amount}
@@ -330,7 +330,7 @@ export function DashboardPreview() {
               <span className="grid size-4 place-items-center rounded gradient-bg">
                 <Sparkles size={8} strokeWidth={2.4} className="text-[#0B0B0C]" />
               </span>
-              <p className="text-[7px] font-bold uppercase tracking-wider text-[var(--success)]">
+              <p className="text-[7px] font-bold uppercase tracking-wider text-[var(--brand-text)]">
                 Idea inteligente
               </p>
             </div>
@@ -343,10 +343,10 @@ export function DashboardPreview() {
           <div className="rounded-md border border-white/[0.05] bg-[#141416] p-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <Target size={9} strokeWidth={2.2} className="text-[var(--success)]" />
+                <Target size={9} strokeWidth={2.2} className="text-[var(--brand-text)]" />
                 <p className="text-[9px] font-semibold">Metas</p>
               </div>
-              <span className="text-[7px] text-[var(--success)] inline-flex items-center gap-0.5">
+              <span className="text-[7px] text-[var(--brand-text)] inline-flex items-center gap-0.5">
                 Todas <ArrowRight size={7} />
               </span>
             </div>
@@ -357,7 +357,7 @@ export function DashboardPreview() {
                     <span className="text-[8px] truncate">{m.label}</span>
                     <span
                       className={`num text-[7px] tabular-nums ${
-                        m.pct >= 99 ? 'text-[var(--success)] font-semibold' : 'text-[var(--muted)]'
+                        m.pct >= 99 ? 'text-[var(--brand-text)] font-semibold' : 'text-[var(--muted)]'
                       }`}
                     >
                       {m.pct}%
@@ -398,9 +398,9 @@ function Row({
 }) {
   const color =
     tone === 'green'
-      ? 'text-[var(--success)]'
+      ? 'text-[var(--brand-text)]'
       : tone === 'red'
-        ? 'text-[var(--coral)]'
+        ? 'text-[var(--coral-text)]'
         : 'text-[var(--text)]'
   return (
     <div className="flex items-center justify-between">

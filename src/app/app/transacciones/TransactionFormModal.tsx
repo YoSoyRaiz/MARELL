@@ -395,7 +395,7 @@ export function TransactionFormModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -408,7 +408,7 @@ export function TransactionFormModal({
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
               {isEdit ? 'Editar transacción' : 'Nueva transacción'}
             </div>
             <h2 id="tx-form-title" className="text-[20px] font-bold mt-1 leading-tight tracking-tight">
@@ -427,7 +427,7 @@ export function TransactionFormModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -438,7 +438,7 @@ export function TransactionFormModal({
             the form. */}
         {error && (
           <div className="mx-6 mt-3 rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.08)] px-4 py-3 flex items-start gap-3">
-            <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral)] shrink-0 mt-0.5" />
+            <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
             <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
           </div>
         )}
@@ -466,7 +466,7 @@ export function TransactionFormModal({
                 onClick={() => setType('expense')}
                 className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   type === 'expense'
-                    ? 'bg-[var(--coral)]/15 text-[var(--coral)]'
+                    ? 'bg-[var(--coral)]/15 text-[var(--coral-text)]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
                 }`}
               >
@@ -495,7 +495,7 @@ export function TransactionFormModal({
                 disabled={isEdit && isTransfer}
                 className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   isTransfer
-                    ? 'bg-[var(--info)]/15 text-[var(--info)]'
+                    ? 'bg-[var(--info)]/15 text-[var(--info-text)]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
                 }`}
               >
@@ -637,7 +637,7 @@ export function TransactionFormModal({
                 ))}
               </NativeSelect>
               {suggestedFromPayee && categoryId === suggestedFromPayee && (
-                <p className="text-[11px] text-[var(--brand-2)] mt-1.5 leading-relaxed">
+                <p className="text-[11px] text-[var(--brand-text)] mt-1.5 leading-relaxed">
                   Auto-rellenada según tus transacciones anteriores con este pagado.
                 </p>
               )}
@@ -655,7 +655,7 @@ export function TransactionFormModal({
                     newSplit(),
                   ])
                 }}
-                className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-2)] transition-colors"
+                className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
               >
                 <Split size={12} strokeWidth={2.2} />
                 Dividir en varias categorías
@@ -711,7 +711,7 @@ export function TransactionFormModal({
                       onClick={() => removeSplitRow(i)}
                       disabled={splits.length <= 2}
                       aria-label="Quitar fila"
-                      className="w-9 h-9 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                      className="w-9 h-9 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] transition-colors disabled:opacity-30 disabled:pointer-events-none"
                     >
                       <Trash2 size={14} strokeWidth={2} />
                     </button>
@@ -724,7 +724,7 @@ export function TransactionFormModal({
                   <button
                     type="button"
                     onClick={addSplitRow}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-2)] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
                   >
                     <Plus size={12} strokeWidth={2.4} />
                     Añadir categoría
@@ -733,7 +733,7 @@ export function TransactionFormModal({
                     <button
                       type="button"
                       onClick={equalizeSplits}
-                      className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-2)] transition-colors"
+                      className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
                       title="Distribuir el monto en partes iguales"
                     >
                       Igualar
@@ -744,7 +744,7 @@ export function TransactionFormModal({
                       <button
                         type="button"
                         onClick={() => distributeByPercentages([50, 50])}
-                        className="hover:text-[var(--brand-2)] transition-colors"
+                        className="hover:text-[var(--brand-text)] transition-colors"
                       >
                         50/50
                       </button>
@@ -752,7 +752,7 @@ export function TransactionFormModal({
                       <button
                         type="button"
                         onClick={() => distributeByPercentages([60, 40])}
-                        className="hover:text-[var(--brand-2)] transition-colors"
+                        className="hover:text-[var(--brand-text)] transition-colors"
                       >
                         60/40
                       </button>
@@ -760,7 +760,7 @@ export function TransactionFormModal({
                       <button
                         type="button"
                         onClick={() => distributeByPercentages([70, 30])}
-                        className="hover:text-[var(--brand-2)] transition-colors"
+                        className="hover:text-[var(--brand-text)] transition-colors"
                       >
                         70/30
                       </button>
@@ -770,20 +770,20 @@ export function TransactionFormModal({
                 {amount !== null && amount > 0 && (
                   <div className="text-[11px] tabular-nums num">
                     {splitsBalanced ? (
-                      <span className="text-[var(--brand-2)] font-semibold">
+                      <span className="text-[var(--brand-text)] font-semibold">
                         Cuadrado · ${splitsSum.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     ) : splitsRemainder > 0 ? (
                       <button
                         type="button"
                         onClick={distributeRemainder}
-                        className="text-[var(--coral)] font-semibold hover:underline"
+                        className="text-[var(--coral-text)] font-semibold hover:underline"
                         title="Asignar el resto a la última fila"
                       >
                         Falta ${splitsRemainder.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </button>
                     ) : (
-                      <span className="text-[var(--coral)] font-semibold">
+                      <span className="text-[var(--coral-text)] font-semibold">
                         Sobra ${Math.abs(splitsRemainder).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     )}
@@ -819,7 +819,7 @@ export function TransactionFormModal({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-12 sm:h-10 px-4 text-[14px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-xl sm:rounded-lg transition-colors disabled:opacity-60"
+            className="h-12 sm:h-10 px-4 text-[14px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-xl sm:rounded-lg transition-colors disabled:opacity-60"
           >
             Cancelar
           </button>

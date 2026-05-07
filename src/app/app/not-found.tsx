@@ -5,7 +5,7 @@ export default function AppNotFound() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-8 text-center space-y-4">
-        <div className="w-14 h-14 rounded-2xl bg-white/[0.04] text-[var(--text2)] flex items-center justify-center mx-auto">
+        <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center mx-auto">
           <Compass size={26} strokeWidth={2} />
         </div>
         <h1 className="text-[20px] font-bold tracking-tight text-[var(--text)]">

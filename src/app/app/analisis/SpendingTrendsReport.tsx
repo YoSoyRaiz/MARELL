@@ -115,7 +115,7 @@ export function SpendingTrendsReport({
               className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
                 active
                   ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-white/[0.04] text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.08]'
+                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
               }`}
             >
               {RANGE_LABELS[r]}
@@ -127,7 +127,7 @@ export function SpendingTrendsReport({
       {/* Empty state */}
       {!hasData ? (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
             <TrendingUp size={22} strokeWidth={2} />
           </div>
           <div className="text-[16px] text-[var(--text)] font-semibold">
@@ -169,7 +169,7 @@ export function SpendingTrendsReport({
           {/* Categories detail */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
-              <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+              <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 Detalle
               </h3>
               <span className="text-[11px] text-[var(--muted)]">

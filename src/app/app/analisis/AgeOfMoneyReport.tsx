@@ -157,7 +157,7 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
               className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
                 active
                   ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-white/[0.04] text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.08]'
+                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
               }`}
             >
               {RANGE_LABELS[r]}
@@ -170,7 +170,7 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)] px-6 py-6">
         <div className="flex items-center justify-between gap-6 flex-wrap">
           <div>
-            <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-2)] font-semibold">
+            <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
               {latestLabel ? `Edad del dinero · ${latestLabel}` : 'Edad del dinero'}
             </div>
             <div className="flex items-baseline gap-2 mt-2">
@@ -179,8 +179,8 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
               </div>
               <div className="text-[18px] font-semibold text-[var(--text2)]">días</div>
             </div>
-            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04]">
-              <Sparkles size={12} strokeWidth={2.4} className="text-[var(--brand-2)]" />
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--overlay-1)]">
+              <Sparkles size={12} strokeWidth={2.4} className="text-[var(--brand-text)]" />
               <span className="text-[12px] font-medium text-[var(--text)]">{interp.tag}</span>
             </div>
             <p className="text-[13px] text-[var(--text2)] leading-relaxed mt-3 max-w-md">
@@ -194,7 +194,7 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
               </div>
               <div
                 className={`text-[20px] font-bold tabular-nums num mt-2 inline-flex items-center gap-1.5 ${
-                  delta > 0 ? 'text-[var(--brand-2)]' : 'text-[var(--coral)]'
+                  delta > 0 ? 'text-[var(--brand-text)]' : 'text-[var(--coral-text)]'
                 }`}
               >
                 {delta > 0 ? (
@@ -222,14 +222,14 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
             value={maxPoint ? `${Math.round(maxPoint.ageDays)} días` : '—'}
             sub={maxPoint?.label}
             Icon={ArrowUp}
-            iconColor="text-[var(--brand-2)]"
+            iconColor="text-[var(--brand-text)]"
           />
           <StatCard
             label="Más ajustado"
             value={minPoint ? `${Math.round(minPoint.ageDays)} días` : '—'}
             sub={minPoint?.label}
             Icon={ArrowDown}
-            iconColor="text-[var(--coral)]"
+            iconColor="text-[var(--coral-text)]"
           />
         </div>
       )}
@@ -237,7 +237,7 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
       {/* Chart */}
       {!hasData ? (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
             <Hourglass size={22} strokeWidth={2} />
           </div>
           <div className="text-[16px] text-[var(--text)] font-semibold">
@@ -282,7 +282,7 @@ function StatCard({ label, value, sub, Icon, iconColor }: StatCardProps) {
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
       <div className="flex items-center justify-between mb-3">
         <div
-          className={`w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center ${
+          className={`w-9 h-9 rounded-lg bg-[var(--overlay-1)] flex items-center justify-center ${
             iconColor ?? 'text-[var(--text2)]'
           }`}
         >

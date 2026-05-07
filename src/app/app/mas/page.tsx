@@ -35,7 +35,7 @@ const ITEMS: MoreItem[] = [
     href: '/app/cuentas',
     icon: Wallet,
     iconBg: 'bg-[rgba(61,220,151,0.10)]',
-    iconColor: 'text-[var(--brand-2)]',
+    iconColor: 'text-[var(--brand-text)]',
   },
   {
     id: 'reconciliar',
@@ -44,7 +44,7 @@ const ITEMS: MoreItem[] = [
     href: '/app/cuentas',
     icon: Scale,
     iconBg: 'bg-[rgba(77,168,255,0.10)]',
-    iconColor: 'text-[var(--info)]',
+    iconColor: 'text-[var(--info-text)]',
   },
   {
     id: 'analisis',
@@ -53,7 +53,7 @@ const ITEMS: MoreItem[] = [
     href: '/app/analisis',
     icon: BarChart3,
     iconBg: 'bg-[rgba(245,200,66,0.10)]',
-    iconColor: 'text-[var(--warn)]',
+    iconColor: 'text-[var(--warn-text)]',
   },
   {
     id: 'programadas',
@@ -71,7 +71,7 @@ const ITEMS: MoreItem[] = [
     href: '/app/metas',
     icon: Target,
     iconBg: 'bg-[rgba(61,220,151,0.10)]',
-    iconColor: 'text-[var(--brand-2)]',
+    iconColor: 'text-[var(--brand-text)]',
   },
   {
     id: 'familia',
@@ -80,7 +80,7 @@ const ITEMS: MoreItem[] = [
     href: '/app/familia',
     icon: Users,
     iconBg: 'bg-[rgba(255,122,89,0.10)]',
-    iconColor: 'text-[var(--coral)]',
+    iconColor: 'text-[var(--coral-text)]',
   },
   {
     id: 'calculos',
@@ -89,7 +89,7 @@ const ITEMS: MoreItem[] = [
     href: '/app/herramientas',
     icon: Calculator,
     iconBg: 'bg-[rgba(245,200,66,0.10)]',
-    iconColor: 'text-[var(--warn)]',
+    iconColor: 'text-[var(--warn-text)]',
   },
   {
     id: 'ajustes',
@@ -97,7 +97,7 @@ const ITEMS: MoreItem[] = [
     description: 'Perfil, plan, moneda y datos',
     href: '/app/ajustes',
     icon: Settings,
-    iconBg: 'bg-white/[0.04]',
+    iconBg: 'bg-[var(--overlay-1)]',
     iconColor: 'text-[var(--text2)]',
   },
 ]
@@ -177,7 +177,7 @@ export default async function MasPage() {
             <li key={item.id}>
               <Link
                 href={item.href}
-                className="block rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-4 hover:border-[var(--border3)] hover:bg-white/[0.02] transition-colors h-full"
+                className="block rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-4 hover:border-[var(--border3)] hover:bg-[var(--overlay-1)] transition-colors h-full"
               >
                 <div
                   className={`w-10 h-10 rounded-lg ${item.iconBg} ${item.iconColor} flex items-center justify-center mb-3`}
@@ -203,7 +203,7 @@ export default async function MasPage() {
           className="block rounded-2xl border border-[var(--warn)]/30 bg-[rgba(245,200,66,0.04)] p-4 hover:border-[var(--warn)]/50 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn)] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn-text)] flex items-center justify-center shrink-0">
               <ShieldCheck size={18} strokeWidth={2} />
             </div>
             <div className="flex-1">
@@ -227,7 +227,7 @@ export default async function MasPage() {
       <div className="space-y-2 pt-2">
         <Link
           href="mailto:hola@marell.app"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.02] transition-colors"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
         >
           <LifeBuoy size={18} strokeWidth={2} className="shrink-0" />
           <div className="flex-1 text-[14px]">Ayuda y soporte</div>
@@ -236,7 +236,7 @@ export default async function MasPage() {
         <form action={logout}>
           <button
             type="submit"
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--coral)] hover:bg-[rgba(255,122,89,0.06)] transition-colors text-left"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.06)] transition-colors text-left"
           >
             <LogOut size={18} strokeWidth={2} className="shrink-0" />
             <div className="flex-1 text-[14px]">Cerrar sesión</div>

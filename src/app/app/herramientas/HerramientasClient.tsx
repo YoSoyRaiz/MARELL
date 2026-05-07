@@ -137,7 +137,7 @@ export function HerramientasClient() {
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
               <Briefcase size={16} strokeWidth={2} />
             </div>
             <div className="min-w-0">
@@ -214,7 +214,7 @@ export function HerramientasClient() {
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-[rgba(255,122,89,0.10)] text-[var(--coral)] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)] flex items-center justify-center shrink-0">
               <CreditCard size={16} strokeWidth={2} />
             </div>
             <div className="min-w-0">
@@ -319,7 +319,7 @@ function Row({ label, value, hint, tone = 'default' }: RowProps) {
     tone === 'hero'
       ? 'gradient-text text-[18px]'
       : tone === 'warn'
-        ? 'text-[var(--warn)] text-[14px]'
+        ? 'text-[var(--warn-text)] text-[14px]'
         : tone === 'muted'
           ? 'text-[var(--text2)] text-[14px]'
           : 'text-[var(--text)] text-[14px]'

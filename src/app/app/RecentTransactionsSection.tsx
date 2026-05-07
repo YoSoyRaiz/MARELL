@@ -76,14 +76,14 @@ export function RecentTransactionsSection({
               type="button"
               onClick={() => setImportOpen(true)}
               disabled={!canAdd}
-              className="text-[12px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] inline-flex items-center gap-1.5 h-8 px-3 rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              className="text-[12px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] inline-flex items-center gap-1.5 h-8 px-3 rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
               <Upload size={12} strokeWidth={2.2} />
               Importar CSV
             </button>
             <Link
               href="/app/transacciones"
-              className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 px-2"
+              className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 px-2"
             >
               Ver todas <ArrowRight size={12} strokeWidth={2.4} />
             </Link>
@@ -92,7 +92,7 @@ export function RecentTransactionsSection({
 
         {transactions.length === 0 ? (
           <div className="p-10 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Receipt size={20} strokeWidth={2} />
             </div>
             <div className="text-[14px] text-[var(--text)] font-medium">
@@ -106,7 +106,7 @@ export function RecentTransactionsSection({
                 type="button"
                 onClick={() => setAddOpen(true)}
                 disabled={!canAdd}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
               >
                 <Plus size={14} strokeWidth={2.2} />
                 Agregar
@@ -115,7 +115,7 @@ export function RecentTransactionsSection({
                 type="button"
                 onClick={() => setImportOpen(true)}
                 disabled={!canAdd}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
               >
                 <Upload size={14} strokeWidth={2.2} />
                 Importar CSV
@@ -128,18 +128,18 @@ export function RecentTransactionsSection({
               const isIncome = t.amount > 0
               return (
                 <li key={t.id} className="px-5 py-3 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-[var(--text2)] shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] flex items-center justify-center text-[var(--text2)] shrink-0">
                     {isIncome ? (
                       <ArrowUpRight
                         size={16}
                         strokeWidth={2}
-                        className="text-[var(--brand-2)]"
+                        className="text-[var(--brand-text)]"
                       />
                     ) : (
                       <ArrowDownRight
                         size={16}
                         strokeWidth={2}
-                        className="text-[var(--coral)]"
+                        className="text-[var(--coral-text)]"
                       />
                     )}
                   </div>
@@ -153,7 +153,7 @@ export function RecentTransactionsSection({
                   </div>
                   <div
                     className={`text-[14px] tabular-nums num font-semibold ${
-                      isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                      isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                     }`}
                   >
                     {isIncome ? '+' : '−'}

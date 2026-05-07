@@ -85,7 +85,7 @@ export function ReconcileModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -97,7 +97,7 @@ export function ReconcileModal({
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] inline-flex items-center gap-2">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] inline-flex items-center gap-2">
               <Scale size={12} strokeWidth={2.4} />
               Reconciliar
             </div>
@@ -115,7 +115,7 @@ export function ReconcileModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -124,7 +124,7 @@ export function ReconcileModal({
         {done ? (
           <>
             <div className="px-6 py-6 space-y-4 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)] flex items-center justify-center mx-auto">
+              <div className="w-14 h-14 rounded-2xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] flex items-center justify-center mx-auto">
                 <CheckCircle2 size={24} strokeWidth={2} />
               </div>
               <div className="text-[15px] text-[var(--text)] font-semibold">
@@ -188,7 +188,7 @@ export function ReconcileModal({
                       <CheckCircle2
                         size={14}
                         strokeWidth={2.2}
-                        className="text-[var(--success)] shrink-0 mt-0.5"
+                        className="text-[var(--brand-text)] shrink-0 mt-0.5"
                       />
                       <span>Cuadra perfecto. Vamos a bloquear todo lo que ya pasó.</span>
                     </>
@@ -197,7 +197,7 @@ export function ReconcileModal({
                       <AlertCircle
                         size={14}
                         strokeWidth={2.2}
-                        className="text-[var(--warn)] shrink-0 mt-0.5"
+                        className="text-[var(--warn-text)] shrink-0 mt-0.5"
                       />
                       <span className="num tabular-nums">
                         Diferencia: {fmtMoney(diff)}. Crearemos un ajuste sin categoría con esa cantidad.
@@ -212,7 +212,7 @@ export function ReconcileModal({
                   <AlertCircle
                     size={14}
                     strokeWidth={2.2}
-                    className="text-[var(--coral)] shrink-0 mt-0.5"
+                    className="text-[var(--coral-text)] shrink-0 mt-0.5"
                   />
                   <span>{error}</span>
                 </div>
@@ -224,7 +224,7 @@ export function ReconcileModal({
                 type="button"
                 onClick={onClose}
                 disabled={pending}
-                className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-xl transition-colors disabled:opacity-60"
+                className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-xl transition-colors disabled:opacity-60"
               >
                 Cancelar
               </button>

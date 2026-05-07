@@ -225,7 +225,7 @@ export function ScheduledFormModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -238,7 +238,7 @@ export function ScheduledFormModal({
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
               {isEdit ? 'Editar programada' : 'Nueva programada'}
             </div>
             <h2
@@ -260,7 +260,7 @@ export function ScheduledFormModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -278,9 +278,9 @@ export function ScheduledFormModal({
                 <button
                   type="button"
                   onClick={applyRegaliaPreset}
-                  className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors"
+                  className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] px-3.5 py-3 flex items-start gap-3 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn)] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn-text)] flex items-center justify-center shrink-0">
                     <Gift size={14} strokeWidth={2.2} />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -298,9 +298,9 @@ export function ScheduledFormModal({
                     applyInstallmentPreset()
                     setInstallmentOpen(true)
                   }}
-                  className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors"
+                  className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] px-3.5 py-3 flex items-start gap-3 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[rgba(255,122,89,0.10)] text-[var(--coral)] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)] flex items-center justify-center shrink-0">
                     <CreditCard size={14} strokeWidth={2.2} />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -319,7 +319,7 @@ export function ScheduledFormModal({
               {installmentOpen && (
                 <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3.5 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--brand-2)] font-semibold inline-flex items-center gap-1.5">
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--brand-text)] font-semibold inline-flex items-center gap-1.5">
                       <Calculator size={11} strokeWidth={2.4} />
                       Calculadora de cuotas
                     </div>
@@ -389,7 +389,7 @@ export function ScheduledFormModal({
                       type="button"
                       onClick={applyCuotaToAmount}
                       disabled={computedCuota <= 0}
-                      className="text-[11px] font-semibold text-[var(--brand-2)] hover:underline disabled:opacity-40"
+                      className="text-[11px] font-semibold text-[var(--brand-text)] hover:underline disabled:opacity-40"
                     >
                       Usar este monto
                     </button>
@@ -406,7 +406,7 @@ export function ScheduledFormModal({
               onClick={() => setType('expense')}
               className={`py-2.5 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                 type === 'expense'
-                  ? 'bg-[var(--coral)]/15 text-[var(--coral)]'
+                  ? 'bg-[var(--coral)]/15 text-[var(--coral-text)]'
                   : 'text-[var(--text2)] hover:text-[var(--text)]'
               }`}
             >
@@ -529,7 +529,7 @@ export function ScheduledFormModal({
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-              <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral)] shrink-0 mt-0.5" />
+              <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
               <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
             </div>
           )}
@@ -540,7 +540,7 @@ export function ScheduledFormModal({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-lg transition-colors disabled:opacity-60"
+            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-lg transition-colors disabled:opacity-60"
           >
             Cancelar
           </button>

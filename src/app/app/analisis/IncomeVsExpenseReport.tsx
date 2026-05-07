@@ -104,7 +104,7 @@ export function IncomeVsExpenseReport({
               className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
                 active
                   ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-white/[0.04] text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.08]'
+                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
               }`}
             >
               {RANGE_LABELS[r]}
@@ -120,26 +120,26 @@ export function IncomeVsExpenseReport({
           value={fmtMoney(totalIncome)}
           Icon={TrendingUp}
           iconBg="bg-[rgba(61,220,151,0.10)]"
-          iconColor="text-[var(--brand-2)]"
+          iconColor="text-[var(--brand-text)]"
         />
         <KpiCard
           label="Gastos totales"
           value={fmtMoney(totalExpense)}
           Icon={TrendingDown}
           iconBg="bg-[rgba(255,122,89,0.10)]"
-          iconColor="text-[var(--coral)]"
+          iconColor="text-[var(--coral-text)]"
         />
         <KpiCard
           label="Neto"
           value={fmtMoney(net)}
           Icon={Wallet}
-          iconBg="bg-white/[0.04]"
+          iconBg="bg-[var(--overlay-1)]"
           iconColor="text-[var(--text2)]"
           valueClass={
             net > 0.005
               ? 'gradient-text'
               : net < -0.005
-                ? 'text-[var(--coral)]'
+                ? 'text-[var(--coral-text)]'
                 : 'text-[var(--text)]'
           }
         />
@@ -152,12 +152,12 @@ export function IncomeVsExpenseReport({
           }
           Icon={Percent}
           iconBg="bg-[rgba(77,168,255,0.10)]"
-          iconColor="text-[var(--info)]"
+          iconColor="text-[var(--info-text)]"
           valueClass={
             savingsRate > 0
               ? 'gradient-text'
               : savingsRate < 0
-                ? 'text-[var(--coral)]'
+                ? 'text-[var(--coral-text)]'
                 : 'text-[var(--text)]'
           }
         />
@@ -166,7 +166,7 @@ export function IncomeVsExpenseReport({
       {/* Chart */}
       {!hasData ? (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
             <Scale size={22} strokeWidth={2} />
           </div>
           <div className="text-[16px] text-[var(--text)] font-semibold">
@@ -194,7 +194,7 @@ export function IncomeVsExpenseReport({
           {/* Month-by-month table */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
-              <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+              <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 Detalle
               </h3>
               <span className="text-[11px] text-[var(--muted)]">
@@ -216,7 +216,7 @@ export function IncomeVsExpenseReport({
                     className="grid grid-cols-[1fr_140px_140px_140px] gap-4 px-5 py-3 items-center text-[13px]"
                   >
                     <div className="text-[var(--text)]">{m.label}</div>
-                    <div className="text-right tabular-nums num text-[var(--brand-2)]">
+                    <div className="text-right tabular-nums num text-[var(--brand-text)]">
                       {fmtMoney(m.income)}
                     </div>
                     <div className="text-right tabular-nums num text-[var(--text)]">
@@ -227,7 +227,7 @@ export function IncomeVsExpenseReport({
                         monthNet > 0.005
                           ? 'gradient-text'
                           : monthNet < -0.005
-                            ? 'text-[var(--coral)]'
+                            ? 'text-[var(--coral-text)]'
                             : 'text-[var(--muted)]'
                       }`}
                     >

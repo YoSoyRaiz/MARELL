@@ -138,7 +138,7 @@ export function KeyboardShortcuts() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
         onClick={() => setHelpOpen(false)}
         aria-hidden
       />
@@ -150,7 +150,7 @@ export function KeyboardShortcuts() {
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] inline-flex items-center gap-2">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] inline-flex items-center gap-2">
               <Keyboard size={12} strokeWidth={2.4} />
               Atajos
             </div>
@@ -161,14 +161,14 @@ export function KeyboardShortcuts() {
               Muévete <span className="gradient-text">rápido</span> por MARELL
             </h2>
             <p className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
-              Presiona <kbd className="px-1.5 py-0.5 rounded-md bg-white/[0.05] border border-[var(--border)] font-mono text-[10px]">g</kbd> seguido de la letra para navegar.
+              Presiona <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--overlay-1)] border border-[var(--border)] font-mono text-[10px]">g</kbd> seguido de la letra para navegar.
             </p>
           </div>
           <button
             type="button"
             onClick={() => setHelpOpen(false)}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -183,7 +183,7 @@ export function KeyboardShortcuts() {
               <span className="font-mono text-[11px] text-[var(--text2)] tracking-wide">
                 {s.keys.split('  ').map((k, i, arr) => (
                   <span key={i} className="inline-flex items-center">
-                    <kbd className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-[var(--border)]">
+                    <kbd className="px-2 py-0.5 rounded-md bg-[var(--overlay-1)] border border-[var(--border)]">
                       {k}
                     </kbd>
                     {i < arr.length - 1 && (

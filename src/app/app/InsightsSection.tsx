@@ -60,29 +60,29 @@ const SEVERITY_TONES: Record<
     border: 'border-[var(--coral)]/40',
     bg: 'bg-[rgba(255,122,89,0.05)]',
     iconBg: 'bg-[rgba(255,122,89,0.14)]',
-    iconColor: 'text-[var(--coral)]',
-    label: 'text-[var(--coral)]',
+    iconColor: 'text-[var(--coral-text)]',
+    label: 'text-[var(--coral-text)]',
   },
   warn: {
     border: 'border-[var(--warn)]/40',
     bg: 'bg-[rgba(245,200,66,0.05)]',
     iconBg: 'bg-[rgba(245,200,66,0.14)]',
-    iconColor: 'text-[var(--warn)]',
-    label: 'text-[var(--warn)]',
+    iconColor: 'text-[var(--warn-text)]',
+    label: 'text-[var(--warn-text)]',
   },
   info: {
     border: 'border-[var(--info)]/40',
     bg: 'bg-[rgba(77,168,255,0.05)]',
     iconBg: 'bg-[rgba(77,168,255,0.14)]',
-    iconColor: 'text-[var(--info)]',
-    label: 'text-[var(--info)]',
+    iconColor: 'text-[var(--info-text)]',
+    label: 'text-[var(--info-text)]',
   },
   success: {
     border: 'border-[var(--brand-2)]/40',
     bg: 'bg-[rgba(61,220,151,0.04)]',
     iconBg: 'bg-[rgba(61,220,151,0.14)]',
-    iconColor: 'text-[var(--brand-2)]',
-    label: 'text-[var(--brand-2)]',
+    iconColor: 'text-[var(--brand-text)]',
+    label: 'text-[var(--brand-text)]',
   },
 }
 
@@ -113,7 +113,7 @@ export function InsightsSection({ inputs }: InsightsSectionProps) {
         <div className="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center text-[#0B0B0C]">
           <Sparkles size={12} strokeWidth={2.4} />
         </div>
-        <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-2)] font-semibold">
+        <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
           Ideas para ti
         </div>
       </div>
@@ -144,7 +144,7 @@ export function InsightsSection({ inputs }: InsightsSectionProps) {
                 {ins.href && ins.ctaLabel && (
                   <Link
                     href={ins.href}
-                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--brand-2)] hover:underline underline-offset-4"
+                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
                   >
                     {ins.ctaLabel}
                     <ArrowRight size={11} strokeWidth={2.4} />

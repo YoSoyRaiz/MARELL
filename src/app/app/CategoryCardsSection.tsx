@@ -96,7 +96,7 @@ export function CategoryCardsSection({
           </div>
           <Link
             href="/app/plan"
-            className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
+            className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
           >
             Ver plan completo <ArrowRight size={12} strokeWidth={2.4} />
           </Link>
@@ -118,10 +118,10 @@ export function CategoryCardsSection({
                 key={g.id}
                 type="button"
                 onClick={() => setOpenId(g.id)}
-                className="group p-5 hover:bg-white/[0.02] transition-colors text-left"
+                className="group p-5 hover:bg-[var(--overlay-1)] transition-colors text-left"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center group-hover:text-[var(--brand-2)] transition-colors">
+                  <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center group-hover:text-[var(--brand-text)] transition-colors">
                     <Icon size={16} strokeWidth={2} />
                   </div>
                   <div className="text-[13px] font-medium text-[var(--text)]">{g.name}</div>
@@ -131,7 +131,7 @@ export function CategoryCardsSection({
                     <div className="text-[15px] font-semibold text-[var(--muted)] leading-snug">
                       Aún sin asignar
                     </div>
-                    <div className="text-[11px] text-[var(--brand-2)] mt-1 group-hover:underline underline-offset-4">
+                    <div className="text-[11px] text-[var(--brand-text)] mt-1 group-hover:underline underline-offset-4">
                       Click para asignar →
                     </div>
                   </>
@@ -142,7 +142,7 @@ export function CategoryCardsSection({
                     </div>
                     <div
                       className={`text-[20px] font-bold tabular-nums num leading-none mt-0.5 ${
-                        isOverspent ? 'text-[var(--coral)]' : 'gradient-text'
+                        isOverspent ? 'text-[var(--coral-text)]' : 'gradient-text'
                       }`}
                     >
                       {fmtMoneyShort(g.available)}
@@ -151,7 +151,7 @@ export function CategoryCardsSection({
                       {fmtMoneyShort(g.spent)} gastado este mes · {fmtMoneyShort(g.assigned)}{' '}
                       asignado
                     </div>
-                    <div className="mt-2.5 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+                    <div className="mt-2.5 h-1.5 rounded-full bg-[var(--overlay-1)] overflow-hidden">
                       <div
                         className="h-full gradient-bg transition-[width] duration-500"
                         style={{ width: `${pct * 100}%` }}

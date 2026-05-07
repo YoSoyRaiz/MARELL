@@ -229,7 +229,7 @@ export function Sidebar({
             className="absolute bottom-[calc(100%-4px)] left-3 right-3 mb-2 rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] overflow-hidden animate-step"
           >
             {/* Identity */}
-            <div className="px-4 py-3.5 border-b border-[var(--border)] bg-white/[0.02]">
+            <div className="px-4 py-3.5 border-b border-[var(--border)] bg-[var(--overlay-1)]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-[14px] shrink-0">
                   {initials}
@@ -250,7 +250,7 @@ export function Sidebar({
                 {trialDaysLeft !== null && (
                   <span
                     className={`text-[11px] ${
-                      trialDaysLeft <= 3 ? 'text-[var(--coral)]' : 'text-[var(--muted)]'
+                      trialDaysLeft <= 3 ? 'text-[var(--coral-text)]' : 'text-[var(--muted)]'
                     }`}
                   >
                     {trialDaysLeft >= 0
@@ -279,7 +279,7 @@ export function Sidebar({
                   role="menuitem"
                   className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
                 >
-                  <ShieldCheck size={14} strokeWidth={2} className="text-[var(--brand-2)]" />
+                  <ShieldCheck size={14} strokeWidth={2} className="text-[var(--brand-text)]" />
                   Panel de admin
                 </Link>
               )}
@@ -298,7 +298,7 @@ export function Sidebar({
               <button
                 type="submit"
                 role="menuitem"
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--coral)] hover:bg-[rgba(255,122,89,0.08)] transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.08)] transition-colors"
               >
                 <LogOut size={14} strokeWidth={2} />
                 Cerrar sesión

@@ -114,7 +114,7 @@ export function NetWorthReport({
               className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
                 active
                   ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-white/[0.04] text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.08]'
+                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
               }`}
             >
               {RANGE_LABELS[r]}
@@ -127,12 +127,12 @@ export function NetWorthReport({
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)] px-6 py-5">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-2)] font-semibold">
+            <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
               Patrimonio neto · hoy
             </div>
             <div
               className={`text-[26px] sm:text-[36px] md:text-[44px] font-bold tabular-nums num leading-none mt-2 ${
-                currentNetWorth < -0.005 ? 'text-[var(--coral)]' : 'gradient-text'
+                currentNetWorth < -0.005 ? 'text-[var(--coral-text)]' : 'gradient-text'
               }`}
             >
               {fmtMoney(currentNetWorth)}
@@ -145,7 +145,7 @@ export function NetWorthReport({
               </div>
               <div
                 className={`text-[20px] font-bold tabular-nums num mt-2 inline-flex items-center gap-1.5 ${
-                  delta > 0 ? 'text-[var(--brand-2)]' : 'text-[var(--coral)]'
+                  delta > 0 ? 'text-[var(--brand-text)]' : 'text-[var(--coral-text)]'
                 }`}
               >
                 {delta > 0 ? (
@@ -171,28 +171,28 @@ export function NetWorthReport({
           value={fmtMoney(totalCash)}
           Icon={Wallet}
           iconBg="bg-[rgba(61,220,151,0.10)]"
-          iconColor="text-[var(--brand-2)]"
+          iconColor="text-[var(--brand-text)]"
         />
         <KpiCard
           label="Inversiones"
           value={fmtMoney(totalAssets)}
           Icon={TrendingUp}
           iconBg="bg-[rgba(77,168,255,0.10)]"
-          iconColor="text-[var(--info)]"
+          iconColor="text-[var(--info-text)]"
         />
         <KpiCard
           label="Deudas"
           value={fmtMoney(-totalDebts)}
           Icon={TrendingDown}
           iconBg="bg-[rgba(255,122,89,0.10)]"
-          iconColor="text-[var(--coral)]"
+          iconColor="text-[var(--coral-text)]"
         />
       </div>
 
       {/* Chart */}
       {!hasData ? (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
             <PiggyBank size={22} strokeWidth={2} />
           </div>
           <div className="text-[16px] text-[var(--text)] font-semibold">

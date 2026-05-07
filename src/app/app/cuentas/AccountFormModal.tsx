@@ -179,7 +179,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -192,7 +192,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
               {isEdit ? 'Editar cuenta' : 'Nueva cuenta'}
             </div>
             <h2
@@ -214,7 +214,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -251,7 +251,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                 className={`h-11 rounded-xl text-[13px] font-semibold transition-colors ${
                   currency === 'DOP'
                     ? 'gradient-bg text-[#0B0B0C] shadow-[0_4px_16px_rgba(61,220,151,0.18)]'
-                    : 'bg-white/[0.04] text-[var(--text2)] hover:bg-white/[0.07] hover:text-[var(--text)]'
+                    : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:bg-[var(--overlay-2)] hover:text-[var(--text)]'
                 }`}
               >
                 RD$ Pesos (DOP)
@@ -262,7 +262,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                 className={`h-11 rounded-xl text-[13px] font-semibold transition-colors ${
                   currency === 'USD'
                     ? 'gradient-bg text-[#0B0B0C] shadow-[0_4px_16px_rgba(61,220,151,0.18)]'
-                    : 'bg-white/[0.04] text-[var(--text2)] hover:bg-white/[0.07] hover:text-[var(--text)]'
+                    : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:bg-[var(--overlay-2)] hover:text-[var(--text)]'
                 }`}
               >
                 US$ Dólares (USD)
@@ -322,12 +322,12 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                 type="button"
                 onClick={handleToggleClosed}
                 disabled={pending}
-                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-[var(--border)] hover:border-[var(--border3)] text-[13px] text-[var(--text)] transition-colors disabled:opacity-60"
+                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-1)] border border-[var(--border)] hover:border-[var(--border3)] text-[13px] text-[var(--text)] transition-colors disabled:opacity-60"
               >
                 <span className="inline-flex items-center gap-2">
                   {initial.closed ? (
                     <>
-                      <ArchiveRestore size={14} strokeWidth={2} className="text-[var(--brand-2)]" />
+                      <ArchiveRestore size={14} strokeWidth={2} className="text-[var(--brand-text)]" />
                       Reabrir cuenta
                     </>
                   ) : (
@@ -345,7 +345,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                 type="button"
                 onClick={handleDelete}
                 disabled={pending}
-                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-[13px] transition-colors disabled:opacity-60 bg-white/[0.02] hover:bg-[rgba(255,122,89,0.10)] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral)]"
+                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-[13px] transition-colors disabled:opacity-60 bg-[var(--overlay-1)] hover:bg-[rgba(255,122,89,0.10)] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral-text)]"
               >
                 <span className="inline-flex items-center gap-2">
                   <Trash2 size={14} strokeWidth={2} />
@@ -358,7 +358,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-              <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral)] shrink-0 mt-0.5" />
+              <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
               <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
             </div>
           )}
@@ -369,7 +369,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-lg transition-colors disabled:opacity-60"
+            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-lg transition-colors disabled:opacity-60"
           >
             Cancelar
           </button>

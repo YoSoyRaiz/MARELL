@@ -59,7 +59,7 @@ export function AnalisisShell({ active, children }: AnalisisShellProps) {
   return (
     <div className={`space-y-6 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
       {/* Tab nav */}
-      <div className="flex items-center gap-1 p-1 bg-white/[0.03] rounded-xl overflow-x-auto">
+      <div className="flex items-center gap-1 p-1 bg-[var(--overlay-1)] rounded-xl overflow-x-auto">
         {TABS.map((t) => {
           const isActive = active === t.id
           return (
@@ -73,7 +73,7 @@ export function AnalisisShell({ active, children }: AnalisisShellProps) {
                 isActive
                   ? 'gradient-bg text-[#0B0B0C]'
                   : t.enabled
-                    ? 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04]'
+                    ? 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
                     : 'text-[var(--muted2)] cursor-not-allowed'
               }`}
             >

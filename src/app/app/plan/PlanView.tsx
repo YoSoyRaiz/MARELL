@@ -193,11 +193,17 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
 
   const isPositive = readyToAssign > 0.005
   const isNegative = readyToAssign < -0.005
+  // Use *-text shades and bumped tint opacity so the hero stays
+  // legible on light mode (paper white). Same vibe in dark.
   const heroBorder = isNegative
-    ? 'border-[var(--coral)]/50 bg-[rgba(255,122,89,0.05)]'
-    : 'border-[var(--brand-2)]/40 bg-[rgba(61,220,151,0.04)]'
-  const heroLabelColor = isNegative ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
-  const heroAmountColor = isNegative ? 'text-[var(--coral)]' : 'gradient-text'
+    ? 'border-[var(--coral)]/50 bg-[rgba(255,122,89,0.10)]'
+    : 'border-[var(--brand-2)]/45 bg-[rgba(61,220,151,0.08)]'
+  const heroLabelColor = isNegative
+    ? 'text-[var(--coral-text)]'
+    : 'text-[var(--brand-text)]'
+  const heroAmountColor = isNegative
+    ? 'text-[var(--coral-text)]'
+    : 'gradient-text'
 
   if (!budgetId) {
     return (
@@ -228,7 +234,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
               type="button"
               onClick={() => goToMonth(adjustMonth(month, -1))}
               aria-label="Mes anterior"
-              className="w-10 h-10 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors"
+              className="w-10 h-10 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
             >
               <ChevronLeft size={18} strokeWidth={2.2} />
             </button>
@@ -239,7 +245,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
               type="button"
               onClick={() => goToMonth(adjustMonth(month, 1))}
               aria-label="Mes siguiente"
-              className="w-10 h-10 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors"
+              className="w-10 h-10 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
             >
               <ChevronRight size={18} strokeWidth={2.2} />
             </button>
@@ -253,7 +259,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
           <AlertCircle
             size={18}
             strokeWidth={2}
-            className="text-[var(--coral)] shrink-0 mt-0.5"
+            className="text-[var(--coral-text)] shrink-0 mt-0.5"
           />
           <div className="text-[14px] text-[var(--text)] leading-relaxed flex-1">
             <div className="font-medium">No pudimos guardar el cambio.</div>
@@ -307,7 +313,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
               className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
                 active
                   ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-white/[0.04] text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.08]'
+                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
               }`}
             >
               {c.label}
@@ -348,7 +354,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                 aria-controls={panelId}
                 className={`w-full px-5 py-3 ${
                   isCollapsed ? '' : 'border-b border-[var(--border)]'
-                } bg-white/[0.02] hover:bg-white/[0.04] flex items-center justify-between gap-4 transition-colors text-left`}
+                } bg-[var(--overlay-1)] hover:bg-[var(--overlay-2)] flex items-center justify-between gap-4 transition-colors text-left`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <ChevronDown
@@ -358,7 +364,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                       isCollapsed ? '-rotate-90' : 'rotate-0'
                     }`}
                   />
-                  <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] truncate">
+                  <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] truncate">
                     {g.name}
                   </h3>
                   <span className="text-[11px] text-[var(--muted)] tabular-nums shrink-0">
@@ -376,7 +382,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                     Disp{' '}
                     <span
                       className={`normal-case tracking-normal text-[12px] ml-1 font-semibold ${
-                        groupAvailable < -0.005 ? 'text-[var(--coral)]' : 'text-[var(--text2)]'
+                        groupAvailable < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--text2)]'
                       }`}
                     >
                       {fmtMoney(groupAvailable)}
@@ -386,7 +392,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                 {/* Mobile: just available, the most actionable number */}
                 <div
                   className={`sm:hidden tabular-nums num text-[12px] font-semibold shrink-0 ${
-                    groupAvailable < -0.005 ? 'text-[var(--coral)]' : 'text-[var(--text2)]'
+                    groupAvailable < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--text2)]'
                   }`}
                 >
                   {fmtMoney(groupAvailable)}
@@ -413,12 +419,12 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                     available > 0.005
                       ? 'gradient-text'
                       : available < -0.005
-                        ? 'text-[var(--coral)]'
+                        ? 'text-[var(--coral-text)]'
                         : 'text-[var(--muted)]'
                   return (
                     <li
                       key={c.id}
-                      className="border-b border-[var(--border)] last:border-b-0 hover:bg-white/[0.02] transition-colors"
+                      className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--overlay-1)] transition-colors"
                     >
                       {/* Mobile layout: stacked rows */}
                       <div className="md:hidden px-4 py-3 space-y-2">
@@ -427,7 +433,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                             type="button"
                             onClick={() => setDrillCategoryId(c.id)}
                             aria-label={`Ver historial de ${c.name}`}
-                            className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0 hover:text-[var(--brand-2)] transition-colors"
+                            className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0 hover:text-[var(--brand-text)] transition-colors"
                           >
                             <Icon size={16} strokeWidth={2} />
                           </button>
@@ -436,7 +442,7 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                             onClick={() => setDrillCategoryId(c.id)}
                             className="min-w-0 flex-1 text-left"
                           >
-                            <div className="text-[14px] text-[var(--text)] truncate hover:text-[var(--brand-2)] transition-colors">
+                            <div className="text-[14px] text-[var(--text)] truncate hover:text-[var(--brand-text)] transition-colors">
                               {c.name}
                             </div>
                             {c.goal_amount && c.goal_amount > 0 && (
@@ -478,11 +484,11 @@ export function PlanView({ budgetId, month, totalCash, groups }: PlanViewProps) 
                           onClick={() => setDrillCategoryId(c.id)}
                           className="flex items-center gap-3 min-w-0 text-left group"
                         >
-                          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-2)] transition-colors">
+                          <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-text)] transition-colors">
                             <Icon size={16} strokeWidth={2} />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[14px] text-[var(--text)] truncate group-hover:text-[var(--brand-2)] transition-colors">
+                            <div className="text-[14px] text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
                               {c.name}
                             </div>
                             {c.goal_amount && c.goal_amount > 0 && (

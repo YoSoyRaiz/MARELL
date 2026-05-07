@@ -6,7 +6,7 @@ export function LandingHowItWorks() {
     <section id="como-funciona" className="relative py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--success)]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
             Cómo funciona
           </p>
           <h2 className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
@@ -115,7 +115,7 @@ function AssignVisual() {
             <button
               type="button"
               tabIndex={-1}
-              className="grid size-6 shrink-0 place-items-center rounded-md bg-[var(--success)]/15 text-[var(--success)]"
+              className="grid size-6 shrink-0 place-items-center rounded-md bg-[var(--success)]/15 text-[var(--brand-text)]"
               aria-hidden
             >
               <Plus size={12} strokeWidth={2.6} />
@@ -153,7 +153,7 @@ function TrackVisual() {
             </div>
             <p
               className={`num text-sm font-semibold ${
-                t.tone === 'green' ? 'text-[var(--success)]' : 'text-[var(--coral)]'
+                t.tone === 'green' ? 'text-[var(--brand-text)]' : 'text-[var(--coral-text)]'
               }`}
             >
               {t.amount}
@@ -174,7 +174,7 @@ function GoalVisual() {
         Meta: Viaje a Europa
       </p>
       <p className="num mt-3 text-5xl font-extrabold tracking-tight">
-        78<span className="text-[var(--success)]">%</span>
+        78<span className="text-[var(--brand-text)]">%</span>
       </p>
       <p className="num mt-1 text-sm text-[var(--text2)]">$3,900 / $5,000</p>
       <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/5">

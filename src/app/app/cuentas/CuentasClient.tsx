@@ -168,7 +168,7 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
         {/* Empty state */}
         {isEmpty && (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Wallet size={22} strokeWidth={2} />
             </div>
             <div className="text-[16px] text-[var(--text)] font-semibold">
@@ -213,13 +213,13 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
                     key={g.key}
                     className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden"
                   >
-                    <header className="px-5 py-3 border-b border-[var(--border)] bg-white/[0.02] flex items-center justify-between gap-3">
+                    <header className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)] flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
                           <g.Icon size={16} strokeWidth={2} />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+                          <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                             {g.label}
                           </h3>
                           <p className="text-[11px] text-[var(--muted)] truncate">{g.hint}</p>
@@ -228,7 +228,7 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
                       <div
                         className={`text-[14px] tabular-nums num font-semibold shrink-0 ${
                           g.key === 'credit' || g.key === 'loan'
-                            ? 'text-[var(--coral)]'
+                            ? 'text-[var(--coral-text)]'
                             : 'text-[var(--text)]'
                         }`}
                       >
@@ -279,18 +279,18 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
                               }}
                               className={`px-5 py-3.5 flex items-center gap-4 cursor-pointer transition-colors ${
                                 a.closed
-                                  ? 'opacity-50 hover:bg-white/[0.02]'
-                                  : 'hover:bg-white/[0.04]'
-                              } ${isExpanded ? 'bg-white/[0.03]' : ''}`}
+                                  ? 'opacity-50 hover:bg-[var(--overlay-1)]'
+                                  : 'hover:bg-[var(--overlay-1)]'
+                              } ${isExpanded ? 'bg-[var(--overlay-1)]' : ''}`}
                             >
-                              <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                              <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
                                 <g.Icon size={14} strokeWidth={2} />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="text-[14px] text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
                                   {a.name}
                                   {a.currency === 'USD' && (
-                                    <span className="text-[9px] uppercase tracking-[0.15em] text-[var(--info)] bg-[rgba(77,168,255,0.12)] px-1.5 py-0.5 rounded">
+                                    <span className="text-[9px] uppercase tracking-[0.15em] text-[var(--info-text)] bg-[rgba(77,168,255,0.12)] px-1.5 py-0.5 rounded">
                                       USD
                                     </span>
                                   )}
@@ -318,7 +318,7 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
                                     }}
                                     title="Reconciliar contra el banco"
                                     aria-label={`Reconciliar ${a.name}`}
-                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text2)] hover:text-[var(--brand-2)] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors"
+                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text2)] hover:text-[var(--brand-text)] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors"
                                   >
                                     <Scale size={12} strokeWidth={2.4} />
                                     <span className="hidden sm:inline">Reconciliar</span>
@@ -331,7 +331,7 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
                                     }}
                                     title="Desreconciliar (deshacer la última reconciliación)"
                                     aria-label={`Desreconciliar ${a.name}`}
-                                    className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] inline-flex items-center justify-center transition-colors"
+                                    className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] inline-flex items-center justify-center transition-colors"
                                   >
                                     <Unlock size={12} strokeWidth={2.4} />
                                   </button>
@@ -345,16 +345,16 @@ export function CuentasClient({ accounts, hasBudget, usdToDopRate }: Props) {
                                 }}
                                 title="Editar cuenta"
                                 aria-label={`Editar ${a.name}`}
-                                className="shrink-0 w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--brand-2)] hover:bg-white/[0.06] inline-flex items-center justify-center transition-colors"
+                                className="shrink-0 w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--brand-text)] hover:bg-[var(--overlay-2)] inline-flex items-center justify-center transition-colors"
                               >
                                 <Pencil size={12} strokeWidth={2.4} />
                               </button>
                               <div
                                 className={`text-[15px] tabular-nums num font-semibold shrink-0 ${
                                   isDebt
-                                    ? 'text-[var(--coral)]'
+                                    ? 'text-[var(--coral-text)]'
                                     : a.balance < -0.005
-                                      ? 'text-[var(--coral)]'
+                                      ? 'text-[var(--coral-text)]'
                                       : 'text-[var(--text)]'
                                 }`}
                               >
@@ -439,7 +439,7 @@ function SummaryCard({
   const fmtMoney = useFormatMoney()
   const color =
     value < -0.005
-      ? 'text-[var(--coral)]'
+      ? 'text-[var(--coral-text)]'
       : highlight
         ? 'gradient-text'
         : positive
@@ -448,7 +448,7 @@ function SummaryCard({
 
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4">
-      <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-2)] font-semibold">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
         {label}
       </div>
       <div className={`text-[22px] font-bold tabular-nums num leading-none mt-2 ${color}`}>

@@ -126,7 +126,7 @@ export function UpgradeClient({
           <AlertCircle
             size={16}
             strokeWidth={2.2}
-            className="text-[var(--warn)] shrink-0 mt-0.5"
+            className="text-[var(--warn-text)] shrink-0 mt-0.5"
           />
           <span>Cancelaste el proceso. Puedes intentarlo de nuevo cuando quieras.</span>
         </div>
@@ -137,7 +137,7 @@ export function UpgradeClient({
           <AlertCircle
             size={16}
             strokeWidth={2.2}
-            className="text-[var(--coral)] shrink-0 mt-0.5"
+            className="text-[var(--coral-text)] shrink-0 mt-0.5"
           />
           <span>{error}</span>
         </div>
@@ -178,7 +178,7 @@ export function UpgradeClient({
               type="button"
               onClick={handleCancel}
               disabled={pending}
-              className="text-[12px] font-medium text-[var(--coral)] hover:underline underline-offset-4 disabled:opacity-50"
+              className="text-[12px] font-medium text-[var(--coral-text)] hover:underline underline-offset-4 disabled:opacity-50"
             >
               Cancelar suscripción
             </button>
@@ -190,7 +190,7 @@ export function UpgradeClient({
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-6 space-y-5">
             <div className="flex items-baseline justify-between gap-3 flex-wrap">
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                   MARELL Pro
                 </div>
                 <div className="mt-2 inline-flex items-baseline gap-2">
@@ -214,7 +214,7 @@ export function UpgradeClient({
                   <Check
                     size={14}
                     strokeWidth={2.4}
-                    className="text-[var(--brand-2)] shrink-0 mt-0.5"
+                    className="text-[var(--brand-text)] shrink-0 mt-0.5"
                   />
                   <span>{f}</span>
                 </li>
@@ -230,9 +230,9 @@ export function UpgradeClient({
                   type="button"
                   onClick={() => handleStart('azul')}
                   disabled={pending}
-                  className="rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-4 py-3.5 text-left flex items-start gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] px-4 py-3.5 text-left flex items-start gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(77,168,255,0.10)] text-[var(--info)] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-[rgba(77,168,255,0.10)] text-[var(--info-text)] flex items-center justify-center shrink-0">
                     <CreditCard size={18} strokeWidth={2} />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -250,9 +250,9 @@ export function UpgradeClient({
                   type="button"
                   onClick={() => handleStart('paypal')}
                   disabled={pending}
-                  className="rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-4 py-3.5 text-left flex items-start gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] px-4 py-3.5 text-left flex items-start gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn)] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn-text)] flex items-center justify-center shrink-0">
                     <span className="font-bold text-[13px]">PP</span>
                   </div>
                   <div className="min-w-0 flex-1">
@@ -279,7 +279,7 @@ export function UpgradeClient({
               <AlertCircle
                 size={18}
                 strokeWidth={2.2}
-                className="text-[var(--coral)] shrink-0 mt-0.5"
+                className="text-[var(--coral-text)] shrink-0 mt-0.5"
               />
               <div className="text-[13px]">
                 <div className="font-semibold text-[var(--text)]">

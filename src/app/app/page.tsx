@@ -11,11 +11,10 @@ import {
   type Currency as MoneyCurrency,
 } from '@/lib/money'
 import { DonutChart } from './DonutChart'
-import { CategoryCardsSection, type SectionGroup } from './CategoryCardsSection'
+import { type SectionGroup } from './CategoryCardsSection'
 import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsSection'
 import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { FirstMonthGuide } from './FirstMonthGuide'
-import { MonthStatusHero } from './MonthStatusHero'
 import { CategoryAccordion } from './CategoryAccordion'
 import { materializeDue } from './programadas/actions'
 import { currentMonthDR, monthBoundsISO, todayISODR } from '@/lib/dates'
@@ -672,25 +671,13 @@ export default async function ResumenPage() {
           hasReconciled={guideHasReconciled}
         />
 
-        {/* Hero "Estado del mes" — reemplaza la grilla de 4 KPIs.
-            Los totales detallados (Ingresos / Gastos / Ahorros /
-            Patrimonio) viven ahora en /app/analisis donde tienen
-            sentido como reporte. Aquí mostramos lo que mueve la aguja
-            del día: cuánto dinero falta por asignar y qué fricción
-            hay que resolver. */}
-        <MonthStatusHero
-          overspentCount={overspentCount}
-          undermetGoalsCount={undermetGoalsCount}
-          upcomingCount={upcomingItems.length}
-          readyToAssignFallback={readyToAssign}
-        />
-
-        {/* Categories cards (with click-to-edit modal) */}
-        <CategoryCardsSection
-          budgetId={budget.id as string}
-          month={month}
-          groups={sectionGroups}
-        />
+        {/* MonthStatusHero y CategoryCardsSection se quitaron de aquí
+            por feedback del usuario: el "Por asignar" ya está en la
+            barra superior y el acordeón de categorías vive en la
+            columna derecha — duplicar ambos cuesta atención sin
+            agregar información. La Resumen ahora arranca con el guide
+            del primer mes (si aplica) y va directo a transacciones
+            recientes. */}
 
         {/* Recent transactions (with in-place add modal) */}
         <RecentTransactionsSection
@@ -740,13 +727,13 @@ export default async function ResumenPage() {
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-[var(--text2)]">Gastado</span>
-                <span className="num tabular-nums text-[var(--coral)]">
+                <span className="num tabular-nums text-[var(--coral-text)]">
                   {fmtMoneyShort(totalExpenses)}
                 </span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-[var(--text2)]">Restante</span>
-                <span className="num tabular-nums text-[var(--brand-2)] font-semibold">
+                <span className="num tabular-nums text-[var(--brand-text)] font-semibold">
                   {fmtMoneyShort(Math.max(0, totalAssigned - totalExpenses))}
                 </span>
               </li>
@@ -774,7 +761,7 @@ export default async function ResumenPage() {
               </h2>
               <Link
                 href="/app/analisis"
-                className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
+                className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
               >
                 Ver análisis
                 <ArrowRight size={12} strokeWidth={2.4} />
@@ -783,7 +770,7 @@ export default async function ResumenPage() {
             <ul className="divide-y divide-[var(--border)]">
               <li className="px-5 py-3 flex items-center justify-between">
                 <span className="text-[13px] text-[var(--text2)]">Ingresos</span>
-                <span className="text-[14px] tabular-nums num font-semibold text-[var(--brand-2)]">
+                <span className="text-[14px] tabular-nums num font-semibold text-[var(--brand-text)]">
                   {fmtMoney(prevMonthIncome)}
                 </span>
               </li>
@@ -799,7 +786,7 @@ export default async function ResumenPage() {
                 </span>
                 <span
                   className={`text-[14px] tabular-nums num font-semibold ${
-                    prevMonthSavings >= 0 ? 'gradient-text' : 'text-[var(--coral)]'
+                    prevMonthSavings >= 0 ? 'gradient-text' : 'text-[var(--coral-text)]'
                   }`}
                 >
                   {fmtMoney(Math.abs(prevMonthSavings))}
@@ -813,13 +800,13 @@ export default async function ResumenPage() {
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
           <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target size={14} strokeWidth={2.2} className="text-[var(--brand-2)]" />
+              <Target size={14} strokeWidth={2.2} className="text-[var(--brand-text)]" />
               <h2 className="text-[14px] font-semibold text-[var(--text)]">Metas</h2>
             </div>
             {goals.length > 0 && (
               <Link
                 href="/app/metas"
-                className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
+                className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
               >
                 Todas <ArrowRight size={12} strokeWidth={2.4} />
               </Link>
@@ -850,13 +837,13 @@ export default async function ResumenPage() {
                       <span className="text-[13px] text-[var(--text)] truncate">{g.name}</span>
                       <span
                         className={`text-[11px] tabular-nums num shrink-0 ${
-                          isComplete ? 'text-[var(--brand-2)] font-semibold' : 'text-[var(--muted)]'
+                          isComplete ? 'text-[var(--brand-text)] font-semibold' : 'text-[var(--muted)]'
                         }`}
                       >
                         {Math.round(g.progress * 100)}%
                       </span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-[var(--overlay-1)] overflow-hidden">
                       <div
                         className="h-full gradient-bg transition-[width] duration-500"
                         style={{ width: `${g.progress * 100}%` }}

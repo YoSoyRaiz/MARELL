@@ -96,7 +96,7 @@ export function CategoryGroupModal({
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -111,7 +111,7 @@ export function CategoryGroupModal({
         {/* Header */}
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
               {group.name}
             </div>
             <h2
@@ -129,7 +129,7 @@ export function CategoryGroupModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -162,15 +162,15 @@ export function CategoryGroupModal({
                 available > 0.005
                   ? 'gradient-text'
                   : available < -0.005
-                    ? 'text-[var(--coral)]'
+                    ? 'text-[var(--coral-text)]'
                     : 'text-[var(--muted)]'
               return (
                 <li
                   key={c.id}
-                  className="px-6 py-3 grid grid-cols-[1fr_120px_100px] items-center gap-4 hover:bg-white/[0.02] transition-colors"
+                  className="px-6 py-3 grid grid-cols-[1fr_120px_100px] items-center gap-4 hover:bg-[var(--overlay-1)] transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
                       <Icon size={16} strokeWidth={2} />
                     </div>
                     <div className="min-w-0">

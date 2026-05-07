@@ -28,7 +28,7 @@ export default function AppError({ error, reset }: ErrorPageProps) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border border-[var(--coral)]/30 bg-[rgba(255,122,89,0.05)] p-8 text-center space-y-4">
-        <div className="w-14 h-14 rounded-2xl bg-[rgba(255,122,89,0.10)] text-[var(--coral)] flex items-center justify-center mx-auto">
+        <div className="w-14 h-14 rounded-2xl bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)] flex items-center justify-center mx-auto">
           <AlertCircle size={26} strokeWidth={2.2} />
         </div>
         <h1 className="text-[20px] font-bold tracking-tight text-[var(--text)]">
@@ -39,7 +39,7 @@ export default function AppError({ error, reset }: ErrorPageProps) {
           persiste, escríbenos a{' '}
           <a
             href="mailto:hola@marell.app"
-            className="text-[var(--brand-2)] underline underline-offset-4"
+            className="text-[var(--brand-text)] underline underline-offset-4"
           >
             hola@marell.app
           </a>
@@ -54,7 +54,7 @@ export default function AppError({ error, reset }: ErrorPageProps) {
           <button
             type="button"
             onClick={reset}
-            className="h-10 px-4 text-[13px] font-semibold rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] transition-colors inline-flex items-center gap-2"
+            className="h-10 px-4 text-[13px] font-semibold rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] transition-colors inline-flex items-center gap-2"
           >
             <RotateCw size={13} strokeWidth={2.4} />
             Intentar de nuevo

@@ -245,7 +245,7 @@ export function ProgramadasClient({
         {/* Empty state */}
         {isEmpty && (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Repeat size={22} strokeWidth={2} />
             </div>
             <div className="text-[16px] text-[var(--text)] font-semibold">
@@ -286,7 +286,7 @@ export function ProgramadasClient({
                   className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
                     active
                       ? 'gradient-bg text-[#0B0B0C]'
-                      : 'bg-white/[0.04] text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.08]'
+                      : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
                   }`}
                 >
                   {c.label}
@@ -323,8 +323,8 @@ export function ProgramadasClient({
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                         isIncome
-                          ? 'bg-[rgba(61,220,151,0.14)] text-[var(--brand-2)]'
-                          : 'bg-white/[0.04] text-[var(--text2)]'
+                          ? 'bg-[rgba(61,220,151,0.14)] text-[var(--brand-text)]'
+                          : 'bg-[var(--overlay-1)] text-[var(--text2)]'
                       }`}
                     >
                       <Icon size={18} strokeWidth={2} />
@@ -345,7 +345,7 @@ export function ProgramadasClient({
                     </div>
                     <div
                       className={`text-[16px] font-bold tabular-nums num shrink-0 ${
-                        isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                        isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                       }`}
                     >
                       {isIncome ? '+' : '−'}
@@ -371,7 +371,7 @@ export function ProgramadasClient({
                         onClick={() => handleToggle(s)}
                         aria-label={s.active ? 'Pausar' : 'Reanudar'}
                         title={s.active ? 'Pausar' : 'Reanudar'}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/[0.05] transition-colors"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
                       >
                         {s.active ? (
                           <Pause size={14} strokeWidth={2} />
@@ -384,7 +384,7 @@ export function ProgramadasClient({
                         onClick={() => setEditing(s)}
                         aria-label={`Editar ${s.payeeName}`}
                         title="Editar"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/[0.05] transition-colors"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
                       >
                         <Pencil size={14} strokeWidth={2} />
                       </button>
@@ -393,7 +393,7 @@ export function ProgramadasClient({
                         onClick={() => handleDelete(s)}
                         aria-label={`Eliminar ${s.payeeName}`}
                         title="Eliminar"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)] transition-colors"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] transition-colors"
                       >
                         <Trash2 size={14} strokeWidth={2} />
                       </button>
@@ -447,8 +447,8 @@ function ForecastCard({ label, value, Icon, tone }: ForecastCardProps) {
         <div
           className={`w-9 h-9 rounded-lg flex items-center justify-center ${
             isPositive
-              ? 'bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)]'
-              : 'bg-[rgba(255,122,89,0.10)] text-[var(--coral)]'
+              ? 'bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)]'
+              : 'bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)]'
           }`}
         >
           <Icon size={16} strokeWidth={2} />

@@ -89,7 +89,7 @@ export function InlineMoneyEdit({ value, onSave, ariaLabel }: InlineMoneyEditPro
         type="button"
         onClick={startEdit}
         aria-label={ariaLabel ?? 'Editar monto asignado'}
-        className="w-full text-right text-[14px] tabular-nums num text-[var(--text)] hover:text-[var(--brand-2)] py-1.5 px-2 -my-1.5 -mx-2 rounded-md hover:bg-white/[0.04] transition-colors"
+        className="w-full text-right text-[14px] tabular-nums num text-[var(--text)] hover:text-[var(--brand-text)] py-1.5 px-2 -my-1.5 -mx-2 rounded-md hover:bg-[var(--overlay-1)] transition-colors"
       >
         {fmt(value)}
       </button>

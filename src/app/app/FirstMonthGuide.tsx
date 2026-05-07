@@ -92,7 +92,7 @@ export function FirstMonthGuide({
         type="button"
         onClick={handleDismiss}
         aria-label="Cerrar guía"
-        className="absolute top-4 right-4 w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors"
+        className="absolute top-4 right-4 w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
       >
         <X size={14} strokeWidth={2.4} />
       </button>
@@ -102,7 +102,7 @@ export function FirstMonthGuide({
           <Sparkles size={18} strokeWidth={2.4} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
             Tu primer mes
           </div>
           <h2 className="text-[18px] font-bold leading-tight tracking-tight mt-1">
@@ -148,7 +148,7 @@ export function FirstMonthGuide({
             <div className="min-w-0 flex-1">
               <div
                 className={`text-[13px] font-semibold ${
-                  step.done ? 'text-[var(--brand-2)] line-through' : 'text-[var(--text)]'
+                  step.done ? 'text-[var(--brand-text)] line-through' : 'text-[var(--text)]'
                 }`}
               >
                 {step.label}
@@ -160,7 +160,7 @@ export function FirstMonthGuide({
             {!step.done && (
               <Link
                 href={step.href}
-                className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--brand-2)] hover:underline underline-offset-4"
+                className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
               >
                 {step.cta}
                 <ArrowRight size={11} strokeWidth={2.4} />

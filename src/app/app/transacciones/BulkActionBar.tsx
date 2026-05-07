@@ -99,7 +99,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
           <button
             type="button"
             onClick={onClear}
-            className="text-[var(--text2)] hover:text-[var(--text)] w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/[0.04] transition-colors"
+            className="text-[var(--text2)] hover:text-[var(--text)] w-7 h-7 flex items-center justify-center rounded-md hover:bg-[var(--overlay-1)] transition-colors"
             aria-label="Limpiar selección"
           >
             <X size={14} strokeWidth={2.4} />
@@ -112,7 +112,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
               type="button"
               onClick={() => setPickerOpen((v) => !v)}
               disabled={pending}
-              className="w-full h-10 px-3 text-[12px] font-semibold rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+              className="w-full h-10 px-3 text-[12px] font-semibold rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
             >
               {pendingAction === 'recategorize' ? (
                 <>
@@ -136,13 +136,13 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
                 <button
                   type="button"
                   onClick={() => handleRecategorize(null)}
-                  className="w-full text-left px-3 py-2 text-[12px] text-[var(--text2)] hover:bg-white/[0.04] hover:text-[var(--text)] transition-colors"
+                  className="w-full text-left px-3 py-2 text-[12px] text-[var(--text2)] hover:bg-[var(--overlay-1)] hover:text-[var(--text)] transition-colors"
                 >
                   Sin categoría
                 </button>
                 {Object.entries(grouped).map(([gname, cats]) => (
                   <div key={gname} className="border-t border-[var(--border)]">
-                    <div className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] text-[var(--brand-2)] font-semibold bg-white/[0.02]">
+                    <div className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] text-[var(--brand-text)] font-semibold bg-[var(--overlay-1)]">
                       {gname}
                     </div>
                     {cats.map((c) => (
@@ -150,7 +150,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
                         key={c.id}
                         type="button"
                         onClick={() => handleRecategorize(c.id)}
-                        className="w-full text-left px-3 py-2 text-[12px] text-[var(--text)] hover:bg-white/[0.04] transition-colors"
+                        className="w-full text-left px-3 py-2 text-[12px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
                       >
                         {c.name}
                       </button>
@@ -164,7 +164,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
             type="button"
             onClick={handleDelete}
             disabled={pending}
-            className="h-10 px-3 text-[12px] font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral)] border border-[var(--coral)]/30 transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+            className="h-10 px-3 text-[12px] font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral-text)] border border-[var(--coral)]/30 transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
           >
             {pendingAction === 'delete' ? (
               <>
@@ -181,7 +181,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
         </div>
 
         {error && (
-          <div className="text-[11px] text-[var(--coral)] leading-relaxed">{error}</div>
+          <div className="text-[11px] text-[var(--coral-text)] leading-relaxed">{error}</div>
         )}
         {hint && (
           <div className="text-[11px] text-[var(--muted)] leading-relaxed">{hint}</div>

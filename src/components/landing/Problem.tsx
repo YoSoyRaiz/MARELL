@@ -19,7 +19,7 @@ export function LandingProblem() {
           <div className="grid gap-12 lg:grid-cols-[1fr_1fr_0.75fr] lg:gap-12 lg:items-center">
             {/* Copy */}
             <div className="max-w-md">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--success)]">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 El problema
               </p>
               <h2 className="mt-4 text-4xl font-extrabold leading-[1.14] tracking-tight sm:text-[44px]">
@@ -36,7 +36,7 @@ export function LandingProblem() {
             <ul className="space-y-5">
               {pains.map((p) => (
                 <li key={p} className="flex items-start gap-3 text-[var(--text)]">
-                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[var(--coral)]/15 text-[var(--coral)]">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[var(--coral)]/15 text-[var(--coral-text)]">
                     <X size={13} strokeWidth={3} />
                   </span>
                   <span className="text-base leading-snug">{p}</span>

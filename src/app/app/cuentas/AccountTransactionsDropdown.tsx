@@ -106,8 +106,8 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
                   ? ArrowUpRight
                   : ArrowDownRight
               const iconColor = isIncome
-                ? 'text-[var(--brand-2)]'
-                : 'text-[var(--coral)]'
+                ? 'text-[var(--brand-text)]'
+                : 'text-[var(--coral-text)]'
               return (
                 <li
                   key={t.id}
@@ -124,7 +124,7 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
                   </div>
                   <div
                     className={`text-[13px] font-semibold tabular-nums num ${
-                      isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                      isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                     }`}
                   >
                     {formatAmount(t.amount)}
@@ -135,7 +135,7 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
           </ul>
           <Link
             href={`/app/transacciones?account=${accountId}`}
-            className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--brand-2)] hover:underline underline-offset-4"
+            className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--brand-text)] hover:underline underline-offset-4"
           >
             Ver todas las transacciones de esta cuenta
             <ArrowRight size={11} strokeWidth={2.4} />

@@ -161,7 +161,7 @@ export function ImportTransactionsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -174,7 +174,7 @@ export function ImportTransactionsModal({
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
               Importar CSV
             </div>
             <h2
@@ -195,7 +195,7 @@ export function ImportTransactionsModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -220,7 +220,7 @@ export function ImportTransactionsModal({
               className={`rounded-2xl border-2 border-dashed cursor-pointer transition-all p-10 text-center ${
                 dragOver
                   ? 'border-[var(--brand-2)] bg-[rgba(61,220,151,0.05)]'
-                  : 'border-[var(--border3)] hover:border-[var(--brand-2)]/60 hover:bg-white/[0.02]'
+                  : 'border-[var(--border3)] hover:border-[var(--brand-2)]/60 hover:bg-[var(--overlay-1)]'
               }`}
             >
               <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mx-auto text-[#0B0B0C] mb-4">
@@ -255,14 +255,14 @@ export function ImportTransactionsModal({
                 <div className="text-[14px] font-semibold text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
                   <span className="truncate">{file.name}</span>
                   {bankDetection && (
-                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-2 py-0.5 rounded-full bg-[rgba(61,220,151,0.12)] text-[var(--brand-2)] border border-[var(--brand-2)]/20">
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-2 py-0.5 rounded-full bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] border border-[var(--brand-2)]/20">
                       Detectamos {bankDetection.displayName}
                     </span>
                   )}
                 </div>
                 <div className="text-[12px] text-[var(--muted)] mt-0.5">
                   {parseResult.totalRows} filas leídas ·{' '}
-                  <span className="text-[var(--brand-2)] font-medium">
+                  <span className="text-[var(--brand-text)] font-medium">
                     {parseResult.rows.length} listas
                   </span>
                   {parseResult.skippedRows > 0 && (
@@ -298,7 +298,7 @@ export function ImportTransactionsModal({
                   <AlertCircle
                     size={16}
                     strokeWidth={2}
-                    className="text-[var(--warn)] shrink-0 mt-0.5"
+                    className="text-[var(--warn-text)] shrink-0 mt-0.5"
                   />
                   <div className="text-[13px] text-[var(--text)]">{w}</div>
                 </div>
@@ -343,7 +343,7 @@ export function ImportTransactionsModal({
 
               {/* Preview list */}
               <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-2)] font-semibold mb-2">
+                <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold mb-2">
                   Vista previa
                 </div>
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] overflow-hidden">
@@ -363,13 +363,13 @@ export function ImportTransactionsModal({
                               <ArrowUpRight
                                 size={12}
                                 strokeWidth={2}
-                                className="text-[var(--brand-2)] shrink-0"
+                                className="text-[var(--brand-text)] shrink-0"
                               />
                             ) : (
                               <ArrowDownRight
                                 size={12}
                                 strokeWidth={2}
-                                className="text-[var(--coral)] shrink-0"
+                                className="text-[var(--coral-text)] shrink-0"
                               />
                             )}
                             <span className="text-[13px] text-[var(--text)] truncate">
@@ -378,7 +378,7 @@ export function ImportTransactionsModal({
                           </div>
                           <div
                             className={`text-[13px] tabular-nums num font-semibold ${
-                              isIncome ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                              isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                             }`}
                           >
                             {isIncome ? '+' : '−'}
@@ -401,7 +401,7 @@ export function ImportTransactionsModal({
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-              <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral)] shrink-0 mt-0.5" />
+              <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
               <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
             </div>
           )}
@@ -412,7 +412,7 @@ export function ImportTransactionsModal({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-lg transition-colors disabled:opacity-60"
+            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-lg transition-colors disabled:opacity-60"
           >
             Cancelar
           </button>

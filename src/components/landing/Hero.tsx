@@ -70,7 +70,7 @@ export function LandingHero() {
             <ul className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2.5 text-sm text-[var(--text2)]">
               {trustSignals.map((s) => (
                 <li key={s} className="flex items-center gap-2">
-                  <span className="grid size-4 place-items-center rounded-full bg-[var(--success)]/15 text-[var(--success)]">
+                  <span className="grid size-4 place-items-center rounded-full bg-[var(--success)]/15 text-[var(--brand-text)]">
                     <Check size={10} strokeWidth={3} />
                   </span>
                   {s}

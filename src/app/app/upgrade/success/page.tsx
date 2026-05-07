@@ -11,7 +11,7 @@ export default async function UpgradeSuccessPage({
 
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 max-w-md mx-auto">
-      <div className="w-16 h-16 rounded-2xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)] flex items-center justify-center mb-6">
+      <div className="w-16 h-16 rounded-2xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] flex items-center justify-center mb-6">
         <CheckCircle2 size={28} strokeWidth={2.2} />
       </div>
       <h1 className="text-[28px] font-bold tracking-tight">

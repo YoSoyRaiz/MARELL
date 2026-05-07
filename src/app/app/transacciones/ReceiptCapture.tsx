@@ -252,7 +252,7 @@ export function ReceiptCapture({
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={pending}
-              className="min-w-[44px] min-h-[44px] rounded-xl bg-black/70 backdrop-blur-sm text-white hover:bg-black/85 flex items-center justify-center transition-colors disabled:opacity-50"
+              className="min-w-[44px] min-h-[44px] rounded-xl bg-[var(--scrim)] backdrop-blur-sm text-white hover:bg-[var(--scrim)] flex items-center justify-center transition-colors disabled:opacity-50"
               aria-label="Reemplazar foto"
             >
               <Camera size={18} strokeWidth={2.4} />
@@ -261,7 +261,7 @@ export function ReceiptCapture({
               type="button"
               onClick={handleRemove}
               disabled={pending}
-              className="min-w-[44px] min-h-[44px] rounded-xl bg-black/70 backdrop-blur-sm text-[var(--coral)] hover:bg-black/85 flex items-center justify-center transition-colors disabled:opacity-50"
+              className="min-w-[44px] min-h-[44px] rounded-xl bg-[var(--scrim)] backdrop-blur-sm text-[var(--coral-text)] hover:bg-[var(--scrim)] flex items-center justify-center transition-colors disabled:opacity-50"
               aria-label="Quitar foto"
             >
               <X size={18} strokeWidth={2.4} />
@@ -270,8 +270,8 @@ export function ReceiptCapture({
           <div
             className={`px-4 py-2 border-t text-[12px] font-medium inline-flex items-center gap-1.5 w-full ${
               quotaHit
-                ? 'bg-[rgba(245,200,66,0.10)] border-[var(--warn)]/20 text-[var(--warn)]'
-                : 'bg-[rgba(61,220,151,0.10)] border-[var(--brand-2)]/20 text-[var(--brand-2)]'
+                ? 'bg-[rgba(245,200,66,0.10)] border-[var(--warn)]/20 text-[var(--warn-text)]'
+                : 'bg-[rgba(61,220,151,0.10)] border-[var(--brand-2)]/20 text-[var(--brand-text)]'
             }`}
           >
             {parsing ? (
@@ -317,7 +317,7 @@ export function ReceiptCapture({
                 {pending ? 'Subiendo…' : 'Tomar foto del recibo'}
               </span>
               {!pending && (
-                <span className="text-[9px] uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[var(--brand-2)]/15 text-[var(--brand-2)]">
+                <span className="text-[9px] uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[var(--brand-2)]/15 text-[var(--brand-text)]">
                   Rápido
                 </span>
               )}
@@ -332,7 +332,7 @@ export function ReceiptCapture({
       )}
 
       {error && (
-        <p className="text-[11px] text-[var(--coral)] mt-2 leading-relaxed">
+        <p className="text-[11px] text-[var(--coral-text)] mt-2 leading-relaxed">
           {error}
         </p>
       )}

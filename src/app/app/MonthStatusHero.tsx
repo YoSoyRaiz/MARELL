@@ -116,7 +116,7 @@ export function MonthStatusHero({
           </Link>
         )}
         {isZero && (
-          <span className="shrink-0 inline-flex items-center gap-1.5 h-10 px-4 rounded-xl border border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.06)] text-[var(--brand-2)] text-[12px] font-semibold uppercase tracking-[0.12em]">
+          <span className="shrink-0 inline-flex items-center gap-1.5 h-10 px-4 rounded-xl border border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.06)] text-[var(--brand-text)] text-[12px] font-semibold uppercase tracking-[0.12em]">
             <CheckCircle2 size={14} strokeWidth={2.4} />
             En cero
           </span>

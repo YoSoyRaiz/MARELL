@@ -117,7 +117,7 @@ export function CategoryDrillModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
         onClick={onClose}
         aria-hidden
       />
@@ -130,11 +130,11 @@ export function CategoryDrillModal({
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
               <Icon size={18} strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 {data?.category.groupName ?? '—'}
               </div>
               <h2
@@ -163,7 +163,7 @@ export function CategoryDrillModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -180,7 +180,7 @@ export function CategoryDrillModal({
               <AlertCircle
                 size={16}
                 strokeWidth={2}
-                className="text-[var(--coral)] shrink-0 mt-0.5"
+                className="text-[var(--coral-text)] shrink-0 mt-0.5"
               />
               <span>{error}</span>
             </div>
@@ -200,7 +200,7 @@ export function CategoryDrillModal({
                   value={fmtMoneyShort(data.totals.spent)}
                   hint="últimos 12 meses"
                   Icon={TrendingDown}
-                  iconColor="text-[var(--coral)]"
+                  iconColor="text-[var(--coral-text)]"
                 />
                 <Stat
                   label="Disponible"
@@ -208,8 +208,8 @@ export function CategoryDrillModal({
                   hint="asig − gasto"
                   iconColor={
                     data.totals.available < 0
-                      ? 'text-[var(--coral)]'
-                      : 'text-[var(--brand-2)]'
+                      ? 'text-[var(--coral-text)]'
+                      : 'text-[var(--brand-text)]'
                   }
                   highlight={
                     data.totals.available < 0 ? 'coral' : 'gradient'
@@ -254,7 +254,7 @@ export function CategoryDrillModal({
                       >
                         <div className="flex items-end gap-0.5 h-[110px] w-full justify-center">
                           <div
-                            className="w-1.5 rounded-t bg-white/[0.12]"
+                            className="w-1.5 rounded-t bg-[var(--overlay-4)]"
                             style={{ height: `${assignedH}px` }}
                           />
                           <div
@@ -264,7 +264,7 @@ export function CategoryDrillModal({
                         </div>
                         <div
                           className={`text-[9px] uppercase tracking-wider font-semibold ${
-                            isLatest ? 'text-[var(--brand-2)]' : 'text-[var(--muted2)]'
+                            isLatest ? 'text-[var(--brand-text)]' : 'text-[var(--muted2)]'
                           }`}
                         >
                           {formatMonthLabel(m.month)}
@@ -303,7 +303,7 @@ export function CategoryDrillModal({
                           <div className="text-[12.5px] text-[var(--text)] truncate">
                             {t.payeeName ?? 'Sin nombre'}
                             {t.isSplit && (
-                              <span className="ml-2 text-[10px] uppercase tracking-wide text-[var(--brand-2)]">
+                              <span className="ml-2 text-[10px] uppercase tracking-wide text-[var(--brand-text)]">
                                 · split
                               </span>
                             )}
@@ -315,7 +315,7 @@ export function CategoryDrillModal({
                         </div>
                         <div
                           className={`text-[12.5px] font-semibold tabular-nums num shrink-0 ${
-                            t.amount < 0 ? 'text-[var(--text)]' : 'text-[var(--brand-2)]'
+                            t.amount < 0 ? 'text-[var(--text)]' : 'text-[var(--brand-text)]'
                           }`}
                         >
                           {fmtMoney(t.amount)}
@@ -345,7 +345,7 @@ interface StatProps {
 function Stat({ label, value, hint, Icon, iconColor, highlight }: StatProps) {
   const valueClass =
     highlight === 'coral'
-      ? 'text-[var(--coral)]'
+      ? 'text-[var(--coral-text)]'
       : highlight === 'gradient'
         ? 'gradient-text'
         : 'text-[var(--text)]'

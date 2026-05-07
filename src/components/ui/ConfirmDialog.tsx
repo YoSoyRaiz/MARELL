@@ -110,7 +110,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                 <div
                   className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
                     isDanger
-                      ? 'bg-[rgba(255,122,89,0.12)] text-[var(--coral)]'
+                      ? 'bg-[rgba(255,122,89,0.12)] text-[var(--coral-text)]'
                       : 'bg-white/[0.05] text-[var(--text2)]'
                   }`}
                 >

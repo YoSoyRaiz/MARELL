@@ -55,7 +55,7 @@ export function LandingAccounts() {
           <div className="grid gap-12 lg:grid-cols-[0.9fr_1.2fr] lg:gap-14 lg:items-center">
             {/* Left copy */}
             <div className="max-w-xl">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--success)]">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 Control total
               </p>
               <h2 className="mt-4 text-4xl font-extrabold leading-[1.14] tracking-tight sm:text-[44px]">
@@ -71,7 +71,7 @@ export function LandingAccounts() {
               <ul className="mt-8 grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
                 {features.map(({ icon: Icon, title, desc }) => (
                   <li key={title} className="flex items-start gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/[0.06] bg-[var(--success)]/[0.10] text-[var(--success)]">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/[0.06] bg-[var(--success)]/[0.10] text-[var(--brand-text)]">
                       <Icon size={16} strokeWidth={2.2} />
                     </span>
                     <div>
@@ -140,7 +140,7 @@ export function LandingAccounts() {
                               </div>
                               <p
                                 className={`num text-[13px] font-semibold ${
-                                  r.tone === 'red' ? 'text-[var(--coral)]' : ''
+                                  r.tone === 'red' ? 'text-[var(--coral-text)]' : ''
                                 }`}
                               >
                                 {r.amount}

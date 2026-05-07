@@ -211,7 +211,7 @@ export function AjustesClient({
           </p>
         </Field>
         <Field label="Plan">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-[var(--border)] text-[12px] font-semibold capitalize text-[var(--text2)]">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--overlay-1)] border border-[var(--border)] text-[12px] font-semibold capitalize text-[var(--text2)]">
             {plan}
           </div>
         </Field>
@@ -324,7 +324,7 @@ export function AjustesClient({
             className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${
               emailNotif
                 ? 'bg-[var(--success)]'
-                : 'bg-white/[0.10]'
+                : 'bg-[var(--overlay-4)]'
             }`}
           >
             <span
@@ -381,7 +381,7 @@ export function AjustesClient({
         <form action={logout}>
           <button
             type="submit"
-            className="h-10 px-5 text-[13px] font-medium rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] transition-colors inline-flex items-center gap-2"
+            className="h-10 px-5 text-[13px] font-medium rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] transition-colors inline-flex items-center gap-2"
           >
             <LogOut size={14} strokeWidth={2.2} />
             Cerrar sesión
@@ -403,7 +403,7 @@ export function AjustesClient({
         <button
           type="button"
           onClick={handleDeleteAccount}
-          className="h-10 px-5 text-[13px] font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral)] border border-[var(--coral)]/30 transition-colors inline-flex items-center gap-2"
+          className="h-10 px-5 text-[13px] font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral-text)] border border-[var(--coral)]/30 transition-colors inline-flex items-center gap-2"
         >
           <Trash2 size={14} strokeWidth={2.2} />
           Eliminar cuenta
@@ -435,22 +435,22 @@ function Section({ title, Icon, children, savedAt, error, tone = 'default' }: Se
           <div
             className={`w-9 h-9 rounded-lg flex items-center justify-center ${
               isDanger
-                ? 'bg-[rgba(255,122,89,0.12)] text-[var(--coral)]'
-                : 'bg-white/[0.04] text-[var(--text2)]'
+                ? 'bg-[rgba(255,122,89,0.12)] text-[var(--coral-text)]'
+                : 'bg-[var(--overlay-1)] text-[var(--text2)]'
             }`}
           >
             <Icon size={16} strokeWidth={2} />
           </div>
           <h2
             className={`text-[15px] font-semibold tracking-tight ${
-              isDanger ? 'text-[var(--coral)]' : 'text-[var(--text)]'
+              isDanger ? 'text-[var(--coral-text)]' : 'text-[var(--text)]'
             }`}
           >
             {title}
           </h2>
         </div>
         {savedAt && (
-          <div className="inline-flex items-center gap-1.5 text-[11px] text-[var(--brand-2)] font-semibold animate-step">
+          <div className="inline-flex items-center gap-1.5 text-[11px] text-[var(--brand-text)] font-semibold animate-step">
             <Check size={12} strokeWidth={2.4} />
             Guardado
           </div>
@@ -461,7 +461,7 @@ function Section({ title, Icon, children, savedAt, error, tone = 'default' }: Se
 
       {error && (
         <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-          <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral)] shrink-0 mt-0.5" />
+          <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
           <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
         </div>
       )}
@@ -498,7 +498,7 @@ function SaveBar({
         type="button"
         onClick={onReset}
         disabled={pending}
-        className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-lg transition-colors disabled:opacity-60"
+        className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-lg transition-colors disabled:opacity-60"
       >
         Descartar
       </button>
@@ -571,9 +571,9 @@ function ExportSection() {
           type="button"
           onClick={handleJson}
           disabled={pendingType !== null}
-          className="text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-4 py-3 flex items-start gap-3 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+          className="text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] px-4 py-3 flex items-start gap-3 transition-colors disabled:opacity-60 disabled:pointer-events-none"
         >
-          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
             <FileJson size={16} strokeWidth={2} />
           </div>
           <div className="min-w-0 flex-1">
@@ -589,9 +589,9 @@ function ExportSection() {
           type="button"
           onClick={handleCsv}
           disabled={pendingType !== null}
-          className="text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-4 py-3 flex items-start gap-3 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+          className="text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] px-4 py-3 flex items-start gap-3 transition-colors disabled:opacity-60 disabled:pointer-events-none"
         >
-          <div className="w-9 h-9 rounded-lg bg-white/[0.04] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
             <FileSpreadsheet size={16} strokeWidth={2} />
           </div>
           <div className="min-w-0 flex-1">
@@ -671,7 +671,7 @@ function PushToggle() {
           aria-checked={enabled}
           disabled={pending}
           onClick={() => handleToggle(!enabled)}
-          className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${enabled ? "bg-[var(--success)]" : "bg-white/[0.10]"} disabled:opacity-50`}
+          className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${enabled ? "bg-[var(--success)]" : "bg-[var(--overlay-4)]"} disabled:opacity-50`}
         >
           <span
             className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform ${enabled ? "translate-x-5" : ""}`}
@@ -679,7 +679,7 @@ function PushToggle() {
         </button>
       </div>
       {error && (
-        <p className="text-[11px] text-[var(--coral)] mt-2 leading-relaxed">{error}</p>
+        <p className="text-[11px] text-[var(--coral-text)] mt-2 leading-relaxed">{error}</p>
       )}
     </>
   )

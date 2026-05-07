@@ -86,19 +86,23 @@ export function TopBar({
               await markNotificationsSeen()
             }}
           />
-          {/* Pill with Asignar button inside */}
+          {/* Pill with Asignar button inside. Border + bg use *-text
+              shades and bumped opacity so they read on paper white in
+              light mode without losing the soft tint feel in dark. */}
           <div ref={assignTriggerRef} className="relative shrink-0">
             <div
               className={`rounded-2xl border-2 px-3 py-2 md:px-4 md:py-2.5 flex items-center gap-2 md:gap-3 transition-colors ${
                 isNegative
-                  ? 'border-[var(--coral)]/40 bg-[rgba(255,122,89,0.04)]'
-                  : 'border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)]'
+                  ? 'border-[var(--coral)]/45 bg-[rgba(255,122,89,0.10)]'
+                  : 'border-[var(--brand-2)]/40 bg-[rgba(61,220,151,0.10)]'
               }`}
             >
               <div className="leading-none">
                 <div
                   className={`text-[9px] md:text-[10px] uppercase tracking-[0.18em] font-semibold ${
-                    isNegative ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
+                    isNegative
+                      ? 'text-[var(--coral-text)]'
+                      : 'text-[var(--brand-text)]'
                   }`}
                 >
                   Por asignar
@@ -108,7 +112,7 @@ export function TopBar({
                   format={fmtMoney}
                   className={`text-[16px] sm:text-[20px] md:text-[28px] font-bold tabular-nums num leading-none mt-1 block ${
                     isNegative
-                      ? 'text-[var(--coral)]'
+                      ? 'text-[var(--coral-text)]'
                       : isPositive
                         ? 'gradient-text'
                         : 'text-[var(--text2)]'

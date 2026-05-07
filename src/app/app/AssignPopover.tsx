@@ -253,7 +253,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <div className="w-10 h-1 rounded-full bg-[var(--overlay-4)]" />
         </div>
         <header className="px-5 pt-3 pb-3 border-b border-[var(--border)]">
-          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
             Asignar dinero
           </div>
           <p className="text-[13px] text-[var(--muted)] mt-1 leading-relaxed">
@@ -403,7 +403,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               <CheckCircle2
                 size={14}
                 strokeWidth={2.2}
-                className="text-[var(--success)] shrink-0 mt-0.5"
+                className="text-[var(--brand-text)] shrink-0 mt-0.5"
               />
               <span>{okMessage}</span>
             </div>
@@ -413,7 +413,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               <AlertCircle
                 size={14}
                 strokeWidth={2.2}
-                className="text-[var(--coral)] shrink-0 mt-0.5"
+                className="text-[var(--coral-text)] shrink-0 mt-0.5"
               />
               <span>{error}</span>
             </div>
@@ -423,13 +423,13 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
 
       <footer className="px-5 py-3 border-t border-[var(--border)] flex items-center justify-between gap-3 text-[12px]">
         <span className="text-[var(--muted)] inline-flex items-center gap-1.5">
-          <Sparkles size={12} strokeWidth={2.2} className="text-[var(--brand-2)]" />
+          <Sparkles size={12} strokeWidth={2.2} className="text-[var(--brand-text)]" />
           Acción rápida
         </span>
         <Link
           href="/app/plan"
           onClick={onClose}
-          className="text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
+          className="text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
         >
           Ver plan completo
           <ArrowRight size={11} strokeWidth={2.4} />
@@ -517,9 +517,9 @@ function AutoTabContent({ budgetId, month, onError, onSuccess }: AutoTabContentP
             type="button"
             onClick={() => handleClick(opt)}
             disabled={disabled}
-            className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] px-3.5 py-3 flex items-start gap-3 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] px-3.5 py-3 flex items-start gap-3 transition-colors disabled:opacity-40 disabled:pointer-events-none"
           >
-            <div className="w-8 h-8 rounded-lg bg-[var(--overlay-1)] text-[var(--brand-2)] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[var(--overlay-1)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
               <Icon size={14} strokeWidth={2.2} />
             </div>
             <div className="min-w-0 flex-1">

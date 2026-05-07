@@ -86,7 +86,7 @@ export function LandingDownload() {
     >
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--success)]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
             Llévatela contigo
           </p>
           <h2 className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
@@ -186,7 +186,7 @@ function InstallCard({
             className={`size-14 rounded-xl flex items-center justify-center shrink-0 ${
               tone === 'iphone'
                 ? 'bg-white/[0.06] text-white'
-                : 'bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)]'
+                : 'bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)]'
             }`}
           >
             {icon}
@@ -212,7 +212,7 @@ function InstallCard({
 function InstalledState() {
   return (
     <div className="mt-12 mx-auto max-w-md rounded-2xl border border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.05)] p-6 text-center">
-      <div className="mx-auto size-14 rounded-2xl bg-[rgba(61,220,151,0.12)] text-[var(--brand-2)] flex items-center justify-center mb-4">
+      <div className="mx-auto size-14 rounded-2xl bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] flex items-center justify-center mb-4">
         <Check size={24} strokeWidth={2.4} />
       </div>
       <p className="text-[16px] font-semibold text-[var(--text)]">
@@ -259,7 +259,7 @@ function IosInstructions({ onClose }: { onClose: () => void }) {
       >
         <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] inline-flex items-center gap-2">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] inline-flex items-center gap-2">
               <Apple size={12} strokeWidth={2.4} />
               iPhone / iPad
             </div>
@@ -342,7 +342,7 @@ function Step({
         </p>
         {iconHint && (
           <div className="mt-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-[var(--border)]">
-            <span className="text-[var(--brand-2)]">{iconHint}</span>
+            <span className="text-[var(--brand-text)]">{iconHint}</span>
             <span className="text-[11px] text-[var(--text)]">{iconLabel}</span>
           </div>
         )}

@@ -142,14 +142,14 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
               value={String(inProgress)}
               Icon={Repeat}
               iconBg="bg-[rgba(77,168,255,0.10)]"
-              iconColor="text-[var(--info)]"
+              iconColor="text-[var(--info-text)]"
             />
             <KpiCard
               label="Completadas"
               value={String(completed)}
               Icon={CheckCircle2}
               iconBg="bg-[rgba(61,220,151,0.10)]"
-              iconColor="text-[var(--brand-2)]"
+              iconColor="text-[var(--brand-text)]"
             />
             <KpiCard
               label="Total acumulado"
@@ -157,7 +157,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
               sub={`de ${fmtMoneyShort(totalGoalAmount)}`}
               Icon={PiggyBank}
               iconBg="bg-[rgba(245,200,66,0.10)]"
-              iconColor="text-[var(--warn)]"
+              iconColor="text-[var(--warn-text)]"
             />
           </div>
         )}
@@ -165,7 +165,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
         {/* Empty state */}
         {isEmpty && (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto text-[var(--text2)]">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Target size={22} strokeWidth={2} />
             </div>
             <div className="text-[16px] text-[var(--text)] font-semibold">Aún sin metas</div>
@@ -213,14 +213,14 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                       setEditing(g)
                     }
                   }}
-                  className="group relative cursor-pointer text-left rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 hover:border-[var(--border3)] hover:bg-white/[0.02] transition-colors space-y-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-2)]/40"
+                  className="group relative cursor-pointer text-left rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 hover:border-[var(--border3)] hover:bg-[var(--overlay-1)] transition-colors space-y-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-2)]/40"
                 >
                   <div className="flex items-start gap-3">
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                         isComplete
-                          ? 'bg-[rgba(61,220,151,0.14)] text-[var(--brand-2)]'
-                          : 'bg-white/[0.04] text-[var(--text2)]'
+                          ? 'bg-[rgba(61,220,151,0.14)] text-[var(--brand-text)]'
+                          : 'bg-[var(--overlay-1)] text-[var(--text2)]'
                       }`}
                     >
                       <Icon size={18} strokeWidth={2} />
@@ -251,7 +251,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                       </div>
                     </div>
                     {isComplete && (
-                      <div className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)] text-[11px] font-semibold">
+                      <div className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] text-[11px] font-semibold">
                         <CheckCircle2 size={11} strokeWidth={2.4} />
                         Lista
                       </div>
@@ -265,7 +265,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                       disabled={deletingPending}
                       aria-label={`Eliminar meta de ${g.categoryName}`}
                       title="Eliminar meta"
-                      className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 text-[var(--muted)] hover:text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]"
+                      className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)]"
                     >
                       <Trash2 size={14} strokeWidth={2} />
                     </button>
@@ -280,7 +280,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                         </div>
                         <div
                           className={`text-[20px] font-bold tabular-nums num leading-none mt-0.5 ${
-                            isComplete ? 'text-[var(--brand-2)]' : 'text-[var(--text)]'
+                            isComplete ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                           }`}
                         >
                           {fmtMoney(remaining)}
@@ -292,7 +292,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                         <span className="text-[var(--muted2)]">de {fmtMoney(g.goalAmount)}</span>
                       </div>
                     </div>
-                    <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
+                    <div className="h-2 rounded-full bg-[var(--overlay-1)] overflow-hidden">
                       <div
                         className="h-full gradient-bg transition-[width] duration-500"
                         style={{ width: `${pct * 100}%` }}
@@ -312,7 +312,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
                           </span>
                         )}
                         {monthsLeft !== null && monthsLeft <= 0 && (
-                          <span className="text-[var(--coral)]">· vencida</span>
+                          <span className="text-[var(--coral-text)]">· vencida</span>
                         )}
                       </div>
                     ) : (
@@ -367,7 +367,7 @@ function KpiCard({
   value,
   sub,
   Icon,
-  iconBg = 'bg-white/[0.04]',
+  iconBg = 'bg-[var(--overlay-1)]',
   iconColor = 'text-[var(--text2)]',
 }: KpiCardProps) {
   return (

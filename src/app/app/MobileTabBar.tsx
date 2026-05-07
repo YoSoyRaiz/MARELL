@@ -104,7 +104,7 @@ function TabLink({ item, active }: { item: TabItem; active: boolean }) {
         href={item.href}
         aria-current={active ? 'page' : undefined}
         className={`flex flex-col items-center justify-center gap-1 w-full pt-3 pb-2 transition-colors ${
-          active ? 'text-[var(--brand-2)]' : 'text-[var(--text2)]'
+          active ? 'text-[var(--brand-text)]' : 'text-[var(--text2)]'
         }`}
       >
         <Icon

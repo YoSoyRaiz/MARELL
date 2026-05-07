@@ -52,14 +52,14 @@ export function UpcomingCommitments({
     <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
       <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <CalendarClock size={14} strokeWidth={2.2} className="text-[var(--brand-2)] shrink-0" />
+          <CalendarClock size={14} strokeWidth={2.2} className="text-[var(--brand-text)] shrink-0" />
           <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
             Próximos 14 días
           </h2>
         </div>
         <Link
           href="/app/programadas"
-          className="text-[12px] text-[var(--brand-2)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
+          className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
         >
           Ver todas
           <ArrowRight size={12} strokeWidth={2.4} />
@@ -81,7 +81,7 @@ export function UpcomingCommitments({
               </div>
               <div
                 className={`text-[15px] font-bold tabular-nums num ${
-                  projectedCash < -0.005 ? 'text-[var(--coral)]' : 'gradient-text'
+                  projectedCash < -0.005 ? 'text-[var(--coral-text)]' : 'gradient-text'
                 }`}
               >
                 {fmtMoneyShort(projectedCash)}
@@ -90,12 +90,12 @@ export function UpcomingCommitments({
             <div className="text-[11px] text-[var(--muted)] mt-1 num tabular-nums inline-flex items-center gap-1">
               {netFlow < 0 ? (
                 <>
-                  <TrendingDown size={11} strokeWidth={2.2} className="text-[var(--coral)]" />
+                  <TrendingDown size={11} strokeWidth={2.2} className="text-[var(--coral-text)]" />
                   <span>Salidas netas: {fmtMoneyShort(Math.abs(netFlow))}</span>
                 </>
               ) : (
                 <>
-                  <TrendingUp size={11} strokeWidth={2.2} className="text-[var(--brand-2)]" />
+                  <TrendingUp size={11} strokeWidth={2.2} className="text-[var(--brand-text)]" />
                   <span>Entradas netas: {fmtMoneyShort(netFlow)}</span>
                 </>
               )}
@@ -127,7 +127,7 @@ export function UpcomingCommitments({
                   </div>
                   <div
                     className={`text-[13px] font-semibold tabular-nums num shrink-0 ${
-                      isOutflow ? 'text-[var(--coral)]' : 'text-[var(--brand-2)]'
+                      isOutflow ? 'text-[var(--coral-text)]' : 'text-[var(--brand-text)]'
                     }`}
                   >
                     {fmtMoney(it.amount)}
