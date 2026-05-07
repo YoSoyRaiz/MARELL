@@ -410,7 +410,7 @@ export function PlanView({
                 </div>
                 <div className="hidden sm:flex items-center gap-3 md:gap-6 text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] tabular-nums num shrink-0">
                   <span>
-                    Asig{' '}
+                    Presup{' '}
                     <span className="text-[var(--text2)] normal-case tracking-normal text-[12px] ml-1">
                       {fmtMoney(groupAssigned)}
                     </span>
@@ -441,7 +441,9 @@ export function PlanView({
               {/* Column headers */}
               <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px] gap-2 px-5 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
                 <div>Categoría</div>
-                <div className="text-right">Asignado</div>
+                <div className="text-right" title="Monto presupuestado este mes">
+                  Presupuesto
+                </div>
                 <div className="text-right">Actividad</div>
                 <div className="text-right">Disponible</div>
               </div>

@@ -163,7 +163,7 @@ export function CategoryAccordion({
                     {g.categories.length}{' '}
                     {g.categories.length === 1 ? 'categoría' : 'categorías'}
                     {' · '}
-                    Asignado {fmtMoney(groupAssigned)}
+                    Presupuesto {fmtMoney(groupAssigned)}
                   </div>
                 </div>
                 <span
@@ -198,7 +198,12 @@ export function CategoryAccordion({
                       {/* Headers — match Plan layout. */}
                       <div className="grid grid-cols-[1fr_90px_70px_90px] gap-2 px-5 py-2 text-[9px] uppercase tracking-[0.16em] text-[var(--muted2)] border-b border-[var(--border)]">
                         <div>Categoría</div>
-                        <div className="text-right">Asignado</div>
+                        <div
+                          className="text-right"
+                          title="Monto presupuestado este mes"
+                        >
+                          Presupuesto
+                        </div>
                         <div className="text-right">Actividad</div>
                         <div className="text-right">Disponible</div>
                       </div>
