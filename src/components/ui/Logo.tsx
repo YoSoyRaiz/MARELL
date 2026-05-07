@@ -33,6 +33,7 @@ const ASSETS: Record<Variant, VariantAsset> = {
   },
   main: {
     src: '/brand/logo-main.svg',
+    srcLight: '/brand/logo-main-light.svg',
     w: 1322.46,
     h: 861.5,
     alt: 'MARELL',
