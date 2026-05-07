@@ -128,9 +128,18 @@ export function Sidebar({
           drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
         aria-hidden={!drawerOpen ? undefined : false}>
-      {/* Logo */}
+      {/* Logo — clickable shortcut a /app (Resumen). Cierra el drawer
+          en móvil al navegar para no dejar al usuario con el menú
+          abierto encima de la página nueva. */}
       <div className="px-6 pt-7 pb-10 lg:px-5 lg:pt-6 lg:pb-[50px]">
-        <Logo height={50} />
+        <Link
+          href="/app"
+          aria-label="Ir a Resumen"
+          onClick={closeDrawer}
+          className="inline-block rounded-lg transition-opacity hover:opacity-85 active:opacity-70"
+        >
+          <Logo height={50} />
+        </Link>
       </div>
 
       {/* Nav */}
