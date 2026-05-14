@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Logo } from '@/components/ui/Logo'
 import { Button } from '@/components/ui/Button'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 const navItems = [
   { label: 'Cómo funciona', href: '#como-funciona' },
@@ -30,6 +31,7 @@ export function LandingHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link
             href="/login"
             className="hidden text-sm font-medium text-[var(--text2)] transition-colors hover:text-[var(--text)] sm:inline-flex"
