@@ -250,6 +250,106 @@ ${buttonHtml('Aceptar invitación', acceptUrl)}
   return { subject, html: shell(subject, body), text }
 }
 
+/**
+ * Branded confirmation email sent to a brand-new user. Replaces the
+ * default Supabase auto-email so we control the tone, the logo, and
+ * the layout. The confirm URL comes from
+ * `supabase.auth.admin.generateLink({ type: 'signup', ... })`.
+ */
+export function confirmSignupEmail(
+  displayName: string | null,
+  confirmUrl: string,
+): EmailContent {
+  const name = displayName?.split(' ')[0] ?? 'amigo'
+  const subject = `Confirma tu cuenta en MARELL`
+
+  const body = `
+<h1 style="margin:0 0 12px;font-size:24px;font-weight:800;color:${TEXT_PRIMARY};">Hola, ${escapeHtml(name)} 👋</h1>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:${TEXT_PRIMARY};">
+  Bienvenido a <strong>MARELL</strong>. Te falta un paso para activar
+  tu cuenta: confirma que este correo te pertenece.
+</p>
+<p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:${TEXT_PRIMARY};">
+  Cuando lo hagas, tu prueba gratuita de <strong>31 días</strong>
+  arranca al toque — sin tarjeta, sin compromiso.
+</p>
+${buttonHtml('Confirmar mi cuenta', confirmUrl)}
+<p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:${TEXT_MUTED};">
+  Si el botón no funciona, copia y pega este enlace en tu navegador:<br/>
+  <span style="word-break:break-all;color:${BRAND_GREEN};">${escapeHtml(confirmUrl)}</span>
+</p>
+<p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:${TEXT_MUTED};">
+  Si no creaste esta cuenta puedes ignorar este correo — no pasa nada.
+</p>
+`.trim()
+
+  const text = [
+    `Hola, ${name}`,
+    '',
+    'Bienvenido a MARELL. Confirma tu cuenta para activar tu prueba gratuita de 31 días.',
+    '',
+    `Confirmar: ${confirmUrl}`,
+    '',
+    'Si no creaste esta cuenta, ignora este correo.',
+  ].join('\n')
+
+  return { subject, html: shell(subject, body), text }
+}
+
+/**
+ * Heads-up to the founder/admin every time someone new signs up.
+ * Plain, scannable — meant to be read on a phone notification preview.
+ */
+export function adminNewSignupEmail(
+  newUserEmail: string,
+  displayName: string | null,
+  signupDate: Date,
+): EmailContent {
+  const subject = `Nuevo signup en MARELL: ${displayName ?? newUserEmail}`
+  const fechaStr = signupDate.toLocaleString('es-DO', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'America/Santo_Domingo',
+  })
+
+  const body = `
+<h1 style="margin:0 0 12px;font-size:22px;font-weight:700;color:${TEXT_PRIMARY};">Nuevo signup</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 24px;font-size:14px;color:${TEXT_PRIMARY};">
+  <tr>
+    <td style="padding:8px 0;color:${TEXT_MUTED};width:120px;">Nombre</td>
+    <td style="padding:8px 0;font-weight:600;">${escapeHtml(displayName ?? '—')}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;color:${TEXT_MUTED};">Email</td>
+    <td style="padding:8px 0;font-weight:600;">${escapeHtml(newUserEmail)}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;color:${TEXT_MUTED};">Fecha</td>
+    <td style="padding:8px 0;">${escapeHtml(fechaStr)}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;color:${TEXT_MUTED};">Trial vence</td>
+    <td style="padding:8px 0;">${escapeHtml(new Date(signupDate.getTime() + 31 * 86400_000).toLocaleDateString('es-DO', { dateStyle: 'medium', timeZone: 'America/Santo_Domingo' }))}</td>
+  </tr>
+</table>
+<p style="margin:0 0 0;font-size:13px;line-height:1.6;color:${TEXT_MUTED};">
+  El usuario ya recibió su correo de confirmación y arrancó su trial de 31 días.
+</p>
+`.trim()
+
+  const text = [
+    `Nuevo signup en MARELL`,
+    '',
+    `Nombre: ${displayName ?? '—'}`,
+    `Email:  ${newUserEmail}`,
+    `Fecha:  ${fechaStr}`,
+    '',
+    'El usuario recibió su correo de confirmación y arrancó su trial de 31 días.',
+  ].join('\n')
+
+  return { subject, html: shell(subject, body), text }
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')

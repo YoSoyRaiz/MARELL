@@ -4,10 +4,26 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { sendEmail } from '@/lib/email/send'
+import {
+  confirmSignupEmail,
+  adminNewSignupEmail,
+} from '@/lib/email/templates'
 
 export type AuthState = {
   error?: string
 } | undefined
+
+/** Discriminated state for the signup form: idle until submission,
+ *  then either an error to display inline or a "check your inbox"
+ *  success view that swaps out the form. */
+export type SignupState =
+  | { status: 'idle' }
+  | { status: 'sent'; email: string }
+  | { status: 'error'; error: string }
+
+const ADMIN_NOTIFY_EMAIL = 'maxtudiodesign@gmail.com'
 
 function validateEmail(email: string): string | null {
   if (!email) return 'El email es requerido'
@@ -21,36 +37,113 @@ function validatePassword(password: string): string | null {
   return null
 }
 
-export async function signup(_prev: AuthState, formData: FormData): Promise<AuthState> {
+/**
+ * Signup flow:
+ *   1. Create the auth user via the admin API with email_confirm=false,
+ *      so Supabase does NOT send its default confirmation email.
+ *   2. Generate a signup confirmation link (the same token Supabase
+ *      would have emailed) and deliver it via Resend with our
+ *      branded template so the logo and copy are MARELL's.
+ *   3. Fire-and-forget admin notification to the founder.
+ *   4. Return `status: 'sent'` so the form swaps to a "check your
+ *      inbox" view — the user has no session until they confirm.
+ *
+ * Trial fields (subscription_status='trialing', pro_expires_at) are
+ * set by a Postgres trigger on profile insert (migration
+ * 2026_05_14_trial_auto_start.sql) so the day-counter starts the
+ * moment the profile exists.
+ */
+export async function signup(
+  _prev: SignupState,
+  formData: FormData,
+): Promise<SignupState> {
   const email = String(formData.get('email') || '').trim().toLowerCase()
   const password = String(formData.get('password') || '')
   const displayName = String(formData.get('display_name') || '').trim()
 
   const emailErr = validateEmail(email)
-  if (emailErr) return { error: emailErr }
+  if (emailErr) return { status: 'error', error: emailErr }
   const passErr = validatePassword(password)
-  if (passErr) return { error: passErr }
-  if (!displayName) return { error: 'El nombre es requerido' }
+  if (passErr) return { status: 'error', error: passErr }
+  if (!displayName) return { status: 'error', error: 'El nombre es requerido' }
 
   const h = await headers()
   const proto = h.get('x-forwarded-proto') ?? 'https'
   const host = h.get('x-forwarded-host') ?? h.get('host')
   const origin = `${proto}://${host}`
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signUp({
+  const admin = createAdminClient()
+
+  // Step 1 — create the user without triggering Supabase's email.
+  const { error: createErr } = await admin.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: { display_name: displayName },
-      emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
-    },
+    email_confirm: false,
+    user_metadata: { display_name: displayName },
   })
 
-  if (error) return { error: error.message }
+  if (createErr) {
+    // Supabase returns specific phrasing for already-registered users;
+    // surface a friendly Spanish version instead of the raw message.
+    const msg = createErr.message.toLowerCase()
+    if (msg.includes('already') || msg.includes('registered')) {
+      return {
+        status: 'error',
+        error:
+          'Ya existe una cuenta con ese email. ¿Quieres iniciar sesión?',
+      }
+    }
+    return { status: 'error', error: createErr.message }
+  }
 
-  revalidatePath('/', 'layout')
-  redirect('/onboarding')
+  // Step 2 — generate the signup confirmation link Supabase would
+  // have emailed itself, so we can drop it into our own template.
+  const { data: linkData, error: linkErr } =
+    await admin.auth.admin.generateLink({
+      type: 'signup',
+      email,
+      password,
+      options: {
+        redirectTo: `${origin}/auth/callback?next=/onboarding`,
+      },
+    })
+  if (linkErr || !linkData?.properties?.action_link) {
+    return {
+      status: 'error',
+      error: 'No pudimos generar tu enlace de confirmación. Intenta de nuevo.',
+    }
+  }
+  const confirmUrl = linkData.properties.action_link
+
+  // Step 3 — send the branded confirmation email to the user. If
+  // Resend isn't configured (no API key), sendEmail logs and returns
+  // true so dev/preview keeps working.
+  const userTpl = confirmSignupEmail(displayName, confirmUrl)
+  const userSent = await sendEmail({
+    to: email,
+    subject: userTpl.subject,
+    html: userTpl.html,
+    text: userTpl.text,
+  })
+  if (!userSent) {
+    return {
+      status: 'error',
+      error:
+        'Tu cuenta se creó pero no pudimos enviarte el correo. Contáctanos en hola@marell.app.',
+    }
+  }
+
+  // Step 4 — heads-up to the founder. Don't fail the signup if this
+  // email bounces: it's purely informational.
+  const adminTpl = adminNewSignupEmail(email, displayName, new Date())
+  void sendEmail({
+    to: ADMIN_NOTIFY_EMAIL,
+    subject: adminTpl.subject,
+    html: adminTpl.html,
+    text: adminTpl.text,
+  })
+
+  return { status: 'sent', email }
 }
 
 export async function login(_prev: AuthState, formData: FormData): Promise<AuthState> {
