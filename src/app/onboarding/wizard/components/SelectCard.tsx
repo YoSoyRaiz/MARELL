@@ -18,7 +18,7 @@ export function SelectCard({ active, onClick, icon, title, description, multi }:
       onClick={onClick}
       className={`relative text-left p-5 rounded-2xl border-2 transition-all duration-200 ${
         active
-          ? 'border-[var(--brand-2)] bg-white/[0.04] shadow-[0_0_0_4px_rgba(61,220,151,0.10)]'
+          ? 'border-[var(--brand-2)] bg-[rgba(61,220,151,0.06)] shadow-[0_0_0_4px_rgba(61,220,151,0.10)]'
           : 'border-[var(--border)] bg-[var(--s1)] hover:border-[var(--border3)] hover:-translate-y-[1px]'
       }`}
     >
@@ -26,7 +26,7 @@ export function SelectCard({ active, onClick, icon, title, description, multi }:
         className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all ${
           active
             ? 'bg-[rgba(61,220,151,0.14)] text-[var(--brand-2)]'
-            : 'bg-white/[0.04] text-[var(--text2)]'
+            : 'bg-[var(--overlay-2)] text-[var(--text2)]'
         }`}
       >
         {icon}

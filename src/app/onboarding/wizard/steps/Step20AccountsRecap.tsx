@@ -111,7 +111,7 @@ export function Step20AccountsRecap() {
                 type="button"
                 onClick={() => removeAccount(a.id)}
                 aria-label={`Eliminar ${a.name}`}
-                className="text-[var(--muted)] hover:text-[var(--coral)] p-2 rounded-lg hover:bg-white/[0.04] transition-colors"
+                className="text-[var(--muted)] hover:text-[var(--coral)] p-2 rounded-lg hover:bg-[var(--overlay-2)] transition-colors"
               >
                 <Trash2 size={16} strokeWidth={2} />
               </button>
@@ -124,7 +124,7 @@ export function Step20AccountsRecap() {
       <button
         type="button"
         onClick={addAnother}
-        className="w-full h-[52px] rounded-2xl border-2 border-dashed border-[var(--border3)] hover:border-[var(--brand-2)] hover:bg-white/[0.02] text-[14px] font-medium text-[var(--text2)] hover:text-[var(--text)] transition-colors inline-flex items-center justify-center gap-2"
+        className="w-full h-[52px] rounded-2xl border-2 border-dashed border-[var(--border3)] hover:border-[var(--brand-2)] hover:bg-[var(--overlay-1)] text-[14px] font-medium text-[var(--text2)] hover:text-[var(--text)] transition-colors inline-flex items-center justify-center gap-2"
       >
         <Plus size={16} strokeWidth={2.2} />
         Agregar otra cuenta

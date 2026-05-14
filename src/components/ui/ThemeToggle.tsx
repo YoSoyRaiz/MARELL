@@ -1,53 +1,44 @@
 'use client'
 
-import { Sun, Moon, SunMoon } from 'lucide-react'
+import { Sun, Moon } from 'lucide-react'
 import { useTheme, type ThemeMode } from './ThemeProvider'
 
-const ORDER: ThemeMode[] = ['light', 'dark', 'system']
-const NEXT: Record<ThemeMode, ThemeMode> = {
-  light: 'dark',
-  dark: 'system',
-  system: 'light',
-}
 // Icons reflect the CURRENT mode at a glance:
 //   - Sun = ya estás en claro
 //   - Moon = ya estás en oscuro
-//   - SunMoon = sigues al sistema (más legible que un Monitor)
-// El tooltip explica qué pasa si tocas (pasa al siguiente modo).
-const ICONS = { light: Sun, dark: Moon, system: SunMoon } as const
+// El tooltip explica qué pasa si tocas (pasa al modo opuesto).
+const ICONS = { light: Sun, dark: Moon } as const
 const LABELS: Record<ThemeMode, string> = {
   light: 'Claro',
   dark: 'Oscuro',
-  system: 'Auto',
 }
 const FULL_LABELS: Record<ThemeMode, string> = {
   light: 'Modo claro',
   dark: 'Modo oscuro',
-  system: 'Sigue al sistema',
 }
 const NEXT_LABELS: Record<ThemeMode, string> = {
   light: 'Cambiar a oscuro',
-  dark: 'Cambiar a sistema',
-  system: 'Cambiar a claro',
+  dark: 'Cambiar a claro',
 }
 
 // Pill palette per mode — cada uno tiene su propio tint para que el
-// toggle se sienta vivo y llame atención. El icono va arriba del color
-// dominante del modo (ámbar para sol, índigo para luna, brand para auto).
+// toggle se sienta vivo. Sol = ámbar cálido; Luna = índigo frío.
 const PALETTES: Record<ThemeMode, string> = {
   light:
     'border-[#F5C842]/50 bg-[rgba(245,200,66,0.14)] text-[#A07300] hover:bg-[rgba(245,200,66,0.22)]',
   dark:
     'border-[#7C92FF]/40 bg-[rgba(124,146,255,0.14)] text-[#5364C0] hover:bg-[rgba(124,146,255,0.22)]',
-  system:
-    'border-[var(--brand-2)]/40 bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] hover:bg-[rgba(61,220,151,0.20)]',
+}
+
+const NEXT: Record<ThemeMode, ThemeMode> = {
+  light: 'dark',
+  dark: 'light',
 }
 
 /**
- * Pill-style toggle that cycles light → dark → system. Each mode
+ * Pill-style toggle that flips between light and dark. Each mode
  * paints the pill with its own tint (warm amber for sol, cool indigo
- * for luna, brand green for auto) so the control feels alive and
- * draws attention compared to a plain icon button.
+ * for luna) so the control feels alive vs a plain icon button.
  */
 export function ThemeToggle() {
   const { mode, setMode } = useTheme()
@@ -67,5 +58,3 @@ export function ThemeToggle() {
     </button>
   )
 }
-
-export { ORDER as THEME_ORDER }

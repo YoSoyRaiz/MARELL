@@ -42,7 +42,7 @@ export function Step15CategoryList() {
               key={g.name}
               className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden"
             >
-              <div className="px-5 py-3 border-b border-[var(--border)] bg-white/[0.02] flex items-center justify-between">
+              <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)] flex items-center justify-between">
                 <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
                   {g.name}
                 </h3>
@@ -54,7 +54,7 @@ export function Step15CategoryList() {
                 {g.items.map((item, i) => (
                   <li
                     key={`${g.name}-${i}`}
-                    className="px-5 py-3 flex items-center gap-3 text-[14px] border-b border-[var(--border)] last:border-b-0 hover:bg-white/[0.02] transition-colors"
+                    className="px-5 py-3 flex items-center gap-3 text-[14px] border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--overlay-2)] transition-colors"
                   >
                     <span className="text-[var(--text2)] flex items-center">
                       <item.Icon size={16} strokeWidth={2} />

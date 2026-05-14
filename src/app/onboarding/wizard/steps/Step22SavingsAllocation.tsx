@@ -56,7 +56,7 @@ export function Step22SavingsAllocation() {
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.04] text-[var(--text2)] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--overlay-2)] text-[var(--text2)] flex items-center justify-center shrink-0">
                     <PiggyBank size={20} strokeWidth={2} />
                   </div>
                   <div className="min-w-0">
@@ -87,7 +87,7 @@ export function Step22SavingsAllocation() {
                   onClick={() => setAside(a.id, true)}
                   className={`py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
                     aside
-                      ? 'bg-white/[0.08] text-[var(--text)]'
+                      ? 'bg-[var(--overlay-3)] text-[var(--text)]'
                       : 'text-[var(--text2)] hover:text-[var(--text)]'
                   }`}
                 >

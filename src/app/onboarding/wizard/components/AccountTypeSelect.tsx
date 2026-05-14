@@ -113,7 +113,7 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
         >
           {TREE.map((g) => (
             <div key={g.title} className="border-b border-[var(--border)] last:border-b-0">
-              <div className="px-4 pt-3 pb-2 bg-white/[0.02]">
+              <div className="px-4 pt-3 pb-2 bg-[var(--overlay-1)]">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
                   {g.title}
                 </div>
@@ -136,7 +136,7 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
                     className={`w-full text-left px-4 py-2.5 text-[14px] flex items-center justify-between gap-2 transition-colors ${
                       active
                         ? 'bg-[rgba(61,220,151,0.08)] text-[var(--brand-2)] font-medium'
-                        : 'text-[var(--text)] hover:bg-white/[0.04]'
+                        : 'text-[var(--text)] hover:bg-[var(--overlay-2)]'
                     }`}
                   >
                     <span>{t.label}</span>

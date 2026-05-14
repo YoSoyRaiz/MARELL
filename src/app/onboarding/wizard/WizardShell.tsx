@@ -27,7 +27,7 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
       {/* Progress bar */}
-      <div className="h-[3px] w-full bg-white/[0.04] sticky top-0 z-20">
+      <div className="h-[3px] w-full bg-[var(--overlay-2)] sticky top-0 z-20">
         <div
           className="h-full gradient-bg transition-[width] duration-500 ease-out"
           style={{ width: `${progress}%` }}
@@ -43,7 +43,7 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
         <Link
           href="/"
           aria-label="Cerrar y volver al inicio"
-          className="absolute right-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-xl text-[var(--brand-2)] hover:text-[var(--text2)] hover:bg-white/[0.05] transition-colors"
+          className="absolute right-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-xl text-[var(--brand-2)] hover:text-[var(--text2)] hover:bg-[var(--overlay-2)] transition-colors"
         >
           <X size={22} strokeWidth={2.2} />
         </Link>
@@ -78,7 +78,7 @@ export function WizardShell({ steps }: { steps: StepDef[] }) {
               <button
                 type="button"
                 onClick={back}
-                className="h-[52px] px-7 inline-flex items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold text-[var(--text)] bg-white/[0.06] hover:bg-black hover:text-[var(--text)] transition-[background-color,color] duration-200 active:scale-[.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DDC97]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0C]"
+                className="h-[52px] px-7 inline-flex items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold text-[var(--text)] bg-[var(--overlay-3)] hover:bg-[var(--overlay-4)] transition-[background-color,color] duration-200 active:scale-[.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DDC97]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
               >
                 <ArrowLeft size={16} strokeWidth={2.2} />
                 <span>Atrás</span>

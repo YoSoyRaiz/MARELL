@@ -16,7 +16,6 @@ import {
   Sparkles,
   Sun,
   Moon,
-  SunMoon,
   Palette,
 } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/ui/ThemeProvider'
@@ -693,24 +692,20 @@ function PushToggle() {
  */
 function ThemeSection() {
   const { mode, setMode } = useTheme()
-  // SunMoon (sol/luna combinados) reemplaza Monitor para "Sistema" —
-  // se entiende mejor como "se adapta solo" que un icono de pantalla.
   const options: { id: ThemeMode; label: string; Icon: typeof Sun }[] = [
     { id: 'light', label: 'Claro', Icon: Sun },
     { id: 'dark', label: 'Oscuro', Icon: Moon },
-    { id: 'system', label: 'Sistema', Icon: SunMoon },
   ]
 
   return (
     <Section title="Apariencia" Icon={Palette}>
       <p className="text-[12px] text-[var(--muted)] mb-3 leading-relaxed">
-        Elige el tema que prefieras. "Sistema" sigue la configuración de
-        tu dispositivo.
+        Elige entre claro u oscuro.
       </p>
       <div
         role="radiogroup"
         aria-label="Tema"
-        className="grid grid-cols-3 gap-2 p-1 bg-[var(--overlay-1)] rounded-xl"
+        className="grid grid-cols-2 gap-2 p-1 bg-[var(--overlay-1)] rounded-xl"
       >
         {options.map((opt) => {
           const active = mode === opt.id
