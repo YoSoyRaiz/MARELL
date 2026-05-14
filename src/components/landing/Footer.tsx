@@ -82,7 +82,7 @@ const socials = [
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-white/[0.05] py-16">
+    <footer className="border-t border-[var(--border)] py-16">
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid gap-12 lg:grid-cols-6">
           {/* Brand */}
@@ -97,7 +97,7 @@ export function LandingFooter() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="grid size-9 place-items-center rounded-full border border-white/[0.08] text-[var(--text2)] transition-colors hover:border-white/20 hover:text-[var(--text)]"
+                  className="grid size-9 place-items-center rounded-full border border-[var(--border2)] text-[var(--text2)] transition-colors hover:border-[var(--border3)] hover:text-[var(--text)]"
                 >
                   <Icon size={15} />
                 </Link>
@@ -132,7 +132,7 @@ export function LandingFooter() {
           <div className="lg:col-span-1 lg:justify-self-end">
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] px-3.5 py-1.5 text-sm font-medium text-[var(--text2)] transition-colors hover:border-white/20 hover:text-[var(--text)]"
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--border2)] px-3.5 py-1.5 text-sm font-medium text-[var(--text2)] transition-colors hover:border-[var(--border3)] hover:text-[var(--text)]"
             >
               <Globe size={14} strokeWidth={2} />
               Español
@@ -140,7 +140,7 @@ export function LandingFooter() {
           </div>
         </div>
 
-        <div className="mt-14 border-t border-white/[0.05] pt-6 text-xs text-[var(--muted)]">
+        <div className="mt-14 border-t border-[var(--border)] pt-6 text-xs text-[var(--muted)]">
           © 2026 Marell. Todos los derechos reservados.
         </div>
       </div>

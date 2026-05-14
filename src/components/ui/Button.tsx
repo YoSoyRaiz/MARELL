@@ -14,15 +14,15 @@ const variantClasses: Record<Variant, string> = {
   gradient:
     'gradient-bg text-[#0B0B0C] font-semibold glow-on-hover hover:brightness-105 active:brightness-95',
   outline:
-    'bg-transparent text-[var(--text)] font-medium border border-[var(--border3)] hover:border-white/40 hover:bg-white/5',
+    'bg-transparent text-[var(--text)] font-medium border border-[var(--border3)] hover:border-[var(--brand-2)]/50 hover:bg-[var(--overlay-2)]',
   ghost:
-    'bg-transparent text-[var(--text2)] font-medium hover:text-[var(--text)] hover:bg-white/5',
+    'bg-transparent text-[var(--text2)] font-medium hover:text-[var(--text)] hover:bg-[var(--overlay-2)]',
   subtle:
-    'bg-white/5 text-[var(--text)] font-medium border border-[var(--border)] hover:bg-white/10 hover:border-[var(--border3)]',
+    'bg-[var(--overlay-2)] text-[var(--text)] font-medium border border-[var(--border)] hover:bg-[var(--overlay-3)] hover:border-[var(--border3)]',
 }
 
 const baseClasses =
-  'inline-flex items-center justify-center gap-2 transition-[background,color,border-color,filter,box-shadow,transform] duration-200 ease-out select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DDC97]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0C] disabled:opacity-40 disabled:pointer-events-none active:scale-[.98]'
+  'inline-flex items-center justify-center gap-2 transition-[background,color,border-color,filter,box-shadow,transform] duration-200 ease-out select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DDC97]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:opacity-40 disabled:pointer-events-none active:scale-[.98]'
 
 type CommonProps = {
   variant?: Variant

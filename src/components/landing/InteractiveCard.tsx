@@ -21,7 +21,7 @@ interface Props {
 export function InteractiveCard({
   children,
   className = '',
-  surface = 'rounded-[28px] border border-white/[0.10] bg-gradient-to-b from-white/[0.06] to-white/[0.02]',
+  surface = 'rounded-[28px] landing-card',
   hue = 'green',
   inner = false,
 }: Props) {

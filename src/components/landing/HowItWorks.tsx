@@ -63,7 +63,7 @@ function Step({
     <div
       className={`relative flex flex-col items-center px-4 text-center lg:px-9 ${
         divider
-          ? 'lg:before:absolute lg:before:right-0 lg:before:top-12 lg:before:h-[230px] lg:before:w-px lg:before:bg-gradient-to-b lg:before:from-transparent lg:before:via-white/15 lg:before:to-transparent'
+          ? 'lg:before:absolute lg:before:right-0 lg:before:top-12 lg:before:h-[230px] lg:before:w-px lg:before:bg-gradient-to-b lg:before:from-transparent lg:before:via-[var(--border3)] lg:before:to-transparent'
           : ''
       }`}
     >
@@ -93,7 +93,7 @@ function AssignVisual() {
   ]
   return (
     <InteractiveCard
-      surface="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-4 text-left"
+      surface="rounded-2xl landing-card-soft p-4 text-left"
     >
       <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">
         Asignar disponible
@@ -103,11 +103,11 @@ function AssignVisual() {
         {items.map((it) => (
           <div
             key={it.label}
-            className={`flex items-center gap-3 rounded-lg border border-white/[0.05] p-2.5 ${
-              it.highlight ? 'bg-white/[0.04]' : 'bg-white/[0.015]'
+            className={`flex items-center gap-3 rounded-lg border border-[var(--border)] p-2.5 ${
+              it.highlight ? 'bg-[var(--overlay-2)]' : 'bg-[var(--overlay-1)]'
             }`}
           >
-            <span className="grid size-7 place-items-center rounded-md bg-white/5 text-sm">
+            <span className="grid size-7 place-items-center rounded-md bg-[var(--overlay-2)] text-sm">
               {it.icon}
             </span>
             <span className="flex-1 text-[13px] font-medium">{it.label}</span>
@@ -138,7 +138,7 @@ function TrackVisual() {
       {txns.map((t) => (
         <InteractiveCard
           key={t.name}
-          surface="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-3"
+          surface="rounded-2xl landing-card-soft p-3"
         >
           <div className="flex items-center gap-3">
             <div
@@ -168,7 +168,7 @@ function TrackVisual() {
 function GoalVisual() {
   return (
     <InteractiveCard
-      surface="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-6 text-center"
+      surface="rounded-2xl landing-card-soft p-6 text-center"
     >
       <p className="text-[11px] uppercase tracking-wider text-[var(--muted)]">
         Meta: Viaje a Europa
@@ -177,7 +177,7 @@ function GoalVisual() {
         78<span className="text-[var(--brand-text)]">%</span>
       </p>
       <p className="num mt-1 text-sm text-[var(--text2)]">$3,900 / $5,000</p>
-      <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/5">
+      <div className="mt-5 h-2 overflow-hidden rounded-full bg-[var(--overlay-2)]">
         <div
           className="h-full rounded-full bg-gradient-to-r from-[#2EC4B6] via-[#3DDC97] to-[#8AC926]"
           style={{ width: '78%' }}

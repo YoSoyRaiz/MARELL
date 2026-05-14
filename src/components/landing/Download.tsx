@@ -82,7 +82,7 @@ export function LandingDownload() {
   return (
     <section
       id="descargar"
-      className="relative px-6 py-20 lg:py-24 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent"
+      className="relative px-6 py-20 lg:py-24 bg-gradient-to-b from-transparent via-[var(--overlay-1)] to-transparent"
     >
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
@@ -169,7 +169,7 @@ function InstallCard({
 }) {
   const ringTone = highlighted
     ? 'border-[var(--brand-2)]/60 shadow-[0_0_0_4px_rgba(61,220,151,0.12)]'
-    : 'border-white/[0.10]'
+    : ''
   return (
     <button
       type="button"
@@ -179,13 +179,13 @@ function InstallCard({
     >
       <InteractiveCard
         hue={tone === 'iphone' ? 'teal' : 'green'}
-        surface={`rounded-2xl border ${ringTone} bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-6 transition-colors disabled:opacity-50`}
+        surface={`rounded-2xl landing-card-soft ${ringTone} p-6 transition-colors disabled:opacity-50`}
       >
         <div className="flex items-start gap-4">
           <div
             className={`size-14 rounded-xl flex items-center justify-center shrink-0 ${
               tone === 'iphone'
-                ? 'bg-white/[0.06] text-white'
+                ? 'bg-[var(--overlay-2)] text-[var(--text)]'
                 : 'bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)]'
             }`}
           >
@@ -275,7 +275,7 @@ function IosInstructions({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -330,7 +330,7 @@ function Step({
 }) {
   return (
     <li className="flex items-start gap-3">
-      <div className="size-8 rounded-full bg-white/[0.04] border border-[var(--border)] text-[var(--text)] flex items-center justify-center shrink-0 text-[13px] font-bold">
+      <div className="size-8 rounded-full bg-[var(--overlay-2)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center shrink-0 text-[13px] font-bold">
         {n}
       </div>
       <div className="flex-1 min-w-0 pt-0.5">
@@ -341,7 +341,7 @@ function Step({
           {description}
         </p>
         {iconHint && (
-          <div className="mt-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-[var(--border)]">
+          <div className="mt-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[var(--overlay-2)] border border-[var(--border)]">
             <span className="text-[var(--brand-text)]">{iconHint}</span>
             <span className="text-[11px] text-[var(--text)]">{iconLabel}</span>
           </div>

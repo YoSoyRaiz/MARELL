@@ -258,19 +258,99 @@
   }
 
   .card-base {
-    background: #161617;
-    border: 1px solid rgba(255,255,255,.06);
+    background: var(--s1);
+    border: 1px solid var(--border);
     border-radius: 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
     transition: transform .25s cubic-bezier(.4,0,.2,1),
                 border-color .25s,
                 box-shadow .25s;
   }
+  :root[data-theme='light'] .card-base {
+    box-shadow: 0 1px 2px rgba(11,11,12,.04), 0 8px 24px rgba(11,11,12,.06);
+  }
 
   .card-hover:hover {
     transform: translateY(-2px);
-    border-color: rgba(255,255,255,.12);
+    border-color: var(--border2);
     box-shadow: 0 4px 12px rgba(0,0,0,.5), 0 12px 32px rgba(0,0,0,.4);
+  }
+  :root[data-theme='light'] .card-hover:hover {
+    box-shadow: 0 4px 12px rgba(11,11,12,.08), 0 16px 40px rgba(11,11,12,.10);
+  }
+
+  /* ──────────────────────────────────────────────
+     Landing-specific surfaces. Theme-aware so they
+     flip between dark gradient washes and bright
+     paper cards without per-component overrides.
+     ────────────────────────────────────────────── */
+  .landing-card {
+    border: 1px solid var(--border2);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    box-shadow: 0 28px 90px rgba(0,0,0,.25);
+  }
+  :root[data-theme='light'] .landing-card {
+    border-color: var(--border2);
+    background: var(--s1);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.6) inset,
+      0 1px 2px rgba(11,11,12,.04),
+      0 12px 40px rgba(11,11,12,.08);
+  }
+
+  .landing-card-soft {
+    border: 1px solid var(--border);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+  }
+  :root[data-theme='light'] .landing-card-soft {
+    border-color: var(--border2);
+    background: var(--s1);
+  }
+
+  .landing-pill {
+    border: 1px solid var(--border2);
+    background: var(--overlay-1);
+    color: var(--text2);
+  }
+
+  .landing-divider-v {
+    background: linear-gradient(180deg,
+      transparent 0%,
+      var(--border3) 50%,
+      transparent 100%);
+  }
+
+  .landing-divider-h {
+    background: linear-gradient(90deg,
+      transparent 0%,
+      var(--border2) 50%,
+      transparent 100%);
+  }
+
+  /* Device frame for the hero dashboard screenshot. The image itself
+     stays dark; this frame gives it a "monitor / preview" context so
+     the dark UI on a light page reads as intentional, not jarring. */
+  .device-frame {
+    border-radius: 28px;
+    padding: 10px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border: 1px solid var(--border2);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.06) inset,
+      0 40px 120px rgba(0,0,0,.35),
+      0 16px 40px rgba(0,0,0,.25);
+  }
+  :root[data-theme='light'] .device-frame {
+    background:
+      linear-gradient(180deg, #0F0F11 0%, #161618 100%);
+    border-color: rgba(11,11,12,.18);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.06) inset,
+      0 40px 120px rgba(11,11,12,.22),
+      0 16px 40px rgba(11,11,12,.14);
   }
 
   .num {

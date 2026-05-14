@@ -50,7 +50,7 @@ export function LandingAccounts() {
     <section id="producto" className="relative py-24">
       <div className="mx-auto max-w-7xl px-6">
         <InteractiveCard
-          surface="rounded-[28px] border border-white/[0.10] bg-gradient-to-b from-white/[0.055] to-white/[0.02] p-8 sm:p-12 shadow-[0_28px_90px_rgba(0,0,0,.25)]"
+          surface="rounded-[28px] landing-card p-8 sm:p-12"
         >
           <div className="grid gap-12 lg:grid-cols-[0.9fr_1.2fr] lg:gap-14 lg:items-center">
             {/* Left copy */}
@@ -71,7 +71,7 @@ export function LandingAccounts() {
               <ul className="mt-8 grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
                 {features.map(({ icon: Icon, title, desc }) => (
                   <li key={title} className="flex items-start gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/[0.06] bg-[var(--success)]/[0.10] text-[var(--brand-text)]">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-[var(--border)] bg-[var(--success)]/[0.10] text-[var(--brand-text)]">
                       <Icon size={16} strokeWidth={2.2} />
                     </span>
                     <div>
@@ -98,8 +98,10 @@ export function LandingAccounts() {
               </div>
             </div>
 
-            {/* Right: accounts UI inside an inner panel */}
-            <div className="rounded-[24px] border border-white/[0.10] bg-[#02050740] p-5 backdrop-blur-sm sm:p-6">
+            {/* Right: accounts UI inside an inner panel. Surface flips
+                with theme so the panel stays distinguishable from the
+                outer card on both light and dark backgrounds. */}
+            <div className="rounded-[24px] border border-[var(--border2)] bg-[var(--overlay-1)] p-5 backdrop-blur-sm sm:p-6">
               <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
                 {/* Accounts list */}
                 <div>
@@ -119,7 +121,7 @@ export function LandingAccounts() {
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
                           {sec.section}
                         </p>
-                        <div className="mt-1.5 divide-y divide-white/[0.05]">
+                        <div className="mt-1.5 divide-y divide-[var(--border)]">
                           {sec.rows.map((r) => (
                             <div
                               key={r.label}
@@ -207,7 +209,7 @@ function Donut() {
           cy={100}
           r={radius}
           fill="none"
-          stroke="#1A1A1C"
+          stroke="var(--s3)"
           strokeWidth={stroke}
         />
         {segments.map((s, i) => {

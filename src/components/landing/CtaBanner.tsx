@@ -8,7 +8,7 @@ export function LandingCtaBanner() {
     <section className="relative px-6 py-16">
       <div className="mx-auto max-w-7xl">
         <InteractiveCard
-          surface="rounded-[28px] border border-white/[0.10] bg-gradient-to-b from-white/[0.055] to-white/[0.02] p-10 sm:p-14 shadow-[0_28px_90px_rgba(0,0,0,.25)]"
+          surface="rounded-[28px] landing-card p-10 sm:p-14"
         >
           {/* Soft gradient halo behind */}
           <div
@@ -55,7 +55,7 @@ export function LandingCtaBanner() {
 
 function BrandCard() {
   return (
-    <div className="relative mx-auto aspect-[1.6/1] w-full max-w-[320px] -rotate-[8deg] overflow-hidden rounded-[22px] border border-white/[0.12] bg-gradient-to-br from-white/[0.18] via-white/[0.04] to-[#1F3529]/40 p-7 shadow-[0_24px_64px_-12px_rgba(0,0,0,.6)] transition-transform duration-300 hover:-rotate-[6deg]">
+    <div className="relative mx-auto aspect-[1.6/1] w-full max-w-[320px] -rotate-[6deg] overflow-hidden rounded-[22px] border border-[var(--border3)] bg-gradient-to-br from-[#1F3529] via-[#0E0E0F] to-[#2EC4B6]/30 p-7 shadow-[0_32px_80px_-16px_rgba(0,0,0,.55),0_0_0_1px_rgba(255,255,255,0.06)_inset] transition-transform duration-300 hover:-rotate-[3deg] hover:scale-[1.02]">
       <div className="absolute right-7 top-7 opacity-80">
         <Logo variant="icon" height={32} />
       </div>

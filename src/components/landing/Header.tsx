@@ -11,7 +11,7 @@ const navItems = [
 
 export function LandingHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.04] bg-[#0B0B0C]/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2.5" aria-label="MARELL">
           <Logo variant="horizontal" height={40} priority />
