@@ -9,6 +9,7 @@ import { CurrencyProvider } from './CurrencyProvider'
 import { KeyboardShortcuts } from './KeyboardShortcuts'
 import { OfflineBanner } from './OfflineBanner'
 import { MobileTabBar } from './MobileTabBar'
+import { TrialBanner } from './TrialBanner'
 import type { NotificationItem } from './NotificationBell'
 
 interface AppShellProps {
@@ -50,6 +51,7 @@ export function AppShell({
           />
           <div className="flex-1 flex flex-col min-w-0">
             <OfflineBanner />
+            <TrialBanner plan={plan} trialEndsAt={trialEndsAt} />
             <TopBar
               displayName={displayName}
               currency={budget?.currency ?? 'DOP'}

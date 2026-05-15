@@ -94,7 +94,7 @@ const TONE_CLASSES: Record<UserStatus['tone'], string> = {
   amber: 'bg-[var(--warn)]/[0.12] text-[var(--warn)] border-[var(--warn)]/30',
   red: 'bg-[var(--coral)]/[0.12] text-[var(--coral)] border-[var(--coral)]/30',
   blue: 'bg-[var(--info)]/[0.12] text-[var(--info)] border-[var(--info)]/30',
-  gray: 'bg-white/[0.05] text-[var(--text2)] border-white/[0.10]',
+  gray: 'bg-[var(--overlay-2)] text-[var(--text2)] border-[var(--border2)]',
 }
 
 interface Props {
@@ -256,7 +256,7 @@ export function AdminClient({ users }: Props) {
                   className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
                     active
                       ? 'gradient-bg text-[#0B0B0C]'
-                      : 'bg-white/[0.04] text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.08]'
+                      : 'bg-[var(--overlay-2)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
                   }`}
                 >
                   {c.label}
@@ -446,7 +446,7 @@ function Stat({
                   ? 'bg-[var(--coral)]/[0.12] text-[var(--coral)]'
                   : tone === 'blue'
                     ? 'bg-[var(--info)]/[0.12] text-[var(--info)]'
-                    : 'bg-white/[0.04] text-[var(--text2)]'
+                    : 'bg-[var(--overlay-2)] text-[var(--text2)]'
           }`}
         >
           <Icon size={14} strokeWidth={2} />
@@ -480,7 +480,7 @@ function ActionButton({
       className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-medium transition-colors ${
         tone === 'danger'
           ? 'text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]'
-          : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.05]'
+          : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'
       }`}
     >
       <Icon size={12} strokeWidth={2} />
@@ -566,7 +566,7 @@ function PaymentDialog({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-lg transition-colors"
+            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] rounded-lg transition-colors"
           >
             Cancelar
           </button>
@@ -655,7 +655,7 @@ function TrialDialog({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-lg transition-colors"
+            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] rounded-lg transition-colors"
           >
             Cancelar
           </button>

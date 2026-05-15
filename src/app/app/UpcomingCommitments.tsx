@@ -74,7 +74,7 @@ export function UpcomingCommitments({
         </div>
       ) : (
         <>
-          <div className="px-5 py-3 border-b border-[var(--border)] bg-white/[0.01]">
+          <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)]">
             <div className="flex items-center justify-between gap-2">
               <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
                 Caja proyectada

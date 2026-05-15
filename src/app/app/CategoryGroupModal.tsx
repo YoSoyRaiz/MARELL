@@ -199,7 +199,7 @@ export function CategoryGroupModal({
         </div>
 
         {/* Footer */}
-        <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-between gap-4 bg-white/[0.01]">
+        <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-between gap-4 bg-[var(--overlay-1)]">
           <div className="text-[12px] text-[var(--text2)]">
             Total asignado:{' '}
             <span className="num tabular-nums font-semibold text-[var(--text)] ml-1">

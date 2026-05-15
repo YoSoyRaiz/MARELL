@@ -231,7 +231,7 @@ export function CategoryDrillModal({
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-[var(--muted)]">
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-sm bg-white/[0.18]" />
+                      <span className="w-2.5 h-2.5 rounded-sm bg-[var(--overlay-4)]" />
                       Asignado
                     </span>
                     <span className="inline-flex items-center gap-1.5">

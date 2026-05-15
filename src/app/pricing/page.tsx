@@ -101,7 +101,7 @@ export default async function PricingPage() {
             <ul className="mt-7 space-y-3 flex-1">
               {FREE_FEATURES.map((f) => (
                 <li key={f} className="flex items-center gap-2.5 text-[14px]">
-                  <span className="grid size-5 place-items-center rounded-full bg-white/[0.05] text-[var(--text2)] shrink-0">
+                  <span className="grid size-5 place-items-center rounded-full bg-[var(--overlay-2)] text-[var(--text2)] shrink-0">
                     <Check size={11} strokeWidth={3} />
                   </span>
                   {f}
@@ -111,7 +111,7 @@ export default async function PricingPage() {
 
             <Link
               href={user ? '/app' : '/signup'}
-              className="mt-8 h-11 inline-flex items-center justify-center rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[14px] font-semibold transition-colors"
+              className="mt-8 h-11 inline-flex items-center justify-center rounded-xl bg-[var(--overlay-2)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[14px] font-semibold transition-colors"
             >
               {user ? 'Ya estás en Free' : 'Empezar gratis'}
             </Link>

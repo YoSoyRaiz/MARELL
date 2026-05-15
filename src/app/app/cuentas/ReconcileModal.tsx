@@ -141,7 +141,7 @@ export function ReconcileModal({
                 </div>
               </div>
             </div>
-            <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end bg-white/[0.01]">
+            <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end bg-[var(--overlay-1)]">
               <button
                 type="button"
                 onClick={onClose}
@@ -219,7 +219,7 @@ export function ReconcileModal({
               )}
             </div>
 
-            <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-white/[0.01]">
+            <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--overlay-1)]">
               <button
                 type="button"
                 onClick={onClose}

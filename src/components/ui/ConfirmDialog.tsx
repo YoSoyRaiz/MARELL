@@ -100,7 +100,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={() => close(false)}
               aria-label="Cerrar"
-              className="absolute right-3 top-3 w-8 h-8 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors"
+              className="absolute right-3 top-3 w-8 h-8 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center transition-colors"
             >
               <X size={16} strokeWidth={2.2} />
             </button>
@@ -111,7 +111,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                   className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
                     isDanger
                       ? 'bg-[rgba(255,122,89,0.12)] text-[var(--coral-text)]'
-                      : 'bg-white/[0.05] text-[var(--text2)]'
+                      : 'bg-[var(--overlay-2)] text-[var(--text2)]'
                   }`}
                 >
                   <AlertTriangle size={20} strokeWidth={2.2} />
@@ -135,11 +135,11 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-2 bg-white/[0.01]">
+            <div className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-2 bg-[var(--overlay-1)]">
               <button
                 type="button"
                 onClick={() => close(false)}
-                className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] rounded-lg transition-colors"
+                className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] rounded-lg transition-colors"
               >
                 {cancelLabel}
               </button>

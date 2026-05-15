@@ -140,7 +140,7 @@ function PaymentDialog({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04] flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center transition-colors shrink-0"
           >
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -219,7 +219,7 @@ function PaymentDialog({
           >
             <a
               href={mailto}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[var(--text)] text-[13px] font-medium transition-colors"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--overlay-2)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors"
             >
               <Mail size={14} strokeWidth={2.2} />
               Abrir correo a {PAYMENT_SUPPORT_EMAIL}
