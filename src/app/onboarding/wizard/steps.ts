@@ -55,9 +55,11 @@ export const STEPS: StepDef[] = [
   {
     id: 'lifestyle',
     phase: 'Tu día a día',
-    // Acordeón de 5 secciones. Las 3 con opción 'none' son requeridas
-    // (debts, subscriptions, infrequent) — el user explícitamente
-    // marca "ninguna" si no aplica. Transport y regular son opcionales.
+    // Tabs horizontales de 5 secciones. Las 3 con opción 'none' son
+    // requeridas (debts, subscriptions, infrequent) — el user
+    // explícitamente marca "ninguna" si no aplica. Transport y
+    // regular son opcionales.
+    wide: true,
     canContinue: (a) =>
       a.debts.length > 0 &&
       a.subscriptions.length > 0 &&
@@ -68,6 +70,7 @@ export const STEPS: StepDef[] = [
     id: 'goals-extras',
     phase: 'Tu futuro',
     // Goals requerido (con 'none'), additional opcional.
+    wide: true,
     canContinue: (a) => a.goals.length > 0,
     Component: Step13GoalsAndExtras,
   },
