@@ -75,17 +75,15 @@ export async function signup(
   const admin = createAdminClient()
 
   // Step 1 — create the user without triggering Supabase's email.
-  const { error: createErr } = await admin.auth.admin.createUser({
+  const { data: createData, error: createErr } = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: false,
     user_metadata: { display_name: displayName },
   })
 
-  if (createErr) {
-    // Supabase returns specific phrasing for already-registered users;
-    // surface a friendly Spanish version instead of the raw message.
-    const msg = createErr.message.toLowerCase()
+  if (createErr || !createData?.user) {
+    const msg = (createErr?.message ?? '').toLowerCase()
     if (msg.includes('already') || msg.includes('registered')) {
       return {
         status: 'error',
@@ -93,7 +91,23 @@ export async function signup(
           'Ya existe una cuenta con ese email. ¿Quieres iniciar sesión?',
       }
     }
-    return { status: 'error', error: createErr.message }
+    return { status: 'error', error: createErr?.message ?? 'Error al crear cuenta' }
+  }
+
+  const newUserId = createData.user.id
+
+  // Helper: roll back the half-created user when a later step (link
+  // generation or email delivery) fails. Cascade migration cleans up
+  // profile + budgets automatically; this just removes the auth row
+  // so the email is free to retry without an "already registered"
+  // error. Logs but never throws — best-effort cleanup.
+  const rollback = async (reason: string) => {
+    try {
+      await admin.auth.admin.deleteUser(newUserId)
+      console.warn(`[signup rollback] removed ${email} after: ${reason}`)
+    } catch (err) {
+      console.error('[signup rollback failed]', { email, reason, err })
+    }
   }
 
   // Step 2 — generate the signup confirmation link Supabase would
@@ -108,6 +122,7 @@ export async function signup(
       },
     })
   if (linkErr || !linkData?.properties?.action_link) {
+    await rollback('generateLink failed')
     return {
       status: 'error',
       error: 'No pudimos generar tu enlace de confirmación. Intenta de nuevo.',
@@ -126,10 +141,11 @@ export async function signup(
     text: userTpl.text,
   })
   if (!userSent) {
+    await rollback('confirmation email send failed')
     return {
       status: 'error',
       error:
-        'Tu cuenta se creó pero no pudimos enviarte el correo. Contáctanos en hola@marell.app.',
+        'No pudimos enviarte el correo de confirmación. Inténtalo de nuevo en unos minutos.',
     }
   }
 
