@@ -8,6 +8,11 @@ interface KpiCardsProps {
   netWorth: number
   prevMonthIncome: number
   prevMonthExpenses: number
+  /** 6 puntos por defecto (mes actual + 5 anteriores). Solo se
+   *  renderiza sparkline cuando hay >= 2 puntos con valor distinto
+   *  de cero — un solo punto no es una tendencia. */
+  incomeSeries?: number[]
+  expenseSeries?: number[]
   /** Pre-formatted with currency. The page already has useFormatMoney
    *  wired via CurrencyProvider — pass the formatter so this component
    *  stays server-renderable without re-deriving currency state. */
@@ -18,9 +23,14 @@ interface KpiDef {
   label: string
   value: number
   prev: number | null
+  series?: number[]
   Icon: LucideIcon
   iconBg: string
   iconColor: string
+  /** Color stops for the sparkline gradient. Used both for trend tone
+   *  and to keep each card's visualization consistent with its icon
+   *  chip color. */
+  sparkColor: string
   /** When the metric direction is inverted (e.g. higher gastos = worse),
    *  the % change badge flips its color logic so positive delta shows
    *  coral instead of green. */
@@ -44,6 +54,8 @@ export function KpiCards({
   netWorth,
   prevMonthIncome,
   prevMonthExpenses,
+  incomeSeries,
+  expenseSeries,
   fmtMoney,
 }: KpiCardsProps) {
   const kpis: KpiDef[] = [
@@ -51,17 +63,21 @@ export function KpiCards({
       label: 'Ingresos',
       value: totalIncome,
       prev: prevMonthIncome,
+      series: incomeSeries,
       Icon: TrendingUp,
       iconBg: 'bg-[rgba(61,220,151,0.12)]',
       iconColor: 'text-[var(--brand-text)]',
+      sparkColor: '#3DDC97',
     },
     {
       label: 'Gastos',
       value: totalExpenses,
       prev: prevMonthExpenses,
+      series: expenseSeries,
       Icon: TrendingDown,
       iconBg: 'bg-[rgba(255,122,89,0.12)]',
       iconColor: 'text-[var(--coral-text)]',
+      sparkColor: '#FF7A59',
       inverseDelta: true,
     },
     {
@@ -71,6 +87,7 @@ export function KpiCards({
       Icon: PiggyBank,
       iconBg: 'bg-[rgba(77,168,255,0.12)]',
       iconColor: 'text-[var(--info-text)]',
+      sparkColor: '#4DA8FF',
     },
     {
       label: 'Patrimonio neto',
@@ -79,6 +96,7 @@ export function KpiCards({
       Icon: Wallet,
       iconBg: 'bg-[rgba(245,200,66,0.12)]',
       iconColor: 'text-[var(--warn-text)]',
+      sparkColor: '#F5C842',
     },
   ]
 
@@ -98,7 +116,7 @@ function KpiCard({
   kpi: KpiDef
   fmtMoney: (n: number) => string
 }) {
-  const { label, value, prev, Icon, iconBg, iconColor, inverseDelta } = kpi
+  const { label, value, prev, series, Icon, iconBg, iconColor, sparkColor, inverseDelta } = kpi
   const delta = computeDelta(value, prev)
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-4 transition-[transform,box-shadow] duration-200 hover:-translate-y-[1px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
@@ -121,8 +139,76 @@ function KpiCard({
       <p className="num tabular-nums text-[20px] sm:text-[22px] font-bold mt-1 leading-tight text-[var(--text)]">
         {fmtMoney(value)}
       </p>
-      <p className="text-[11px] text-[var(--muted)] mt-1">Este mes</p>
+      <div className="flex items-end justify-between gap-2 mt-1">
+        <p className="text-[11px] text-[var(--muted)]">Este mes</p>
+        {series && hasTrend(series) && (
+          <Sparkline points={series} color={sparkColor} />
+        )}
+      </div>
     </div>
+  )
+}
+
+/** Returns true when the series has >= 2 distinct values — otherwise a
+ *  sparkline is just a flat line that adds noise instead of signal. */
+function hasTrend(series: number[]): boolean {
+  if (series.length < 2) return false
+  const max = Math.max(...series)
+  const min = Math.min(...series)
+  return max - min > 0.01
+}
+
+/**
+ * Mini SVG sparkline — 60px wide × 22px tall, single stroke path with
+ * a soft fill underneath. Pure SVG, no JS, server-renderable. The path
+ * scales the series into the box so even tiny numbers (savings of $50)
+ * read against headline values ($5,000) without comparing magnitudes.
+ */
+function Sparkline({ points, color }: { points: number[]; color: string }) {
+  const W = 60
+  const H = 22
+  const max = Math.max(...points)
+  const min = Math.min(...points)
+  const range = max - min || 1
+  const stepX = points.length > 1 ? W / (points.length - 1) : W
+  const coords = points.map((v, i) => {
+    const x = i * stepX
+    // Invert Y so higher values draw higher on screen. Add 1px padding
+    // top and bottom so the stroke never clips against the box edges.
+    const y = H - 1 - ((v - min) / range) * (H - 2)
+    return [x, y] as const
+  })
+  const path =
+    'M ' +
+    coords
+      .map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`)
+      .join(' L ')
+  const fillPath = `${path} L ${W},${H} L 0,${H} Z`
+  const gradId = `spark-${color.replace('#', '')}`
+  return (
+    <svg
+      width={W}
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      aria-hidden
+      className="shrink-0 opacity-90"
+    >
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={fillPath} fill={`url(#${gradId})`} />
+      <path
+        d={path}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 

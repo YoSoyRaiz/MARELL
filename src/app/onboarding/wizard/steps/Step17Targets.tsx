@@ -35,12 +35,16 @@ export function Step17Targets() {
   return (
     <div className="space-y-7">
       <div className="space-y-3">
+        <div className="text-[11px] uppercase tracking-[0.2em] text-[var(--brand-text)] font-semibold">
+          Personalizar plan · paso 1 de 3
+        </div>
         <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
           Pon una <span className="gradient-text">meta mensual</span>.
         </h1>
         <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-xl">
-          Es opcional — pon números solo donde tengas idea. Puedes ajustarlo todo cuando configures
-          tu plan.
+          Tres pasos rápidos para configurar tu plan: metas, cuentas y
+          asignación. Empezamos por las metas — opcional, pon números
+          solo donde tengas idea.
         </p>
       </div>
 

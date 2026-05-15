@@ -1,29 +1,28 @@
 import type { StepDef } from './types'
 import { Step01Name } from './steps/Step01Name'
 import { Step02Motivation } from './steps/Step02Motivation'
-import { Step03Transition } from './steps/Step03Transition'
 import { Step04Household } from './steps/Step04Household'
-import { Step05Housing } from './steps/Step05Housing'
-import { Step06Mortgage } from './steps/Step06Mortgage'
-import { Step07Debts } from './steps/Step07Debts'
-import { Step08Transport } from './steps/Step08Transport'
-import { Step09RegularSpending } from './steps/Step09RegularSpending'
-import { Step10Subscriptions } from './steps/Step10Subscriptions'
-import { Step11Transition } from './steps/Step11Transition'
-import { Step12InfrequentExpenses } from './steps/Step12InfrequentExpenses'
-import { Step13Goals } from './steps/Step13Goals'
-import { Step14AdditionalCategories } from './steps/Step14AdditionalCategories'
+import { Step05HousingCombo } from './steps/Step05HousingCombo'
+import { Step07Lifestyle } from './steps/Step07Lifestyle'
+import { Step13GoalsAndExtras } from './steps/Step13GoalsAndExtras'
 import { Step15CategoryList } from './steps/Step15CategoryList'
-import { Step16WelcomePlan } from './steps/Step16WelcomePlan'
 import { Step17Targets } from './steps/Step17Targets'
 import { Step18AddAccountsIntro } from './steps/Step18AddAccountsIntro'
 import { Step19AccountForm } from './steps/Step19AccountForm'
 import { Step20AccountsRecap } from './steps/Step20AccountsRecap'
-import { Step21FundIntro } from './steps/Step21FundIntro'
 import { Step22SavingsAllocation } from './steps/Step22SavingsAllocation'
 import { Step23ZeroBased } from './steps/Step23ZeroBased'
 import { Step28Final } from './steps/Step28Final'
 
+/**
+ * Onboarding step list — 14 pasos.
+ *
+ * Reducido desde 24 pasos originales (audit 2026-05-14) absorbiendo
+ * intersticiales + agrupando multi-selects en acordeón + fusionando
+ * decisiones cohesivas (vivienda/hipoteca, metas/extras) sin perder
+ * personalización para el público dominicano. Specs originales y
+ * justificación de cada fusión están en el commit message del refactor.
+ */
 export const STEPS: StepDef[] = [
   {
     id: 'name',
@@ -39,74 +38,38 @@ export const STEPS: StepDef[] = [
     Component: Step02Motivation,
   },
   {
-    id: 'transition-plan',
-    phase: 'Sobre ti',
-    Component: Step03Transition,
-  },
-  {
     id: 'household',
     phase: 'Tu hogar',
     canContinue: (a) => a.household !== null,
     Component: Step04Household,
   },
   {
-    id: 'housing',
+    id: 'housing-combo',
     phase: 'Tu hogar',
-    canContinue: (a) => a.housing !== null,
-    Component: Step05Housing,
+    // Vivienda requerido siempre; hipoteca requerida SOLO si es propietario.
+    // Para no-propietarios pre-seteamos mortgage='no' en el click handler.
+    canContinue: (a) =>
+      a.housing !== null && (a.housing !== 'own' || a.mortgage !== null),
+    Component: Step05HousingCombo,
   },
   {
-    id: 'mortgage',
-    phase: 'Tu hogar',
-    canContinue: (a) => a.mortgage !== null,
-    Component: Step06Mortgage,
-  },
-  {
-    id: 'debts',
-    phase: 'Tu hogar',
-    canContinue: (a) => a.debts.length > 0,
-    Component: Step07Debts,
-  },
-  {
-    id: 'transport',
+    id: 'lifestyle',
     phase: 'Tu día a día',
-    showSkip: true,
-    Component: Step08Transport,
+    // Acordeón de 5 secciones. Las 3 con opción 'none' son requeridas
+    // (debts, subscriptions, infrequent) — el user explícitamente
+    // marca "ninguna" si no aplica. Transport y regular son opcionales.
+    canContinue: (a) =>
+      a.debts.length > 0 &&
+      a.subscriptions.length > 0 &&
+      a.infrequentExpenses.length > 0,
+    Component: Step07Lifestyle,
   },
   {
-    id: 'regular-spending',
-    phase: 'Tu día a día',
-    showSkip: true,
-    Component: Step09RegularSpending,
-  },
-  {
-    id: 'subscriptions',
-    phase: 'Tu día a día',
-    canContinue: (a) => a.subscriptions.length > 0,
-    Component: Step10Subscriptions,
-  },
-  {
-    id: 'transition-future',
+    id: 'goals-extras',
     phase: 'Tu futuro',
-    Component: Step11Transition,
-  },
-  {
-    id: 'infrequent-expenses',
-    phase: 'Tu futuro',
-    canContinue: (a) => a.infrequentExpenses.length > 0,
-    Component: Step12InfrequentExpenses,
-  },
-  {
-    id: 'goals',
-    phase: 'Tu futuro',
+    // Goals requerido (con 'none'), additional opcional.
     canContinue: (a) => a.goals.length > 0,
-    Component: Step13Goals,
-  },
-  {
-    id: 'additional-categories',
-    phase: 'Tu futuro',
-    showSkip: true,
-    Component: Step14AdditionalCategories,
+    Component: Step13GoalsAndExtras,
   },
   {
     id: 'category-list',
@@ -114,11 +77,6 @@ export const STEPS: StepDef[] = [
     primaryLabel: 'Personalizar plan',
     wide: true,
     Component: Step15CategoryList,
-  },
-  {
-    id: 'welcome-plan',
-    phase: 'Paso 1 de 3 · Personalizar plan',
-    Component: Step16WelcomePlan,
   },
   {
     id: 'targets',
@@ -144,11 +102,6 @@ export const STEPS: StepDef[] = [
     primaryLabel: 'Continuar',
     canContinue: (a) => a.accounts.length >= 1,
     Component: Step20AccountsRecap,
-  },
-  {
-    id: 'fund-intro',
-    phase: 'Paso 3 de 3 · Asignación',
-    Component: Step21FundIntro,
   },
   {
     id: 'savings-allocation',
