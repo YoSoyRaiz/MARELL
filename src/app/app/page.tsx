@@ -17,6 +17,8 @@ import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsS
 import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { FirstMonthGuide } from './FirstMonthGuide'
 import { CategoryAccordion } from './CategoryAccordion'
+import { KpiCards } from './KpiCards'
+import { MonthSummaryCard } from './MonthSummaryCard'
 import { materializeDue } from './programadas/actions'
 import { currentMonthDR, monthBoundsISO, todayISODR } from '@/lib/dates'
 import { UpcomingCommitments, type UpcomingItem } from './UpcomingCommitments'
@@ -674,6 +676,20 @@ export default async function ResumenPage() {
           </div>
         </div>
 
+        {/* KPI row — 4 cards a lo Mint (Ingresos / Gastos / Ahorros /
+            Patrimonio neto) con badge de % change cuando hay mes pasado
+            con qué comparar. Da el resumen "where am I" antes que el
+            usuario empiece a scrollear los detalles. */}
+        <KpiCards
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          totalSavings={totalSavings}
+          netWorth={netWorth}
+          prevMonthIncome={prevMonthIncome}
+          prevMonthExpenses={prevMonthExpenses}
+          fmtMoney={fmtMoney}
+        />
+
         {/* First-month onboarding guide. Component self-hides once the
             user dismisses it via localStorage. */}
         <FirstMonthGuide
@@ -706,6 +722,19 @@ export default async function ResumenPage() {
 
       {/* RIGHT COLUMN */}
       <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+
+        {/* "Resumen de este mes" — primer card del rail derecho, según
+            el mockup target. 4 rows: carry-over del mes pasado /
+            Ingresos / Gastos / Disponible para asignar. Le da al user
+            el state-of-the-month inmediato antes del donut. */}
+        <MonthSummaryCard
+          monthLabel={formatMonthLabel(month)}
+          prevMonthNet={prevMonthSavings}
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          readyToAssign={readyToAssign}
+          fmtMoney={fmtMoney}
+        />
 
         {/* Donut */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
