@@ -17,7 +17,6 @@ import { RecentTransactionsSection, type RecentTxn } from './RecentTransactionsS
 import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { FirstMonthGuide } from './FirstMonthGuide'
 import { CategoryAccordion } from './CategoryAccordion'
-import { KpiCards } from './KpiCards'
 import { MonthSummaryCard } from './MonthSummaryCard'
 import { materializeDue } from './programadas/actions'
 import { currentMonthDR, monthBoundsISO, todayISODR } from '@/lib/dates'
@@ -123,25 +122,6 @@ export default async function ResumenPage() {
   })()
   const prevBounds = monthBounds(prevMonth)
 
-  // Six-month rolling window for KPI sparklines. We want exactly 6 data
-  // points (current month + 5 prior), so compute the start of the
-  // earliest month and query everything inside that window with a single
-  // round-trip. The list of YYYY-MM labels in order is reused at
-  // aggregation time so we never lose a month with zero activity.
-  const sparklineMonths = (() => {
-    const [y, m] = month.split('-').map(Number)
-    const arr: string[] = []
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(y, m - 1 - i, 1)
-      arr.push(
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
-      )
-    }
-    return arr
-  })()
-  const sparklineStart = monthBounds(sparklineMonths[0]).first
-  const sparklineEnd = monthBounds(sparklineMonths[sparklineMonths.length - 1]).last
-
   const [
     groupsRes,
     catsRes,
@@ -154,7 +134,6 @@ export default async function ResumenPage() {
     txnsRecentRes,
     upcomingRes,
     txnsPrevMonthRes,
-    txnsSparklineRes,
   ] = await Promise.all([
     supabase
       .from('category_groups')
@@ -234,15 +213,6 @@ export default async function ResumenPage() {
       .eq('budget_id', budget.id)
       .gte('date', prevBounds.first)
       .lte('date', prevBounds.last),
-    // 6-month rolling window — drives the mini sparklines on the
-    // Ingresos / Gastos KPI cards. Parent rows only; we don't need
-    // per-category granularity for a trend line. Excludes transfers.
-    supabase
-      .from('transactions')
-      .select('date, amount, transfer_account_id')
-      .eq('budget_id', budget.id)
-      .gte('date', sparklineStart)
-      .lte('date', sparklineEnd),
   ])
 
   const groupsData = groupsRes.data ?? []
@@ -622,24 +592,6 @@ export default async function ResumenPage() {
   const prevMonthSavings = prevMonthIncome - prevMonthExpenses
   const prevMonthHadActivity = prevMonthData.length > 0
 
-  // Sparkline series for the Ingresos and Gastos KPIs. Bucket each
-  // transaction into its YYYY-MM month (DR timezone is implicit here —
-  // the `date` column is already a local DR date string). Months with
-  // zero activity render as a 0 point so the line stays continuous.
-  const sparklineRows = txnsSparklineRes.data ?? []
-  const incomeSeries: number[] = sparklineMonths.map(() => 0)
-  const expenseSeries: number[] = sparklineMonths.map(() => 0)
-  for (const row of sparklineRows) {
-    if (row.transfer_account_id) continue
-    const dateStr = row.date as string
-    const ym = dateStr.slice(0, 7) // YYYY-MM
-    const idx = sparklineMonths.indexOf(ym)
-    if (idx === -1) continue
-    const amt = Number(row.amount)
-    if (amt > 0) incomeSeries[idx] += amt
-    else expenseSeries[idx] += Math.abs(amt)
-  }
-
   // Upcoming scheduled transactions (next 14 days).
   const accountNameById = new Map<string, string>()
   for (const a of accountsData) {
@@ -722,22 +674,6 @@ export default async function ResumenPage() {
             />
           </div>
         </div>
-
-        {/* KPI row — 4 cards a lo Mint (Ingresos / Gastos / Ahorros /
-            Patrimonio neto) con badge de % change cuando hay mes pasado
-            con qué comparar. Da el resumen "where am I" antes que el
-            usuario empiece a scrollear los detalles. */}
-        <KpiCards
-          totalIncome={totalIncome}
-          totalExpenses={totalExpenses}
-          totalSavings={totalSavings}
-          netWorth={netWorth}
-          prevMonthIncome={prevMonthIncome}
-          prevMonthExpenses={prevMonthExpenses}
-          incomeSeries={incomeSeries}
-          expenseSeries={expenseSeries}
-          fmtMoney={fmtMoney}
-        />
 
         {/* First-month onboarding guide. Component self-hides once the
             user dismisses it via localStorage. */}
