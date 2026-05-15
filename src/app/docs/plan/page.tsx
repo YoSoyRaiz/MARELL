@@ -29,13 +29,13 @@ export default function PlanDocs() {
         </li>
         <li>
           <strong>Lista de grupos</strong> y dentro de cada uno, las
-          categorías con sus tres columnas: Asignado, Actividad, Disponible.
+          categorías con sus tres columnas: Presupuesto, Actividad, Disponible.
         </li>
       </ul>
 
       <h2>Asignar dinero a una categoría</h2>
       <p>
-        Toca el monto en la columna <strong>Asignado</strong> de cualquier
+        Toca el monto en la columna <strong>Presupuesto</strong> de cualquier
         categoría. Aparece un input editable. Escribe la cantidad y pulsa{' '}
         <Kbd>Enter</Kbd> (o toca afuera). MARELL guarda al instante y
         actualiza Por asignar arriba.
@@ -44,6 +44,28 @@ export default function PlanDocs() {
         Truco: puedes escribir <code>+500</code> o <code>-200</code> para
         sumar o restar al valor actual sin tener que calcular.
       </p>
+
+      <h2>Pagar una categoría desde una cuenta</h2>
+      <p>
+        Cada fila de categoría tiene un botón <strong>Pagar</strong> al lado
+        del monto presupuestado. Tócalo, elige la cuenta de la que sale el
+        dinero, y MARELL registra la transacción <strong>al instante</strong>{' '}
+        usando el monto del presupuesto, la fecha de hoy y la categoría
+        elegida — sin abrir el formulario completo.
+      </p>
+      <p>
+        Es el atajo de un click para pagos recurrentes (renta, electricidad,
+        internet): asignas a inicio de mes, y cuando pagas solo eliges la
+        cuenta. Aparece confirmación en pantalla y la transacción queda
+        visible en <Link href="/app/transacciones">Movimientos</Link>.
+      </p>
+
+      <Callout tone="tip" title="¿Y si el monto real difiere del presupuesto?">
+        Usa el flujo completo desde el botón <strong>Agregar
+        transacción</strong> en Resumen o Cuentas. El pago directo desde
+        categoría asume que pagas exactamente el monto presupuestado — ideal
+        cuando son facturas fijas.
+      </Callout>
 
       <h2>Asignación rápida desde cualquier sección</h2>
       <p>

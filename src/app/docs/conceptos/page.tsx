@@ -46,7 +46,7 @@ export default function Conceptos() {
         RD$3,800 disponibles en Comida.
       </p>
 
-      <h2>3. Asignado, Actividad y Disponible</h2>
+      <h2>3. Presupuesto, Actividad y Disponible</h2>
       <p>
         Cada categoría tiene tres números. Aprende a leerlos y dominaste
         MARELL:
@@ -63,7 +63,7 @@ export default function Conceptos() {
         <tbody>
           <tr>
             <td>
-              <strong>Asignado</strong>
+              <strong>Presupuesto</strong>
             </td>
             <td>Cuánto le diste a esta categoría este mes.</td>
             <td>RD$8,000</td>

@@ -33,16 +33,28 @@ export default function MovimientosDocs() {
       </ul>
 
       <h2>Registrar un movimiento</h2>
-      <p>Hay tres maneras, según donde estés:</p>
+      <p>Hay varias maneras, todas abren el mismo modal sin sacarte de la página actual:</p>
       <ol>
         <li>
-          <strong>Desde el módulo Movimientos</strong>: botón "+ Agregar
-          transacción". Modal completo con todos los campos.
+          <strong>Desde Resumen o Cuentas</strong>: botón{' '}
+          <strong>"+ Agregar transacción"</strong> en la cabecera. El modal
+          abre en sitio — no te navega a Movimientos.
+        </li>
+        <li>
+          <strong>Desde Movimientos</strong>: el mismo botón en la cabecera
+          de la sección. Modal completo con todos los campos.
         </li>
         <li>
           <strong>Desde el FAB del móvil</strong>: el botón redondo verde en
           la barra inferior. Modal compacto: monto, fecha, cuenta, pagado a.
           Sin categoría/memo/split — los agregas después si quieres.
+        </li>
+        <li>
+          <strong>Pago directo de categoría</strong> (atajo): en Plan o
+          Resumen, click <strong>Pagar</strong> en cualquier fila y elige
+          cuenta. MARELL crea la transacción al instante con el monto
+          presupuestado — ideal para facturas fijas. Ver{' '}
+          <Link href="/docs/plan">Plan mensual</Link>.
         </li>
         <li>
           <strong>Atajo de teclado</strong>: <Kbd>N</Kbd> en cualquier sección
