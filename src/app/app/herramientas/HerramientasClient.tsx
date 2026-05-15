@@ -85,11 +85,42 @@ function computeSalaryDR(monthlyGross: number): SalaryBreakdown {
   }
 }
 
+/**
+ * Formats a money-input string with comma thousands separators while
+ * the user types: "302000" → "302,000", "1200500.50" → "1,200,500.50".
+ * Strips invalid characters and clamps decimals to 2 places.
+ *
+ * Pure presentation — callers still parse the raw number with
+ * parseMoneyInput() before any math.
+ */
+function formatMoneyInput(raw: string): string {
+  // Keep only digits and a single decimal point. Reject everything else
+  // so paste from random sources can't poison the value.
+  const cleaned = raw.replace(/[^\d.]/g, '')
+  const firstDot = cleaned.indexOf('.')
+  const intPart =
+    firstDot === -1 ? cleaned : cleaned.slice(0, firstDot)
+  const decPart =
+    firstDot === -1
+      ? ''
+      : '.' + cleaned.slice(firstDot + 1).replace(/\./g, '').slice(0, 2)
+  // Strip leading zeros except for a lone "0" or "0.xxx".
+  const intClean =
+    intPart.replace(/^0+(?=\d)/, '') || (firstDot === -1 ? intPart : '0')
+  const withCommas = intClean.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return withCommas + decPart
+}
+
+function parseMoneyInput(formatted: string): number {
+  const cleaned = formatted.replace(/,/g, '')
+  return parseFloat(cleaned) || 0
+}
+
 export function HerramientasClient() {
   const fmtMoney = useFormatMoney()
   const [salaryInput, setSalaryInput] = useState('')
 
-  const salaryNum = parseFloat(salaryInput.replace(/[, ]/g, '')) || 0
+  const salaryNum = parseMoneyInput(salaryInput)
   const breakdown = useMemo(() => computeSalaryDR(salaryNum), [salaryNum])
 
   // Cuotas calculator state (mirrors the inline one in ScheduledFormModal
@@ -99,9 +130,22 @@ export function HerramientasClient() {
   const [cuotaCount, setCuotaCount] = useState('')
   const [cuotaRate, setCuotaRate] = useState('')
 
-  const cuotaTotalNum = parseFloat(cuotaTotal.replace(/[, ]/g, '')) || 0
+  const cuotaTotalNum = parseMoneyInput(cuotaTotal)
   const cuotaCountNum = parseInt(cuotaCount, 10) || 0
   const cuotaRateNum = parseFloat(cuotaRate.replace(/,/g, '.')) || 0
+
+  // Inline validation: once the user has touched ANY of the three
+  // fields, surface "Requerido" hints on the empty required ones.
+  // Tasa anual is optional (0 = sin interés). Doesn't yell on first
+  // paint — only after the user has started entering data.
+  const cuotaTouched =
+    cuotaTotal.trim() !== '' ||
+    cuotaCount.trim() !== '' ||
+    cuotaRate.trim() !== ''
+  const missingTotal = cuotaTouched && cuotaTotalNum <= 0
+  const missingCount = cuotaTouched && cuotaCountNum <= 0
+  const cuotaIncomplete = missingTotal || missingCount
+
   const cuotaResult = useMemo(() => {
     if (cuotaTotalNum <= 0 || cuotaCountNum <= 0)
       return { monthly: 0, totalPaid: 0, interest: 0 }
@@ -161,7 +205,7 @@ export function HerramientasClient() {
                 type="text"
                 inputMode="decimal"
                 value={salaryInput}
-                onChange={(e) => setSalaryInput(e.target.value)}
+                onChange={(e) => setSalaryInput(formatMoneyInput(e.target.value))}
                 placeholder="50,000"
                 className="w-full mt-1 !text-[18px] !font-bold !py-3 !px-4 !rounded-xl tabular-nums num"
               />
@@ -238,10 +282,18 @@ export function HerramientasClient() {
                 type="text"
                 inputMode="decimal"
                 value={cuotaTotal}
-                onChange={(e) => setCuotaTotal(e.target.value)}
+                onChange={(e) => setCuotaTotal(formatMoneyInput(e.target.value))}
                 placeholder="60,000"
-                className="w-full mt-1 !text-[16px] !font-semibold !py-2.5 !px-4 !rounded-xl tabular-nums num"
+                aria-invalid={missingTotal || undefined}
+                className={`w-full mt-1 !text-[16px] !font-semibold !py-2.5 !px-4 !rounded-xl tabular-nums num ${
+                  missingTotal ? '!border-[var(--coral)]/50' : ''
+                }`}
               />
+              {missingTotal && (
+                <span className="block mt-1 text-[11px] text-[var(--coral-text)] font-medium">
+                  Requerido — escribe cuánto vas a financiar
+                </span>
+              )}
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
@@ -252,10 +304,20 @@ export function HerramientasClient() {
                   type="text"
                   inputMode="numeric"
                   value={cuotaCount}
-                  onChange={(e) => setCuotaCount(e.target.value)}
+                  onChange={(e) =>
+                    setCuotaCount(e.target.value.replace(/[^\d]/g, ''))
+                  }
                   placeholder="12"
-                  className="w-full mt-1 !text-[15px] !py-2.5 !px-3 !rounded-xl tabular-nums num"
+                  aria-invalid={missingCount || undefined}
+                  className={`w-full mt-1 !text-[15px] !py-2.5 !px-3 !rounded-xl tabular-nums num ${
+                    missingCount ? '!border-[var(--coral)]/50' : ''
+                  }`}
                 />
+                {missingCount && (
+                  <span className="block mt-1 text-[11px] text-[var(--coral-text)] font-medium">
+                    Requerido
+                  </span>
+                )}
               </label>
               <label className="block">
                 <span className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
@@ -269,26 +331,46 @@ export function HerramientasClient() {
                   placeholder="0"
                   className="w-full mt-1 !text-[15px] !py-2.5 !px-3 !rounded-xl tabular-nums num"
                 />
+                <span className="block mt-1 text-[11px] text-[var(--muted)]">
+                  Opcional · 0 = sin interés
+                </span>
               </label>
             </div>
           </div>
 
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] divide-y divide-[var(--border)]">
-            <Row label="Cuota mensual" value={fmtMoney(cuotaResult.monthly)} tone="hero" />
-            <Row
-              label="Total a pagar"
-              value={fmtMoney(cuotaResult.totalPaid)}
-            />
-            <Row
-              label="Intereses"
-              value={fmtMoney(cuotaResult.interest)}
-              tone={cuotaResult.interest > 0 ? 'warn' : 'default'}
-              hint={
-                cuotaResult.interest > 0 && cuotaTotalNum > 0
-                  ? `${((cuotaResult.interest / cuotaTotalNum) * 100).toFixed(1)}% sobre el principal`
-                  : undefined
-              }
-            />
+            {cuotaIncomplete ? (
+              <div className="px-4 py-6 text-center space-y-1">
+                <div className="text-[13px] font-semibold text-[var(--coral-text)]">
+                  Completa los campos requeridos
+                </div>
+                <div className="text-[12px] text-[var(--muted)] leading-relaxed">
+                  {missingTotal && missingCount
+                    ? 'Falta Total a financiar y Cuotas.'
+                    : missingTotal
+                      ? 'Falta Total a financiar.'
+                      : 'Falta el número de Cuotas.'}
+                </div>
+              </div>
+            ) : (
+              <>
+                <Row label="Cuota mensual" value={fmtMoney(cuotaResult.monthly)} tone="hero" />
+                <Row
+                  label="Total a pagar"
+                  value={fmtMoney(cuotaResult.totalPaid)}
+                />
+                <Row
+                  label="Intereses"
+                  value={fmtMoney(cuotaResult.interest)}
+                  tone={cuotaResult.interest > 0 ? 'warn' : 'default'}
+                  hint={
+                    cuotaResult.interest > 0 && cuotaTotalNum > 0
+                      ? `${((cuotaResult.interest / cuotaTotalNum) * 100).toFixed(1)}% sobre el principal`
+                      : undefined
+                  }
+                />
+              </>
+            )}
           </div>
         </div>
       </section>
