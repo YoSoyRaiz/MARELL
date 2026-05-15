@@ -149,15 +149,25 @@ export async function signup(
     }
   }
 
-  // Step 4 — heads-up to the founder. Don't fail the signup if this
-  // email bounces: it's purely informational.
+  // Step 4 — heads-up to the founder. Awaited (vs fire-and-forget)
+  // because Vercel serverless kills work that hasn't completed by
+  // the time the action returns — `void promise` was getting cut off
+  // before Resend's HTTP call finished. Wrapped in try/catch so a
+  // failed admin notification never breaks signup for the user.
   const adminTpl = adminNewSignupEmail(email, displayName, new Date())
-  void sendEmail({
-    to: ADMIN_NOTIFY_EMAIL,
-    subject: adminTpl.subject,
-    html: adminTpl.html,
-    text: adminTpl.text,
-  })
+  try {
+    const adminSent = await sendEmail({
+      to: ADMIN_NOTIFY_EMAIL,
+      subject: adminTpl.subject,
+      html: adminTpl.html,
+      text: adminTpl.text,
+    })
+    if (!adminSent) {
+      console.warn('[signup] admin notification email did not send', { email })
+    }
+  } catch (err) {
+    console.error('[signup] admin notification threw', err)
+  }
 
   return { status: 'sent', email }
 }

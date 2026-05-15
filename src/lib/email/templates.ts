@@ -18,6 +18,11 @@ const TEXT_MUTED = '#8A8A82'
 const SURFACE = '#161617'
 const BORDER = 'rgba(255,255,255,.08)'
 
+// Public URL to the brand asset. We hard-code the prod domain so the
+// image resolves in any inbox regardless of where the email was sent
+// from (dev / preview / prod all link to the same canonical asset).
+const LOGO_URL = 'https://www.marell.app/brand/logo-horizontal.svg'
+
 function shell(title: string, body: string): string {
   return `<!doctype html>
 <html lang="es">
@@ -26,13 +31,13 @@ function shell(title: string, body: string): string {
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>${title}</title>
   </head>
-  <body style="margin:0;padding:0;background:${BRAND_DARK};color:${TEXT_PRIMARY};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND_DARK};padding:32px 16px;">
+  <body style="margin:0;padding:0;color:${TEXT_PRIMARY};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
       <tr><td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:${SURFACE};border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
           <tr>
             <td style="padding:24px 28px;border-bottom:1px solid ${BORDER};">
-              <span style="display:inline-block;font-size:18px;font-weight:800;letter-spacing:0.2em;color:${TEXT_PRIMARY};">MARELL</span>
+              <img src="${LOGO_URL}" alt="MARELL" height="28" style="display:block;height:28px;width:auto;border:0;outline:none;" />
             </td>
           </tr>
           <tr>
