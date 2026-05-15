@@ -134,17 +134,19 @@ export function HerramientasClient() {
   const cuotaCountNum = parseInt(cuotaCount, 10) || 0
   const cuotaRateNum = parseFloat(cuotaRate.replace(/,/g, '.')) || 0
 
-  // Inline validation: once the user has touched ANY of the three
-  // fields, surface "Requerido" hints on the empty required ones.
-  // Tasa anual is optional (0 = sin interés). Doesn't yell on first
-  // paint — only after the user has started entering data.
+  // Inline validation: once the user has touched ANY de los 3 campos,
+  // marca como "Requerido" cualquier requerido vacío. Los tres son
+  // requeridos — la tasa puede ser 0 (préstamo sin interés), pero el
+  // usuario tiene que escribirla a propósito en vez de que la app la
+  // asuma por él. No grita en first paint.
   const cuotaTouched =
     cuotaTotal.trim() !== '' ||
     cuotaCount.trim() !== '' ||
     cuotaRate.trim() !== ''
   const missingTotal = cuotaTouched && cuotaTotalNum <= 0
   const missingCount = cuotaTouched && cuotaCountNum <= 0
-  const cuotaIncomplete = missingTotal || missingCount
+  const missingRate = cuotaTouched && cuotaRate.trim() === ''
+  const cuotaIncomplete = missingTotal || missingCount || missingRate
 
   const cuotaResult = useMemo(() => {
     if (cuotaTotalNum <= 0 || cuotaCountNum <= 0)
@@ -329,11 +331,20 @@ export function HerramientasClient() {
                   value={cuotaRate}
                   onChange={(e) => setCuotaRate(e.target.value)}
                   placeholder="0"
-                  className="w-full mt-1 !text-[15px] !py-2.5 !px-3 !rounded-xl tabular-nums num"
+                  aria-invalid={missingRate || undefined}
+                  className={`w-full mt-1 !text-[15px] !py-2.5 !px-3 !rounded-xl tabular-nums num ${
+                    missingRate ? '!border-[var(--coral)]/50' : ''
+                  }`}
                 />
-                <span className="block mt-1 text-[11px] text-[var(--muted)]">
-                  Opcional · 0 = sin interés
-                </span>
+                {missingRate ? (
+                  <span className="block mt-1 text-[11px] text-[var(--coral-text)] font-medium">
+                    Requerido · escribe 0 si es sin interés
+                  </span>
+                ) : (
+                  <span className="block mt-1 text-[11px] text-[var(--muted)]">
+                    Escribe 0 si el préstamo es sin interés
+                  </span>
+                )}
               </label>
             </div>
           </div>
@@ -345,11 +356,17 @@ export function HerramientasClient() {
                   Completa los campos requeridos
                 </div>
                 <div className="text-[12px] text-[var(--muted)] leading-relaxed">
-                  {missingTotal && missingCount
-                    ? 'Falta Total a financiar y Cuotas.'
-                    : missingTotal
-                      ? 'Falta Total a financiar.'
-                      : 'Falta el número de Cuotas.'}
+                  {(() => {
+                    const missing: string[] = []
+                    if (missingTotal) missing.push('Total a financiar')
+                    if (missingCount) missing.push('Cuotas')
+                    if (missingRate) missing.push('Tasa anual')
+                    if (missing.length === 1)
+                      return `Falta ${missing[0]}.`
+                    if (missing.length === 2)
+                      return `Falta ${missing[0]} y ${missing[1]}.`
+                    return `Falta ${missing.slice(0, -1).join(', ')} y ${missing[missing.length - 1]}.`
+                  })()}
                 </div>
               </div>
             ) : (
