@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { TrendingUp } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { SpendingTrendsChart } from './SpendingTrendsChart'
+import { ReportEmptyState } from './ReportEmptyState'
 import { SEGMENT_COLORS } from './AnalisisClient'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
@@ -126,17 +127,11 @@ export function SpendingTrendsReport({
 
       {/* Empty state */}
       {!hasData ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
-            <TrendingUp size={22} strokeWidth={2} />
-          </div>
-          <div className="text-[16px] text-[var(--text)] font-semibold">
-            Sin gastos en este rango
-          </div>
-          <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
-            Cuando registres gastos, vas a ver aquí cómo se mueven mes a mes.
-          </p>
-        </div>
+        <ReportEmptyState
+          Icon={TrendingUp}
+          title="Sin gastos en este rango"
+          description="Cuando registres gastos, vas a ver aquí cómo se mueven mes a mes."
+        />
       ) : (
         <>
           {/* Chart */}

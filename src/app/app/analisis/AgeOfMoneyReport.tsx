@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Hourglass, Sparkles, Calendar, ArrowUp, ArrowDown } from 'lucide-react'
 import { AgeOfMoneyChart } from './AgeOfMoneyChart'
+import { ReportEmptyState } from './ReportEmptyState'
 
 export type AomRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
 
@@ -236,17 +237,11 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
 
       {/* Chart */}
       {!hasData ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
-            <Hourglass size={22} strokeWidth={2} />
-          </div>
-          <div className="text-[16px] text-[var(--text)] font-semibold">
-            Sin datos suficientes
-          </div>
-          <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
-            Necesitas al menos un mes con ingresos y gastos registrados para calcular este indicador.
-          </p>
-        </div>
+        <ReportEmptyState
+          Icon={Hourglass}
+          title="Sin datos suficientes"
+          description="Necesitas al menos un mes con ingresos y gastos registrados para calcular este indicador."
+        />
       ) : (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 overflow-x-auto">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">

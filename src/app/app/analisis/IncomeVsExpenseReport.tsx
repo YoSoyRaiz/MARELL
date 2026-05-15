@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TrendingUp, TrendingDown, Wallet, Percent, Scale } from 'lucide-react'
 import { IncomeExpenseChart } from './IncomeExpenseChart'
+import { ReportEmptyState } from './ReportEmptyState'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type Range = 'six_months' | 'twelve_months' | 'twenty_four_months' | 'all'
@@ -165,17 +166,11 @@ export function IncomeVsExpenseReport({
 
       {/* Chart */}
       {!hasData ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
-            <Scale size={22} strokeWidth={2} />
-          </div>
-          <div className="text-[16px] text-[var(--text)] font-semibold">
-            Sin movimientos en el rango
-          </div>
-          <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
-            Cuando registres ingresos y gastos, vas a ver acá la comparación mes a mes.
-          </p>
-        </div>
+        <ReportEmptyState
+          Icon={Scale}
+          title="Sin movimientos en el rango"
+          description="Cuando registres ingresos y gastos, vas a ver acá la comparación mes a mes."
+        />
       ) : (
         <>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 overflow-x-auto">

@@ -11,6 +11,7 @@ import {
   ArrowDown,
 } from 'lucide-react'
 import { NetWorthChart } from './NetWorthChart'
+import { ReportEmptyState } from './ReportEmptyState'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type NetWorthRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
@@ -191,17 +192,11 @@ export function NetWorthReport({
 
       {/* Chart */}
       {!hasData ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
-            <PiggyBank size={22} strokeWidth={2} />
-          </div>
-          <div className="text-[16px] text-[var(--text)] font-semibold">
-            Sin datos suficientes
-          </div>
-          <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
-            Necesitas cuentas y algunas transacciones para reconstruir tu patrimonio en el tiempo.
-          </p>
-        </div>
+        <ReportEmptyState
+          Icon={PiggyBank}
+          title="Sin datos suficientes"
+          description="Necesitas cuentas y algunas transacciones para reconstruir tu patrimonio en el tiempo."
+        />
       ) : (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 overflow-x-auto">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">

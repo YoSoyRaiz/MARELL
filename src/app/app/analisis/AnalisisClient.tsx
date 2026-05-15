@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ChartPie, TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { MultiSegmentDonut } from './MultiSegmentDonut'
+import { ReportEmptyState } from './ReportEmptyState'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
 // Brand-aligned palette for category segments. The 6th and beyond
@@ -181,18 +182,11 @@ export function AnalisisClient({
 
       {/* Donut + ranked list */}
       {!hasData ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
-            <ChartPie size={22} strokeWidth={2} />
-          </div>
-          <div className="text-[16px] text-[var(--text)] font-semibold">
-            Sin gastos en este período
-          </div>
-          <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
-            Cuando registres gastos, aparecerá aquí la distribución por categoría.
-            Prueba ampliar el rango con &quot;Todas&quot;.
-          </p>
-        </div>
+        <ReportEmptyState
+          Icon={ChartPie}
+          title="Sin gastos en este período"
+          description='Cuando registres gastos, aparecerá aquí la distribución por categoría. Prueba ampliar el rango con "Todas".'
+        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 items-start">
           {/* Donut */}
