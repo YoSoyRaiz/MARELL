@@ -93,13 +93,14 @@ export function Step13GoalsAndExtras() {
 
         {/* Additional categories (optional) */}
         <div className="space-y-3">
-          <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--muted)] font-semibold">
-            Qué disfrutar · opcional
+          <div className="text-[12px] uppercase tracking-[0.18em] font-semibold">
+            <span className="text-[var(--muted)]">Qué disfrutar · </span>
+            <span className="text-[var(--brand-text)]">opcional</span>
           </div>
           <p className="text-[13px] text-[var(--muted)] leading-snug">
             La vida que vale la pena vivir también necesita su categoría.
           </p>
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {EXTRA_OPTIONS.map((opt) => (
               <SelectCard
                 key={opt.id}
