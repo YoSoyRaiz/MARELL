@@ -60,11 +60,11 @@ export default function FaqDocs() {
 
       <h2>¿Cuánto cuesta?</h2>
       <p>
-        Tienes 14 días de Trial gratis con todas las funciones desbloqueadas.
-        Después puedes seguir como usuario Free con funciones limitadas (3
-        escaneos OCR/mes, 1 presupuesto), o pasar a Pro por <strong>RD$999/mes</strong>{' '}
-        con funciones completas (50 escaneos OCR/mes, presupuestos
-        ilimitados, soporte prioritario, etc).
+        Tienes <strong>90 días</strong> de Trial gratis con todas las
+        funciones desbloqueadas. Después puedes seguir como usuario Free con
+        funciones limitadas (3 escaneos OCR/mes, 1 presupuesto), o pasar a
+        Pro por <strong>RD$999/mes</strong> con funciones completas (50
+        escaneos OCR/mes, presupuestos ilimitados, soporte prioritario, etc).
       </p>
 
       <h2>¿Cómo cancelo Pro?</h2>
@@ -77,10 +77,57 @@ export default function FaqDocs() {
 
       <h2>¿Puedo importar mi historial desde otra app?</h2>
       <p>
-        Sí. Exporta tus datos a CSV desde donde los tengas y úsalos en{' '}
-        <code>/app/transacciones</code> → Importar. El formato es genérico
-        (fecha, descripción, monto) y MARELL detecta duplicados antes de
-        insertar.
+        Sí. <code>/app/transacciones</code> → <strong>Importar</strong>{' '}
+        acepta CSV de bancos dominicanos (Popular, Banreservas, BHD, etc.) y
+        formato genérico (fecha, descripción, monto). MARELL detecta
+        duplicados antes de insertar.
+      </p>
+
+      <h2>¿Puedo importar un PDF de estado de cuenta?</h2>
+      <p>
+        Sí. El mismo botón <strong>Importar</strong> acepta PDFs hasta 10 MB.
+        MARELL los lee con IA y extrae todos los movimientos automáticamente
+        (tarda 10-30 segundos). Después puedes editar nombres, asignar
+        categorías por fila o excluir movimientos antes de confirmar.
+      </p>
+      <p>
+        La asignación de categorías es automática gracias a dos cosas:
+        primero busca en tu historial (si ya categorizaste "PedidosYa" antes,
+        lo asigna solo), y como fallback usa un diccionario interno de
+        comercios dominicanos comunes. Ver{' '}
+        <Link href="/docs/movimientos">Movimientos</Link> para detalles.
+      </p>
+
+      <h2>¿Las categorías son lo mismo que las metas?</h2>
+      <p>
+        No. Son conceptos separados en MARELL:
+      </p>
+      <ul>
+        <li>
+          <strong>Categorías</strong> (Electricidad, Comida, Gasolina) son
+          compromisos de gasto mensual. Viven en{' '}
+          <Link href="/docs/plan">Plan</Link>.
+        </li>
+        <li>
+          <strong>Metas</strong> (Fondo de emergencia, Viaje, Boda) son
+          objetivos de ahorro acumulado. Viven en{' '}
+          <Link href="/docs/metas">Metas</Link>.
+        </li>
+      </ul>
+      <p>
+        Plan no muestra el grupo Metas y Metas no muestra categorías de
+        gasto. Cada sección tiene su propio botón "+ Nueva categoría" o
+        "+ Nueva meta" para evitar mezcla.
+      </p>
+
+      <h2>¿Puedo planificar el año completo?</h2>
+      <p>
+        Sí. En <Link href="/docs/plan">Plan</Link> arriba hay una pestaña{' '}
+        <strong>Anual</strong> que muestra los 12 meses de un año. Puedes
+        programar <strong>pagos extraordinarios</strong> que no se repiten
+        mensualmente (seguro auto, matrícula escolar, prima de Navidad) y
+        verlos en su mes correspondiente. Click en cualquier mes te lleva a
+        su vista detallada.
       </p>
 
       <h2>¿Cómo trato los gastos en USD?</h2>

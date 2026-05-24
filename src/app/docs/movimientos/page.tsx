@@ -147,12 +147,68 @@ export default function MovimientosDocs() {
         cuenta, eliminar. Útil para limpiar filas "Sin categoría" en bloque.
       </p>
 
-      <h2>Importar CSV</h2>
+      <h2>Importar (CSV o PDF)</h2>
       <p>
-        En la barra superior, botón <strong>Importar</strong>. Soporta CSVs
-        de bancos dominicanos comunes y formato genérico (fecha, descripción,
-        monto). Mapeas columnas, eliges la cuenta destino, y MARELL detecta
-        duplicados antes de insertar.
+        En la barra superior de Movimientos, botón <strong>Importar</strong>.
+        Acepta dos formatos:
+      </p>
+      <ul>
+        <li>
+          <strong>CSV</strong> (máx. 5 MB): formato estándar de la mayoría
+          de bancos. Detecta automáticamente columnas como Fecha, Descripción
+          y Monto. Reconoce los formatos comunes de bancos dominicanos
+          (Popular, Banreservas, BHD, Scotia, Promerica, BDI, Caribe).
+        </li>
+        <li>
+          <strong>PDF</strong> (máx. 10 MB): estados de cuenta bancarios
+          directamente. MARELL los lee con IA (Claude Haiku 4.5) y extrae
+          todos los movimientos automáticamente — fechas, descripciones,
+          montos con signo correcto. Tarda 10-30 segundos según el tamaño.
+        </li>
+      </ul>
+
+      <h3>Categorización automática</h3>
+      <p>
+        Después de extraer los movimientos (sea CSV o PDF), MARELL intenta
+        asignar categorías automáticamente con dos estrategias:
+      </p>
+      <ol>
+        <li>
+          <strong>Historial</strong>: si ya categorizaste antes una compra
+          en "Supermix" como Supermercado, la próxima importación la
+          asigna sola. Aparece con badge ✨ <strong>historial</strong>.
+        </li>
+        <li>
+          <strong>Diccionario de comercios RD</strong>: ~200 patrones de
+          comercios dominicanos comunes (PedidosYa, Uber, Claro, EDESUR,
+          Shell, Netflix, etc.) mapeados a tipos semánticos. Si tu
+          categoría se llama parecido al tipo (ej. "Supermercado",
+          "Comida casa"), MARELL hace el match. Badge ✨{' '}
+          <strong>comercio</strong>.
+        </li>
+      </ol>
+      <p>
+        El historial siempre gana sobre el diccionario. Las primeras
+        importaciones usan más el diccionario; con el tiempo el historial
+        toma el control y la precisión sube.
+      </p>
+
+      <h3>Vista previa y edición por fila</h3>
+      <p>
+        Antes de importar, ves la lista completa de movimientos. Para cada
+        uno puedes:
+      </p>
+      <ul>
+        <li>Editar el nombre del comercio (corregir nombres mal extraídos).</li>
+        <li>Cambiar la categoría sugerida (o asignarle una si quedó vacía).</li>
+        <li>
+          Excluir movimientos que no quieres importar (botón "excluir").
+        </li>
+      </ul>
+      <p>
+        También hay un selector arriba <strong>"Aplicar categoría"</strong>{' '}
+        que sobrescribe todas las filas con una sola categoría si lo
+        prefieres.
       </p>
 
       <Callout tone="warning" title="Antes de importar">
@@ -160,6 +216,12 @@ export default function MovimientosDocs() {
         <em>antes</em> de las transacciones que vas a importar. Después de
         importar, vuelve a reconciliar al balance actual. Eso garantiza que
         nada quede descuadrado.
+      </Callout>
+
+      <Callout tone="tip" title="Costo del PDF import">
+        La lectura de PDFs con IA tiene un costo pequeño por uso (~$0.01-0.02
+        USD por estado de cuenta). Está incluido en tu plan dentro de los
+        límites mensuales — no se cobra aparte.
       </Callout>
     </Article>
   )

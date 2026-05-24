@@ -12,7 +12,7 @@ export default function Conceptos() {
           Conceptos <span className="gradient-text">básicos</span>
         </>
       }
-      lead="Cinco ideas que tienes que entender antes de tocar la app. Si las dominas, todo lo demás se vuelve obvio."
+      lead="Seis ideas que tienes que entender antes de tocar la app. Si las dominas, todo lo demás se vuelve obvio."
     >
       <h2>1. Cada peso tiene un trabajo</h2>
       <p>
@@ -96,7 +96,65 @@ export default function Conceptos() {
         <strong>Por asignar</strong> o moviendo dinero desde otra categoría.
       </p>
 
-      <h2>5. Las cuatro reglas del modelo saludable</h2>
+      <h2>5. Categoría ≠ Meta</h2>
+      <p>
+        Dos cosas distintas que es fácil confundir:
+      </p>
+      <ul>
+        <li>
+          <strong>Categoría</strong>: un compromiso de gasto mensual. Comida,
+          Electricidad, Gasolina, Hipoteca. Viven en{' '}
+          <Link href="/docs/plan">Plan</Link> y se renuevan cada mes — les
+          asignas dinero, lo gastas, y empiezas de nuevo el mes siguiente.
+        </li>
+        <li>
+          <strong>Meta</strong>: un objetivo de ahorro acumulado, sin
+          repetición mensual. Fondo de emergencia, Viaje a Punta Cana,
+          Boda. Viven en <Link href="/docs/metas">Metas</Link> y trackean
+          progreso lifetime hacia un total — el dinero se acumula mes tras
+          mes hasta llegar al objetivo.
+        </li>
+      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Categoría</th>
+            <th>Meta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>Ejemplo</strong>
+            </td>
+            <td>Electricidad RD$9,000/mes</td>
+            <td>Fondo emergencia RD$60,000</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Ciclo</strong>
+            </td>
+            <td>Mensual — se renueva</td>
+            <td>Acumulado — hasta llegar</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Sección</strong>
+            </td>
+            <td>Plan</td>
+            <td>Metas</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        En MARELL ambas son técnicamente "categorías" en la base de datos,
+        pero la UI las trata como conceptos separados para evitar confusión.
+        Las metas viven en su propio grupo llamado <strong>Metas</strong>{' '}
+        que no aparece en Plan.
+      </p>
+
+      <h2>6. Las cuatro reglas del modelo saludable</h2>
       <p>
         MARELL sigue cuatro reglas probadas — el modelo financiero
         saludable que generaciones han usado para vivir tranquilas con su

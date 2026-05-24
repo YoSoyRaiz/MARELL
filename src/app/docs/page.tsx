@@ -66,25 +66,25 @@ export default function DocsHome() {
       </p>
 
       <FeatureGrid>
-        <FeatureCard Icon={Sparkles} title="Plan mensual">
-          Cómo asignar dinero a tus categorías cada mes y mantener tu balance
-          en cero.
+        <FeatureCard Icon={Sparkles} title="Plan mensual y anual">
+          Asignar dinero a tus categorías cada mes y planificar pagos
+          extraordinarios para el año completo.
         </FeatureCard>
         <FeatureCard Icon={Wallet} title="Cuentas">
           Efectivo, crédito, préstamos e inversiones — y cómo reconciliar
           contra tu banco.
         </FeatureCard>
         <FeatureCard Icon={ArrowLeftRight} title="Movimientos">
-          Registrar gastos, ingresos y transferencias en segundos, en el
-          móvil o desde la web.
+          Registrar gastos, ingresos y transferencias en segundos. Importa
+          CSV o PDF de estados de cuenta con IA.
         </FeatureCard>
         <FeatureCard Icon={Camera} title="Lectura de recibos">
           Toma una foto y MARELL detecta monto, fecha y comercio
           automáticamente.
         </FeatureCard>
         <FeatureCard Icon={Target} title="Metas">
-          Hacia dónde va tu esfuerzo: emergencias, viajes, prima — visibles
-          mes a mes.
+          Ahorro acumulado: emergencias, viajes, boda. Sugerencias
+          personalizadas según tu historial de gastos.
         </FeatureCard>
         <FeatureCard Icon={Repeat} title="Programadas">
           Recurrentes que se autoregistran: salario, alquiler, suscripciones.

@@ -12,7 +12,7 @@ export default function Empezar() {
           Cómo <span className="gradient-text">empezar</span>
         </>
       }
-      lead="De cero a presupuesto funcional en 10 minutos. Asume que ya creaste tu cuenta y completaste el onboarding inicial."
+      lead="De cero a presupuesto funcional en 10 minutos. Asume que ya creaste tu cuenta y completaste el onboarding inicial. Tu trial dura 90 días, tiempo de sobra para probar todo."
     >
       <StepList>
         <Step title="Verifica tus cuentas">
@@ -80,12 +80,28 @@ export default function Empezar() {
         números realistas.
       </Callout>
 
-      <h2>Si vienes de otra app</h2>
+      <h2>Si vienes de otra app o un banco</h2>
       <p>
-        ¿Manejabas tus finanzas en otra app o en una hoja de Excel? MARELL
-        tiene <strong>importación CSV</strong> para traer tu historial. Ve a
-        Movimientos → Importar y carga el archivo. El mapeo de columnas se
-        autocompleta y solo confirmas.
+        ¿Manejabas tus finanzas en otra app o quieres traer tu historial del
+        banco? MARELL tiene <strong>importación CSV y PDF</strong>:
+      </p>
+      <ul>
+        <li>
+          <strong>CSV</strong>: si lo exportas desde otra app o desde la
+          banca en línea. Mapeo automático para bancos dominicanos comunes.
+        </li>
+        <li>
+          <strong>PDF</strong>: directamente un estado de cuenta del banco.
+          MARELL lo lee con IA y extrae todos los movimientos en 10-30
+          segundos. Las categorías se auto-asignan según tu historial y un
+          diccionario de comercios RD.
+        </li>
+      </ul>
+      <p>
+        Ve a Movimientos → <strong>Importar</strong>, carga el archivo, y
+        revisa antes de confirmar (puedes editar nombres, categorías o
+        excluir movimientos por fila). Ver{' '}
+        <Link href="/docs/movimientos">Movimientos</Link> para detalles.
       </p>
     </Article>
   )
