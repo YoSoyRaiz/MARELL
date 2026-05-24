@@ -6,7 +6,11 @@ import { createClient } from '@/lib/supabase/server'
 import { generateCategories } from './wizard/categoryGenerator'
 import type { AccountType, OnboardingAnswers } from './wizard/types'
 
-const TRIAL_DAYS = 31
+// Trial period — mantén sincronizado con la SQL function
+// `start_trial_on_profile_create` (migration 2026_05_24_trial_extend_to_90_days).
+// Si cambias este número, actualiza también la SQL function y crea
+// una migration para el backfill.
+const TRIAL_DAYS = 90
 
 const currentMonth = () => {
   const d = new Date()
@@ -257,10 +261,37 @@ export async function resetOnboarding() {
   //    por budget, así que el cascade no la toca.
   await supabase.from('receipt_ocr_usage').delete().eq('user_id', user.id)
 
-  // 4. Resetear el flag de onboarded para que /onboarding deje pasar.
+  // 4. Resetear el flag de onboarded para que /onboarding deje pasar
+  //    Y refrescar el trial a 90 días fresh — el usuario está "rehaciendo
+  //    el onboarding", debería tener tiempo completo para evaluar la app
+  //    de nuevo. Cubre tres casos:
+  //      - plan='trial': refresca trial_ends_at a now() + 90 días
+  //      - plan='free' (trial expirado): vuelve a 'trial' con 90 días
+  //      - plan='pro': NO se toca — son clientes pagos testeando el flow
+  //
+  //    Para Pro, solo reseteamos onboarded.
+  const { data: currentProfile } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', user.id)
+    .single()
+
+  const isPro = currentProfile?.plan === 'pro'
+  const freshTrialEnd = new Date(
+    Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000,
+  ).toISOString()
+  const profileUpdate = isPro
+    ? { onboarded: false }
+    : {
+        onboarded: false,
+        plan: 'trial' as const,
+        trial_ends_at: freshTrialEnd,
+        subscription_status: 'trialing' as const,
+      }
+
   const { error: pErr } = await supabase
     .from('profiles')
-    .update({ onboarded: false })
+    .update(profileUpdate)
     .eq('id', user.id)
   if (pErr) return { error: pErr.message }
 
