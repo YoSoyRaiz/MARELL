@@ -404,13 +404,28 @@ export default async function ResumenPage() {
   })
 
   // ── Goals preview (up to 4) ────────────────────────────────
-  // Mirrors the calculation on /app/metas: monthly_spending uses the current
-  // month's assignment, savings_balance uses lifetime (assigned − spent).
+  // Mismo filtro que /app/metas: solo cuenta metas reales de ahorro
+  // (savings_balance / needed_by) y categorías del grupo "Metas".
+  // Las metas monthly_spending son budget commitments, no metas — viven
+  // en Plan, no aquí.
   type GoalType = 'monthly_spending' | 'savings_balance' | 'needed_by'
 
-  const goalCats = catsData.filter(
-    (c) => c.goal_amount !== null && Number(c.goal_amount) > 0,
-  )
+  const groupNameByIdForGoals = new Map<string, string>()
+  for (const g of groupsData) {
+    groupNameByIdForGoals.set(g.id as string, g.name as string)
+  }
+  const isMetasGroupCat = (c: { group_id: string | null }) =>
+    groupNameByIdForGoals.get(c.group_id as string) === 'Metas'
+  const SAVINGS_TYPES = new Set(['savings_balance', 'needed_by'])
+
+  // El widget muestra barras de progreso, así que solo incluye metas
+  // CON target configurado (goal_amount > 0). Metas en el grupo sin
+  // amount aparecen como "Configurar meta" en /app/metas, no aquí —
+  // un 0/0 en la dashboard sería confuso.
+  const goalCats = catsData.filter((c) => {
+    if (c.goal_amount === null || Number(c.goal_amount) <= 0) return false
+    return isMetasGroupCat(c) || SAVINGS_TYPES.has(c.goal_type as string)
+  })
   // savings_balance and needed_by both measure progress against lifetime
   // balance, so they share the same query path.
   const savingsGoalIds = goalCats
@@ -623,9 +638,16 @@ export default async function ResumenPage() {
   const guideHasAssigned = totalAssigned > 0.005
   const guideHasTransaction =
     txnsRecentData.length > 0 || txnsMonthData.length > 0
-  const guideHasGoal = catsData.some(
-    (c) => c.goal_amount !== null && Number(c.goal_amount) > 0,
-  )
+  // Considera "tener metas" solo si hay savings/needed_by configurados
+  // o categorías del grupo Metas — alineado con el resto de la UI.
+  const guideHasGoal = catsData.some((c) => {
+    if (isMetasGroupCat(c)) return true
+    return (
+      SAVINGS_TYPES.has(c.goal_type as string) &&
+      c.goal_amount !== null &&
+      Number(c.goal_amount) > 0
+    )
+  })
   // For "reconciled" we'd need to join transactions on cleared status.
   // Use a cheap proxy: if at least one transaction is marked reconciled
   // we count it. Cheap because txnsMonthData is already loaded — we
