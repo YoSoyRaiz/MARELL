@@ -133,8 +133,17 @@ export default async function PlanPage({
     activityLifetimeById.set(id, (activityLifetimeById.get(id) ?? 0) + Number(s.amount))
   }
 
-  // Build the group → categories tree
-  const groups: PlanGroup[] = groupsRaw.map((g) => {
+  // Build the group → categories tree.
+  //
+  // The "Metas" group is intentionally hidden from Plan: those categories
+  // are managed in /app/metas where the user sets and tracks a savings
+  // target. Showing them in Plan as regular monthly-budget rows was
+  // confusing — "Fondo de emergencia" doesn't have a monthly assignment
+  // in the YNAB sense; it's a savings goal funded over time.
+  const HIDDEN_GROUPS = new Set(['Metas'])
+  const groups: PlanGroup[] = groupsRaw
+    .filter((g) => !HIDDEN_GROUPS.has((g.name as string) ?? ''))
+    .map((g) => {
     const cats: PlanCategory[] = categoriesRaw
       .filter((c) => c.group_id === g.id)
       .map((c) => {

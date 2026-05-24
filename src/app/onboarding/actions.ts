@@ -86,12 +86,19 @@ export async function completeOnboarding(answers: OnboardingAnswers) {
     }
 
     // 4. Insertar categorías
+    //
+    // Categorías del grupo "Metas" se marcan con goal_type='savings_balance'
+    // desde el día uno — así aparecen en /app/metas como "configurar meta"
+    // y NO en /app/plan (que filtra ese grupo). Esto evita la confusión de
+    // tener "Fondo de emergencia" como categoría regular con presupuesto
+    // mensual cuando realmente es una meta de ahorro acumulada.
     const categoryInserts = groups.flatMap((g) =>
       g.items.map((item, idx) => ({
         group_id: groupIdByName[g.name],
         budget_id: budget.id,
         name: item.name,
         sort_order: idx + 1,
+        goal_type: g.name === 'Metas' ? 'savings_balance' : null,
       })),
     )
     const catIdByKey: Record<string, string> = {}

@@ -47,6 +47,10 @@ export interface ListGoal {
   // For monthly_spending: current month's assignment
   // For savings_balance: lifetime assigned − lifetime spent
   current: number
+  // True when the category lives in the "Metas" group but the user
+  // hasn't picked a target amount yet — renders as a setup-prompt card
+  // instead of a progress bar.
+  needsSetup: boolean
 }
 
 interface Props {
@@ -81,13 +85,22 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
 
   const isEmpty = goals.length === 0
 
-  // KPIs
-  const totalGoalAmount = goals.reduce((s, g) => s + g.goalAmount, 0)
-  const totalCurrent = goals.reduce((s, g) => s + g.current, 0)
-  const completed = goals.filter((g) => g.current >= g.goalAmount - 0.005).length
-  const inProgress = goals.length - completed
+  // KPIs — only count metas with a real target. "Necesita configurar"
+  // cards don't have a number yet, so they don't contribute to the totals
+  // or count as completed (a $0 target shouldn't auto-mark as done).
+  const configuredGoals = goals.filter((g) => !g.needsSetup)
+  const totalGoalAmount = configuredGoals.reduce((s, g) => s + g.goalAmount, 0)
+  const totalCurrent = configuredGoals.reduce((s, g) => s + g.current, 0)
+  const completed = configuredGoals.filter(
+    (g) => g.current >= g.goalAmount - 0.005,
+  ).length
+  const inProgress = configuredGoals.length - completed
+  const needsSetupCount = goals.length - configuredGoals.length
 
   const sortedGoals = [...goals].sort((a, b) => {
+    // Pending-setup metas sink to the bottom so the user sees configured
+    // progress first.
+    if (a.needsSetup !== b.needsSetup) return a.needsSetup ? 1 : -1
     const pa = a.goalAmount > 0 ? a.current / a.goalAmount : 0
     const pb = b.goalAmount > 0 ? b.current / b.goalAmount : 0
     if (pa !== pb) return pb - pa // higher progress first
@@ -114,7 +127,9 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
             <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
               {isEmpty
                 ? 'Aún no has definido metas. Crea la primera para empezar a trackear progreso.'
-                : `${goals.length} ${goals.length === 1 ? 'meta activa' : 'metas activas'}. Click para editar.`}
+                : needsSetupCount > 0
+                  ? `${configuredGoals.length} ${configuredGoals.length === 1 ? 'meta activa' : 'metas activas'} · ${needsSetupCount} por configurar`
+                  : `${goals.length} ${goals.length === 1 ? 'meta activa' : 'metas activas'}. Click para editar.`}
             </p>
           </div>
           <button
@@ -190,8 +205,50 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {sortedGoals.map((g) => {
               const Icon = iconForCategoryName(g.categoryName)
+              // Pending-setup cards render a minimal "Configurar meta"
+              // CTA — no progress bar (there's nothing to track yet).
+              if (g.needsSetup) {
+                return (
+                  <div
+                    key={g.categoryId}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setEditing(g)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setEditing(g)
+                      }
+                    }}
+                    className="group relative cursor-pointer text-left rounded-2xl border-2 border-dashed border-[var(--border3)] bg-[var(--s1)] p-5 hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] transition-colors space-y-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-2)]/40"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[var(--overlay-1)] flex items-center justify-center shrink-0 text-[var(--text2)]">
+                        <Icon size={18} strokeWidth={2} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[15px] font-semibold text-[var(--text)] truncate">
+                          {g.categoryName}
+                        </div>
+                        <div className="text-[11px] text-[var(--muted)] truncate inline-flex items-center gap-1.5">
+                          <span>{g.groupName}</span>
+                          <span className="text-[var(--muted2)]">·</span>
+                          <span className="text-[var(--warn-text)] font-medium">
+                            Sin meta configurada
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[var(--brand-text)]">
+                      <Target size={12} strokeWidth={2.4} />
+                      Configurar meta
+                    </div>
+                  </div>
+                )
+              }
+
               const pct = g.goalAmount > 0 ? Math.min(1, g.current / g.goalAmount) : 0
-              const isComplete = g.current >= g.goalAmount - 0.005
+              const isComplete = g.goalAmount > 0 && g.current >= g.goalAmount - 0.005
               const remaining = Math.max(0, g.goalAmount - g.current)
               const monthsLeft = g.goalDate ? monthsUntil(g.goalDate) : null
               const monthlyNeeded =

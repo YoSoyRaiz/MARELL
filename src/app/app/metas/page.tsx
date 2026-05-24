@@ -47,15 +47,30 @@ export default async function MetasPage() {
 
   const allCats = catsRes.data ?? []
 
-  // Categories with goals
+  // Categories belong on the Metas page when:
+  //   - they have an explicit goal_amount > 0 (configured meta), OR
+  //   - they live in the "Metas" category group (auto-classified during
+  //     onboarding — these are savings buckets that need a target set,
+  //     surfaced here as "configurar meta" placeholders).
+  // Everything else is a regular spending category and stays in Plan.
+  const isMetasGroup = (c: { group_id: string | null }) =>
+    groupsById.get(c.group_id as string) === 'Metas'
+
   const goalCats = allCats.filter(
-    (c) => c.goal_amount !== null && Number(c.goal_amount) > 0,
+    (c) =>
+      (c.goal_amount !== null && Number(c.goal_amount) > 0) || isMetasGroup(c),
   )
   const goalCatIds = goalCats.map((c) => c.id as string)
 
-  // Categories without goals (for the add picker)
+  // Categories without goals AND not in the Metas group → available to
+  // be promoted to a meta via the "+" picker (e.g. promote "Viaje" from
+  // Necesidades to a savings goal).
   const availableCategories: CategoryOption[] = allCats
-    .filter((c) => c.goal_amount === null || Number(c.goal_amount) === 0)
+    .filter(
+      (c) =>
+        (c.goal_amount === null || Number(c.goal_amount) === 0) &&
+        !isMetasGroup(c),
+    )
     .map((c) => ({
       id: c.id as string,
       name: c.name as string,
@@ -132,10 +147,15 @@ export default async function MetasPage() {
 
   const goals: ListGoal[] = goalCats.map((c) => {
     const id = c.id as string
-    const type = (c.goal_type as string) || 'monthly_spending'
+    const goalAmount = c.goal_amount === null ? 0 : Number(c.goal_amount)
+    const needsSetup = goalAmount <= 0
+    // Default unsaved metas to savings_balance — that's the right shape
+    // for the meta categories the onboarding creates (Fondo de emergencia,
+    // Vacaciones, etc.) and matches what we backfill in the migration.
+    const rawType = (c.goal_type as string | null) || 'savings_balance'
     const goalType: GoalType =
-      type === 'savings_balance' || type === 'needed_by'
-        ? (type as GoalType)
+      rawType === 'savings_balance' || rawType === 'needed_by'
+        ? (rawType as GoalType)
         : 'monthly_spending'
 
     let current = 0
@@ -152,9 +172,10 @@ export default async function MetasPage() {
       categoryName: c.name as string,
       groupName: groupsById.get(c.group_id as string) ?? '—',
       goalType,
-      goalAmount: Number(c.goal_amount),
+      goalAmount,
       goalDate: (c.goal_date as string | null) ?? null,
       current: Math.round(current * 100) / 100,
+      needsSetup,
     }
   })
 
