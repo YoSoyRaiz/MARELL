@@ -79,7 +79,7 @@ export function RecentTransactionsSection({
               className="text-[12px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] inline-flex items-center gap-1.5 h-8 px-3 rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
               <Upload size={12} strokeWidth={2.2} />
-              Importar CSV
+              Importar
             </button>
             <Link
               href="/app/transacciones"
@@ -118,7 +118,7 @@ export function RecentTransactionsSection({
                 className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
               >
                 <Upload size={14} strokeWidth={2.2} />
-                Importar CSV
+                Importar
               </button>
             </div>
           </div>

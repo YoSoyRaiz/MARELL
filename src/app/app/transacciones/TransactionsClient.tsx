@@ -344,8 +344,7 @@ export function TransactionsClient({
               className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] inline-flex items-center gap-1.5 sm:gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
               <Upload size={14} strokeWidth={2.2} />
-              <span className="hidden sm:inline">Importar CSV</span>
-              <span className="sm:hidden">Importar</span>
+              <span>Importar</span>
             </button>
             <button
               type="button"
