@@ -14,11 +14,7 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
-import {
-  GoalFormModal,
-  type CategoryOption,
-  type InitialGoal,
-} from './GoalFormModal'
+import { GoalFormModal, type InitialGoal } from './GoalFormModal'
 import { clearGoal, type GoalType } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
@@ -55,11 +51,10 @@ export interface ListGoal {
 
 interface Props {
   goals: ListGoal[]
-  availableCategories: CategoryOption[]
   hasBudget: boolean
 }
 
-export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
+export function MetasClient({ goals, hasBudget }: Props) {
   const router = useRouter()
   const confirm = useConfirm()
   const fmtMoney = useFormatMoney()
@@ -135,13 +130,8 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
           <button
             type="button"
             onClick={() => setAddOpen(true)}
-            disabled={!hasBudget || availableCategories.length === 0}
+            disabled={!hasBudget}
             className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none"
-            title={
-              availableCategories.length === 0
-                ? 'Todas tus categorías ya tienen meta'
-                : undefined
-            }
           >
             <Plus size={14} strokeWidth={2.4} />
             Nueva meta
@@ -191,7 +181,7 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
             <button
               type="button"
               onClick={() => setAddOpen(true)}
-              disabled={!hasBudget || availableCategories.length === 0}
+              disabled={!hasBudget}
               className="inline-flex items-center gap-1.5 mt-2 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
             >
               <Plus size={14} strokeWidth={2.4} />
@@ -404,7 +394,6 @@ export function MetasClient({ goals, availableCategories, hasBudget }: Props) {
               } satisfies InitialGoal)
             : undefined
         }
-        availableCategories={availableCategories}
       />
     </>
   )

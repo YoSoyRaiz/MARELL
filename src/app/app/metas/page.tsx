@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { MetasClient, type ListGoal } from './MetasClient'
-import type { CategoryOption } from './GoalFormModal'
 import type { GoalType } from './actions'
 import { currentMonthDR } from '@/lib/dates'
 
@@ -23,7 +22,7 @@ export default async function MetasPage() {
     .maybeSingle()
 
   if (!budget) {
-    return <MetasClient goals={[]} availableCategories={[]} hasBudget={false} />
+    return <MetasClient goals={[]} hasBudget={false} />
   }
 
   const month = currentMonth()
@@ -67,27 +66,8 @@ export default async function MetasPage() {
   const goalCats = allCats.filter((c) => isMetasGroup(c) || isSavingsGoal(c))
   const goalCatIds = goalCats.map((c) => c.id as string)
 
-  // Categories available para promover a meta vía el "+" picker. Excluye:
-  //   - las que ya viven en el grupo Metas (ya son metas)
-  //   - las que ya tienen savings_balance/needed_by configurado
-  //   - las que tienen monthly_spending (sigue estando en su grupo como
-  //     presupuesto de gasto — promoverlas a meta no tiene sentido)
-  const availableCategories: CategoryOption[] = allCats
-    .filter((c) => !isMetasGroup(c) && !isSavingsGoal(c) && c.goal_type !== 'monthly_spending')
-    .map((c) => ({
-      id: c.id as string,
-      name: c.name as string,
-      group_name: groupsById.get(c.group_id as string) ?? '—',
-    }))
-
   if (goalCats.length === 0) {
-    return (
-      <MetasClient
-        goals={[]}
-        availableCategories={availableCategories}
-        hasBudget={true}
-      />
-    )
+    return <MetasClient goals={[]} hasBudget={true} />
   }
 
   // Fetch this month's assignments + lifetime data for goals whose
@@ -182,11 +162,5 @@ export default async function MetasPage() {
     }
   })
 
-  return (
-    <MetasClient
-      goals={goals}
-      availableCategories={availableCategories}
-      hasBudget={true}
-    />
-  )
+  return <MetasClient goals={goals} hasBudget={true} />
 }

@@ -84,6 +84,129 @@ export async function updateGoal(input: UpdateGoalInput) {
   return { success: true as const }
 }
 
+// ── Crear meta nueva (sin promover categoría existente) ─────────
+//
+// Crea una categoría nueva dentro del grupo "Metas" con los campos de
+// meta ya seteados. Si el budget no tiene el grupo "Metas" todavía
+// (usuario que no eligió ninguna meta en onboarding), lo crea on-the-fly.
+//
+// Difiere de `updateGoal` que mutaba una categoría existente para
+// "promoverla" a meta — esa lógica se eliminó del modal porque
+// conceptualmente las metas son su propio bucket, no etiquetas sobre
+// categorías de gasto.
+
+export interface CreateMetaInput {
+  name: string
+  goalType: 'savings_balance' | 'needed_by'
+  goalAmount: number
+  goalDate: string | null
+}
+
+export async function createMeta(input: CreateMetaInput) {
+  const gate = await ensurePro()
+  if (!gate.ok) return { error: gate.error }
+
+  const trimmed = input.name.trim()
+  if (!trimmed) return { error: 'Nombre requerido' }
+  if (trimmed.length > 60) return { error: 'Nombre demasiado largo (máx. 60)' }
+  if (input.goalType !== 'savings_balance' && input.goalType !== 'needed_by') {
+    return { error: 'Tipo de meta inválido' }
+  }
+  if (!Number.isFinite(input.goalAmount) || input.goalAmount <= 0) {
+    return { error: 'Monto inválido' }
+  }
+  if (input.goalDate !== null && !isValidDate(input.goalDate)) {
+    return { error: 'Fecha inválida' }
+  }
+  if (input.goalType === 'needed_by' && !input.goalDate) {
+    return { error: 'Las metas con fecha requieren una fecha objetivo' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Primer budget del user (mismo patrón que el resto del archivo).
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('created_by', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  if (!budget) return { error: 'Sin presupuesto' }
+
+  // Find-or-create del grupo "Metas". El onboarding solo crea este
+  // grupo si el usuario eligió metas en el wizard — los demás casos
+  // necesitan crearlo on-the-fly aquí para que la inserción de la
+  // categoría tenga dónde colgarse.
+  let metasGroupId: string | null = null
+  const { data: existingGroup } = await supabase
+    .from('category_groups')
+    .select('id')
+    .eq('budget_id', budget.id)
+    .eq('name', 'Metas')
+    .maybeSingle()
+
+  if (existingGroup) {
+    metasGroupId = existingGroup.id as string
+  } else {
+    // Sort_order al final del listado actual.
+    const { data: maxGroupRow } = await supabase
+      .from('category_groups')
+      .select('sort_order')
+      .eq('budget_id', budget.id)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const nextGroupSort = Number(maxGroupRow?.sort_order ?? 0) + 1
+    const { data: newGroup, error: groupErr } = await supabase
+      .from('category_groups')
+      .insert({
+        budget_id: budget.id,
+        name: 'Metas',
+        sort_order: nextGroupSort,
+      })
+      .select('id')
+      .single()
+    if (groupErr || !newGroup) {
+      return { error: groupErr?.message ?? 'Error creando grupo Metas' }
+    }
+    metasGroupId = newGroup.id as string
+  }
+
+  // sort_order al final del grupo Metas.
+  const { data: maxCatRow } = await supabase
+    .from('categories')
+    .select('sort_order')
+    .eq('budget_id', budget.id)
+    .eq('group_id', metasGroupId)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const nextCatSort = Number(maxCatRow?.sort_order ?? 0) + 1
+
+  const rounded = Math.round(input.goalAmount * 100) / 100
+
+  const { error: insertErr } = await supabase.from('categories').insert({
+    budget_id: budget.id,
+    group_id: metasGroupId,
+    name: trimmed,
+    sort_order: nextCatSort,
+    goal_type: input.goalType,
+    goal_amount: rounded,
+    goal_monthly: null, // monthly_spending no aplica aquí — savings/needed_by
+    goal_date: input.goalDate,
+  })
+
+  if (insertErr) return { error: insertErr.message }
+
+  revalidatePath('/app', 'layout')
+  return { success: true as const }
+}
+
 // ── Sugerencia inteligente de Fondo de emergencia ────────────────
 //
 // La regla estándar internacional es 3-6 meses de gastos típicos. Pero

@@ -8,17 +8,12 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import {
   updateGoal,
   clearGoal,
+  createMeta,
   suggestEmergencyFundAmount,
   type GoalType,
   type EmergencyFundSuggestion,
 } from './actions'
 import { useFormatMoney } from '../CurrencyProvider'
-
-export interface CategoryOption {
-  id: string
-  name: string
-  group_name: string
-}
 
 export interface InitialGoal {
   categoryId: string
@@ -34,8 +29,6 @@ interface GoalFormModalProps {
   onClose: () => void
   mode: 'add' | 'edit'
   initial?: InitialGoal
-  // Only required in add mode; lists categories that don't have a goal yet
-  availableCategories?: CategoryOption[]
 }
 
 export function GoalFormModal({
@@ -43,7 +36,6 @@ export function GoalFormModal({
   onClose,
   mode,
   initial,
-  availableCategories = [],
 }: GoalFormModalProps) {
   const router = useRouter()
   const confirm = useConfirm()
@@ -68,7 +60,10 @@ export function GoalFormModal({
       setAmount(initial.goalAmount)
       setDate(initial.goalDate ?? '')
     } else {
-      setCategoryId(availableCategories[0]?.id ?? '')
+      // Add mode: las metas nuevas son categorías fresh en el grupo
+      // "Metas", no se promueve una categoría existente. categoryId se
+      // mantiene vacío hasta que el server lo asigne después de crear.
+      setCategoryId('')
       setCustomName('')
       setGoalType('savings_balance')
       setAmount(null)
@@ -76,18 +71,15 @@ export function GoalFormModal({
     }
     setError(null)
     setEmergencySuggestion(null)
-  }, [isOpen, mode, initial, availableCategories])
+  }, [isOpen, mode, initial])
 
   // ── Emergency-fund autosuggest ──────────────────────────────────
-  // When the user is configuring a category whose name matches "fondo
-  // de emergencia", pre-fetch the suggested amount based on their actual
-  // expense history. Reactive to both the picked category (add mode)
-  // and a renamed customName (edit mode).
-  const activeName = (() => {
-    if (mode === 'edit' && initial) return customName || initial.categoryName
-    const picked = availableCategories.find((c) => c.id === categoryId)
-    return customName || picked?.name || ''
-  })()
+  // Cuando el nombre que el usuario está escribiendo contiene "fondo de
+  // emergencia", pre-fetch la sugerencia basada en historial real de
+  // gastos. En edit mode también considera el nombre original como
+  // fallback si el usuario aún no ha renombrado.
+  const activeName =
+    mode === 'edit' && initial ? customName || initial.categoryName : customName
   const isEmergencyFund = /fondo\s*de\s*emergencia/i.test(activeName)
 
   useEffect(() => {
@@ -130,8 +122,11 @@ export function GoalFormModal({
 
   if (!isOpen) return null
 
+  // Add mode requiere nombre (lo que en add se llamaba "personalizado"
+  // pasa a ser el nombre principal de la nueva meta). Edit mode mantiene
+  // su flujo: requiere categoryId, customName puede ir vacío.
   const valid =
-    categoryId !== '' &&
+    (mode === 'edit' ? categoryId !== '' : customName.trim().length > 0) &&
     amount !== null &&
     amount > 0 &&
     (date === '' || /^\d{4}-\d{2}-\d{2}$/.test(date)) &&
@@ -141,16 +136,36 @@ export function GoalFormModal({
     if (!valid || amount === null) return
     setError(null)
     startTransition(async () => {
-      const result = await updateGoal({
-        categoryId,
-        goalType,
-        goalAmount: amount,
-        goalDate: date || null,
-        customName: customName.trim() || null,
-      })
-      if (result && 'error' in result && result.error) {
-        setError(result.error)
-        return
+      if (mode === 'add') {
+        // En add mode el goalType siempre es savings_balance o needed_by
+        // (monthly_spending ya no es opción), así que el narrowing es
+        // seguro para createMeta.
+        if (goalType !== 'savings_balance' && goalType !== 'needed_by') {
+          setError('Tipo de meta inválido')
+          return
+        }
+        const result = await createMeta({
+          name: customName.trim(),
+          goalType,
+          goalAmount: amount,
+          goalDate: date || null,
+        })
+        if (result && 'error' in result && result.error) {
+          setError(result.error)
+          return
+        }
+      } else {
+        const result = await updateGoal({
+          categoryId,
+          goalType,
+          goalAmount: amount,
+          goalDate: date || null,
+          customName: customName.trim() || null,
+        })
+        if (result && 'error' in result && result.error) {
+          setError(result.error)
+          return
+        }
       }
       router.refresh()
       onClose()
@@ -180,16 +195,6 @@ export function GoalFormModal({
   }
 
   const isEdit = mode === 'edit'
-  // Group categories for the picker (add mode only)
-  const groupedCats = availableCategories.reduce<Record<string, CategoryOption[]>>(
-    (acc, c) => {
-      const k = c.group_name
-      if (!acc[k]) acc[k] = []
-      acc[k].push(c)
-      return acc
-    },
-    {},
-  )
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -241,37 +246,11 @@ export function GoalFormModal({
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-          {/* Category picker — add mode only */}
-          {!isEdit && (
-            <Field label="Categoría">
-              {availableCategories.length === 0 ? (
-                <div className="text-[13px] text-[var(--muted)] px-4 py-3 rounded-xl bg-[var(--overlay-1)] border border-[var(--border)]">
-                  Todas tus categorías ya tienen meta. Edita una existente para ajustar.
-                </div>
-              ) : (
-                <NativeSelect
-                  value={categoryId}
-                  onChange={setCategoryId}
-                  ariaLabel="Categoría"
-                >
-                  {Object.entries(groupedCats).map(([groupName, cats]) => (
-                    <optgroup key={groupName} label={groupName}>
-                      {cats.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </NativeSelect>
-              )}
-            </Field>
-          )}
-
-          {/* Custom name — both modes, always visible */}
+          {/* Nombre — input principal en add (la meta se crea como categoría
+              nueva en el grupo "Metas"), o renombre en edit. */}
           <Field
-            label="Nombre personalizado"
-            hint={isEdit ? 'edita el nombre' : 'opcional'}
+            label={isEdit ? 'Nombre' : 'Nombre de la meta'}
+            hint={isEdit ? 'edita el nombre' : undefined}
           >
             <input
               type="text"
@@ -280,15 +259,18 @@ export function GoalFormModal({
                 setCustomName(e.target.value)
               }
               maxLength={60}
+              autoFocus={!isEdit}
               placeholder={
                 isEdit
                   ? initial?.categoryName
-                  : 'Ej: Gimnasio del barrio, Viaje a Punta Cana…'
+                  : 'Ej: Viaje a Punta Cana, Boda, Carro nuevo…'
               }
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
             <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
-              Usa un nombre con el que te identifiques en lugar del genérico.
+              {isEdit
+                ? 'Usa un nombre con el que te identifiques en lugar del genérico.'
+                : 'Será una nueva meta dentro del grupo "Metas".'}
             </p>
           </Field>
 
@@ -521,40 +503,3 @@ function Field({
   )
 }
 
-function NativeSelect({
-  value,
-  onChange,
-  children,
-  ariaLabel,
-}: {
-  value: string
-  onChange: (v: string) => void
-  children: React.ReactNode
-  ariaLabel?: string
-}) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={ariaLabel}
-        className="w-full appearance-none !text-[14px] !py-3 !pl-4 !pr-10 !rounded-xl bg-[var(--s1)] cursor-pointer"
-      >
-        {children}
-      </select>
-      <svg
-        className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text2)]"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    </div>
-  )
-}
