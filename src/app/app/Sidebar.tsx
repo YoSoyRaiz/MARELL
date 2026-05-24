@@ -156,8 +156,19 @@ export function Sidebar({
         aria-hidden
       />
 
+      {/* IMPORTANTE para sticky en desktop:
+            - `lg:bottom-auto` resetea el `bottom: 0` de `inset-y-0`,
+              sin esto el sidebar quedaba "anclado" arriba+abajo y
+              perdía el comportamiento sticky al hacer scroll.
+            - `lg:self-start` evita que el contenedor flex padre haga
+              stretch del sidebar a la altura total del flex item — sticky
+              necesita que el elemento sea más corto que el contenedor de
+              scroll, no que ocupe toda su altura.
+            - `lg:max-h-screen` (en vez de `lg:h-screen`) deja que el
+              contenido respire si la pantalla es muy bajita y permite
+              que el overflow-y-auto del nav se active. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[340px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:max-w-none lg:translate-x-0 lg:bg-[var(--s1)]/60 lg:transition-[width] lg:duration-300 lg:ease-out ${
+        className={`fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[340px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:bottom-auto lg:self-start lg:z-auto lg:h-screen lg:max-h-screen lg:max-w-none lg:translate-x-0 lg:bg-[var(--s1)]/60 lg:transition-[width] lg:duration-300 lg:ease-out ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${collapsed ? 'lg:w-[72px]' : 'lg:w-[240px]'}`}
         aria-hidden={!drawerOpen ? undefined : false}>
