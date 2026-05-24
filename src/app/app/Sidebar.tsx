@@ -152,9 +152,27 @@ export function Sidebar({
     })
     if (!ok) return
     // Clear the persisted wizard state in this browser so the user
-    // lands on step 0 instead of the last step they finished. The DB
-    // wipe happens server-side; this clears the client mirror.
+    // lands on step 0 instead of the last step they finished. La
+    // limpieza de DB pasa server-side; esto limpia el mirror local.
     useOnboardingStore.getState().reset()
+    // Limpia también los flags de "ya viste esto" que dependen del
+    // navegador: el FirstMonthGuide del Resumen y los dismiss diarios
+    // del TrialBanner. Así el usuario reseteado vuelve a recibir los
+    // tips como si fuera nuevo.
+    try {
+      window.localStorage.removeItem('marell:first-month-guide-dismissed')
+      // El trial banner dismiss usa una key con fecha y días restantes
+      // — barrer por prefijo es lo más simple/robusto.
+      for (let i = window.localStorage.length - 1; i >= 0; i--) {
+        const k = window.localStorage.key(i)
+        if (k && k.startsWith('marell:trial-banner-dismissed:')) {
+          window.localStorage.removeItem(k)
+        }
+      }
+    } catch {
+      // Storage puede no estar disponible (incognito, sandbox). No es
+      // crítico — el reset del servidor sigue funcionando.
+    }
     startReset(async () => {
       const r = await resetOnboarding()
       if (!r || !('error' in r) || !r.error) {
