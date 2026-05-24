@@ -238,8 +238,13 @@ export function CategoryAccordion({
                     </p>
                   ) : (
                     <div className="max-h-[320px] overflow-y-auto">
-                      {/* Headers — match Plan layout. */}
-                      <div className="grid grid-cols-[1fr_90px_70px_90px] gap-2 px-5 py-2 text-[9px] uppercase tracking-[0.16em] text-[var(--muted2)] border-b border-[var(--border)]">
+                      {/* Headers — match Plan layout.
+                          Sticky al tope del scroll container del grupo:
+                          cuando el usuario scrollea dentro de la lista
+                          (más de 320px de contenido), los labels de
+                          columna se quedan visibles. El bg sólido evita
+                          que las filas se vean por debajo al pegarse. */}
+                      <div className="sticky top-0 z-10 grid grid-cols-[1fr_90px_70px_90px] gap-2 px-5 py-2 text-[9px] uppercase tracking-[0.16em] text-[var(--muted2)] border-b border-[var(--border)] bg-[var(--s1)] backdrop-blur-sm">
                         <div>Categoría</div>
                         <div
                           className="text-right"
