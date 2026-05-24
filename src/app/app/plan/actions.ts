@@ -1,9 +1,95 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { currentMonthDR } from '@/lib/dates'
 
 const isValidMonth = (s: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
+
+// ── Create category ───────────────────────────────────────────────
+// Permite al usuario añadir categorías ad-hoc desde Plan cuando aparece
+// un gasto nuevo que no encaja en ninguna existente.
+
+export interface CreateCategoryInput {
+  budgetId: string
+  groupId: string
+  name: string
+}
+
+export type CreateCategoryResult =
+  | { error: string }
+  | { success: true; id: string }
+
+export async function createCategory(
+  input: CreateCategoryInput,
+): Promise<CreateCategoryResult> {
+  const trimmed = input.name.trim()
+  if (!trimmed) return { error: 'Nombre requerido' }
+  if (trimmed.length > 60) return { error: 'Nombre demasiado largo (máx. 60)' }
+  if (!input.budgetId) return { error: 'Presupuesto requerido' }
+  if (!input.groupId) return { error: 'Grupo requerido' }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Verifica ownership del budget antes de cualquier escritura.
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', input.budgetId)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Presupuesto no encontrado' }
+
+  // El grupo debe pertenecer al mismo budget — bloquea inserciones
+  // cross-budget que RLS también detendría, pero un check explícito
+  // da error legible.
+  const { data: group } = await supabase
+    .from('category_groups')
+    .select('id, name')
+    .eq('id', input.groupId)
+    .eq('budget_id', input.budgetId)
+    .single()
+  if (!group) return { error: 'Grupo no encontrado' }
+
+  // Sort order: pon la categoría al final de su grupo. Lee el max
+  // actual y suma 1; categorías nuevas siempre aparecen abajo.
+  const { data: maxRow } = await supabase
+    .from('categories')
+    .select('sort_order')
+    .eq('budget_id', input.budgetId)
+    .eq('group_id', input.groupId)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const nextSort = (maxRow?.sort_order ?? 0) + 1
+
+  // Categorías del grupo "Metas" reciben goal_type='savings_balance'
+  // desde el insert — mismo comportamiento que el onboarding (P1).
+  const isMetasGroup = (group.name as string) === 'Metas'
+
+  const { data: inserted, error: insertErr } = await supabase
+    .from('categories')
+    .insert({
+      budget_id: input.budgetId,
+      group_id: input.groupId,
+      name: trimmed,
+      sort_order: nextSort,
+      goal_type: isMetasGroup ? 'savings_balance' : null,
+    })
+    .select('id')
+    .single()
+
+  if (insertErr || !inserted) {
+    return { error: insertErr?.message ?? 'Error al crear categoría' }
+  }
+
+  revalidatePath('/app', 'layout')
+  return { success: true, id: inserted.id as string }
+}
 
 // ── Quick-assign popover support ──────────────────────────────────
 // Fetches everything the topbar Asignar popover needs in one call:

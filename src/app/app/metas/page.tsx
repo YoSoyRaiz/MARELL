@@ -48,29 +48,32 @@ export default async function MetasPage() {
   const allCats = catsRes.data ?? []
 
   // Categories belong on the Metas page when:
-  //   - they have an explicit goal_amount > 0 (configured meta), OR
-  //   - they live in the "Metas" category group (auto-classified during
-  //     onboarding — these are savings buckets that need a target set,
-  //     surfaced here as "configurar meta" placeholders).
-  // Everything else is a regular spending category and stays in Plan.
+  //   - they live in the "Metas" category group (savings buckets — even
+  //     without an amount set, they're meant to be metas), OR
+  //   - they have a savings-style goal explicitly set (savings_balance
+  //     or needed_by). monthly_spending is excluded on purpose: that's
+  //     a YNAB-style monthly target which conceptually is a budget
+  //     commitment, not a meta. Electricidad with a $9K monthly target
+  //     belongs in Plan, not here.
   const isMetasGroup = (c: { group_id: string | null }) =>
     groupsById.get(c.group_id as string) === 'Metas'
 
-  const goalCats = allCats.filter(
-    (c) =>
-      (c.goal_amount !== null && Number(c.goal_amount) > 0) || isMetasGroup(c),
-  )
+  const SAVINGS_GOAL_TYPES = new Set(['savings_balance', 'needed_by'])
+  const isSavingsGoal = (c: { goal_type: string | null; goal_amount: number | null }) =>
+    SAVINGS_GOAL_TYPES.has(c.goal_type as string) &&
+    c.goal_amount !== null &&
+    Number(c.goal_amount) > 0
+
+  const goalCats = allCats.filter((c) => isMetasGroup(c) || isSavingsGoal(c))
   const goalCatIds = goalCats.map((c) => c.id as string)
 
-  // Categories without goals AND not in the Metas group → available to
-  // be promoted to a meta via the "+" picker (e.g. promote "Viaje" from
-  // Necesidades to a savings goal).
+  // Categories available para promover a meta vía el "+" picker. Excluye:
+  //   - las que ya viven en el grupo Metas (ya son metas)
+  //   - las que ya tienen savings_balance/needed_by configurado
+  //   - las que tienen monthly_spending (sigue estando en su grupo como
+  //     presupuesto de gasto — promoverlas a meta no tiene sentido)
   const availableCategories: CategoryOption[] = allCats
-    .filter(
-      (c) =>
-        (c.goal_amount === null || Number(c.goal_amount) === 0) &&
-        !isMetasGroup(c),
-    )
+    .filter((c) => !isMetasGroup(c) && !isSavingsGoal(c) && c.goal_type !== 'monthly_spending')
     .map((c) => ({
       id: c.id as string,
       name: c.name as string,

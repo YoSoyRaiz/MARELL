@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, AlertCircle, Trash2, Repeat, PiggyBank, CalendarClock, LifeBuoy, Sparkles } from 'lucide-react'
+import { X, AlertCircle, Trash2, PiggyBank, CalendarClock, LifeBuoy, Sparkles } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import {
@@ -51,7 +51,7 @@ export function GoalFormModal({
   const [pending, startTransition] = useTransition()
   const [categoryId, setCategoryId] = useState('')
   const [customName, setCustomName] = useState('')
-  const [goalType, setGoalType] = useState<GoalType>('monthly_spending')
+  const [goalType, setGoalType] = useState<GoalType>('savings_balance')
   const [amount, setAmount] = useState<number | null>(null)
   const [date, setDate] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -70,7 +70,7 @@ export function GoalFormModal({
     } else {
       setCategoryId(availableCategories[0]?.id ?? '')
       setCustomName('')
-      setGoalType('monthly_spending')
+      setGoalType('savings_balance')
       setAmount(null)
       setDate('')
     }
@@ -292,21 +292,13 @@ export function GoalFormModal({
             </p>
           </Field>
 
-          {/* Type segmented */}
+          {/* Type segmented — solo dos tipos de meta real:
+              "Acumulada" (savings_balance) y "Por fecha" (needed_by).
+              El tipo "Mensual" (YNAB monthly target) se removió porque
+              ese concepto es un presupuesto de gasto, no una meta de
+              ahorro — vive en Plan, no en Metas. */}
           <Field label="Tipo de meta">
-            <div className="grid grid-cols-3 gap-1 p-1 bg-[var(--bg)] rounded-xl">
-              <button
-                type="button"
-                onClick={() => setGoalType('monthly_spending')}
-                className={`py-2.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
-                  goalType === 'monthly_spending'
-                    ? 'gradient-bg text-[#0B0B0C]'
-                    : 'text-[var(--text2)] hover:text-[var(--text)]'
-                }`}
-              >
-                <Repeat size={13} strokeWidth={2.2} />
-                Mensual
-              </button>
+            <div className="grid grid-cols-2 gap-1 p-1 bg-[var(--bg)] rounded-xl">
               <button
                 type="button"
                 onClick={() => setGoalType('savings_balance')}
@@ -333,11 +325,11 @@ export function GoalFormModal({
               </button>
             </div>
             <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-2">
-              {goalType === 'monthly_spending'
-                ? 'Apartas este monto cada mes (ej: gimnasio, internet).'
-                : goalType === 'savings_balance'
-                  ? 'Acumulas hasta llegar al monto total (ej: fondo de emergencia, viajes).'
-                  : 'Te decimos cuánto apartar cada mes para llegar a tiempo (ej: boda, prima de casa).'}
+              {goalType === 'savings_balance'
+                ? 'Acumulas hasta llegar al monto total (ej: fondo de emergencia, viajes).'
+                : goalType === 'needed_by'
+                  ? 'Te decimos cuánto apartar cada mes para llegar a tiempo (ej: boda, prima de casa).'
+                  : 'Selecciona el tipo de meta.'}
             </p>
           </Field>
 

@@ -8,12 +8,14 @@ import {
   ChevronDown,
   AlertCircle,
   CheckCircle2,
+  Plus,
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './InlineMoneyEdit'
 import { AnimatedNumber } from './AnimatedNumber'
 import { MoveMoneyModal } from './MoveMoneyModal'
 import { CategoryDrillModal } from './CategoryDrillModal'
+import { NewCategoryModal } from './NewCategoryModal'
 import { PlanTabs } from './PlanTabs'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
@@ -109,6 +111,7 @@ export function PlanView({
   const [error, setError] = useState<string | null>(null)
   const [moveSourceId, setMoveSourceId] = useState<string | null>(null)
   const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
+  const [newCategoryOpen, setNewCategoryOpen] = useState(false)
   const [, startPay] = useTransition()
   const [payToast, setPayToast] = useState<string | null>(null)
   const [payError, setPayError] = useState<string | null>(null)
@@ -332,7 +335,17 @@ export function PlanView({
               <ChevronRight size={18} strokeWidth={2.2} />
             </button>
           </div>
-          <PlanTabs view="mensual" />
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setNewCategoryOpen(true)}
+              className="h-10 px-4 rounded-xl text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] inline-flex items-center gap-1.5 transition-colors"
+            >
+              <Plus size={14} strokeWidth={2.4} />
+              Nueva categoría
+            </button>
+            <PlanTabs view="mensual" />
+          </div>
         </div>
       </div>
 
@@ -635,6 +648,15 @@ export function PlanView({
           isOpen={true}
           onClose={() => setDrillCategoryId(null)}
           categoryId={drillCategoryId}
+        />
+      )}
+
+      {budgetId && (
+        <NewCategoryModal
+          isOpen={newCategoryOpen}
+          onClose={() => setNewCategoryOpen(false)}
+          budgetId={budgetId}
+          groups={groups.map((g) => ({ id: g.id, name: g.name }))}
         />
       )}
 
