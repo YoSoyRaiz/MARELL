@@ -39,12 +39,12 @@ export function Step17Targets() {
           Personalizar plan · paso 1 de 3
         </div>
         <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          Pon una <span className="gradient-text">meta mensual</span>.
+          Pon tu <span className="gradient-text">presupuesto mensual</span>.
         </h1>
         <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-xl">
-          Tres pasos rápidos para configurar tu plan: metas, cuentas y
-          asignación. Empezamos por las metas — opcional, pon números
-          solo donde tengas idea.
+          Tres pasos rápidos para configurar tu plan: presupuestos, cuentas
+          y asignación. Empezamos por los presupuestos — opcional, pon
+          números solo donde tengas idea.
         </p>
       </div>
 
@@ -56,8 +56,8 @@ export function Step17Targets() {
           </div>
           <div className="text-[13px] text-[var(--text2)] mt-0.5">
             {filledCount > 0
-              ? `${filledCount} ${filledCount === 1 ? 'categoría' : 'categorías'} con meta`
-              : 'Aún sin metas — está bien.'}
+              ? `${filledCount} ${filledCount === 1 ? 'categoría' : 'categorías'} con presupuesto`
+              : 'Aún sin presupuestos — está bien.'}
           </div>
         </div>
         <div className="text-[24px] font-bold tabular-nums num gradient-text">
@@ -98,7 +98,7 @@ export function Step17Targets() {
                     <MoneyInput
                       value={value}
                       onChange={(v) => setTarget(key, v)}
-                      ariaLabel={`Meta para ${item.name}`}
+                      ariaLabel={`Presupuesto para ${item.name}`}
                     />
                   </li>
                 )
@@ -114,7 +114,7 @@ export function Step17Targets() {
           onClick={handleSkipAll}
           className="text-[13px] text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline transition-colors"
         >
-          Continuar sin metas
+          Continuar sin presupuestos
         </button>
       </div>
     </div>
