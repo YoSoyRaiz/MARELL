@@ -542,10 +542,13 @@ export interface BulkTransactionRow {
   payeeName: string
   amount: number // already signed (+ income, − expense)
   memo: string | null
+  /** Optional per-row category. When provided overrides the bulk `categoryId`. */
+  categoryId?: string | null
 }
 
 export interface BulkCreateInput {
   accountId: string
+  /** Default category applied to rows that don't have their own `categoryId`. */
   categoryId: string | null
   transactions: BulkTransactionRow[]
 }
@@ -589,14 +592,24 @@ export async function bulkCreateTransactions(input: BulkCreateInput) {
     .single()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
-  if (input.categoryId) {
-    const { data: cat } = await supabase
+  // Collect every category id referenced (bulk default + per-row) and
+  // validate them in a single round trip rather than N + 1 queries.
+  const referencedCategoryIds = new Set<string>()
+  if (input.categoryId) referencedCategoryIds.add(input.categoryId)
+  for (const t of input.transactions) {
+    if (t.categoryId) referencedCategoryIds.add(t.categoryId)
+  }
+  if (referencedCategoryIds.size > 0) {
+    const ids = Array.from(referencedCategoryIds)
+    const { data: cats } = await supabase
       .from('categories')
       .select('id')
-      .eq('id', input.categoryId)
+      .in('id', ids)
       .eq('budget_id', budget.id)
-      .single()
-    if (!cat) return { error: 'Categoría no encontrada' }
+    const validIds = new Set((cats ?? []).map((c) => c.id as string))
+    for (const id of ids) {
+      if (!validIds.has(id)) return { error: 'Categoría no encontrada' }
+    }
   }
 
   const inserts = input.transactions.map((t) => ({
@@ -604,7 +617,7 @@ export async function bulkCreateTransactions(input: BulkCreateInput) {
     budget_id: budget.id,
     date: t.date,
     payee_name: t.payeeName.trim(),
-    category_id: input.categoryId,
+    category_id: t.categoryId ?? input.categoryId,
     memo: t.memo?.trim() || null,
     amount: Math.round(t.amount * 100) / 100,
     cleared: 'uncleared' as const,
@@ -619,6 +632,116 @@ export async function bulkCreateTransactions(input: BulkCreateInput) {
 
   revalidatePath('/app', 'layout')
   return { success: true as const, imported: inserts.length }
+}
+
+/**
+ * Batch sibling of `suggestCategoryForPayee`: looks up the best-matching
+ * category for many payees at once, in a single query. Used by the PDF
+ * import flow to auto-fill categories on the preview rows based on the
+ * user's prior categorization history. Match is case-insensitive on the
+ * full payee string (no fuzzy/substring match — that would mis-suggest
+ * for short generic words).
+ */
+export async function suggestCategoriesForPayees(
+  payeeNames: string[],
+): Promise<{ suggestions: Record<string, string> }> {
+  const unique = Array.from(
+    new Set(
+      payeeNames
+        .map((p) => p.trim())
+        .filter((p) => p.length >= 2),
+    ),
+  )
+  if (unique.length === 0) return { suggestions: {} }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { suggestions: {} }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('created_by', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  if (!budget) return { suggestions: {} }
+
+  // Pull every categorized historical row whose payee matches any input
+  // name (case-insensitive). One query, then we tally per-payee in memory.
+  const { data } = await supabase
+    .from('transactions')
+    .select('payee_name, category_id')
+    .eq('budget_id', budget.id)
+    .in('payee_name', unique)
+    .not('category_id', 'is', null)
+    .eq('is_split', false)
+    .order('date', { ascending: false })
+    .limit(500)
+
+  if (!data || data.length === 0) {
+    // Fall back to case-insensitive ilike for payees that weren't found
+    // via exact match (older transactions sometimes carry casing variants).
+    const suggestions: Record<string, string> = {}
+    for (const name of unique) {
+      const escaped = name.replace(/[%_]/g, '\\$&')
+      const { data: rows } = await supabase
+        .from('transactions')
+        .select('category_id')
+        .eq('budget_id', budget.id)
+        .ilike('payee_name', escaped)
+        .not('category_id', 'is', null)
+        .eq('is_split', false)
+        .order('date', { ascending: false })
+        .limit(10)
+      if (!rows || rows.length === 0) continue
+      const counts = new Map<string, number>()
+      for (const r of rows) {
+        const id = r.category_id as string
+        counts.set(id, (counts.get(id) ?? 0) + 1)
+      }
+      let best: string | null = null
+      let bestCount = 0
+      for (const [id, c] of counts) {
+        if (c > bestCount) {
+          best = id
+          bestCount = c
+        }
+      }
+      if (best) suggestions[name] = best
+    }
+    return { suggestions }
+  }
+
+  // Tally most-frequent category per payee.
+  const perPayee = new Map<string, Map<string, number>>()
+  for (const r of data) {
+    const name = (r.payee_name as string | null)?.trim()
+    const catId = r.category_id as string | null
+    if (!name || !catId) continue
+    let inner = perPayee.get(name)
+    if (!inner) {
+      inner = new Map()
+      perPayee.set(name, inner)
+    }
+    inner.set(catId, (inner.get(catId) ?? 0) + 1)
+  }
+
+  const suggestions: Record<string, string> = {}
+  for (const [name, counts] of perPayee) {
+    let best: string | null = null
+    let bestCount = 0
+    for (const [id, c] of counts) {
+      if (c > bestCount) {
+        best = id
+        bestCount = c
+      }
+    }
+    if (best) suggestions[name] = best
+  }
+  return { suggestions }
 }
 
 export async function deleteTransaction(transactionId: string) {
