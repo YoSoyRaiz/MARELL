@@ -41,7 +41,12 @@ export function AppShell({
     <CurrencyProvider currency={budget?.currency ?? 'DOP'}>
     <ReadyToAssignProvider initialValue={readyToAssign}>
       <MobileNavProvider>
-        <div className="min-h-screen bg-[var(--bg)] flex">
+        {/* Layout sin flex: el Sidebar es lg:fixed left:0, así que el
+            contenido principal solo necesita un margin-left igual al
+            ancho del sidebar para no quedar tapado. El ancho se lee
+            de la CSS variable `--sidebar-w` que el Sidebar mantiene
+            sincronizada (toggle expandido/colapsado). */}
+        <div className="min-h-screen bg-[var(--bg)]">
           <Sidebar
             displayName={displayName}
             email={email}
@@ -49,7 +54,7 @@ export function AppShell({
             trialEndsAt={trialEndsAt}
             isAdmin={isAdmin}
           />
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex flex-col min-w-0 transition-[margin] duration-300 ease-out lg:ml-[var(--sidebar-w,240px)]">
             <OfflineBanner />
             <TrialBanner plan={plan} trialEndsAt={trialEndsAt} />
             <TopBar

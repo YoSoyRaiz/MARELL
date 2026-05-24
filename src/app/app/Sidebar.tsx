@@ -66,21 +66,38 @@ export function Sidebar({
   const initials = (displayName ?? '?').trim().split(/\s+/).map((s) => s[0]?.toUpperCase() ?? '').slice(0, 2).join('') || '?'
 
   // ── Collapsed state (desktop only) ──────────────────────────────
-  // Persisted in localStorage para que la preferencia sobreviva al
+  // Persisted en localStorage para que la preferencia sobreviva al
   // refresh. SSR-safe: arranca expanded y se hidrata desde storage
   // dentro de useEffect — evita el hydration mismatch.
+  //
+  // Sincroniza un CSS variable `--sidebar-w` en :root para que el
+  // contenido principal pueda ajustar su margin-left dinámicamente sin
+  // pasar la prop a través de React (la sidebar es desktop-fixed, así
+  // que el main necesita el offset para no quedar tapado).
   const [collapsed, setCollapsed] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+
+  const syncSidebarWidthVar = (isCollapsed: boolean) => {
+    if (typeof document === 'undefined') return
+    document.documentElement.style.setProperty(
+      '--sidebar-w',
+      isCollapsed ? '72px' : '240px',
+    )
+  }
+
   useEffect(() => {
+    let initial = false
     try {
       const saved = window.localStorage.getItem('marell:sidebar-collapsed')
-      if (saved === 'true') setCollapsed(true)
+      if (saved === 'true') initial = true
     } catch {
       // localStorage puede no estar disponible (incognito, sandbox).
-      // Default expanded — el usuario puede colapsar de todos modos.
     }
+    setCollapsed(initial)
+    syncSidebarWidthVar(initial)
     setHydrated(true)
   }, [])
+
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
       const next = !prev
@@ -89,6 +106,7 @@ export function Sidebar({
       } catch {
         /* noop */
       }
+      syncSidebarWidthVar(next)
       // Cierra el menu de perfil si se colapsa estando abierto —
       // queda fuera de espacio.
       if (next) setMenuOpen(false)
@@ -156,19 +174,16 @@ export function Sidebar({
         aria-hidden
       />
 
-      {/* IMPORTANTE para sticky en desktop:
-            - `lg:bottom-auto` resetea el `bottom: 0` de `inset-y-0`,
-              sin esto el sidebar quedaba "anclado" arriba+abajo y
-              perdía el comportamiento sticky al hacer scroll.
-            - `lg:self-start` evita que el contenedor flex padre haga
-              stretch del sidebar a la altura total del flex item — sticky
-              necesita que el elemento sea más corto que el contenedor de
-              scroll, no que ocupe toda su altura.
-            - `lg:max-h-screen` (en vez de `lg:h-screen`) deja que el
-              contenido respire si la pantalla es muy bajita y permite
-              que el overflow-y-auto del nav se active. */}
+      {/* En desktop usamos `position: fixed` (en vez de sticky) porque:
+            - Garantiza que el sidebar nunca se mueve con el scroll en
+              ningún navegador, sin importar el flex layout exterior
+            - Evita los gotchas de sticky en flex containers (stretch,
+              transform en ancestros, etc.)
+          El contenido principal en AppShell se offsetea con
+          `lg:ml-[var(--sidebar-w)]` para no quedar tapado. La variable
+          CSS la inyecta este componente al montar/togglear. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[340px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:bottom-auto lg:self-start lg:z-auto lg:h-screen lg:max-h-screen lg:max-w-none lg:translate-x-0 lg:bg-[var(--s1)]/60 lg:transition-[width] lg:duration-300 lg:ease-out ${
+        className={`fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[340px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:max-w-none lg:translate-x-0 lg:bg-[var(--s1)]/60 lg:transition-[width] lg:duration-300 lg:ease-out ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${collapsed ? 'lg:w-[72px]' : 'lg:w-[240px]'}`}
         aria-hidden={!drawerOpen ? undefined : false}>

@@ -94,4 +94,4 @@ export function useTheme() {
  * users who chose light mode don't see a dark flash on first paint.
  * Falls back to OS preference for first-time visitors.
  */
-export const THEME_INIT_SCRIPT = `(function(){try{var v=localStorage.getItem('marell:theme');var m=(v==='light'||v==='dark')?v:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',m);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`
+export const THEME_INIT_SCRIPT = `(function(){try{var v=localStorage.getItem('marell:theme');var m=(v==='light'||v==='dark')?v:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',m);var sb=localStorage.getItem('marell:sidebar-collapsed');document.documentElement.style.setProperty('--sidebar-w',sb==='true'?'72px':'240px');}catch(e){document.documentElement.setAttribute('data-theme','dark');document.documentElement.style.setProperty('--sidebar-w','240px');}})();`
