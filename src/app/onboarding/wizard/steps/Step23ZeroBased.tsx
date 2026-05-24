@@ -30,7 +30,7 @@ export function Step23ZeroBased() {
         </h1>
         <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-xl">
           Tienes dinero esperando trabajo y categorías listas para darlo. En un momento vas a
-          asignar cada peso desde tu plan — a tu ritmo, no en el wizard.
+          asignar cada peso desde tu plan — a tu ritmo.
         </p>
       </div>
 
