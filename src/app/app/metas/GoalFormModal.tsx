@@ -73,27 +73,24 @@ export function GoalFormModal({
     setEmergencySuggestion(null)
   }, [isOpen, mode, initial])
 
-  // ── Emergency-fund autosuggest ──────────────────────────────────
-  // Cuando el nombre que el usuario está escribiendo contiene "fondo de
-  // emergencia", pre-fetch la sugerencia basada en historial real de
-  // gastos. En edit mode también considera el nombre original como
-  // fallback si el usuario aún no ha renombrado.
+  // ── Sugerencia basada en historial ──────────────────────────────
+  // Pre-fetch al abrir el modal: monthly average × N. La sugerencia se
+  // muestra para cualquier meta que el usuario quiera estimar a partir
+  // de su patrón de gastos típico (no solo "Fondo de emergencia"). El
+  // copy y badge se adaptan cuando el nombre menciona explícitamente
+  // un fondo de emergencia para dar contexto extra.
   const activeName =
     mode === 'edit' && initial ? customName || initial.categoryName : customName
   const isEmergencyFund = /fondo\s*de\s*emergencia/i.test(activeName)
 
   useEffect(() => {
-    if (!isOpen || !isEmergencyFund) return
+    if (!isOpen) return
     let cancelled = false
     setLoadingSuggestion(true)
     suggestEmergencyFundAmount()
       .then((result) => {
         if (cancelled) return
         setEmergencySuggestion(result)
-        // For emergency funds, savings_balance is the natural goal type
-        // (accumulate to target). Only auto-flip on add — never override
-        // an edit where the user might have a deliberate choice.
-        if (mode === 'add') setGoalType('savings_balance')
       })
       .catch(() => {
         // Swallow — suggestion is a nice-to-have. UI falls back to
@@ -105,7 +102,7 @@ export function GoalFormModal({
     return () => {
       cancelled = true
     }
-  }, [isOpen, isEmergencyFund, mode])
+  }, [isOpen])
 
   useEffect(() => {
     if (!isOpen) return
@@ -315,19 +312,25 @@ export function GoalFormModal({
             </p>
           </Field>
 
-          {/* Emergency-fund autosuggest: muestra opciones de 3/6/12 meses
-              de gastos típicos. Solo aparece cuando la categoría se llama
-              "Fondo de emergencia" y hay historial de transacciones. */}
-          {isEmergencyFund && (
+          {/* Sugerencia basada en historial — disponible para cualquier
+              meta. Calcula 3/6/12 × gasto mensual promedio y los ofrece
+              como botones rápidos. Cuando el nombre matchea "fondo de
+              emergencia" añade contexto extra (regla 3-6 meses + icono
+              LifeBuoy); para otras metas el framing es genérico. */}
+          {(loadingSuggestion || emergencySuggestion) && (
             <div className="rounded-2xl border border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.05)] p-4 space-y-3">
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-lg bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
-                  <LifeBuoy size={16} strokeWidth={2.2} />
+                  {isEmergencyFund ? (
+                    <LifeBuoy size={16} strokeWidth={2.2} />
+                  ) : (
+                    <Sparkles size={16} strokeWidth={2.2} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-semibold text-[var(--text)] inline-flex items-center gap-1.5">
                     <Sparkles size={11} strokeWidth={2.4} className="text-[var(--brand-text)]" />
-                    Sugerencia personalizada
+                    Sugerencia basada en tu historial
                   </div>
                   {loadingSuggestion ? (
                     <div className="text-[12px] text-[var(--muted)] mt-1">
@@ -341,12 +344,16 @@ export function GoalFormModal({
                       </span>{' '}
                       ({emergencySuggestion.basedOnMonths}{' '}
                       {emergencySuggestion.basedOnMonths === 1 ? 'mes' : 'meses'} de historial).
-                      La regla estándar es apartar entre 3 y 6 meses.
+                      {isEmergencyFund
+                        ? ' Para un fondo de emergencia, la regla estándar es 3-6 meses.'
+                        : ' Estima cuántos meses de gastos quieres acumular para esta meta.'}
                     </div>
                   ) : (
                     <div className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
                       Aún no tienes suficiente historial para calcular tu gasto promedio.
-                      Empieza con un monto que represente 3-6 meses de tus gastos típicos.
+                      {isEmergencyFund
+                        ? ' Empieza con un monto que represente 3-6 meses de tus gastos típicos.'
+                        : ' Define el monto manualmente abajo.'}
                     </div>
                   )}
                 </div>
@@ -356,6 +363,16 @@ export function GoalFormModal({
                 <div className="grid grid-cols-3 gap-2">
                   {emergencySuggestion.options.map((opt) => {
                     const isPicked = amount === opt.amount
+                    // Solo mostramos las etiquetas (mínimo/recomendado/
+                    // conservador) cuando el contexto es fondo de
+                    // emergencia — para otras metas no aplican.
+                    const sublabel = !isEmergencyFund
+                      ? null
+                      : opt.months === 3
+                        ? 'mínimo'
+                        : opt.months === 6
+                          ? 'recomendado'
+                          : 'conservador'
                     return (
                       <button
                         key={opt.months}
@@ -381,13 +398,11 @@ export function GoalFormModal({
                         >
                           {fmtMoney(opt.amount)}
                         </span>
-                        <span className="text-[10px] text-[var(--muted2)]">
-                          {opt.months === 3
-                            ? 'mínimo'
-                            : opt.months === 6
-                              ? 'recomendado'
-                              : 'conservador'}
-                        </span>
+                        {sublabel && (
+                          <span className="text-[10px] text-[var(--muted2)]">
+                            {sublabel}
+                          </span>
+                        )}
                       </button>
                     )
                   })}
