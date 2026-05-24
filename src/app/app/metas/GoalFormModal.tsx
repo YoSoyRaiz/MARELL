@@ -2,10 +2,17 @@
 
 import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, AlertCircle, Trash2, Repeat, PiggyBank, CalendarClock } from 'lucide-react'
+import { X, AlertCircle, Trash2, Repeat, PiggyBank, CalendarClock, LifeBuoy, Sparkles } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
-import { updateGoal, clearGoal, type GoalType } from './actions'
+import {
+  updateGoal,
+  clearGoal,
+  suggestEmergencyFundAmount,
+  type GoalType,
+  type EmergencyFundSuggestion,
+} from './actions'
+import { useFormatMoney } from '../CurrencyProvider'
 
 export interface CategoryOption {
   id: string
@@ -40,6 +47,7 @@ export function GoalFormModal({
 }: GoalFormModalProps) {
   const router = useRouter()
   const confirm = useConfirm()
+  const fmtMoney = useFormatMoney()
   const [pending, startTransition] = useTransition()
   const [categoryId, setCategoryId] = useState('')
   const [customName, setCustomName] = useState('')
@@ -47,6 +55,9 @@ export function GoalFormModal({
   const [amount, setAmount] = useState<number | null>(null)
   const [date, setDate] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [emergencySuggestion, setEmergencySuggestion] =
+    useState<EmergencyFundSuggestion | null>(null)
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -64,7 +75,45 @@ export function GoalFormModal({
       setDate('')
     }
     setError(null)
+    setEmergencySuggestion(null)
   }, [isOpen, mode, initial, availableCategories])
+
+  // ── Emergency-fund autosuggest ──────────────────────────────────
+  // When the user is configuring a category whose name matches "fondo
+  // de emergencia", pre-fetch the suggested amount based on their actual
+  // expense history. Reactive to both the picked category (add mode)
+  // and a renamed customName (edit mode).
+  const activeName = (() => {
+    if (mode === 'edit' && initial) return customName || initial.categoryName
+    const picked = availableCategories.find((c) => c.id === categoryId)
+    return customName || picked?.name || ''
+  })()
+  const isEmergencyFund = /fondo\s*de\s*emergencia/i.test(activeName)
+
+  useEffect(() => {
+    if (!isOpen || !isEmergencyFund) return
+    let cancelled = false
+    setLoadingSuggestion(true)
+    suggestEmergencyFundAmount()
+      .then((result) => {
+        if (cancelled) return
+        setEmergencySuggestion(result)
+        // For emergency funds, savings_balance is the natural goal type
+        // (accumulate to target). Only auto-flip on add — never override
+        // an edit where the user might have a deliberate choice.
+        if (mode === 'add') setGoalType('savings_balance')
+      })
+      .catch(() => {
+        // Swallow — suggestion is a nice-to-have. UI falls back to
+        // manual input.
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSuggestion(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isOpen, isEmergencyFund, mode])
 
   useEffect(() => {
     if (!isOpen) return
@@ -291,6 +340,87 @@ export function GoalFormModal({
                   : 'Te decimos cuánto apartar cada mes para llegar a tiempo (ej: boda, prima de casa).'}
             </p>
           </Field>
+
+          {/* Emergency-fund autosuggest: muestra opciones de 3/6/12 meses
+              de gastos típicos. Solo aparece cuando la categoría se llama
+              "Fondo de emergencia" y hay historial de transacciones. */}
+          {isEmergencyFund && (
+            <div className="rounded-2xl border border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.05)] p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
+                  <LifeBuoy size={16} strokeWidth={2.2} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold text-[var(--text)] inline-flex items-center gap-1.5">
+                    <Sparkles size={11} strokeWidth={2.4} className="text-[var(--brand-text)]" />
+                    Sugerencia personalizada
+                  </div>
+                  {loadingSuggestion ? (
+                    <div className="text-[12px] text-[var(--muted)] mt-1">
+                      Calculando con base en tu historial…
+                    </div>
+                  ) : emergencySuggestion && emergencySuggestion.basedOnMonths ? (
+                    <div className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
+                      Tu gasto promedio mensual es{' '}
+                      <span className="text-[var(--text2)] font-medium">
+                        {fmtMoney(emergencySuggestion.monthlyAverage)}
+                      </span>{' '}
+                      ({emergencySuggestion.basedOnMonths}{' '}
+                      {emergencySuggestion.basedOnMonths === 1 ? 'mes' : 'meses'} de historial).
+                      La regla estándar es apartar entre 3 y 6 meses.
+                    </div>
+                  ) : (
+                    <div className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
+                      Aún no tienes suficiente historial para calcular tu gasto promedio.
+                      Empieza con un monto que represente 3-6 meses de tus gastos típicos.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {emergencySuggestion && emergencySuggestion.options.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {emergencySuggestion.options.map((opt) => {
+                    const isPicked = amount === opt.amount
+                    return (
+                      <button
+                        key={opt.months}
+                        type="button"
+                        onClick={() => setAmount(opt.amount)}
+                        className={`flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                          isPicked
+                            ? 'border-[var(--brand-2)] bg-[rgba(61,220,151,0.10)]'
+                            : 'border-[var(--border)] bg-[var(--s1)] hover:border-[var(--border3)] hover:bg-[var(--overlay-1)]'
+                        }`}
+                      >
+                        <span
+                          className={`text-[10px] uppercase tracking-[0.12em] font-semibold ${
+                            isPicked ? 'text-[var(--brand-text)]' : 'text-[var(--muted)]'
+                          }`}
+                        >
+                          {opt.months} meses
+                        </span>
+                        <span
+                          className={`text-[13px] font-bold tabular-nums num ${
+                            isPicked ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
+                          }`}
+                        >
+                          {fmtMoney(opt.amount)}
+                        </span>
+                        <span className="text-[10px] text-[var(--muted2)]">
+                          {opt.months === 3
+                            ? 'mínimo'
+                            : opt.months === 6
+                              ? 'recomendado'
+                              : 'conservador'}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           <Field
             label={

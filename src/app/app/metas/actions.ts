@@ -84,6 +84,118 @@ export async function updateGoal(input: UpdateGoalInput) {
   return { success: true as const }
 }
 
+// ── Sugerencia inteligente de Fondo de emergencia ────────────────
+//
+// La regla estándar internacional es 3-6 meses de gastos típicos. Pero
+// "gastos típicos" varía mucho por usuario, así que calculamos el
+// promedio mensual de los últimos 3/6/12 meses (cualquiera que tenga
+// suficiente data) y lo multiplicamos por el factor que pida el UI.
+//
+// Solo cuenta transacciones de gasto reales (amount < 0) en cuentas
+// budget — excluye transferencias internas y movimientos en tracking
+// accounts (inversiones). Si el usuario no tiene historial todavía,
+// devolvemos null y el cliente cae a su propia estimación basada en
+// el onboarding o input manual.
+
+export interface EmergencyFundSuggestion {
+  monthlyAverage: number
+  // Cuántos meses de historial usamos para el promedio (3, 6 o 12).
+  // null = no había data suficiente.
+  basedOnMonths: number | null
+  // Sugerencias listas para clickear.
+  options: { months: number; amount: number; label: string }[]
+}
+
+export async function suggestEmergencyFundAmount(): Promise<EmergencyFundSuggestion> {
+  const empty: EmergencyFundSuggestion = {
+    monthlyAverage: 0,
+    basedOnMonths: null,
+    options: [],
+  }
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return empty
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('created_by', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  if (!budget) return empty
+
+  // Pull last 12 months of expenses + the accounts they belong to, so
+  // we can filter out transfers and tracking accounts in memory (no
+  // join headaches).
+  const cutoff = new Date()
+  cutoff.setMonth(cutoff.getMonth() - 12)
+  cutoff.setDate(1)
+  const cutoffISO = cutoff.toISOString().slice(0, 10)
+
+  const [txnRes, accRes] = await Promise.all([
+    supabase
+      .from('transactions')
+      .select('date, amount, account_id, transfer_account_id')
+      .eq('budget_id', budget.id)
+      .lt('amount', 0)
+      .gte('date', cutoffISO),
+    supabase
+      .from('accounts')
+      .select('id, is_budget_account')
+      .eq('budget_id', budget.id),
+  ])
+
+  const trackingAccountIds = new Set(
+    (accRes.data ?? [])
+      .filter((a) => a.is_budget_account === false)
+      .map((a) => a.id as string),
+  )
+
+  // Group by YYYY-MM and sum absolute gastos. Skip transfers (internas)
+  // y transacciones de tracking accounts (inversiones, no son gasto real).
+  const monthlyTotals = new Map<string, number>()
+  for (const t of txnRes.data ?? []) {
+    if (t.transfer_account_id) continue
+    if (trackingAccountIds.has(t.account_id as string)) continue
+    const month = (t.date as string).slice(0, 7) // YYYY-MM
+    const prev = monthlyTotals.get(month) ?? 0
+    monthlyTotals.set(month, prev + Math.abs(Number(t.amount)))
+  }
+
+  // Pick a window: prefer 3 most recent complete months, fall back to
+  // 6, then 12, then nothing. "Complete" doesn't filter for now —
+  // partial-month data gets averaged in, which is OK for a suggestion.
+  const sortedMonths = Array.from(monthlyTotals.keys()).sort().reverse()
+
+  let avg = 0
+  let usedMonths: number | null = null
+  for (const window of [3, 6, 12]) {
+    const slice = sortedMonths.slice(0, window)
+    if (slice.length >= Math.min(window, 3)) {
+      const sum = slice.reduce((s, m) => s + (monthlyTotals.get(m) ?? 0), 0)
+      avg = sum / slice.length
+      usedMonths = slice.length
+      break
+    }
+  }
+
+  if (avg <= 0 || usedMonths === null) return empty
+
+  const rounded = Math.round(avg * 100) / 100
+  return {
+    monthlyAverage: rounded,
+    basedOnMonths: usedMonths,
+    options: [
+      { months: 3, amount: Math.round(rounded * 3 * 100) / 100, label: '3 meses (mínimo)' },
+      { months: 6, amount: Math.round(rounded * 6 * 100) / 100, label: '6 meses (recomendado)' },
+      { months: 12, amount: Math.round(rounded * 12 * 100) / 100, label: '12 meses (conservador)' },
+    ],
+  }
+}
+
 export async function clearGoal(categoryId: string) {
   if (!categoryId) return { error: 'Categoría requerida' }
 
