@@ -2,19 +2,42 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
 import { PlanView, type PlanCategory, type PlanGroup } from './PlanView'
+import { PlanAnnualView, type AnnualOneOff } from './PlanAnnualView'
 import { currentMonthDR, monthBoundsISO } from '@/lib/dates'
 
 const currentMonth = currentMonthDR
 const monthBounds = monthBoundsISO
 
+const MONTH_NAMES_FULL = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+]
+
 const isValidMonth = (s: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
+const isValidYear = (s: string) => /^\d{4}$/.test(s)
 
 export default async function PlanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>
+  searchParams: Promise<{ month?: string; view?: string; year?: string }>
 }) {
   const params = await searchParams
+  const view = params.view === 'anual' ? 'anual' : 'mensual'
+
+  if (view === 'anual') {
+    return <AnnualPage rawYear={params.year} />
+  }
+
   const month = params.month && isValidMonth(params.month) ? params.month : currentMonth()
 
   const supabase = await createClient()
@@ -181,4 +204,195 @@ export default async function PlanPage({
       accounts={planAccounts}
     />
   )
+}
+
+// ── Vista anual ──────────────────────────────────────────────────
+// Pulls year-wide data:
+//   - All monthly_assignments for the year (sum per month)
+//   - All scheduled_transactions with frequency='once' falling in the year
+//     (these son los "pagos extraordinarios")
+// Returns 12 month buckets ready to render.
+
+async function AnnualPage({ rawYear }: { rawYear?: string }) {
+  const today = new Date()
+  const year =
+    rawYear && isValidYear(rawYear)
+      ? parseInt(rawYear, 10)
+      : today.getFullYear()
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('created_by', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (!budget) {
+    return (
+      <PlanAnnualView
+        year={year}
+        accounts={[]}
+        categories={[]}
+        months={emptyMonths(year)}
+      />
+    )
+  }
+
+  const yearStart = `${year}-01-01`
+  const yearEnd = `${year}-12-31`
+
+  const [
+    assignmentsRes,
+    scheduledRes,
+    accountsRes,
+    categoriesRes,
+    groupsRes,
+  ] = await Promise.all([
+    // Pull all monthly_assignments whose `month` is within the year.
+    // `month` column is text 'YYYY-MM', so we filter with prefix.
+    supabase
+      .from('monthly_assignments')
+      .select('month, assigned')
+      .eq('budget_id', budget.id)
+      .like('month', `${year}-%`),
+    // One-off scheduled txns falling within the year. The frequency
+    // filter excludes recurrentes — those se ven en /app/programadas.
+    supabase
+      .from('scheduled_transactions')
+      .select(
+        'id, next_date, payee_name, amount, category_id, account_id, frequency, active',
+      )
+      .eq('budget_id', budget.id)
+      .eq('frequency', 'once')
+      .eq('active', true)
+      .gte('next_date', yearStart)
+      .lte('next_date', yearEnd),
+    supabase
+      .from('accounts')
+      .select('id, name, closed')
+      .eq('budget_id', budget.id),
+    supabase
+      .from('categories')
+      .select('id, name, group_id')
+      .eq('budget_id', budget.id)
+      .order('sort_order'),
+    supabase
+      .from('category_groups')
+      .select('id, name')
+      .eq('budget_id', budget.id),
+  ])
+
+  // Sum assignments por mes (e.g. '2026-04' → 12500).
+  const assignedByMonth = new Map<string, number>()
+  for (const a of assignmentsRes.data ?? []) {
+    const m = a.month as string
+    assignedByMonth.set(m, (assignedByMonth.get(m) ?? 0) + Number(a.assigned))
+  }
+
+  // Index categorías y cuentas para el render.
+  const categoryNameById = new Map<string, string>()
+  for (const c of categoriesRes.data ?? []) {
+    categoryNameById.set(c.id as string, c.name as string)
+  }
+  const accountNameById = new Map<string, string>()
+  for (const a of accountsRes.data ?? []) {
+    accountNameById.set(a.id as string, a.name as string)
+  }
+
+  // Group categorías by group_name para el dropdown del modal.
+  const groupNameById = new Map<string, string>()
+  for (const g of groupsRes.data ?? []) {
+    groupNameById.set(g.id as string, g.name as string)
+  }
+  // El grupo "Metas" no debería recibir pagos extraordinarios — son
+  // metas de ahorro, no gastos planificados. Lo filtramos del selector.
+  const categories = (categoriesRes.data ?? [])
+    .filter((c) => groupNameById.get(c.group_id as string) !== 'Metas')
+    .map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+      group_name: groupNameById.get(c.group_id as string) ?? '—',
+    }))
+
+  const accounts = (accountsRes.data ?? [])
+    .filter((a) => a.closed === false || a.closed === null)
+    .map((a) => ({ id: a.id as string, name: a.name as string }))
+
+  // Group one-offs por mes del año.
+  const oneOffsByMonth = new Map<number, AnnualOneOff[]>()
+  for (const s of scheduledRes.data ?? []) {
+    const date = s.next_date as string
+    const monthNum = parseInt(date.slice(5, 7), 10)
+    if (!Number.isFinite(monthNum)) continue
+    const list = oneOffsByMonth.get(monthNum) ?? []
+    list.push({
+      id: s.id as string,
+      date,
+      payeeName: (s.payee_name as string | null) ?? null,
+      categoryName: s.category_id
+        ? (categoryNameById.get(s.category_id as string) ?? null)
+        : null,
+      accountName: s.account_id
+        ? (accountNameById.get(s.account_id as string) ?? null)
+        : null,
+      amount: Number(s.amount),
+    })
+    oneOffsByMonth.set(monthNum, list)
+  }
+  // Ordena cada lista por fecha asc (en el mismo mes).
+  for (const list of oneOffsByMonth.values()) {
+    list.sort((a, b) => a.date.localeCompare(b.date))
+  }
+
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const monthNum = i + 1
+    const monthIso = `${year}-${String(monthNum).padStart(2, '0')}`
+    const list = oneOffsByMonth.get(monthNum) ?? []
+    const oneOffsExpense = list
+      .filter((o) => o.amount < 0)
+      .reduce((s, o) => s + Math.abs(o.amount), 0)
+    const oneOffsIncome = list
+      .filter((o) => o.amount > 0)
+      .reduce((s, o) => s + o.amount, 0)
+    return {
+      monthIso,
+      monthNum,
+      monthLabel: `${MONTH_NAMES_FULL[monthNum - 1]} ${year}`,
+      totalAssigned: Math.round((assignedByMonth.get(monthIso) ?? 0) * 100) / 100,
+      oneOffs: list,
+      oneOffsExpense: Math.round(oneOffsExpense * 100) / 100,
+      oneOffsIncome: Math.round(oneOffsIncome * 100) / 100,
+    }
+  })
+
+  return (
+    <PlanAnnualView
+      year={year}
+      accounts={accounts}
+      categories={categories}
+      months={months}
+    />
+  )
+}
+
+function emptyMonths(year: number) {
+  return Array.from({ length: 12 }, (_, i) => {
+    const monthNum = i + 1
+    return {
+      monthIso: `${year}-${String(monthNum).padStart(2, '0')}`,
+      monthNum,
+      monthLabel: `${MONTH_NAMES_FULL[monthNum - 1]} ${year}`,
+      totalAssigned: 0,
+      oneOffs: [],
+      oneOffsExpense: 0,
+      oneOffsIncome: 0,
+    }
+  })
 }

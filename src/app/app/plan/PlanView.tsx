@@ -14,6 +14,7 @@ import { InlineMoneyEdit } from './InlineMoneyEdit'
 import { AnimatedNumber } from './AnimatedNumber'
 import { MoveMoneyModal } from './MoveMoneyModal'
 import { CategoryDrillModal } from './CategoryDrillModal'
+import { PlanTabs } from './PlanTabs'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
@@ -304,12 +305,12 @@ export function PlanView({
 
   return (
     <div className={`space-y-6 transition-opacity duration-200 ${navPending ? 'opacity-60' : ''}`}>
-      {/* Header: month nav + title */}
+      {/* Header: month nav + title + view tabs */}
       <div className="space-y-4">
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Plan
         </div>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -331,6 +332,7 @@ export function PlanView({
               <ChevronRight size={18} strokeWidth={2.2} />
             </button>
           </div>
+          <PlanTabs view="mensual" />
         </div>
       </div>
 
