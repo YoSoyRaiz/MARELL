@@ -19,6 +19,8 @@ import {
   RotateCcw,
   CircleUser,
   ShieldCheck,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { logout } from '@/app/(auth)/actions'
@@ -62,6 +64,37 @@ export function Sidebar({
   const [, startReset] = useTransition()
   const menuRef = useRef<HTMLDivElement>(null)
   const initials = (displayName ?? '?').trim().split(/\s+/).map((s) => s[0]?.toUpperCase() ?? '').slice(0, 2).join('') || '?'
+
+  // ── Collapsed state (desktop only) ──────────────────────────────
+  // Persisted in localStorage para que la preferencia sobreviva al
+  // refresh. SSR-safe: arranca expanded y se hidrata desde storage
+  // dentro de useEffect — evita el hydration mismatch.
+  const [collapsed, setCollapsed] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('marell:sidebar-collapsed')
+      if (saved === 'true') setCollapsed(true)
+    } catch {
+      // localStorage puede no estar disponible (incognito, sandbox).
+      // Default expanded — el usuario puede colapsar de todos modos.
+    }
+    setHydrated(true)
+  }, [])
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev
+      try {
+        window.localStorage.setItem('marell:sidebar-collapsed', String(next))
+      } catch {
+        /* noop */
+      }
+      // Cierra el menu de perfil si se colapsa estando abierto —
+      // queda fuera de espacio.
+      if (next) setMenuOpen(false)
+      return next
+    })
+  }
 
   // Close popover on outside click + Escape
   useEffect(() => {
@@ -124,26 +157,54 @@ export function Sidebar({
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[340px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-[240px] lg:max-w-none lg:translate-x-0 lg:bg-[var(--s1)]/60 ${
+        className={`fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[340px] border-r border-[var(--border)] bg-[var(--s1)]/95 backdrop-blur-md flex flex-col transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:max-w-none lg:translate-x-0 lg:bg-[var(--s1)]/60 lg:transition-[width] lg:duration-300 lg:ease-out ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        } ${collapsed ? 'lg:w-[72px]' : 'lg:w-[240px]'}`}
         aria-hidden={!drawerOpen ? undefined : false}>
-      {/* Logo — clickable shortcut a /app (Resumen). Cierra el drawer
-          en móvil al navegar para no dejar al usuario con el menú
-          abierto encima de la página nueva. */}
-      <div className="px-6 pt-7 pb-10 lg:px-5 lg:pt-6 lg:pb-[50px]">
-        <Link
-          href="/app"
-          aria-label="Ir a Resumen"
-          onClick={closeDrawer}
-          className="inline-block rounded-lg transition-opacity hover:opacity-85 active:opacity-70"
-        >
-          <Logo height={50} />
-        </Link>
+      {/* Logo + collapse toggle — el botón solo aparece en desktop
+          (lg+); en móvil se cierra con el backdrop o eligiendo un
+          link. El logo se oculta cuando está colapsado para dejar
+          solo el toggle centrado. */}
+      <div
+        className={`flex items-center justify-between gap-2 px-6 pt-7 pb-10 lg:pt-6 lg:pb-[50px] ${
+          collapsed ? 'lg:px-3 lg:justify-center' : 'lg:px-5'
+        }`}
+      >
+        {!collapsed && (
+          <Link
+            href="/app"
+            aria-label="Ir a Resumen"
+            onClick={closeDrawer}
+            className="inline-block rounded-lg transition-opacity hover:opacity-85 active:opacity-70"
+          >
+            <Logo height={50} />
+          </Link>
+        )}
+        {hydrated && (
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+            title={collapsed ? 'Expandir' : 'Colapsar'}
+            className="hidden lg:inline-flex w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] items-center justify-center transition-colors shrink-0"
+          >
+            {collapsed ? (
+              <PanelLeftOpen size={16} strokeWidth={2.2} />
+            ) : (
+              <PanelLeftClose size={16} strokeWidth={2.2} />
+            )}
+          </button>
+        )}
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-4 lg:px-3 space-y-1.5 lg:space-y-1 overflow-y-auto">
+      {/* Nav. Colapsado: solo icono centrado con tooltip; expandido:
+          número + icono + label. La numeración se esconde porque pierde
+          contexto sin texto al lado. */}
+      <nav
+        className={`flex-1 space-y-1.5 lg:space-y-1 overflow-y-auto px-4 ${
+          collapsed ? 'lg:px-2' : 'lg:px-3'
+        }`}
+      >
         {NAV.map((item, idx) => {
           const isActive =
             item.href === '/app' ? pathname === '/app' : pathname.startsWith(item.href)
@@ -152,7 +213,13 @@ export function Sidebar({
             <Link
               key={item.id}
               href={item.href}
-              className={`flex items-center gap-3 px-3.5 py-3 lg:py-2.5 rounded-xl text-[14px] transition-all duration-200 ${
+              title={collapsed ? item.label : undefined}
+              aria-label={collapsed ? item.label : undefined}
+              className={`flex items-center rounded-xl text-[14px] transition-all duration-200 ${
+                collapsed
+                  ? 'lg:justify-center lg:px-0 lg:py-2.5 px-3.5 py-3 gap-3'
+                  : 'gap-3 px-3.5 py-3 lg:py-2.5'
+              } ${
                 isActive
                   ? 'gradient-bg text-[#0B0B0C] font-semibold shadow-[0_4px_16px_rgba(61,220,151,.18)]'
                   : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
@@ -161,20 +228,23 @@ export function Sidebar({
               <span
                 className={`text-[11px] tabular-nums shrink-0 ${
                   isActive ? 'text-[#0B0B0C]/60' : 'text-[var(--muted2)]'
-                }`}
+                } ${collapsed ? 'lg:hidden' : ''}`}
               >
                 {idx + 1}.
               </span>
               <Icon size={16} strokeWidth={2} className="shrink-0" />
-              <span className="truncate">{item.label}</span>
+              <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>
+                {item.label}
+              </span>
             </Link>
           )
         })}
       </nav>
 
-      {/* Premium upsell — only while on trial */}
-      {plan === 'trial' && (
-        <div className="mx-3 mb-3 mt-4 p-4 rounded-2xl bg-[var(--s2)] border border-[var(--border2)] gradient-border space-y-3">
+      {/* Premium upsell — solo durante trial y nunca en colapsado
+          (la card de upsell pierde sentido sin la copy completa). */}
+      {plan === 'trial' && !collapsed && (
+        <div className="mx-3 mb-3 mt-4 p-4 rounded-2xl bg-[var(--s2)] border border-[var(--border2)] gradient-border space-y-3 lg:block">
           <div className="text-[13px] font-semibold leading-snug">
             Desbloquea tu <span className="gradient-text">potencial</span> financiero.
           </div>
@@ -187,32 +257,48 @@ export function Sidebar({
         </div>
       )}
 
-      {/* Help — opens default mail client */}
-      <div className="px-5 mb-3">
+      {/* Help — solo el icono cuando colapsado, full link cuando no. */}
+      <div className={`mb-3 ${collapsed ? 'lg:px-2' : 'px-5'}`}>
         <a
           href="mailto:soporte@marell.app?subject=Ayuda%20MARELL"
-          className="flex items-center gap-2 py-2 text-[13px] text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+          title={collapsed ? 'Ayuda y soporte' : undefined}
+          aria-label={collapsed ? 'Ayuda y soporte' : undefined}
+          className={`flex items-center text-[13px] text-[var(--muted)] hover:text-[var(--text)] transition-colors ${
+            collapsed
+              ? 'lg:justify-center lg:py-2 lg:rounded-lg lg:hover:bg-[var(--overlay-1)] gap-2 py-2'
+              : 'gap-2 py-2'
+          }`}
         >
           <LifeBuoy size={14} strokeWidth={2} />
-          Ayuda y soporte
+          <span className={collapsed ? 'lg:hidden' : ''}>Ayuda y soporte</span>
         </a>
       </div>
 
-      {/* User profile menu */}
-      <div ref={menuRef} className="relative border-t border-[var(--border)] px-3 py-3">
+      {/* User profile menu. Colapsado: solo avatar centrado; expandido:
+          avatar + nombre + plan + chevron. */}
+      <div
+        ref={menuRef}
+        className={`relative border-t border-[var(--border)] py-3 ${
+          collapsed ? 'lg:px-2' : 'px-3'
+        }`}
+      >
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors ${
-            menuOpen ? 'bg-[var(--overlay-1)]' : 'hover:bg-[var(--overlay-1)]'
-          }`}
+          aria-label={collapsed ? `Cuenta · ${displayName ?? 'Usuario'}` : undefined}
+          title={collapsed ? displayName ?? 'Usuario' : undefined}
+          className={`w-full flex items-center rounded-lg transition-colors ${
+            collapsed
+              ? 'lg:justify-center lg:py-1.5 px-2 py-1.5 gap-2.5'
+              : 'gap-2.5 px-2 py-1.5'
+          } ${menuOpen ? 'bg-[var(--overlay-1)]' : 'hover:bg-[var(--overlay-1)]'}`}
         >
           <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-[13px] shrink-0">
             {initials}
           </div>
-          <div className="flex-1 min-w-0 text-left">
+          <div className={`flex-1 min-w-0 text-left ${collapsed ? 'lg:hidden' : ''}`}>
             <div className="text-[13px] font-medium truncate">{displayName ?? 'Usuario'}</div>
             <div className="text-[11px] text-[var(--muted)] capitalize truncate">
               {plan}
@@ -228,14 +314,18 @@ export function Sidebar({
             strokeWidth={2.2}
             className={`text-[var(--muted)] shrink-0 transition-transform ${
               menuOpen ? '' : 'rotate-180'
-            }`}
+            } ${collapsed ? 'lg:hidden' : ''}`}
           />
         </button>
 
         {menuOpen && (
           <div
             role="menu"
-            className="absolute bottom-[calc(100%-4px)] left-3 right-3 mb-2 rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] overflow-hidden animate-step"
+            className={`absolute bottom-[calc(100%-4px)] mb-2 rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] overflow-hidden animate-step ${
+              collapsed
+                ? 'lg:left-full lg:ml-2 lg:right-auto lg:w-[280px] left-3 right-3'
+                : 'left-3 right-3'
+            }`}
           >
             {/* Identity */}
             <div className="px-4 py-3.5 border-b border-[var(--border)] bg-[var(--overlay-1)]">
