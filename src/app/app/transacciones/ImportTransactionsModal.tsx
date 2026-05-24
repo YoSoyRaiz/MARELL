@@ -15,6 +15,7 @@ import {
 import { parseCSV, type ParseResult } from './csv'
 import { detectBank, type BankDetection } from './bankDetectors'
 import { bulkCreateTransactions, suggestCategoriesForPayees } from './actions'
+import { suggestCategoryFromMerchantPattern } from './merchantPatterns'
 import { useFormatMoney } from '../CurrencyProvider'
 
 interface AccountOption {
@@ -43,9 +44,11 @@ interface EditableRow {
   amount: number
   memo: string | null
   categoryId: string | null
-  // Tracks whether the categoryId came from history (sparkle badge) vs.
-  // manual selection — purely UI affordance.
-  autoCategorized: boolean
+  // Source of the auto-assigned category, used to choose the badge variant.
+  // 'history' = looked up from user's past categorizations
+  // 'merchant' = matched a built-in DR merchant pattern
+  // null = manual or no suggestion
+  autoSource: 'history' | 'merchant' | null
   excluded: boolean
 }
 
@@ -124,29 +127,55 @@ export function ImportTransactionsModal({
     }, {})
   }, [categories])
 
-  // After parsing (CSV or PDF), ask the server for per-payee category
-  // suggestions based on the user's history. Marks each matched row as
-  // auto-categorized so we can show the sparkle badge.
-  const applyCategorySuggestions = async (parsedRows: Omit<EditableRow, 'categoryId' | 'autoCategorized' | 'excluded'>[]) => {
+  // After parsing (CSV or PDF), assign categories in this priority order:
+  //   1) User's history — most reliable, reflects their actual habits
+  //   2) Built-in DR merchant pattern dictionary — covers cold-start when
+  //      the user has no history yet ("SUPERMIX" → Supermercado, etc.)
+  //   3) Leave blank — user picks manually
+  // Each matched row is tagged with the source so the badge UI can show
+  // ✨ "según historial" vs 🏪 "según comercio".
+  const applyCategorySuggestions = async (
+    parsedRows: Omit<EditableRow, 'categoryId' | 'autoSource' | 'excluded'>[],
+  ) => {
     const names = parsedRows.map((r) => r.payeeName)
-    let suggestions: Record<string, string> = {}
+    let historySuggestions: Record<string, string> = {}
     try {
       const result = await suggestCategoriesForPayees(names)
-      suggestions = result.suggestions ?? {}
+      historySuggestions = result.suggestions ?? {}
     } catch {
       // Best-effort — if the lookup fails, the user can still categorize
       // manually. Don't block the import preview on it.
     }
     const validCategoryIds = new Set(categories.map((c) => c.id))
+    const catRefs = categories.map((c) => ({ id: c.id, name: c.name }))
     let matched = 0
     const enriched: EditableRow[] = parsedRows.map((r) => {
-      const suggested = suggestions[r.payeeName.trim()]
-      const isValid = suggested && validCategoryIds.has(suggested)
-      if (isValid) matched++
+      // 1) History wins
+      const fromHistory = historySuggestions[r.payeeName.trim()]
+      if (fromHistory && validCategoryIds.has(fromHistory)) {
+        matched++
+        return {
+          ...r,
+          categoryId: fromHistory,
+          autoSource: 'history',
+          excluded: false,
+        }
+      }
+      // 2) Merchant pattern fallback
+      const fromMerchant = suggestCategoryFromMerchantPattern(r.payeeName, catRefs)
+      if (fromMerchant && validCategoryIds.has(fromMerchant.categoryId)) {
+        matched++
+        return {
+          ...r,
+          categoryId: fromMerchant.categoryId,
+          autoSource: 'merchant',
+          excluded: false,
+        }
+      }
       return {
         ...r,
-        categoryId: isValid ? suggested : null,
-        autoCategorized: !!isValid,
+        categoryId: null,
+        autoSource: null,
         excluded: false,
       }
     })
@@ -260,7 +289,7 @@ export function ImportTransactionsModal({
       prev.map((r) => ({
         ...r,
         categoryId: catId || null,
-        autoCategorized: false,
+        autoSource: null,
       })),
     )
   }
@@ -558,19 +587,28 @@ export function ImportTransactionsModal({
                                 onChange={(v) =>
                                   updateRow(i, {
                                     categoryId: v || null,
-                                    autoCategorized: false,
+                                    autoSource: null,
                                   })
                                 }
                                 groupedCategories={groupedCategories}
                                 disabled={r.excluded}
                               />
-                              {r.autoCategorized && (
+                              {r.autoSource === 'history' && (
                                 <span
-                                  title="Categoría sugerida por tu historial"
+                                  title="Categoría aprendida de tu historial"
                                   className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] border border-[var(--brand-2)]/20"
                                 >
                                   <Sparkles size={9} strokeWidth={2.6} />
-                                  auto
+                                  historial
+                                </span>
+                              )}
+                              {r.autoSource === 'merchant' && (
+                                <span
+                                  title="Sugerido por el tipo de comercio (banco de patrones RD)"
+                                  className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[var(--overlay-1)] text-[var(--text2)] border border-[var(--border2)]"
+                                >
+                                  <Sparkles size={9} strokeWidth={2.6} />
+                                  comercio
                                 </span>
                               )}
                             </div>
