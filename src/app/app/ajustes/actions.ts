@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export type Currency = 'DOP' | 'USD'
 
@@ -340,8 +341,27 @@ export async function deleteMyAccount() {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
+  const userId = user.id
+
   const { error } = await supabase.rpc('delete_my_account')
-  if (error) return { error: error.message }
+  if (error) {
+    console.error('[deleteMyAccount] rpc failed', error)
+    return { error: 'No pudimos eliminar la cuenta. Contacta a soporte.' }
+  }
+
+  // Invalida el JWT en TODOS los dispositivos (admin global signOut),
+  // no solo el actual. Antes solo se llamaba supabase.auth.signOut()
+  // del lado del browser, que invalida la cookie local pero el JWT
+  // seguía siendo válido hasta su expiración natural en otros devices.
+  // (Auditoría 2026-05-24, B6.)
+  try {
+    const admin = createAdminClient()
+    await admin.auth.admin.signOut(userId, 'global')
+  } catch (e) {
+    // Best-effort — si falla, el JWT local ya queda invalidado abajo
+    // y eventualmente expira en otros devices. Solo loggeamos.
+    console.warn('[deleteMyAccount] global signOut failed', e)
+  }
 
   await supabase.auth.signOut()
   redirect('/login')

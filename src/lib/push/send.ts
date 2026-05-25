@@ -43,6 +43,7 @@ export async function sendPushToUser(
   let cleaned = 0
   const json = JSON.stringify(payload)
 
+  const aliveIds: string[] = []
   for (const s of subs) {
     try {
       await webpush.sendNotification(
@@ -53,6 +54,7 @@ export async function sendPushToUser(
         json,
       )
       delivered += 1
+      aliveIds.push(s.id as string)
     } catch (err: unknown) {
       // 410 Gone or 404 = subscription expired. Drop from DB so the
       // ledger doesn't keep filling with retries.
@@ -65,6 +67,16 @@ export async function sendPushToUser(
         cleaned += 1
       }
     }
+  }
+
+  // Marca last_seen_at en las subs que SÍ funcionaron. Permite que un
+  // cron periódico borre subs realmente abandonadas (más de 6 meses
+  // sin haber sido tocadas). Auditoría 2026-05-24, B7.
+  if (aliveIds.length > 0) {
+    await admin
+      .from('push_subscriptions')
+      .update({ last_seen_at: new Date().toISOString() } as never)
+      .in('id', aliveIds)
   }
 
   return { delivered, cleaned }

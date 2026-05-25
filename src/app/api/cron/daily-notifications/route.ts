@@ -192,10 +192,22 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Cleanup oportunista: borra push subscriptions con last_seen_at
+  // de hace más de 6 meses. Son devices abandonados que nunca recibirán
+  // una push exitosa (si la recibieran, last_seen_at se actualizaría).
+  // (Auditoría 2026-05-24, B7.)
+  const sixMonthsAgo = new Date()
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+  const { count: pushCleaned } = await supabase
+    .from('push_subscriptions')
+    .delete({ count: 'exact' })
+    .lt('last_seen_at', sixMonthsAgo.toISOString())
+
   return NextResponse.json({
     ok: true,
     sent: sentCount,
     profilesScanned: profileRows.length,
+    pushSubscriptionsCleaned: pushCleaned ?? 0,
     errors: sendErrors.length > 0 ? sendErrors : undefined,
   })
 }
