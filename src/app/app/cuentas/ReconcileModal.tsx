@@ -2,9 +2,13 @@
 
 import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, Scale, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, Scale, CheckCircle2, ChevronDown, Lock } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
-import { reconcileAccount } from './actions'
+import {
+  reconcileAccount,
+  fetchPendingReconcileTxns,
+  type PendingReconcileTxn,
+} from './actions'
 import { useFormatMoney } from '../CurrencyProvider'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
@@ -40,13 +44,27 @@ export function ReconcileModal({
     adjustment: number
     locked: number
   } | null>(null)
+  const [pendingTxns, setPendingTxns] = useState<PendingReconcileTxn[] | null>(null)
+  const [pendingTotal, setPendingTotal] = useState(0)
+  const [pendingExpanded, setPendingExpanded] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
     setActual(null)
     setError(null)
     setDone(null)
-  }, [isOpen])
+    setPendingExpanded(false)
+    setPendingTxns(null)
+    setPendingTotal(0)
+    // Carga la preview de transacciones que se van a bloquear. Se
+    // hace en background — la UI no se bloquea esperando.
+    fetchPendingReconcileTxns(accountId).then((r) => {
+      if (r.txns) {
+        setPendingTxns(r.txns)
+        setPendingTotal(r.total ?? r.txns.length)
+      }
+    })
+  }, [isOpen, accountId])
 
 
   // For debt accounts the user enters what they owe (positive). We
@@ -151,6 +169,64 @@ export function ReconcileModal({
                   </p>
                 )}
               </div>
+
+              {pendingTxns !== null && pendingTotal > 0 && (
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--overlay-1)] overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setPendingExpanded((v) => !v)}
+                    className="w-full px-3.5 py-2.5 flex items-center justify-between gap-2 text-left hover:bg-[var(--overlay-2)] transition-colors"
+                    aria-expanded={pendingExpanded}
+                  >
+                    <span className="inline-flex items-center gap-2 text-meta text-[var(--text2)]">
+                      <Lock size={12} strokeWidth={2.2} className="text-[var(--muted)]" />
+                      Se van a bloquear {pendingTotal}{' '}
+                      {pendingTotal === 1 ? 'transacción' : 'transacciones'}
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      strokeWidth={2.2}
+                      className={`text-[var(--muted)] transition-transform ${
+                        pendingExpanded ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  {pendingExpanded && (
+                    <ul className="max-h-56 overflow-y-auto border-t border-[var(--border)] divide-y divide-[var(--border)]">
+                      {pendingTxns.map((t) => (
+                        <li
+                          key={t.id}
+                          className="px-3.5 py-2 flex items-center justify-between gap-3 text-meta"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[var(--text)] truncate">
+                              {t.payeeName || 'Sin comercio'}
+                            </div>
+                            <div className="text-tiny text-[var(--muted)] mt-0.5">
+                              {t.date} ·{' '}
+                              {t.cleared === 'cleared' ? 'Confirmada' : 'Pendiente'}
+                            </div>
+                          </div>
+                          <div
+                            className={`tabular-nums num shrink-0 ${
+                              t.amount < 0
+                                ? 'text-[var(--coral-text)]'
+                                : 'text-[var(--brand-text)]'
+                            }`}
+                          >
+                            {fmtMoney(t.amount)}
+                          </div>
+                        </li>
+                      ))}
+                      {pendingTotal > pendingTxns.length && (
+                        <li className="px-3.5 py-2 text-tiny text-[var(--muted)] text-center">
+                          y {pendingTotal - pendingTxns.length} más…
+                        </li>
+                      )}
+                    </ul>
+                  )}
+                </div>
+              )}
 
               {actual !== null && (
                 <div

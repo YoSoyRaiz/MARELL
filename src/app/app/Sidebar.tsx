@@ -30,12 +30,19 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { IconButton } from '@/components/ui/IconButton'
 import { useMobileNav } from './MobileNavProvider'
 
-const NAV = [
+// Dos grupos: el daily-driver (Esencial) y el resto (Más). Los 4 de
+// arriba son los que el usuario toca a diario; los demás son acciones
+// más esporádicas. La numeración 1-9 se removió porque sin agrupar
+// daba la impresión de que todos pesaban igual.
+const NAV_ESSENTIAL = [
   { id: 'resumen', label: 'Resumen', href: '/app', icon: LayoutDashboard },
   { id: 'plan', label: 'Plan', href: '/app/plan', icon: Sparkles },
   { id: 'cuentas', label: 'Cuentas', href: '/app/cuentas', icon: Wallet },
-  { id: 'analisis', label: 'Análisis', href: '/app/analisis', icon: BarChart3 },
   { id: 'transacciones', label: 'Transacciones', href: '/app/transacciones', icon: ArrowLeftRight },
+] as const
+
+const NAV_MORE = [
+  { id: 'analisis', label: 'Análisis', href: '/app/analisis', icon: BarChart3 },
   { id: 'programadas', label: 'Programadas', href: '/app/programadas', icon: Repeat },
   { id: 'metas', label: 'Metas', href: '/app/metas', icon: Target },
   { id: 'familia', label: 'Familia', href: '/app/familia', icon: Users },
@@ -242,48 +249,90 @@ export function Sidebar({
         )}
       </div>
 
-      {/* Nav. Colapsado: solo icono centrado con tooltip; expandido:
-          número + icono + label. La numeración se esconde porque pierde
-          contexto sin texto al lado. */}
+      {/* Nav agrupado: Esencial (daily) + Más (secundario). Colapsado:
+          solo icono centrado con tooltip; expandido: icono + label.
+          Los headers de sección se esconden en colapsado porque el
+          divider visual cumple la misma función con menos ruido. */}
       <nav
-        className={`flex-1 space-y-1.5 lg:space-y-1 overflow-y-auto px-4 ${
+        className={`flex-1 overflow-y-auto px-4 ${
           collapsed ? 'lg:px-2' : 'lg:px-3'
         }`}
       >
-        {NAV.map((item, idx) => {
-          const isActive =
-            item.href === '/app' ? pathname === '/app' : pathname.startsWith(item.href)
-          const Icon = item.icon
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              title={collapsed ? item.label : undefined}
-              aria-label={collapsed ? item.label : undefined}
-              className={`flex items-center rounded-xl text-body transition-all duration-200 ${
-                collapsed
-                  ? 'lg:justify-center lg:px-0 lg:py-2.5 px-3.5 py-3 gap-3'
-                  : 'gap-3 px-3.5 py-3 lg:py-2.5'
-              } ${
-                isActive
-                  ? 'gradient-bg text-[#0B0B0C] font-semibold shadow-[0_4px_16px_rgba(61,220,151,.18)]'
-                  : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
-              }`}
-            >
-              <span
-                className={`text-eyebrow tabular-nums shrink-0 ${
-                  isActive ? 'text-[#0B0B0C]/60' : 'text-[var(--muted2)]'
-                } ${collapsed ? 'lg:hidden' : ''}`}
+        {!collapsed && (
+          <div className="text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold px-3.5 mb-2 mt-1">
+            Esencial
+          </div>
+        )}
+        <div className="space-y-1.5 lg:space-y-1">
+          {NAV_ESSENTIAL.map((item) => {
+            const isActive =
+              item.href === '/app' ? pathname === '/app' : pathname.startsWith(item.href)
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                title={collapsed ? item.label : undefined}
+                aria-label={collapsed ? item.label : undefined}
+                className={`flex items-center rounded-xl text-body transition-all duration-200 ${
+                  collapsed
+                    ? 'lg:justify-center lg:px-0 lg:py-2.5 px-3.5 py-3 gap-3'
+                    : 'gap-3 px-3.5 py-3 lg:py-2.5'
+                } ${
+                  isActive
+                    ? 'gradient-bg text-[#0B0B0C] font-semibold shadow-[0_4px_16px_rgba(61,220,151,.18)]'
+                    : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
+                }`}
               >
-                {idx + 1}.
-              </span>
-              <Icon size={16} strokeWidth={2} className="shrink-0" />
-              <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>
-                {item.label}
-              </span>
-            </Link>
-          )
-        })}
+                <Icon size={16} strokeWidth={2} className="shrink-0" />
+                <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>
+                  {item.label}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+
+        {/* Divider: en colapsado es el único separador entre grupos */}
+        <div
+          className={`my-3 border-t border-[var(--border)] ${
+            collapsed ? 'lg:mx-1' : 'mx-3.5'
+          }`}
+        />
+
+        {!collapsed && (
+          <div className="text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold px-3.5 mb-2">
+            Más
+          </div>
+        )}
+        <div className="space-y-1.5 lg:space-y-1">
+          {NAV_MORE.map((item) => {
+            const isActive = pathname.startsWith(item.href)
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                title={collapsed ? item.label : undefined}
+                aria-label={collapsed ? item.label : undefined}
+                className={`flex items-center rounded-xl text-body transition-all duration-200 ${
+                  collapsed
+                    ? 'lg:justify-center lg:px-0 lg:py-2.5 px-3.5 py-3 gap-3'
+                    : 'gap-3 px-3.5 py-3 lg:py-2.5'
+                } ${
+                  isActive
+                    ? 'gradient-bg text-[#0B0B0C] font-semibold shadow-[0_4px_16px_rgba(61,220,151,.18)]'
+                    : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
+                }`}
+              >
+                <Icon size={16} strokeWidth={2} className="shrink-0" />
+                <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>
+                  {item.label}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
       </nav>
 
       {/* Premium upsell — solo durante trial y nunca en colapsado

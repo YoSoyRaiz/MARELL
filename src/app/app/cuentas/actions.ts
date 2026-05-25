@@ -259,6 +259,68 @@ const DEBT_RECONCILE_TYPES = new Set([
   'other_debt',
 ])
 
+/**
+ * Lista preview de transacciones que se van a "bloquear" (cleared →
+ * reconciled) cuando el usuario confirme el reconcile. Ordenadas por
+ * fecha descendente y limitadas — solo necesitamos mostrar lo
+ * suficiente para que el usuario reconozca lo que está aprobando.
+ */
+export interface PendingReconcileTxn {
+  id: string
+  date: string
+  payeeName: string
+  amount: number
+  cleared: 'uncleared' | 'cleared'
+}
+
+export async function fetchPendingReconcileTxns(
+  accountId: string,
+): Promise<{ error?: string; txns?: PendingReconcileTxn[]; total?: number }> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: account } = await supabase
+    .from('accounts')
+    .select('id, budget_id')
+    .eq('id', accountId)
+    .single()
+  if (!account) return { error: 'Cuenta no encontrada' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', account.budget_id)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  // Devolvemos hasta 50 — más que eso satura la UI y el usuario
+  // típicamente solo necesita reconocer las últimas. El conteo total
+  // se devuelve aparte para mostrar 'y X más'.
+  const { data, error, count } = await supabase
+    .from('transactions')
+    .select('id, date, payee_name, amount, cleared', { count: 'exact' })
+    .eq('account_id', accountId)
+    .neq('cleared', 'reconciled')
+    .order('date', { ascending: false })
+    .limit(50)
+  if (error) return { error: safeError(error, 'cuentas') }
+
+  return {
+    txns: (data ?? []).map((r) => ({
+      id: r.id,
+      date: r.date,
+      payeeName: r.payee_name ?? '',
+      amount: Number(r.amount),
+      cleared: r.cleared as 'uncleared' | 'cleared',
+    })),
+    total: count ?? data?.length ?? 0,
+  }
+}
+
 export async function reconcileAccount(
   accountId: string,
   enteredBalance: number,
