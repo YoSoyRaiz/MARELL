@@ -402,7 +402,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
             >
               Categoría
             </label>
-            <div className="relative mt-1">
+            <div className="mt-1">
               <button
                 ref={catButtonRef}
                 id="qa-cat"
@@ -412,7 +412,10 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
                     const next = !v
                     if (next) {
                       setCatQuery('')
-                      const idx = filteredCats.findIndex((c) => c.id === categoryId)
+                      // Use unfiltered list because we just reset the query;
+                      // computing against filteredCats would use stale state.
+                      const idx =
+                        ctx?.categories.findIndex((c) => c.id === categoryId) ?? -1
                       setCatActiveIndex(idx >= 0 ? idx : 0)
                       window.requestAnimationFrame(() => catSearchRef.current?.focus())
                     }
@@ -424,7 +427,8 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
                     e.preventDefault()
                     setCatOpen(true)
                     setCatQuery('')
-                    const idx = filteredCats.findIndex((c) => c.id === categoryId)
+                    const idx =
+                      ctx?.categories.findIndex((c) => c.id === categoryId) ?? -1
                     setCatActiveIndex(idx >= 0 ? idx : 0)
                     window.requestAnimationFrame(() => catSearchRef.current?.focus())
                   }
@@ -449,7 +453,11 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               {catOpen && (
                 <div
                   ref={catListRef}
-                  className="absolute left-0 right-0 top-full mt-1.5 z-10 rounded-xl border border-[var(--border2)] bg-[var(--s2)] shadow-[0_16px_40px_rgba(0,0,0,0.5)] overflow-hidden animate-step"
+                  // Inline (not absolute) so the popover's overflow-y-auto
+                  // can scroll to reveal — absolute positioning was getting
+                  // clipped when the combobox sat near the bottom of the
+                  // popover.
+                  className="mt-1.5 rounded-xl border border-[var(--border2)] bg-[var(--s2)] shadow-[0_16px_40px_rgba(0,0,0,0.5)] overflow-hidden animate-step"
                 >
                   <div className="px-3 py-2 border-b border-[var(--border)] flex items-center gap-2">
                     <Search
@@ -485,7 +493,11 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
                             catButtonRef.current?.focus()
                           }
                         } else if (e.key === 'Escape') {
+                          // Stop propagation so the parent popover's Esc
+                          // handler doesn't also fire and close the whole
+                          // sheet — Esc here should only close the combobox.
                           e.preventDefault()
+                          e.stopPropagation()
                           setCatOpen(false)
                           catButtonRef.current?.focus()
                         }
