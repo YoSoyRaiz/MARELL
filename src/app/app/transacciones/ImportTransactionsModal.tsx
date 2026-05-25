@@ -20,6 +20,8 @@ import { MONTH_NAMES_SHORT } from '@/lib/dates'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { FormField } from '@/components/ui/FormField'
+import { NativeSelect } from '@/components/ui/NativeSelect'
 
 interface AccountOption {
   id: string
@@ -466,7 +468,7 @@ export function ImportTransactionsModal({
           {rows.length > 0 && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Cuenta destino">
+                <FormField label="Cuenta destino">
                   <NativeSelect value={accountId} onChange={setAccountId} ariaLabel="Cuenta">
                     {accounts.length === 0 ? (
                       <option value="" disabled>
@@ -480,8 +482,8 @@ export function ImportTransactionsModal({
                       ))
                     )}
                   </NativeSelect>
-                </Field>
-                <Field label="Aplicar categoría" hint="opcional, sobrescribe todas">
+                </FormField>
+                <FormField label="Aplicar categoría" hint="opcional, sobrescribe todas">
                   <NativeSelect
                     value={defaultCategoryId}
                     onChange={applyDefaultCategoryToAll}
@@ -498,7 +500,7 @@ export function ImportTransactionsModal({
                       </optgroup>
                     ))}
                   </NativeSelect>
-                </Field>
+                </FormField>
               </div>
 
               {/* Editable per-row list */}
@@ -652,64 +654,6 @@ export function ImportTransactionsModal({
           </Button>
         </footer>
     </Modal>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 flex items-center gap-1.5">
-        <span>{label}</span>
-        {hint && <span className="text-[var(--muted)] font-normal">({hint})</span>}
-      </label>
-      {children}
-    </div>
-  )
-}
-
-function NativeSelect({
-  value,
-  onChange,
-  children,
-  ariaLabel,
-}: {
-  value: string
-  onChange: (v: string) => void
-  children: React.ReactNode
-  ariaLabel?: string
-}) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={ariaLabel}
-        className="w-full appearance-none !text-[14px] !py-3 !pl-4 !pr-10 !rounded-xl bg-[var(--s1)] cursor-pointer"
-      >
-        {children}
-      </select>
-      <svg
-        className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text2)]"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    </div>
   )
 }
 

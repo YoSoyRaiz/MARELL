@@ -9,6 +9,8 @@ import { MONTH_NAMES_FULL } from '@/lib/dates'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { FormField } from '@/components/ui/FormField'
+import { NativeSelect } from '@/components/ui/NativeSelect'
 
 interface AccountOption {
   id: string
@@ -136,7 +138,7 @@ export function ExtraordinaryPaymentModal({
         </ModalHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-          <Field label="Tipo">
+          <FormField label="Tipo">
             <div className="grid grid-cols-2 gap-1 p-1 bg-[var(--bg)] rounded-xl">
               <button
                 type="button"
@@ -161,10 +163,10 @@ export function ExtraordinaryPaymentModal({
                 Ingreso
               </button>
             </div>
-          </Field>
+          </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Mes">
+            <FormField label="Mes">
               <NativeSelect
                 value={String(month)}
                 onChange={(v) => setMonth(parseInt(v, 10))}
@@ -176,8 +178,8 @@ export function ExtraordinaryPaymentModal({
                   </option>
                 ))}
               </NativeSelect>
-            </Field>
-            <Field label="Día">
+            </FormField>
+            <FormField label="Día">
               <input
                 type="number"
                 value={clampedDay}
@@ -191,10 +193,10 @@ export function ExtraordinaryPaymentModal({
                 max={lastDayOfMonth}
                 className="w-full !text-[14px] !py-3 !px-4 !rounded-xl tabular-nums"
               />
-            </Field>
+            </FormField>
           </div>
 
-          <Field label="Cuenta">
+          <FormField label="Cuenta">
             <NativeSelect value={accountId} onChange={setAccountId} ariaLabel="Cuenta">
               {accounts.length === 0 ? (
                 <option value="" disabled>
@@ -208,9 +210,9 @@ export function ExtraordinaryPaymentModal({
                 ))
               )}
             </NativeSelect>
-          </Field>
+          </FormField>
 
-          <Field label="Categoría" hint="opcional">
+          <FormField label="Categoría" hint="opcional">
             <NativeSelect
               value={categoryId}
               onChange={setCategoryId}
@@ -227,9 +229,9 @@ export function ExtraordinaryPaymentModal({
                 </optgroup>
               ))}
             </NativeSelect>
-          </Field>
+          </FormField>
 
-          <Field label="Pagado a">
+          <FormField label="Pagado a">
             <input
               type="text"
               value={payeeName}
@@ -240,13 +242,13 @@ export function ExtraordinaryPaymentModal({
               placeholder="Ej: Seguro vehicular, Matrícula escolar…"
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
-          </Field>
+          </FormField>
 
-          <Field label="Monto">
+          <FormField label="Monto">
             <MoneyInput value={amount} onChange={setAmount} placeholder="0.00" />
-          </Field>
+          </FormField>
 
-          <Field label="Notas" hint="opcional">
+          <FormField label="Notas" hint="opcional">
             <input
               type="text"
               value={memo}
@@ -255,7 +257,7 @@ export function ExtraordinaryPaymentModal({
               placeholder="Detalles adicionales…"
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
-          </Field>
+          </FormField>
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
@@ -300,60 +302,3 @@ export function ExtraordinaryPaymentModal({
   )
 }
 
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 flex items-center gap-1.5">
-        <span>{label}</span>
-        {hint && <span className="text-[var(--muted)] font-normal">({hint})</span>}
-      </label>
-      {children}
-    </div>
-  )
-}
-
-function NativeSelect({
-  value,
-  onChange,
-  children,
-  ariaLabel,
-}: {
-  value: string
-  onChange: (v: string) => void
-  children: React.ReactNode
-  ariaLabel?: string
-}) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={ariaLabel}
-        className="w-full appearance-none !text-[14px] !py-3 !pl-4 !pr-10 !rounded-xl bg-[var(--s1)] cursor-pointer"
-      >
-        {children}
-      </select>
-      <svg
-        className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text2)]"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    </div>
-  )
-}

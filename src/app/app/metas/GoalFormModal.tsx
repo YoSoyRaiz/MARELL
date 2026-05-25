@@ -8,6 +8,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { FormField } from '@/components/ui/FormField'
 import {
   updateGoal,
   clearGoal,
@@ -208,7 +209,7 @@ export function GoalFormModal({
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           {/* Nombre — input principal en add (la meta se crea como categoría
               nueva en el grupo "Metas"), o renombre en edit. */}
-          <Field
+          <FormField
             label={isEdit ? 'Nombre' : 'Nombre de la meta'}
             hint={isEdit ? 'edita el nombre' : undefined}
           >
@@ -232,14 +233,14 @@ export function GoalFormModal({
                 ? 'Usa un nombre con el que te identifiques en lugar del genérico.'
                 : 'Será una nueva meta dentro del grupo "Metas".'}
             </p>
-          </Field>
+          </FormField>
 
           {/* Type segmented — solo dos tipos de meta real:
               "Acumulada" (savings_balance) y "Por fecha" (needed_by).
               El tipo "Mensual" (YNAB monthly target) se removió porque
               ese concepto es un presupuesto de gasto, no una meta de
               ahorro — vive en Plan, no en Metas. */}
-          <Field label="Tipo de meta">
+          <FormField label="Tipo de meta">
             <div className="grid grid-cols-2 gap-1 p-1 bg-[var(--bg)] rounded-xl">
               <button
                 type="button"
@@ -273,7 +274,7 @@ export function GoalFormModal({
                   ? 'Te decimos cuánto apartar cada mes para llegar a tiempo (ej: boda, prima de casa).'
                   : 'Selecciona el tipo de meta.'}
             </p>
-          </Field>
+          </FormField>
 
           {/* Sugerencia basada en historial — disponible para cualquier
               meta. Calcula 3/6/12 × gasto mensual promedio y los ofrece
@@ -374,7 +375,7 @@ export function GoalFormModal({
             </div>
           )}
 
-          <Field
+          <FormField
             label={
               goalType === 'monthly_spending'
                 ? 'Monto mensual'
@@ -384,9 +385,9 @@ export function GoalFormModal({
             }
           >
             <MoneyInput value={amount} onChange={setAmount} placeholder="0.00" />
-          </Field>
+          </FormField>
 
-          <Field
+          <FormField
             label="Fecha objetivo"
             hint={goalType === 'needed_by' ? 'requerida' : 'opcional'}
           >
@@ -401,7 +402,7 @@ export function GoalFormModal({
                 ? 'Fecha en que necesitas tener el dinero completo.'
                 : 'Útil para metas con plazo (boda, vacaciones, prima de casa).'}
             </p>
-          </Field>
+          </FormField>
 
           {/* Edit-only: clear goal */}
           {isEdit && initial && (
@@ -459,26 +460,6 @@ export function GoalFormModal({
           </Button>
         </footer>
     </Modal>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 flex items-center gap-1.5">
-        <span>{label}</span>
-        {hint && <span className="text-[var(--muted)] font-normal">({hint})</span>}
-      </label>
-      {children}
-    </div>
   )
 }
 

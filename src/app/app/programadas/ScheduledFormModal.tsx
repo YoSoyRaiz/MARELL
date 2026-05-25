@@ -22,6 +22,8 @@ import {
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { FormField } from '@/components/ui/FormField'
+import { NativeSelect } from '@/components/ui/NativeSelect'
 
 interface Account {
   id: string
@@ -390,11 +392,11 @@ export function ScheduledFormModal({
             </button>
           </div>
 
-          <Field label="Monto">
+          <FormField label="Monto">
             <MoneyInput value={amount} onChange={setAmount} placeholder="0.00" />
-          </Field>
+          </FormField>
 
-          <Field
+          <FormField
             label="Frecuencia"
             hint={
               frequency === 'once'
@@ -413,9 +415,9 @@ export function ScheduledFormModal({
                 </option>
               ))}
             </NativeSelect>
-          </Field>
+          </FormField>
 
-          <Field
+          <FormField
             label={frequency === 'once' ? 'Fecha' : 'Próxima fecha'}
             hint={isEdit ? undefined : 'cuando empieza'}
           >
@@ -431,9 +433,9 @@ export function ScheduledFormModal({
                 ? 'Se materializa una vez en esta fecha.'
                 : `Se materializa automáticamente cada ${FREQ_LABELS[frequency].toLowerCase()} a partir de aquí.`}
             </p>
-          </Field>
+          </FormField>
 
-          <Field label="Cuenta">
+          <FormField label="Cuenta">
             <NativeSelect value={accountId} onChange={setAccountId} ariaLabel="Cuenta">
               {accounts.length === 0 ? (
                 <option value="" disabled>
@@ -447,9 +449,9 @@ export function ScheduledFormModal({
                 ))
               )}
             </NativeSelect>
-          </Field>
+          </FormField>
 
-          <Field label={type === 'income' ? 'Recibido de' : 'Pagado a'}>
+          <FormField label={type === 'income' ? 'Recibido de' : 'Pagado a'}>
             <input
               type="text"
               value={payeeName}
@@ -462,9 +464,9 @@ export function ScheduledFormModal({
               maxLength={80}
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
-          </Field>
+          </FormField>
 
-          <Field label="Categoría" hint="opcional">
+          <FormField label="Categoría" hint="opcional">
             <NativeSelect value={categoryId} onChange={setCategoryId} ariaLabel="Categoría">
               <option value="">Sin categoría</option>
               {Object.entries(groupedCategories).map(([groupName, cats]) => (
@@ -477,9 +479,9 @@ export function ScheduledFormModal({
                 </optgroup>
               ))}
             </NativeSelect>
-          </Field>
+          </FormField>
 
-          <Field label="Memo" hint="opcional">
+          <FormField label="Memo" hint="opcional">
             <textarea
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
@@ -488,7 +490,7 @@ export function ScheduledFormModal({
               rows={2}
               className="w-full !text-[14px] !py-2.5 !px-4 !rounded-xl resize-none"
             />
-          </Field>
+          </FormField>
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
@@ -531,60 +533,3 @@ export function ScheduledFormModal({
   )
 }
 
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 flex items-center gap-1.5">
-        <span>{label}</span>
-        {hint && <span className="text-[var(--muted)] font-normal">({hint})</span>}
-      </label>
-      {children}
-    </div>
-  )
-}
-
-function NativeSelect({
-  value,
-  onChange,
-  children,
-  ariaLabel,
-}: {
-  value: string
-  onChange: (v: string) => void
-  children: React.ReactNode
-  ariaLabel?: string
-}) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={ariaLabel}
-        className="w-full appearance-none !text-[14px] !py-3 !pl-4 !pr-10 !rounded-xl bg-[var(--s1)] cursor-pointer"
-      >
-        {children}
-      </select>
-      <svg
-        className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text2)]"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    </div>
-  )
-}

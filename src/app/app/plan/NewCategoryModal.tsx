@@ -7,6 +7,8 @@ import { createCategory } from './actions'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { FormField } from '@/components/ui/FormField'
+import { NativeSelect } from '@/components/ui/NativeSelect'
 
 interface GroupOption {
   id: string
@@ -97,7 +99,7 @@ export function NewCategoryModal({
         </ModalHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-          <Field label="Nombre">
+          <FormField label="Nombre">
             <input
               type="text"
               value={name}
@@ -113,9 +115,9 @@ export function NewCategoryModal({
               }}
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
-          </Field>
+          </FormField>
 
-          <Field label="Grupo">
+          <FormField label="Grupo">
             <NativeSelect value={groupId} onChange={setGroupId} ariaLabel="Grupo">
               {groups.length === 0 ? (
                 <option value="" disabled>
@@ -135,7 +137,7 @@ export function NewCategoryModal({
                 configuras y trackeas desde la sección Metas.
               </p>
             )}
-          </Field>
+          </FormField>
 
           {error && (
             <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
@@ -180,57 +182,4 @@ export function NewCategoryModal({
   )
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 flex items-center gap-1.5">
-        <span>{label}</span>
-      </label>
-      {children}
-    </div>
-  )
-}
 
-function NativeSelect({
-  value,
-  onChange,
-  children,
-  ariaLabel,
-}: {
-  value: string
-  onChange: (v: string) => void
-  children: React.ReactNode
-  ariaLabel?: string
-}) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={ariaLabel}
-        className="w-full appearance-none !text-[14px] !py-3 !pl-4 !pr-10 !rounded-xl bg-[var(--s1)] cursor-pointer"
-      >
-        {children}
-      </select>
-      <svg
-        className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text2)]"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    </div>
-  )
-}

@@ -22,6 +22,7 @@ import { useTheme, type ThemeMode } from '@/components/ui/ThemeProvider'
 import Link from 'next/link'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
+import { FormField } from '@/components/ui/FormField'
 import { logout } from '@/app/(auth)/actions'
 import {
   updateProfile,
@@ -190,7 +191,7 @@ export function AjustesClient({
         savedAt={profileSavedAt}
         error={profileError}
       >
-        <Field label="Nombre">
+        <FormField label="Nombre">
           <input
             type="text"
             value={name}
@@ -199,8 +200,8 @@ export function AjustesClient({
             placeholder="Cómo te llamas"
             className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
           />
-        </Field>
-        <Field label="Email">
+        </FormField>
+        <FormField label="Email">
           <input
             type="text"
             value={email}
@@ -210,12 +211,12 @@ export function AjustesClient({
           <p className="text-[11px] text-[var(--muted)] mt-1.5">
             El email se gestiona desde tu proveedor de autenticación.
           </p>
-        </Field>
-        <Field label="Plan">
+        </FormField>
+        <FormField label="Plan">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--overlay-1)] border border-[var(--border)] text-[12px] font-semibold capitalize text-[var(--text2)]">
             {plan}
           </div>
-        </Field>
+        </FormField>
         <SaveBar
           dirty={profileDirty}
           pending={profileSaving}
@@ -232,7 +233,7 @@ export function AjustesClient({
           savedAt={budgetSavedAt}
           error={budgetError}
         >
-          <Field label="Nombre">
+          <FormField label="Nombre">
             <input
               type="text"
               value={budgetName}
@@ -241,8 +242,8 @@ export function AjustesClient({
               placeholder="Mi presupuesto"
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
-          </Field>
-          <Field label="Moneda">
+          </FormField>
+          <FormField label="Moneda">
             <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--bg)] rounded-xl">
               <button
                 type="button"
@@ -271,8 +272,8 @@ export function AjustesClient({
               DOP muestra <span className="num">RD$1,234.56</span>; USD muestra{' '}
               <span className="num">$1,234.56</span>.
             </p>
-          </Field>
-          <Field label="Tipo de cambio USD↔DOP">
+          </FormField>
+          <FormField label="Tipo de cambio USD↔DOP">
             <div className="flex items-center gap-2">
               <span className="text-[12px] text-[var(--text2)] tabular-nums num shrink-0">
                 1 USD =
@@ -290,7 +291,7 @@ export function AjustesClient({
             <p className="text-[11px] text-[var(--muted)] mt-1.5 leading-relaxed">
               Se actualiza solo cada día con la tasa del Banco Central. Edítala aquí solo si quieres usar una tasa específica (la del banco que usas, por ejemplo).
             </p>
-          </Field>
+          </FormField>
           <SaveBar
             dirty={budgetDirty}
             pending={budgetSaving}
@@ -470,16 +471,6 @@ function Section({ title, Icon, children, savedAt, error, tone = 'default' }: Se
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 block">
-        {label}
-      </label>
-      {children}
-    </div>
-  )
-}
 
 function SaveBar({
   dirty,

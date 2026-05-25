@@ -9,6 +9,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { FormField } from '@/components/ui/FormField'
 import type { AccountType } from '@/app/onboarding/wizard/types'
 import {
   createAccount,
@@ -189,7 +190,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
         </ModalHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-          <Field label="Nombre">
+          <FormField label="Nombre">
             <input
               type="text"
               value={name}
@@ -198,17 +199,17 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
               maxLength={50}
               className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
-          </Field>
+          </FormField>
 
-          <Field label="Tipo de cuenta">
+          <FormField label="Tipo de cuenta">
             <AccountTypeSelect value={type} onChange={setType} />
-          </Field>
+          </FormField>
 
-          <Field label="Balance actual" hint="el signo se ajusta según el tipo">
+          <FormField label="Balance actual" hint="el signo se ajusta según el tipo">
             <MoneyInput value={balance} onChange={setBalance} placeholder="0.00" />
-          </Field>
+          </FormField>
 
-          <Field
+          <FormField
             label="Moneda"
             hint={currency === 'USD' ? 'se convierte a RD$ usando la tasa BCRD' : 'cuenta en pesos dominicanos'}
           >
@@ -236,12 +237,12 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                 US$ Dólares (USD)
               </button>
             </div>
-          </Field>
+          </FormField>
 
           {/* Credit-card / loan extras — only appear for relevant types */}
           {type !== null && CC_TYPES.includes(type) && (
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Tasa de interés" hint="APR %, opcional">
+              <FormField label="Tasa de interés" hint="APR %, opcional">
                 <input
                   type="number"
                   inputMode="decimal"
@@ -253,9 +254,9 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                   placeholder="36.50"
                   className="w-full !text-[14px] !py-3 !px-4 !rounded-xl tabular-nums num"
                 />
-              </Field>
+              </FormField>
               {type === 'credit_card' && (
-                <Field label="Día de corte" hint="1–31, opcional">
+                <FormField label="Día de corte" hint="1–31, opcional">
                   <input
                     type="number"
                     inputMode="numeric"
@@ -267,12 +268,12 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                     placeholder="20"
                     className="w-full !text-[14px] !py-3 !px-4 !rounded-xl tabular-nums num"
                   />
-                </Field>
+                </FormField>
               )}
             </div>
           )}
 
-          <Field label="Nota" hint="opcional">
+          <FormField label="Nota" hint="opcional">
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -281,7 +282,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
               rows={2}
               className="w-full !text-[14px] !py-2.5 !px-4 !rounded-xl resize-none"
             />
-          </Field>
+          </FormField>
 
           {/* Edit-only: archive + delete actions */}
           {isEdit && initial && (
@@ -365,22 +366,3 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
   )
 }
 
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 flex items-center gap-1.5">
-        <span>{label}</span>
-        {hint && <span className="text-[var(--muted)] font-normal">({hint})</span>}
-      </label>
-      {children}
-    </div>
-  )
-}
