@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ChartPie, TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { MultiSegmentDonut } from './MultiSegmentDonut'
-import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Stat } from '@/components/ui/Stat'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
 // Brand-aligned palette for category segments. The 6th and beyond
@@ -127,37 +127,45 @@ export function AnalisisClient({
         }))}
       />
 
-      {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard
+        <Stat
           label="Gastos"
-          value={totalExpenses}
+          value={fmtMoney(totalExpenses)}
           Icon={TrendingDown}
           iconBg="bg-[rgba(255,122,89,0.10)]"
           iconColor="text-[var(--coral-text)]"
+          size="lg"
+          valueClass={totalExpenses < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--text)]'}
         />
-        <KpiCard
+        <Stat
           label="Ingresos"
-          value={totalIncome}
+          value={fmtMoney(totalIncome)}
           Icon={TrendingUp}
           iconBg="bg-[rgba(61,220,151,0.10)]"
           iconColor="text-[var(--brand-text)]"
+          size="lg"
+          valueClass={totalIncome < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--text)]'}
         />
-        <KpiCard
+        <Stat
           label="Neto"
-          value={net}
+          value={fmtMoney(net)}
           Icon={Wallet}
-          iconBg="bg-[var(--overlay-1)]"
-          iconColor="text-[var(--text2)]"
-          highlight={net > 0.005}
+          size="lg"
+          valueClass={
+            net > 0.005
+              ? 'gradient-text'
+              : net < -0.005
+                ? 'text-[var(--coral-text)]'
+                : 'text-[var(--text)]'
+          }
         />
-        <KpiCard
+        <Stat
           label="Categorías activas"
-          value={allRows.length}
+          value={Math.round(allRows.length)}
           Icon={ChartPie}
           iconBg="bg-[rgba(77,168,255,0.10)]"
           iconColor="text-[var(--info-text)]"
-          isCount
+          size="lg"
         />
       </div>
 
@@ -256,37 +264,3 @@ export function AnalisisClient({
   )
 }
 
-interface KpiCardProps {
-  label: string
-  value: number
-  Icon: typeof ChartPie
-  iconBg: string
-  iconColor: string
-  highlight?: boolean
-  isCount?: boolean
-}
-
-function KpiCard({ label, value, Icon, iconBg, iconColor, highlight, isCount }: KpiCardProps) {
-  const fmtMoney = useFormatMoney()
-  return (
-    <Card padding="md">
-      <div className="flex items-center justify-between mb-3">
-        <div
-          className={`w-9 h-9 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center`}
-        >
-          <Icon size={16} strokeWidth={2} />
-        </div>
-      </div>
-      <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
-        {label}
-      </div>
-      <div
-        className={`text-[22px] font-bold tabular-nums num leading-none ${
-          highlight ? 'gradient-text' : value < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--text)]'
-        }`}
-      >
-        {isCount ? Math.round(value) : fmtMoney(value)}
-      </div>
-    </Card>
-  )
-}

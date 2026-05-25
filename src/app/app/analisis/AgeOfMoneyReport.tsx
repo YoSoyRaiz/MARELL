@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Hourglass, Sparkles, Calendar, ArrowUp, ArrowDown } from 'lucide-react'
 import { AgeOfMoneyChart } from './AgeOfMoneyChart'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
+import { Stat } from '@/components/ui/Stat'
 
 export type AomRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
 
@@ -194,19 +194,19 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
       {/* Stats cards */}
       {validPoints.length > 1 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <StatCard
+          <Stat
             label="Promedio del rango"
             value={avgAge !== null ? `${Math.round(avgAge)} días` : '—'}
             Icon={Calendar}
           />
-          <StatCard
+          <Stat
             label="Mejor mes"
             value={maxPoint ? `${Math.round(maxPoint.ageDays)} días` : '—'}
             sub={maxPoint?.label}
             Icon={ArrowUp}
             iconColor="text-[var(--brand-text)]"
           />
-          <StatCard
+          <Stat
             label="Más ajustado"
             value={minPoint ? `${Math.round(minPoint.ageDays)} días` : '—'}
             sub={minPoint?.label}
@@ -245,33 +245,3 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
   )
 }
 
-interface StatCardProps {
-  label: string
-  value: string
-  sub?: string
-  Icon: typeof Hourglass
-  iconColor?: string
-}
-
-function StatCard({ label, value, sub, Icon, iconColor }: StatCardProps) {
-  return (
-    <Card padding="md">
-      <div className="flex items-center justify-between mb-3">
-        <div
-          className={`w-9 h-9 rounded-lg bg-[var(--overlay-1)] flex items-center justify-center ${
-            iconColor ?? 'text-[var(--text2)]'
-          }`}
-        >
-          <Icon size={16} strokeWidth={2} />
-        </div>
-      </div>
-      <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
-        {label}
-      </div>
-      <div className="text-[20px] font-bold tabular-nums num leading-none text-[var(--text)]">
-        {value}
-      </div>
-      {sub && <div className="text-[11px] text-[var(--muted)] mt-1">{sub}</div>}
-    </Card>
-  )
-}

@@ -15,11 +15,11 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
-import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { IconButton } from '@/components/ui/IconButton'
+import { Stat } from '@/components/ui/Stat'
 import { useFormatMoney } from '../CurrencyProvider'
 import {
   ScheduledFormModal,
@@ -222,26 +222,38 @@ export function ProgramadasClient({
           </button>
         </div>
 
-        {/* 30-day forecast */}
         {!isEmpty && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <ForecastCard
+            <Stat
               label="Ingresos próximos 30d"
               value={fmtMoney(next30.income)}
               Icon={ArrowUpRight}
-              tone="positive"
+              iconBg="bg-[rgba(61,220,151,0.10)]"
+              iconColor="text-[var(--brand-text)]"
+              valueClass="gradient-text"
             />
-            <ForecastCard
+            <Stat
               label="Gastos próximos 30d"
               value={fmtMoney(next30.expense)}
               Icon={ArrowDownRight}
-              tone="negative"
+              iconBg="bg-[rgba(255,122,89,0.10)]"
+              iconColor="text-[var(--coral-text)]"
             />
-            <ForecastCard
+            <Stat
               label="Flujo neto 30d"
               value={`${next30.net < 0 ? '−' : ''}${fmtMoney(next30.net)}`}
               Icon={Repeat}
-              tone={next30.net >= 0 ? 'positive' : 'negative'}
+              iconBg={
+                next30.net >= 0
+                  ? 'bg-[rgba(61,220,151,0.10)]'
+                  : 'bg-[rgba(255,122,89,0.10)]'
+              }
+              iconColor={
+                next30.net >= 0
+                  ? 'text-[var(--brand-text)]'
+                  : 'text-[var(--coral-text)]'
+              }
+              valueClass={next30.net >= 0 ? 'gradient-text' : 'text-[var(--text)]'}
             />
           </div>
         )}
@@ -414,38 +426,3 @@ export function ProgramadasClient({
   )
 }
 
-interface ForecastCardProps {
-  label: string
-  value: string
-  Icon: typeof Repeat
-  tone: 'positive' | 'negative'
-}
-
-function ForecastCard({ label, value, Icon, tone }: ForecastCardProps) {
-  const isPositive = tone === 'positive'
-  return (
-    <Card padding="md">
-      <div className="flex items-center justify-between mb-3">
-        <div
-          className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-            isPositive
-              ? 'bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)]'
-              : 'bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)]'
-          }`}
-        >
-          <Icon size={16} strokeWidth={2} />
-        </div>
-      </div>
-      <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
-        {label}
-      </div>
-      <div
-        className={`text-[20px] font-bold tabular-nums num leading-none ${
-          isPositive ? 'gradient-text' : 'text-[var(--text)]'
-        }`}
-      >
-        {value}
-      </div>
-    </Card>
-  )
-}

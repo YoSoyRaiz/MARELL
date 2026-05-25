@@ -14,10 +14,10 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
-import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { IconButton } from '@/components/ui/IconButton'
+import { Stat } from '@/components/ui/Stat'
 import { GoalFormModal, type InitialGoal } from './GoalFormModal'
 import { clearGoal, type GoalType } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
@@ -144,22 +144,22 @@ export function MetasClient({ goals, hasBudget }: Props) {
         {/* KPI cards */}
         {!isEmpty && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <KpiCard label="Metas activas" value={String(goals.length)} Icon={Target} />
-            <KpiCard
+            <Stat label="Metas activas" value={String(goals.length)} Icon={Target} />
+            <Stat
               label="En progreso"
               value={String(inProgress)}
               Icon={Repeat}
               iconBg="bg-[rgba(77,168,255,0.10)]"
               iconColor="text-[var(--info-text)]"
             />
-            <KpiCard
+            <Stat
               label="Completadas"
               value={String(completed)}
               Icon={CheckCircle2}
               iconBg="bg-[rgba(61,220,151,0.10)]"
               iconColor="text-[var(--brand-text)]"
             />
-            <KpiCard
+            <Stat
               label="Total acumulado"
               value={fmtMoneyShort(totalCurrent)}
               sub={`de ${fmtMoneyShort(totalGoalAmount)}`}
@@ -399,39 +399,3 @@ export function MetasClient({ goals, hasBudget }: Props) {
   )
 }
 
-interface KpiCardProps {
-  label: string
-  value: string
-  sub?: string
-  Icon: typeof Target
-  iconBg?: string
-  iconColor?: string
-}
-
-function KpiCard({
-  label,
-  value,
-  sub,
-  Icon,
-  iconBg = 'bg-[var(--overlay-1)]',
-  iconColor = 'text-[var(--text2)]',
-}: KpiCardProps) {
-  return (
-    <Card padding="md">
-      <div className="flex items-center justify-between mb-3">
-        <div
-          className={`w-9 h-9 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center`}
-        >
-          <Icon size={16} strokeWidth={2} />
-        </div>
-      </div>
-      <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
-        {label}
-      </div>
-      <div className="text-[20px] font-bold tabular-nums num leading-none text-[var(--text)]">
-        {value}
-      </div>
-      {sub && <div className="text-[11px] text-[var(--muted)] mt-1 num tabular-nums">{sub}</div>}
-    </Card>
-  )
-}

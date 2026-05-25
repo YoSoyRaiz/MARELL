@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { TrendingUp, TrendingDown, Wallet, Percent, Scale } from 'lucide-react'
 import { IncomeExpenseChart } from './IncomeExpenseChart'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
+import { Stat } from '@/components/ui/Stat'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type Range = 'six_months' | 'twelve_months' | 'twenty_four_months' | 'all'
@@ -97,26 +97,27 @@ export function IncomeVsExpenseReport({
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard
+        <Stat
           label="Ingresos totales"
           value={fmtMoney(totalIncome)}
           Icon={TrendingUp}
           iconBg="bg-[rgba(61,220,151,0.10)]"
           iconColor="text-[var(--brand-text)]"
+          size="lg"
         />
-        <KpiCard
+        <Stat
           label="Gastos totales"
           value={fmtMoney(totalExpense)}
           Icon={TrendingDown}
           iconBg="bg-[rgba(255,122,89,0.10)]"
           iconColor="text-[var(--coral-text)]"
+          size="lg"
         />
-        <KpiCard
+        <Stat
           label="Neto"
           value={fmtMoney(net)}
           Icon={Wallet}
-          iconBg="bg-[var(--overlay-1)]"
-          iconColor="text-[var(--text2)]"
+          size="lg"
           valueClass={
             net > 0.005
               ? 'gradient-text'
@@ -125,7 +126,7 @@ export function IncomeVsExpenseReport({
                 : 'text-[var(--text)]'
           }
         />
-        <KpiCard
+        <Stat
           label="Tasa de ahorro"
           value={
             totalIncome > 0.005
@@ -135,6 +136,7 @@ export function IncomeVsExpenseReport({
           Icon={Percent}
           iconBg="bg-[rgba(77,168,255,0.10)]"
           iconColor="text-[var(--info-text)]"
+          size="lg"
           valueClass={
             savingsRate > 0
               ? 'gradient-text'
@@ -229,33 +231,3 @@ function LegendDot({ color, label }: { color: string; label: string }) {
   )
 }
 
-interface KpiCardProps {
-  label: string
-  value: string
-  Icon: typeof TrendingUp
-  iconBg: string
-  iconColor: string
-  valueClass?: string
-}
-
-function KpiCard({ label, value, Icon, iconBg, iconColor, valueClass }: KpiCardProps) {
-  return (
-    <Card padding="md">
-      <div className="flex items-center justify-between mb-3">
-        <div className={`w-9 h-9 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center`}>
-          <Icon size={16} strokeWidth={2} />
-        </div>
-      </div>
-      <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
-        {label}
-      </div>
-      <div
-        className={`text-[22px] font-bold tabular-nums num leading-none ${
-          valueClass ?? 'text-[var(--text)]'
-        }`}
-      >
-        {value}
-      </div>
-    </Card>
-  )
-}
