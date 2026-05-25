@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Check, Circle, X, ArrowRight, Sparkles } from 'lucide-react'
+import { Check, Circle, X, ArrowRight, Sparkles, ChevronDown } from 'lucide-react'
 
 interface FirstMonthGuideProps {
   hasAssigned: boolean
@@ -34,6 +34,10 @@ export function FirstMonthGuide({
   hasReconciled,
 }: FirstMonthGuideProps) {
   const [dismissed, setDismissed] = useState<boolean | null>(null)
+  // Cuando el usuario ha completado ≥1 paso (y aún no todo), el banner
+  // entra en estado colapsado por default. La guía deja de dominar el
+  // above-fold y se vuelve un recordatorio sutil. Click para expandir.
+  const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
     setDismissed(window.localStorage.getItem(DISMISS_KEY) === '1')
@@ -86,16 +90,88 @@ export function FirstMonthGuide({
     setDismissed(true)
   }
 
+  // Estado por default:
+  //   - 0 pasos: expandido (usuario nuevo necesita ver el camino completo)
+  //   - 1-3 pasos: colapsado (sabe qué hacer, no robar above-fold)
+  //   - 4 pasos: expandido (one-last-time celebration)
+  const shouldBeExpandedByDefault = completed === 0 || allDone
+  const isExpanded = expanded || shouldBeExpandedByDefault
+
+  // Colapsado: barra delgada con progreso + CTA al siguiente paso pendiente.
+  if (!isExpanded) {
+    const nextStep = steps.find((s) => !s.done)
+    return (
+      <section className="rounded-2xl gradient-border px-4 py-3 flex items-center gap-3">
+        <div className="w-7 h-7 rounded-lg gradient-bg text-[#0B0B0C] flex items-center justify-center shrink-0">
+          <Sparkles size={13} strokeWidth={2.4} />
+        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="flex-1 min-w-0 text-left"
+          aria-expanded={false}
+          aria-controls="first-month-guide"
+        >
+          <div className="text-[12px] text-[var(--text)] font-semibold">
+            Tu primer mes ·{' '}
+            <span className="text-[var(--brand-text)] num tabular-nums">
+              {completed}/{total}
+            </span>
+          </div>
+          {nextStep && (
+            <div className="text-[11px] text-[var(--muted)] truncate mt-0.5">
+              Siguiente: {nextStep.label}
+            </div>
+          )}
+        </button>
+        {nextStep && (
+          <Link
+            href={nextStep.href}
+            className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
+          >
+            {nextStep.cta}
+            <ArrowRight size={11} strokeWidth={2.4} />
+          </Link>
+        )}
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          aria-label="Expandir guía"
+          className="shrink-0 w-7 h-7 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
+        >
+          <ChevronDown size={14} strokeWidth={2.4} />
+        </button>
+      </section>
+    )
+  }
+
   return (
-    <section className="rounded-2xl gradient-border p-5 sm:p-6 space-y-4 relative">
-      <button
-        type="button"
-        onClick={handleDismiss}
-        aria-label="Cerrar guía"
-        className="absolute top-4 right-4 w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
-      >
-        <X size={14} strokeWidth={2.4} />
-      </button>
+    <section
+      id="first-month-guide"
+      className="rounded-2xl gradient-border p-5 sm:p-6 space-y-4 relative"
+    >
+      <div className="absolute top-4 right-4 flex items-center gap-1">
+        {completed > 0 && !allDone && (
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            aria-label="Colapsar guía"
+            aria-expanded={true}
+            aria-controls="first-month-guide"
+            className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors rotate-180"
+          >
+            <ChevronDown size={14} strokeWidth={2.4} />
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={handleDismiss}
+          aria-label="Cerrar guía"
+          className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
+        >
+          <X size={14} strokeWidth={2.4} />
+        </button>
+      </div>
 
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-xl gradient-bg text-[#0B0B0C] flex items-center justify-center shrink-0">
