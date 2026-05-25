@@ -35,7 +35,7 @@ export async function startAzulCheckout(): Promise<StartCheckoutResult> {
     // Azul calls us back.
     await supabase
       .from('profiles')
-      .update({ subscription_external_id: session.orderId } as never)
+      .update({ subscription_external_id: session.orderId })
       .eq('id', user.id)
     return { redirectUrl: session.redirectUrl }
   } catch (e) {
@@ -67,7 +67,7 @@ export async function startPaypalCheckout(): Promise<StartCheckoutResult> {
       .update({
         subscription_external_id: session.subscriptionId,
         subscription_provider: 'paypal',
-      } as never)
+      })
       .eq('id', user.id)
     return { redirectUrl: session.redirectUrl }
   } catch (e) {
@@ -115,7 +115,7 @@ export async function cancelSubscription() {
       subscription_status: 'canceled',
       subscription_canceled_at: new Date().toISOString(),
       subscription_card_token: null,
-    } as never)
+    })
     .eq('id', user.id)
 
   revalidatePath('/app', 'layout')

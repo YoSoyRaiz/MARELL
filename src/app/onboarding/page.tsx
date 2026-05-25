@@ -37,7 +37,7 @@ export default async function OnboardingPage() {
     if ((count ?? 0) > 0) {
       await supabase
         .from('profiles')
-        .update({ onboarded: true } as never)
+        .update({ onboarded: true })
         .eq('id', user.id)
       redirect('/app')
     }

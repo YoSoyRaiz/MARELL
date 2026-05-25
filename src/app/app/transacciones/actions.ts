@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { MONTH_NAMES_SHORT_LOWER } from '@/lib/dates'
+import { validateSplits } from '@/lib/splits'
 import {
   ccBucketDelta,
   type AutoBucketContribution,
@@ -135,22 +136,8 @@ function isSplit(input: { splits?: SplitInput[] }): boolean {
   return Array.isArray(input.splits) && input.splits.length >= 2
 }
 
-// Sum of split children must equal parent total (within rounding tolerance).
-// Returns null if valid, error string otherwise.
-function validateSplits(splits: SplitInput[], total: number): string | null {
-  if (splits.length < 2) return 'Un split necesita al menos 2 categorías'
-  let sum = 0
-  for (const s of splits) {
-    if (!Number.isFinite(s.amount) || s.amount <= 0) {
-      return 'Cada split debe tener monto positivo'
-    }
-    sum += s.amount
-  }
-  if (Math.abs(sum - total) > 0.005) {
-    return `La suma de los splits ($${sum.toFixed(2)}) no coincide con el total ($${total.toFixed(2)})`
-  }
-  return null
-}
+// validateSplits vive en @/lib/splits — se movió para hacerlo testeable
+// sin importar el módulo 'use server' completo.
 
 /**
  * Look up the most-recently used category for a given payee name in the
@@ -245,16 +232,22 @@ export async function createTransaction(input: CreateTransactionInput) {
   if (split) {
     const err = validateSplits(input.splits!, input.amount)
     if (err) return { error: err }
-    // Verify each split's category (when set) belongs to budget.
-    for (const s of input.splits!) {
-      if (!s.categoryId) continue
-      const { data: cat } = await supabase
+    // Verifica TODAS las categorías de los splits en UN solo query.
+    // Antes era N queries (una por split) — auditoría de calidad M2.
+    const splitCatIds = Array.from(
+      new Set(
+        input.splits!.map((s) => s.categoryId).filter((id): id is string => !!id),
+      ),
+    )
+    if (splitCatIds.length > 0) {
+      const { data: cats } = await supabase
         .from('categories')
         .select('id')
-        .eq('id', s.categoryId)
+        .in('id', splitCatIds)
         .eq('budget_id', budget.id)
-        .single()
-      if (!cat) return { error: 'Categoría inválida en un split' }
+      if ((cats?.length ?? 0) !== splitCatIds.length) {
+        return { error: 'Categoría inválida en un split' }
+      }
     }
   } else if (input.categoryId) {
     // Single-category txn — verify the category belongs to the budget.
@@ -413,15 +406,21 @@ export async function updateTransaction(input: UpdateTransactionInput) {
   if (split) {
     const err = validateSplits(input.splits!, input.amount)
     if (err) return { error: err }
-    for (const s of input.splits!) {
-      if (!s.categoryId) continue
-      const { data: cat } = await supabase
+    // Mismo bulk lookup que createTransaction — antes era N+1.
+    const splitCatIds = Array.from(
+      new Set(
+        input.splits!.map((s) => s.categoryId).filter((id): id is string => !!id),
+      ),
+    )
+    if (splitCatIds.length > 0) {
+      const { data: cats } = await supabase
         .from('categories')
         .select('id')
-        .eq('id', s.categoryId)
+        .in('id', splitCatIds)
         .eq('budget_id', budget.id)
-        .single()
-      if (!cat) return { error: 'Categoría inválida en un split' }
+      if ((cats?.length ?? 0) !== splitCatIds.length) {
+        return { error: 'Categoría inválida en un split' }
+      }
     }
   } else if (input.categoryId) {
     // Optional category must belong to the budget.

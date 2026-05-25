@@ -2,13 +2,33 @@
 // Cuando el schema cambie, regenerar con `supabase gen types typescript` o actualizar a mano.
 
 export type Currency = 'DOP' | 'USD'
+/**
+ * Canonical AccountType — sincronizado con el onboarding wizard
+ * (`src/app/onboarding/wizard/types.ts`). Antes este type estaba
+ * limitado a 7 valores y no incluía los reales que el onboarding sí
+ * permitía (line_of_credit, auto_loan, asset, etc.), forzando casts
+ * `as never` en cada insert. Ahora cubre los 14 tipos.
+ */
 export type AccountType =
+  // cash
   | 'checking'
   | 'savings'
-  | 'credit_card'
   | 'cash'
-  | 'investment'
+  // credit
+  | 'credit_card'
+  | 'line_of_credit'
+  // mortgages & loans
   | 'mortgage'
+  | 'auto_loan'
+  | 'student_loan'
+  | 'personal_loan'
+  | 'medical_debt'
+  | 'other_debt'
+  // investments / tracking
+  | 'investment'
+  | 'asset'
+  | 'liability'
+  // catch-all
   | 'other'
 export type ClearedStatus = 'uncleared' | 'cleared' | 'reconciled'
 export type GoalType =

@@ -8,13 +8,16 @@
 // In development we still surface the original message because it
 // makes debugging meaningfully faster. The flip is via NODE_ENV.
 
+// Substrings que buscamos en lower(message). Más específico va arriba;
+// el primero que matchea gana.
 const SAFE_MESSAGES: Record<string, string> = {
   // Supabase / Postgres common error patterns mapped to friendly copy
+  'row-level security': 'No tienes permiso para hacer eso.',
+  rls: 'No tienes permiso para hacer eso.',
+  permission: 'No tienes permiso para hacer eso.',
   duplicate: 'Ese valor ya existe.',
   unique: 'Ese valor ya existe.',
   not_found: 'No se encontró el recurso.',
-  permission: 'No tienes permiso para hacer eso.',
-  rls: 'No tienes permiso para hacer eso.',
   invalid_input: 'Datos inválidos.',
   network: 'Error de conexión. Intenta de nuevo.',
 }

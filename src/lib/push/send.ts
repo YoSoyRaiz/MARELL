@@ -75,7 +75,7 @@ export async function sendPushToUser(
   if (aliveIds.length > 0) {
     await admin
       .from('push_subscriptions')
-      .update({ last_seen_at: new Date().toISOString() } as never)
+      .update({ last_seen_at: new Date().toISOString() })
       .in('id', aliveIds)
   }
 

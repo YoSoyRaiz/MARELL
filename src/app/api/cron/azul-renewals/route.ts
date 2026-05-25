@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       // re-enters their card on next visit.
       await supabase
         .from('profiles')
-        .update({ subscription_status: 'past_due' } as never)
+        .update({ subscription_status: 'past_due' })
         .eq('id', profile.id)
       failed++
       continue
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
       status: result.success ? 'success' : 'failed',
       error_message: result.errorMessage ?? null,
       raw_payload: result.rawResponse as Record<string, unknown> | null,
-    } as never)
+    })
 
     if (result.success) {
       const nextBilling = new Date(now)
@@ -124,13 +124,13 @@ export async function GET(request: NextRequest) {
           next_billing_at: nextBilling.toISOString(),
           pro_expires_at: proExpires.toISOString(),
           subscription_status: 'active',
-        } as never)
+        })
         .eq('id', profile.id)
       charged++
     } else {
       await supabase
         .from('profiles')
-        .update({ subscription_status: 'past_due' } as never)
+        .update({ subscription_status: 'past_due' })
         .eq('id', profile.id)
       failed++
     }

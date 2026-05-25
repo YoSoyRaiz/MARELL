@@ -72,7 +72,7 @@ export async function updateBudgetSettings(input: {
       name,
       currency: input.currency,
       usd_to_dop_rate: Math.round(input.usdToDopRate * 10000) / 10000,
-    } as never)
+    })
     .eq('id', input.budgetId)
   if (error) return { error: error.message }
 
@@ -96,7 +96,9 @@ export async function setEmailNotifications(enabled: boolean) {
     .eq('id', user.id)
   if (error) return { error: error.message }
 
-  revalidatePath('/app', 'layout')
+  // El email_notifications toggle solo afecta /app/ajustes mismo.
+  // Antes era 'layout' que invalidaba TODO el subtree de /app.
+  revalidatePath('/app/ajustes')
   return { success: true as const }
 }
 

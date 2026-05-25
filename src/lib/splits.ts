@@ -65,3 +65,37 @@ export function expandToCategoryContributions(
   }
   return out
 }
+
+// ── Split validation ─────────────────────────────────────────────
+// Movido aquí desde transacciones/actions.ts para hacerlo testeable
+// sin tener que importar el módulo 'use server' completo. La lógica
+// es pura — no toca DB ni hooks.
+
+export interface SplitInput {
+  categoryId: string | null
+  amount: number // positive (sign comes from parent's `type`)
+  memo: string | null
+}
+
+/**
+ * Valida que la suma de los splits cuadre con el total del padre
+ * (dentro de tolerancia de redondeo de 0.005). Devuelve null si OK,
+ * o un mensaje de error.
+ */
+export function validateSplits(
+  splits: SplitInput[],
+  total: number,
+): string | null {
+  if (splits.length < 2) return 'Un split necesita al menos 2 categorías'
+  let sum = 0
+  for (const s of splits) {
+    if (!Number.isFinite(s.amount) || s.amount <= 0) {
+      return 'Cada split debe tener monto positivo'
+    }
+    sum += s.amount
+  }
+  if (Math.abs(sum - total) > 0.005) {
+    return `La suma de los splits ($${sum.toFixed(2)}) no coincide con el total ($${total.toFixed(2)})`
+  }
+  return null
+}

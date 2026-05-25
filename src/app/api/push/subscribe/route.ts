@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         auth: body.keys.auth,
         user_agent: ua,
         last_seen_at: new Date().toISOString(),
-      } as never,
+      },
       { onConflict: 'endpoint' },
     )
   if (error) {

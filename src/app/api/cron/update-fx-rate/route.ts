@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
   const rate = Math.round(result.rate * 10000) / 10000
   const { data: updated, error } = await supabase
     .from('budgets')
-    .update({ usd_to_dop_rate: rate } as never)
+    .update({ usd_to_dop_rate: rate })
     .neq('id', '00000000-0000-0000-0000-000000000000') // touch every row
     .select('id')
   if (error) {
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
     rate,
     source: result.source,
     budgets_updated: updated?.length ?? 0,
-  } as never)
+  })
 
   return NextResponse.json({
     ok: true,

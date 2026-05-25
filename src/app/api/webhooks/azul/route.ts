@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     currency: 'DOP',
     status: success ? 'success' : 'failed',
     raw_payload: safeRawPayload,
-  } as never)
+  })
 
   if (success) {
     const now = new Date()
@@ -134,14 +134,14 @@ export async function POST(request: NextRequest) {
         last_payment_at: now.toISOString(),
         next_billing_at: nextBilling.toISOString(),
         pro_expires_at: proExpires.toISOString(),
-      } as never)
+      })
       .eq('id', profileId)
   } else {
     await supabase
       .from('profiles')
       .update({
         subscription_status: 'past_due',
-      } as never)
+      })
       .eq('id', profileId)
   }
 

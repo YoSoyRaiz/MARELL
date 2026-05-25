@@ -75,7 +75,7 @@ export async function createAccount(input: AccountInput) {
   const insertRow = {
     budget_id: budget.id,
     name: input.name.trim(),
-    type: input.type as string,
+    type: input.type,
     currency: input.currency ?? 'DOP',
     balance: Math.round(balance * 100) / 100,
     is_budget_account: !isTracking,
@@ -87,7 +87,7 @@ export async function createAccount(input: AccountInput) {
         : null,
     cycle_close_day:
       input.cycleCloseDay != null ? Math.trunc(input.cycleCloseDay) : null,
-  } as never
+  }
 
   const { error } = await supabase.from('accounts').insert(insertRow)
 
@@ -133,11 +133,9 @@ export async function updateAccount(input: UpdateAccountInput) {
   const isDebt = isDebtType(input.type)
   const balance = isDebt ? -Math.abs(input.balance) : input.balance
 
-  // Same widening as createAccount — the runtime CHECK constraint enforces
-  // validity even when the generated TS types are narrower.
   const updates = {
     name: input.name.trim(),
-    type: input.type as string,
+    type: input.type,
     currency: input.currency ?? 'DOP',
     balance: Math.round(balance * 100) / 100,
     is_budget_account: !isTracking,
@@ -148,7 +146,7 @@ export async function updateAccount(input: UpdateAccountInput) {
         : null,
     cycle_close_day:
       input.cycleCloseDay != null ? Math.trunc(input.cycleCloseDay) : null,
-  } as never
+  }
 
   const { error } = await supabase
     .from('accounts')
@@ -316,16 +314,16 @@ export async function reconcileAccount(
       amount: diff,
       payee_name: 'Ajuste de reconciliación',
       memo: 'Generado automáticamente al reconciliar',
-      cleared: 'reconciled',
+      cleared: 'reconciled' as const,
       category_id: null,
-    } as never)
+    })
     if (insertErr) return { error: insertErr.message }
   }
 
   // 2. Lock all non-reconciled transactions in this account.
   const { data: locked, error: lockErr } = await supabase
     .from('transactions')
-    .update({ cleared: 'reconciled' } as never)
+    .update({ cleared: 'reconciled' as const })
     .eq('account_id', accountId)
     .neq('cleared', 'reconciled')
     .select('id')
@@ -411,7 +409,7 @@ export async function setTransactionCleared(
 
   const { error } = await supabase
     .from('transactions')
-    .update({ cleared: status } as never)
+    .update({ cleared: status })
     .eq('id', transactionId)
   if (error) return { error: error.message }
 

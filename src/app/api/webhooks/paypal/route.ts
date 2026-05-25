@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
           last_payment_at: now.toISOString(),
           next_billing_at: nextBilling.toISOString(),
           pro_expires_at: proExpires.toISOString(),
-        } as never)
+        })
         .eq('id', targetProfileId)
       break
     }
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
         currency: currencyVal,
         status: 'success',
         raw_payload: safeRawPayload,
-      } as never)
+      })
       await supabase
         .from('profiles')
         .update({
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
           last_payment_at: now.toISOString(),
           next_billing_at: nextBilling.toISOString(),
           pro_expires_at: proExpires.toISOString(),
-        } as never)
+        })
         .eq('id', targetProfileId)
       break
     }
@@ -185,10 +185,10 @@ export async function POST(request: NextRequest) {
         currency: 'USD',
         status: 'failed',
         raw_payload: safeRawPayload,
-      } as never)
+      })
       await supabase
         .from('profiles')
-        .update({ subscription_status: 'past_due' } as never)
+        .update({ subscription_status: 'past_due' })
         .eq('id', targetProfileId)
       break
     }
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
         .update({
           subscription_status: 'canceled',
           subscription_canceled_at: now.toISOString(),
-        } as never)
+        })
         .eq('id', targetProfileId)
       break
     }

@@ -1,5 +1,7 @@
-'use client'
-
+// AppShell es Server Component — solo arma el layout estático y pasa
+// children al árbol. Los providers + sidebar + topbar tienen su propio
+// 'use client'. Antes este archivo era 'use client' lo que metía todo
+// el subtree en el bundle inicial sin razón. (Auditoría calidad M3.)
 import type { ReactNode } from 'react'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'

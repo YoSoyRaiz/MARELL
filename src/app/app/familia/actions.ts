@@ -112,7 +112,7 @@ export async function inviteToBudget(input: InviteInput) {
       email,
       role: input.role,
       token,
-    } as never)
+    })
   if (insErr) return { error: insErr.message }
 
   // Look up the inviter's display name for the email.
@@ -193,7 +193,7 @@ export async function acceptInvitation(token: string) {
     budget_id: inv.budget_id as string,
     user_id: user.id,
     role: inv.role as 'owner' | 'editor' | 'viewer',
-  } as never)
+  })
   if (memErr) return { error: memErr.message }
 
   await admin
@@ -201,7 +201,7 @@ export async function acceptInvitation(token: string) {
     .update({
       accepted_at: new Date().toISOString(),
       accepted_by: user.id,
-    } as never)
+    })
     .eq('id', inv.id as string)
 
   return { success: true as const, budgetId: inv.budget_id as string }
@@ -239,7 +239,7 @@ export async function changeMemberRole(
 
   const { error } = await supabase
     .from('budget_members')
-    .update({ role } as never)
+    .update({ role })
     .eq('id', memberId)
   if (error) return { error: error.message }
 
