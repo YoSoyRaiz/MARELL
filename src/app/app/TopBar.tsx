@@ -68,13 +68,6 @@ export function TopBar({
             <div className="text-[16px] sm:text-h2 md:text-[24px] font-bold leading-tight tracking-tight text-[var(--text)] truncate">
               Hola, {firstName ?? 'amigo'} <span aria-hidden>👋</span>
             </div>
-            <div className="hidden sm:flex items-center gap-1.5 text-meta text-[var(--muted)] mt-0.5">
-              <span className="font-medium text-[var(--text2)] tabular-nums num">
-                Asignar disponible {fmtMoney(readyToAssign)}
-              </span>
-              <span aria-hidden>·</span>
-              <span>Listo para asignar</span>
-            </div>
           </div>
         </div>
 
