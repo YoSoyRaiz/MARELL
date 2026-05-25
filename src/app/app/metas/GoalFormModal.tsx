@@ -7,7 +7,7 @@ import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { FormField } from '@/components/ui/FormField'
 import { AlertBanner } from '@/components/ui/AlertBanner'
@@ -427,7 +427,7 @@ export function GoalFormModal({
           {error && <AlertBanner tone="danger">{error}</AlertBanner>}
         </div>
 
-        <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--overlay-1)]">
+        <ModalFooter>
           <Button
             type="button"
             variant="ghost"
@@ -455,7 +455,7 @@ export function GoalFormModal({
               'Crear meta'
             )}
           </Button>
-        </footer>
+        </ModalFooter>
     </Modal>
   )
 }

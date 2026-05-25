@@ -8,7 +8,7 @@ import { reconcileAccount } from './actions'
 import { useFormatMoney } from '../CurrencyProvider'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { AlertBanner } from '@/components/ui/AlertBanner'
 
@@ -117,7 +117,7 @@ export function ReconcileModal({
                 </div>
               </div>
             </div>
-            <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end bg-[var(--overlay-1)]">
+            <ModalFooter>
               <Button
                 type="button"
                 variant="gradient"
@@ -126,7 +126,7 @@ export function ReconcileModal({
               >
                 Listo
               </Button>
-            </footer>
+            </ModalFooter>
           </>
         ) : (
           <>
@@ -191,7 +191,7 @@ export function ReconcileModal({
               )}
             </div>
 
-            <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--overlay-1)]">
+            <ModalFooter>
               <Button
                 type="button"
                 variant="ghost"
@@ -217,7 +217,7 @@ export function ReconcileModal({
                   'Reconciliar ahora'
                 )}
               </Button>
-            </footer>
+            </ModalFooter>
           </>
         )}
     </Modal>

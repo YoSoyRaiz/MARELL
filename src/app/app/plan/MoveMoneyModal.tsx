@@ -7,7 +7,7 @@ import { moveMoneyBetweenCategories } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
 import { Button } from '@/components/ui/Button'
-import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { IconBadge } from '@/components/ui/IconBadge'
 import { AlertBanner } from '@/components/ui/AlertBanner'
@@ -228,7 +228,7 @@ export function MoveMoneyModal({
           )}
         </div>
 
-        <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--overlay-1)]">
+        <ModalFooter>
           <Button
             type="button"
             variant="ghost"
@@ -246,7 +246,7 @@ export function MoveMoneyModal({
           >
             Mover
           </Button>
-        </footer>
+        </ModalFooter>
       </form>
     </Modal>
   )

@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 import { Button } from './Button'
+import { ModalFooter } from './ModalHeader'
 
 export type ConfirmTone = 'danger' | 'default'
 
@@ -136,7 +137,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-2 bg-[var(--overlay-1)]">
+            <ModalFooter gap="sm">
               <Button
                 type="button"
                 variant="ghost"
@@ -154,7 +155,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
               >
                 {confirmLabel}
               </Button>
-            </div>
+            </ModalFooter>
           </div>
         </div>
       )}

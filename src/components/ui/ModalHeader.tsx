@@ -43,6 +43,34 @@ export function ModalHeader({
   )
 }
 
+// ModalFooter: barra inferior con botones (Cancelar/Guardar/Eliminar).
+// Patrón duplicado en 10 modales con misma estructura (px-6 py-4
+// border-t + flex justify-end + bg overlay).
+
+interface ModalFooterProps {
+  /** Gap entre botones. `md` (gap-3, default) o `sm` (gap-2) para
+   *  footers densos como ConfirmDialog. */
+  gap?: 'sm' | 'md'
+  className?: string
+  children: ReactNode
+}
+
+export function ModalFooter({
+  gap = 'md',
+  className = '',
+  children,
+}: ModalFooterProps) {
+  return (
+    <footer
+      className={`px-6 py-4 border-t border-[var(--border)] flex items-center justify-end ${
+        gap === 'sm' ? 'gap-2' : 'gap-3'
+      } bg-[var(--overlay-1)] ${className}`}
+    >
+      {children}
+    </footer>
+  )
+}
+
 interface ModalTitleProps {
   eyebrow?: ReactNode
   id?: string

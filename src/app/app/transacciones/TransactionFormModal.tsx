@@ -22,7 +22,7 @@ import {
   type TransactionType,
 } from './actions'
 import { ReceiptCapture } from './ReceiptCapture'
-import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { AlertBanner } from '@/components/ui/AlertBanner'
 import { IconButton } from '@/components/ui/IconButton'
@@ -791,7 +791,7 @@ export function TransactionFormModal({
           </div>
         )}
 
-        <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--s1)] sticky bottom-0">
+        <ModalFooter className="!bg-[var(--s1)] sticky bottom-0">
           <button
             type="button"
             onClick={onClose}
@@ -817,7 +817,7 @@ export function TransactionFormModal({
               'Agregar'
             )}
           </button>
-        </footer>
+        </ModalFooter>
     </Modal>
   )
 }
