@@ -5,6 +5,7 @@ import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
 import { MoneyInput } from '../components/MoneyInput'
 import { Card } from '@/components/ui/Card'
+import { WizardHeading } from '../components/WizardHeading'
 
 const keyOf = (groupName: string, itemName: string) => `${groupName}::${itemName}`
 
@@ -35,19 +36,13 @@ export function Step17Targets() {
 
   return (
     <div className="space-y-7">
-      <div className="space-y-3">
-        <div className="text-[11px] uppercase tracking-[0.2em] text-[var(--brand-text)] font-semibold">
-          Personalizar plan · paso 1 de 3
-        </div>
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          Pon tu <span className="gradient-text">presupuesto mensual</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-xl">
-          Tres pasos rápidos para configurar tu plan: presupuestos, cuentas
-          y asignación. Empezamos por los presupuestos — opcional, pon
-          números solo donde tengas idea.
-        </p>
-      </div>
+      <WizardHeading
+        eyebrow="Personalizar plan · paso 1 de 3"
+        descriptionMaxWidth="xl"
+        description="Tres pasos rápidos para configurar tu plan: presupuestos, cuentas y asignación. Empezamos por los presupuestos — opcional, pon números solo donde tengas idea."
+      >
+        Pon tu <span className="gradient-text">presupuesto mensual</span>.
+      </WizardHeading>
 
       {/* Total bar */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4 flex items-center justify-between">

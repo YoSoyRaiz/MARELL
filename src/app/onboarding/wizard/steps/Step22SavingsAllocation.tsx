@@ -4,6 +4,7 @@ import { PiggyBank } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { accountCategoryFromType } from '../types'
 import { formatMoney } from '@/lib/money'
+import { WizardHeading } from '../components/WizardHeading'
 
 const fmtMoney = (n: number) => formatMoney(n)
 
@@ -22,33 +23,27 @@ export function Step22SavingsAllocation() {
   if (savingsAccounts.length === 0) {
     return (
       <div className="space-y-7">
-        <div className="space-y-3">
-          <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-            Sin cuentas de <span className="gradient-text">ahorros</span>.
-          </h1>
-          <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">
-            Está bien — sigamos al siguiente paso para asignar tu dinero.
-          </p>
-        </div>
+        <WizardHeading description="Está bien — sigamos al siguiente paso para asignar tu dinero.">
+          Sin cuentas de <span className="gradient-text">ahorros</span>.
+        </WizardHeading>
       </div>
     )
   }
 
   return (
     <div className="space-y-7">
-      <div className="space-y-3">
-        <div className="text-[11px] uppercase tracking-[0.2em] text-[var(--brand-text)] font-semibold">
-          Personalizar plan · paso 3 de 3
-        </div>
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          Dale <span className="gradient-text">trabajo</span> a cada peso.
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">
-          Tienes <span className="text-[var(--text)] font-semibold num">{fmtMoney(totalSavings)}</span> en
-          ahorros. ¿Los usas en tu plan o los dejas apartados como
-          colchón? Esa es la diferencia entre tener dinero y tener un plan.
-        </p>
-      </div>
+      <WizardHeading
+        eyebrow="Personalizar plan · paso 3 de 3"
+        description={
+          <>
+            Tienes <span className="text-[var(--text)] font-semibold num">{fmtMoney(totalSavings)}</span> en
+            ahorros. ¿Los usas en tu plan o los dejas apartados como
+            colchón? Esa es la diferencia entre tener dinero y tener un plan.
+          </>
+        }
+      >
+        Dale <span className="gradient-text">trabajo</span> a cada peso.
+      </WizardHeading>
 
       <div className="space-y-3">
         {savingsAccounts.map((a) => {

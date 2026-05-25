@@ -4,6 +4,7 @@ import { Sparkles, CreditCard, Target, Waves, Sprout, Compass } from 'lucide-rea
 import type { LucideIcon } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { SelectCard } from '../components/SelectCard'
+import { WizardHeading } from '../components/WizardHeading'
 import type { Motivation } from '../types'
 
 const OPTIONS: { id: Motivation; Icon: LucideIcon; title: string; description: string }[] = [
@@ -25,15 +26,10 @@ export function Step02Motivation() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          {greeting}
-          <span className="gradient-text">MARELL</span>?
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">
-          Vamos a personalizar tu plan según lo que más te importa.
-        </p>
-      </div>
+      <WizardHeading description="Vamos a personalizar tu plan según lo que más te importa.">
+        {greeting}
+        <span className="gradient-text">MARELL</span>?
+      </WizardHeading>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {OPTIONS.map((opt) => (
           <SelectCard

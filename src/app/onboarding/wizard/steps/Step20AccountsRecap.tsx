@@ -6,6 +6,7 @@ import { accountCategoryFromType, type AccountInput } from '../types'
 import { labelForAccountType } from '../components/AccountTypeSelect'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { formatMoney } from '@/lib/money'
+import { WizardHeading } from '../components/WizardHeading'
 
 const fmtMoney = (n: number) => formatMoney(Math.abs(n))
 
@@ -45,20 +46,21 @@ export function Step20AccountsRecap() {
 
   return (
     <div className="space-y-7">
-      <div className="space-y-3">
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          {accounts.length === 1 ? '¡Lista!' : '¡Buen trabajo!'}{' '}
-          <span className="gradient-text">
-            {accounts.length} {accounts.length === 1 ? 'cuenta' : 'cuentas'}
-          </span>{' '}
-          agregadas.
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">
-          Tienes un total de{' '}
-          <span className="text-[var(--text)] font-semibold num">{fmtMoney(cashTotal)}</span> listo
-          para asignar a tus categorías.
-        </p>
-      </div>
+      <WizardHeading
+        description={
+          <>
+            Tienes un total de{' '}
+            <span className="text-[var(--text)] font-semibold num">{fmtMoney(cashTotal)}</span> listo
+            para asignar a tus categorías.
+          </>
+        }
+      >
+        {accounts.length === 1 ? '¡Lista!' : '¡Buen trabajo!'}{' '}
+        <span className="gradient-text">
+          {accounts.length} {accounts.length === 1 ? 'cuenta' : 'cuentas'}
+        </span>{' '}
+        agregadas.
+      </WizardHeading>
 
       {/* Totales */}
       <div className="grid grid-cols-2 gap-3">

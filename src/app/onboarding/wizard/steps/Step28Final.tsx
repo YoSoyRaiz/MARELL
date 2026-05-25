@@ -5,6 +5,7 @@ import { HandHeart, ArrowRight } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { completeOnboarding } from '@/app/onboarding/actions'
 import { AlertBanner } from '@/components/ui/AlertBanner'
+import { WizardHeading } from '../components/WizardHeading'
 
 export function Step28Final() {
   const answers = useOnboardingStore((s) => s.answers)
@@ -27,13 +28,12 @@ export function Step28Final() {
       <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center text-[#0B0B0C] [&>svg]:w-7 [&>svg]:h-7">
         <HandHeart strokeWidth={2.2} />
       </div>
-      <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
+      <WizardHeading
+        descriptionMaxWidth="lg"
+        description="Guías, comunidad, y soporte de personas que también manejan su dinero con MARELL. No estás solo en esto."
+      >
         Estamos aquí cuando lo <span className="gradient-text">necesites</span>.
-      </h1>
-      <p className="text-[var(--text2)] text-[18px] leading-relaxed max-w-lg">
-        Guías, comunidad, y soporte de personas que también manejan su dinero con MARELL. No estás
-        solo en esto.
-      </p>
+      </WizardHeading>
 
       <div className="pt-2">
         <button

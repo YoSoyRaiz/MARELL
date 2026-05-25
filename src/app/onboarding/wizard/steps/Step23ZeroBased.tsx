@@ -5,6 +5,7 @@ import { Sparkles } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
 import { formatMoney } from '@/lib/money'
+import { WizardHeading } from '../components/WizardHeading'
 
 const fmtMoney = (n: number) => formatMoney(n)
 
@@ -24,15 +25,12 @@ export function Step23ZeroBased() {
 
   return (
     <div className="space-y-7">
-      <div className="space-y-3">
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          Cada peso tiene su <span className="gradient-text">lugar</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-xl">
-          Tienes dinero esperando trabajo y categorías listas para darlo. En un momento vas a
-          asignar cada peso desde tu plan — a tu ritmo.
-        </p>
-      </div>
+      <WizardHeading
+        descriptionMaxWidth="xl"
+        description="Tienes dinero esperando trabajo y categorías listas para darlo. En un momento vas a asignar cada peso desde tu plan — a tu ritmo."
+      >
+        Cada peso tiene su <span className="gradient-text">lugar</span>.
+      </WizardHeading>
 
       {/* Hero: Por asignar */}
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/40 bg-[rgba(61,220,151,0.04)] px-6 py-6">

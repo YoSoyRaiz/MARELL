@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { WizardHeading } from './WizardHeading'
 
 interface TransitionSlideProps {
   icon?: ReactNode
@@ -16,10 +17,9 @@ export function TransitionSlide({ icon, title, subtitle }: TransitionSlideProps)
           {icon}
         </div>
       )}
-      <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
+      <WizardHeading descriptionMaxWidth="lg" description={subtitle}>
         {title}
-      </h1>
-      <p className="text-[var(--text2)] text-[18px] leading-relaxed max-w-lg">{subtitle}</p>
+      </WizardHeading>
     </div>
   )
 }

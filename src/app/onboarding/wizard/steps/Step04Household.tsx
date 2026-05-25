@@ -4,6 +4,7 @@ import { User, Heart, Users, HousePlus } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { SelectCard } from '../components/SelectCard'
+import { WizardHeading } from '../components/WizardHeading'
 import type { Household } from '../types'
 
 const OPTIONS: { id: Household; Icon: LucideIcon; title: string; description: string }[] = [
@@ -19,14 +20,9 @@ export function Step04Household() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          ¿Quién está en tu <span className="gradient-text">hogar</span>?
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">
-          Esto nos ayuda a entender mejor tus gastos y metas.
-        </p>
-      </div>
+      <WizardHeading description="Esto nos ayuda a entender mejor tus gastos y metas.">
+        ¿Quién está en tu <span className="gradient-text">hogar</span>?
+      </WizardHeading>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {OPTIONS.map((opt) => (
           <SelectCard

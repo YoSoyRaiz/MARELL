@@ -5,6 +5,7 @@ import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Card } from '@/components/ui/Card'
+import { WizardHeading } from '../components/WizardHeading'
 
 export function Step15CategoryList() {
   const confirm = useConfirm()
@@ -25,15 +26,17 @@ export function Step15CategoryList() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          Tu lista de <span className="gradient-text">categorías</span>
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-xl">
-          Generamos <span className="text-[var(--text)] font-semibold">{total} categorías</span>{' '}
-          personalizadas a tu vida. Vas a poder ajustarlas cuando configures tu plan.
-        </p>
-      </div>
+      <WizardHeading
+        descriptionMaxWidth="xl"
+        description={
+          <>
+            Generamos <span className="text-[var(--text)] font-semibold">{total} categorías</span>{' '}
+            personalizadas a tu vida. Vas a poder ajustarlas cuando configures tu plan.
+          </>
+        }
+      >
+        Tu lista de <span className="gradient-text">categorías</span>
+      </WizardHeading>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
         {/* Lista de categorías */}

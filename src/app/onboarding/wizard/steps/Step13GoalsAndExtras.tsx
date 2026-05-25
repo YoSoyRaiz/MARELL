@@ -19,6 +19,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { SelectCard } from '../components/SelectCard'
+import { WizardHeading } from '../components/WizardHeading'
 import { toggleInArray } from '../multiSelect'
 import type { Goal, AdditionalCategory } from '../types'
 
@@ -56,15 +57,12 @@ export function Step13GoalsAndExtras() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          Tu <span className="gradient-text">futuro</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-xl">
-          ¿Qué quieres lograr y qué placeres incluir? Marca todo lo que
-          aplique — sin pena, sin culpa.
-        </p>
-      </div>
+      <WizardHeading
+        descriptionMaxWidth="xl"
+        description="¿Qué quieres lograr y qué placeres incluir? Marca todo lo que aplique — sin pena, sin culpa."
+      >
+        Tu <span className="gradient-text">futuro</span>.
+      </WizardHeading>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Goals (required) */}

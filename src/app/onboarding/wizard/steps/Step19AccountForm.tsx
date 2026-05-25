@@ -7,6 +7,7 @@ import { isDebtType, type AccountInput, type AccountType } from '../types'
 import { AccountTypeSelect } from '../components/AccountTypeSelect'
 import { MoneyInput } from '../components/MoneyInput'
 import { PercentInput } from '../components/PercentInput'
+import { WizardHeading } from '../components/WizardHeading'
 
 function makeId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -60,22 +61,17 @@ export function Step19AccountForm() {
 
   return (
     <div className="space-y-7">
-      <div className="space-y-3">
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          {isFirst ? (
-            <>
-              Agreguemos tu <span className="gradient-text">primera cuenta</span>.
-            </>
-          ) : (
-            <>
-              Agreguemos <span className="gradient-text">otra cuenta</span>.
-            </>
-          )}
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">
-          Y no te preocupes — si cambias de idea, puedes vincularla cuando quieras.
-        </p>
-      </div>
+      <WizardHeading description="Y no te preocupes — si cambias de idea, puedes vincularla cuando quieras.">
+        {isFirst ? (
+          <>
+            Agreguemos tu <span className="gradient-text">primera cuenta</span>.
+          </>
+        ) : (
+          <>
+            Agreguemos <span className="gradient-text">otra cuenta</span>.
+          </>
+        )}
+      </WizardHeading>
 
       <div className="space-y-5">
         {/* Nombre */}

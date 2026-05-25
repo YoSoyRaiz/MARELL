@@ -4,6 +4,7 @@ import { Home, KeyRound, LifeBuoy, Banknote, Ban, CheckCircle } from 'lucide-rea
 import type { LucideIcon } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { SelectCard } from '../components/SelectCard'
+import { WizardHeading } from '../components/WizardHeading'
 import type { Housing, Mortgage } from '../types'
 
 const HOUSING_OPTIONS: { id: Housing; Icon: LucideIcon; title: string; description: string }[] = [
@@ -32,14 +33,9 @@ export function Step05HousingCombo() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <h1 className="text-[26px] sm:text-[36px] md:text-[44px] leading-[1.05] font-bold tracking-tight">
-          Cuéntanos sobre tu <span className="gradient-text">casa</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[17px] leading-relaxed max-w-md">
-          Vivienda suele ser el gasto más grande del mes — vamos a ajustarlo.
-        </p>
-      </div>
+      <WizardHeading description="Vivienda suele ser el gasto más grande del mes — vamos a ajustarlo.">
+        Cuéntanos sobre tu <span className="gradient-text">casa</span>.
+      </WizardHeading>
 
       {/* Block 1 — tipo de vivienda */}
       <div className="space-y-3">
