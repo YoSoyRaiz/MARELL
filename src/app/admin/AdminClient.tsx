@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 import {
   recordPayment,
   extendTrial,
@@ -520,13 +521,8 @@ function PaymentDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div className="relative w-full max-w-sm rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step p-6 space-y-5">
+    <Modal isOpen={true} onClose={onClose} variant="center" size="sm">
+      <div className="p-6 space-y-5">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
             Marcar pago recibido
@@ -583,7 +579,7 @@ function PaymentDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -617,13 +613,8 @@ function TrialDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div className="relative w-full max-w-sm rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step p-6 space-y-5">
+    <Modal isOpen={true} onClose={onClose} variant="center" size="sm">
+      <div className="p-6 space-y-5">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
             Extender trial
@@ -674,6 +665,6 @@ function TrialDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

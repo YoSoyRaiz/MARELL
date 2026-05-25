@@ -19,6 +19,7 @@ import { useFormatMoney } from '../CurrencyProvider'
 import { MONTH_NAMES_SHORT } from '@/lib/dates'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 
 interface AccountOption {
   id: string
@@ -104,20 +105,6 @@ export function ImportTransactionsModal({
     setDragOver(false)
     setParsingPdf(false)
   }, [isOpen, accounts])
-
-  // Esc + body scroll lock
-  useEffect(() => {
-    if (!isOpen) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handler)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handler)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, onClose])
 
   const groupedCategories = useMemo(() => {
     return categories.reduce<Record<string, CategoryOption[]>>((acc, c) => {
@@ -328,26 +315,19 @@ export function ImportTransactionsModal({
     })
   }
 
-  if (!isOpen) return null
-
   const totalKept = rows.filter((r) => !r.excluded).length
   const canImport = totalKept > 0 && accountId !== '' && !pending && !parsingPdf
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="import-tx-title"
-        className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
-      >
-        <ModalHeader onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledBy="import-tx-title"
+      variant="center"
+      size="3xl"
+      maxHeight="92vh"
+    >
+      <ModalHeader onClose={onClose}>
           <ModalTitle
             id="import-tx-title"
             eyebrow="Importar transacciones"
@@ -671,8 +651,7 @@ export function ImportTransactionsModal({
             )}
           </Button>
         </footer>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

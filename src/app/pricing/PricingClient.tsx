@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   ArrowRight,
   Copy,
@@ -18,6 +18,7 @@ import {
   paymentReference,
 } from '@/lib/payment'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 
 const fmt = (n: number) =>
   `RD$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
@@ -88,18 +89,6 @@ function PaymentDialog({
   const reference = paymentReference(userId)
   const amount = cycle === 'year' ? PRO_PRICE_YEAR_DOP : PRO_PRICE_MONTH_DOP
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handler)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handler)
-      document.body.style.overflow = ''
-    }
-  }, [onClose])
-
   const subject = `Pago MARELL Pro · ${reference}`
   const body = [
     'Hola,',
@@ -115,18 +104,14 @@ function PaymentDialog({
   const mailto = `mailto:${PAYMENT_SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="pay-title"
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
-      >
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      ariaLabelledBy="pay-title"
+      variant="center"
+      size="lg"
+      scrollable
+    >
         <ModalHeader
           onClose={onClose}
           className="sticky top-0 bg-[var(--s1)] z-10"
@@ -225,8 +210,7 @@ function PaymentDialog({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

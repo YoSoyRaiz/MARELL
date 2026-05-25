@@ -8,6 +8,7 @@ import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 import type { PlanGroup } from './PlanView'
 
 interface MoveMoneyModalProps {
@@ -83,20 +84,7 @@ export function MoveMoneyModal({
     return () => window.cancelAnimationFrame(id)
   }, [isOpen, fromCategoryId])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, onClose])
-
-  if (!isOpen || !sourceCategory) return null
+  if (!sourceCategory) return null
 
   const amount = parseAmount(amountText)
   const canSubmit = amount > 0 && toId !== '' && toId !== fromCategoryId
@@ -127,19 +115,14 @@ export function MoveMoneyModal({
   const SourceIcon = iconForCategoryName(sourceCategory.name)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div
-        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-      <form
-        onSubmit={handleSubmit}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="move-money-title"
-        className="relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] sm:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
-      >
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledBy="move-money-title"
+      maxHeight="92vh"
+      scrollable
+    >
+      <form onSubmit={handleSubmit}>
         <ModalHeader onClose={onClose}>
           <ModalTitle
             id="move-money-title"
@@ -268,6 +251,6 @@ export function MoveMoneyModal({
           </Button>
         </footer>
       </form>
-    </div>
+    </Modal>
   )
 }

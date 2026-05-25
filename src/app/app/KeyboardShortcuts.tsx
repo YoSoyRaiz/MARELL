@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Keyboard } from 'lucide-react'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 
 interface ShortcutDef {
   keys: string
@@ -134,22 +135,14 @@ export function KeyboardShortcuts() {
     }
   }, [router, helpOpen])
 
-  if (!helpOpen) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
-        onClick={() => setHelpOpen(false)}
-        aria-hidden
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="shortcuts-title"
-        className="relative w-full max-w-md rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
-      >
-        <ModalHeader onClose={() => setHelpOpen(false)}>
+    <Modal
+      isOpen={helpOpen}
+      onClose={() => setHelpOpen(false)}
+      ariaLabelledBy="shortcuts-title"
+      variant="center"
+    >
+      <ModalHeader onClose={() => setHelpOpen(false)}>
           <ModalTitle
             id="shortcuts-title"
             size="compact"
@@ -194,7 +187,6 @@ export function KeyboardShortcuts() {
             </li>
           ))}
         </ul>
-      </div>
-    </div>
+    </Modal>
   )
 }

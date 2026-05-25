@@ -21,6 +21,7 @@ import {
 } from './actions'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 
 interface Account {
   id: string
@@ -111,21 +112,6 @@ export function ScheduledFormModal({
     }
     setError(null)
   }, [isOpen, mode, initial, accounts])
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handler)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handler)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
 
   const valid =
     accountId !== '' &&
@@ -225,19 +211,7 @@ export function ScheduledFormModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div
-        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="sched-form-title"
-        className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] sm:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
-      >
+    <Modal isOpen={isOpen} onClose={onClose} ariaLabelledBy="sched-form-title">
         <ModalHeader onClose={onClose}>
           <ModalTitle
             id="sched-form-title"
@@ -553,8 +527,7 @@ export function ScheduledFormModal({
             )}
           </Button>
         </footer>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

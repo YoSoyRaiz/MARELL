@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Apple, Smartphone, Share, Plus, Check } from 'lucide-react'
 import { InteractiveCard } from './InteractiveCard'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 
 // Chrome/Edge fire `beforeinstallprompt` so we can offer an in-page
 // install button. Safari (iOS) doesn't — the user has to use the
@@ -233,32 +234,15 @@ function InstalledState() {
  * at it. No screenshots — just clear copy with the system icons.
  */
 function IosInstructions({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
-  }, [onClose])
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="ios-title"
-        className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
-      >
-        <ModalHeader onClose={onClose}>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      ariaLabelledBy="ios-title"
+      variant="center"
+      scrollable
+    >
+      <ModalHeader onClose={onClose}>
           <ModalTitle
             id="ios-title"
             eyebrow={
@@ -301,8 +285,7 @@ function IosInstructions({ onClose }: { onClose: () => void }) {
             medio.
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

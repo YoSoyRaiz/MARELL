@@ -24,6 +24,7 @@ import {
 } from './actions'
 import { ReceiptCapture } from './ReceiptCapture'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 
 type EntryType = TransactionType | 'transfer'
 
@@ -192,21 +193,6 @@ export function TransactionFormModal({
   }, [isOpen, mode, isTransfer, splitMode, payeeName, categoryId])
 
   // Esc + body scroll lock
-  useEffect(() => {
-    if (!isOpen) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handler)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handler)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
-
   const splitsSum = splits.reduce(
     (s, r) => s + (Number.isFinite(r.amount) ? r.amount : 0),
     0,
@@ -404,19 +390,7 @@ export function TransactionFormModal({
   const isEdit = mode === 'edit'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div
-        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="tx-form-title"
-        className="relative w-full max-w-md max-h-[100dvh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
-      >
+    <Modal isOpen={isOpen} onClose={onClose} ariaLabelledBy="tx-form-title">
         <ModalHeader onClose={onClose}>
           <ModalTitle
             id="tx-form-title"
@@ -842,8 +816,7 @@ export function TransactionFormModal({
             )}
           </button>
         </footer>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

@@ -16,6 +16,7 @@ import {
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 import { MONTH_NAMES_SHORT } from '@/lib/dates'
 import { ModalHeader } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 
 interface CategoryDrillModalProps {
   isOpen: boolean
@@ -85,21 +86,6 @@ export function CategoryDrillModal({
       .finally(() => setLoading(false))
   }, [isOpen, categoryId])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
-
   const Icon = data ? iconForCategoryName(data.category.name) : CalendarRange
   // Cap the bar chart Y-axis to whichever is bigger (assigned or spent)
   // across the visible window. Falls back to 1 to avoid divide-by-zero.
@@ -111,20 +97,14 @@ export function CategoryDrillModal({
     : 1
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-      <div
-        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="drill-title"
-        className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
-      >
-        <ModalHeader onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledBy="drill-title"
+      variant="center"
+      size="2xl"
+    >
+      <ModalHeader onClose={onClose}>
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-10 h-10 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
               <Icon size={18} strokeWidth={2} />
@@ -316,8 +296,7 @@ export function CategoryDrillModal({
             </>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

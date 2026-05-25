@@ -8,6 +8,7 @@ import { AccountTypeSelect } from '@/app/onboarding/wizard/components/AccountTyp
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
+import { Modal } from '@/components/ui/Modal'
 import type { AccountType } from '@/app/onboarding/wizard/types'
 import {
   createAccount,
@@ -83,21 +84,6 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
     }
     setError(null)
   }, [isOpen, mode, initial])
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handler)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handler)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
 
   const valid = name.trim().length > 0 && type !== null && balance !== null
 
@@ -179,19 +165,12 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
   const isEdit = mode === 'edit'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm animate-step"
-        onClick={onClose}
-        aria-hidden
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="account-form-title"
-        className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
-      >
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledBy="account-form-title"
+      variant="center"
+    >
         <ModalHeader onClose={onClose}>
           <ModalTitle
             id="account-form-title"
@@ -382,8 +361,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
             )}
           </Button>
         </footer>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
