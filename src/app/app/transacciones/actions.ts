@@ -1,14 +1,15 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { MONTH_NAMES_SHORT_LOWER } from '@/lib/dates'
+import { safeError } from '@/lib/errors'
+import { MONTH_NAMES_SHORT_LOWER, monthFromDate } from '@/lib/dates'
 import { validateSplits } from '@/lib/splits'
 import {
   ccBucketDelta,
   type AutoBucketContribution,
 } from './ccBucketMath'
+import { applyCcBucketDelta } from './cc-bucket-server'
 
 export type TransactionType = 'income' | 'expense'
 
@@ -27,86 +28,9 @@ function payeeOrFallback(name: string, date: string): string {
   return month ? `Recibo del ${parseInt(dd, 10)} ${month}` : 'Recibo'
 }
 
-// ── Credit-card auto-bucket ─────────────────────────────────────
-//
-// YNAB pattern: when you charge a credit card, the budget category gets
-// debited AND the "card payment" category gets credited by the same
-// amount, so available net stays the same and you build up the money to
-// pay the card. The reverse happens on a refund.
-//
-// MARELL implements this by looking up a single category named
-// "Pago tarjeta de crédito" (created during onboarding when the user has
-// any credit card) for the budget. We bump its monthly_assignment up by
-// abs(charge) on each CC charge and down on each refund. Multi-card
-// budgets share one bucket; per-card buckets would need a column on
-// `accounts.payment_category_id` (not added yet).
-//
-// If the category doesn't exist (legacy budgets created before this hook,
-// or user deleted it), the helper silently no-ops — the rest of the
-// transaction flow keeps working.
-
-const CC_PAYMENT_CATEGORY_NAME = 'Pago tarjeta de crédito'
-
-// Strict YYYY-MM extraction. The regex catches malformed dates that
-// the looser isValidDate (which uses just \d{4}-\d{2}-\d{2}) lets
-// through — like "2026-13-01" — so the bucket math can't end up
-// keyed on an impossible month.
-function monthFromDate(iso: string): string | null {
-  const m = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.exec(iso)
-  if (!m) return null
-  return `${m[1]}-${m[2]}`
-}
-
-async function findCreditCardPaymentCategoryId(
-  supabase: SupabaseClient,
-  budgetId: string,
-): Promise<string | null> {
-  const { data } = await supabase
-    .from('categories')
-    .select('id')
-    .eq('budget_id', budgetId)
-    .ilike('name', CC_PAYMENT_CATEGORY_NAME)
-    .maybeSingle()
-  return data ? (data.id as string) : null
-}
-
-/**
- * Apply `delta` (signed) to the credit-card payment category's assignment
- * for the given month. Used to reverse old contributions and apply new
- * ones whenever a CC-account transaction is created, updated, or deleted.
- *
- * Skips silently when there's no payment category in the budget or when
- * the category being charged IS the payment category itself (don't
- * double-bucket internal payments).
- */
-async function applyCcBucketDelta(
-  supabase: SupabaseClient,
-  budgetId: string,
-  month: string | null,
-  delta: number,
-  excludeCategoryId: string | null = null,
-) {
-  if (!month) return
-  if (!Number.isFinite(delta) || Math.abs(delta) < 0.005) return
-  const paymentCatId = await findCreditCardPaymentCategoryId(supabase, budgetId)
-  if (!paymentCatId) return
-  if (excludeCategoryId && excludeCategoryId === paymentCatId) return
-
-  // Single atomic upsert via the `assignments_increment` RPC (migration
-  // 2026_05_04). Replaces the read-then-write pattern that was racey
-  // when two writes hit the same (category, month) at once. La RPC
-  // está tipada en lib/supabase/types.ts — antes esto necesitaba un
-  // cast `as unknown as { rpc: ... }`.
-  await supabase.rpc('assignments_increment', {
-    p_budget_id: budgetId,
-    p_category_id: paymentCatId,
-    p_month: month,
-    p_delta: delta,
-  })
-}
-
-// Helpers for the CC bucket math live in `./ccBucketMath` (sync; this
-// file is `'use server'` so it can't host non-async exports).
+// Credit-card auto-bucket helpers viven en `./cc-bucket-server`. Solo
+// las llamamos desde aquí — antes estaban inlined haciendo este
+// archivo más grande de lo necesario.
 
 export interface SplitInput {
   categoryId: string | null
@@ -295,7 +219,7 @@ export async function createTransaction(input: CreateTransactionInput) {
     if (subErr) {
       // Best-effort rollback of parent row to keep data consistent.
       await supabase.from('transactions').delete().eq('id', parent.id as string)
-      return { error: subErr.message }
+      return { error: safeError(subErr, 'transacciones') }
     }
   }
 
@@ -455,7 +379,7 @@ export async function updateTransaction(input: UpdateTransactionInput) {
       receipt_path: input.receiptPath ?? null,
     })
     .eq('id', input.id)
-  if (updateErr) return { error: updateErr.message }
+  if (updateErr) return { error: safeError(updateErr, 'transacciones') }
 
   // Rebuild subtransactions: simplest correct approach is delete-then-insert.
   await supabase.from('subtransactions').delete().eq('transaction_id', input.id)
@@ -467,7 +391,7 @@ export async function updateTransaction(input: UpdateTransactionInput) {
       amount: sign * Math.abs(s.amount),
     }))
     const { error: subErr } = await supabase.from('subtransactions').insert(subRows)
-    if (subErr) return { error: subErr.message }
+    if (subErr) return { error: safeError(subErr, 'transacciones') }
   }
 
   // Balance side-effects (rolling back the old account, applying to
@@ -615,7 +539,7 @@ export async function bulkCreateTransactions(input: BulkCreateInput) {
   }))
 
   const { error: insertErr } = await supabase.from('transactions').insert(inserts)
-  if (insertErr) return { error: insertErr.message }
+  if (insertErr) return { error: safeError(insertErr, 'transacciones') }
 
   // The trigger fires once per inserted row and updates the account
   // balance — no manual sum/update needed.
@@ -807,7 +731,7 @@ export async function deleteTransaction(transactionId: string) {
     .from('transactions')
     .delete()
     .in('id', ids)
-  if (delErr) return { error: delErr.message }
+  if (delErr) return { error: safeError(delErr, 'transacciones') }
 
   // Balance rollbacks happen in the trigger now — both the parent
   // delete and the transfer-twin delete fire `transactions_balance_sync`
@@ -1112,7 +1036,7 @@ export async function bulkDeleteTransactions(ids: string[]): Promise<BulkResult>
     .from('transactions')
     .delete()
     .in('id', Array.from(targetIds))
-  if (delErr) return { error: delErr.message }
+  if (delErr) return { error: safeError(delErr, 'transacciones') }
 
   revalidatePath('/app', 'layout')
   const skipped = ids.length - rows.filter((r) => ids.includes(r.id as string)).length
@@ -1336,7 +1260,7 @@ export async function updateTransfer(input: UpdateTransferInput) {
       payee_name: `Transferencia a ${toAcct.name}`,
     })
     .eq('id', sourceLeg.id as string)
-  if (srcUpdErr) return { error: srcUpdErr.message }
+  if (srcUpdErr) return { error: safeError(srcUpdErr, 'transacciones') }
 
   const { error: dstUpdErr } = await supabase
     .from('transactions')
@@ -1349,7 +1273,7 @@ export async function updateTransfer(input: UpdateTransferInput) {
       payee_name: `Transferencia desde ${fromAcct.name}`,
     })
     .eq('id', destLeg.id as string)
-  if (dstUpdErr) return { error: dstUpdErr.message }
+  if (dstUpdErr) return { error: safeError(dstUpdErr, 'transacciones') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }

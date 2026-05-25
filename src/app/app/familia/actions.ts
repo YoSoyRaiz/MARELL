@@ -3,6 +3,7 @@
 import { randomBytes } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { safeError } from '@/lib/errors'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/send'
 import { budgetInvitationEmail } from '@/lib/email/templates'
@@ -113,7 +114,7 @@ export async function inviteToBudget(input: InviteInput) {
       role: input.role,
       token,
     })
-  if (insErr) return { error: insErr.message }
+  if (insErr) return { error: safeError(insErr, 'familia') }
 
   // Look up the inviter's display name for the email.
   const { data: profile } = await supabase
@@ -194,7 +195,7 @@ export async function acceptInvitation(token: string) {
     user_id: user.id,
     role: inv.role as 'owner' | 'editor' | 'viewer',
   })
-  if (memErr) return { error: memErr.message }
+  if (memErr) return { error: safeError(memErr, 'familia') }
 
   await admin
     .from('budget_invitations')
@@ -218,7 +219,7 @@ export async function removeMember(memberId: string) {
   // RLS only lets the owner manage budget_members so this delete is
   // implicitly authorized.
   const { error } = await supabase.from('budget_members').delete().eq('id', memberId)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'familia') }
 
   revalidatePath('/app/familia')
   return { success: true as const }
@@ -241,7 +242,7 @@ export async function changeMemberRole(
     .from('budget_members')
     .update({ role })
     .eq('id', memberId)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'familia') }
 
   revalidatePath('/app/familia')
   return { success: true as const }
@@ -259,7 +260,7 @@ export async function revokeInvitation(invitationId: string) {
     .from('budget_invitations')
     .delete()
     .eq('id', invitationId)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'familia') }
 
   revalidatePath('/app/familia')
   return { success: true as const }

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { safeError } from '@/lib/errors'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export type Currency = 'DOP' | 'USD'
@@ -22,7 +23,7 @@ export async function updateProfile(input: { displayName: string }) {
     .from('profiles')
     .update({ display_name: name, updated_at: new Date().toISOString() })
     .eq('id', user.id)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'ajustes') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -74,7 +75,7 @@ export async function updateBudgetSettings(input: {
       usd_to_dop_rate: Math.round(input.usdToDopRate * 10000) / 10000,
     })
     .eq('id', input.budgetId)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'ajustes') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -94,7 +95,7 @@ export async function setEmailNotifications(enabled: boolean) {
       updated_at: new Date().toISOString(),
     })
     .eq('id', user.id)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'ajustes') }
 
   // El email_notifications toggle solo afecta /app/ajustes mismo.
   // Antes era 'layout' que invalidaba TODO el subtree de /app.
@@ -121,7 +122,7 @@ export async function markNotificationsSeen() {
     .from('profiles')
     .update({ notifications_last_seen: new Date().toISOString() })
     .eq('id', user.id)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'ajustes') }
   return { success: true as const }
 }
 

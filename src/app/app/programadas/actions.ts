@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { safeError } from '@/lib/errors'
 import { todayISODR } from '@/lib/dates'
 import { ensurePro } from '@/lib/billing/check-server'
 
@@ -104,7 +105,7 @@ export async function createScheduled(input: CreateScheduledInput) {
     active: true,
     is_split: false,
   })
-  if (insertErr) return { error: insertErr.message }
+  if (insertErr) return { error: safeError(insertErr, 'programadas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -169,7 +170,7 @@ export async function updateScheduled(input: UpdateScheduledInput) {
       next_date: input.nextDate,
     })
     .eq('id', input.id)
-  if (updateErr) return { error: updateErr.message }
+  if (updateErr) return { error: safeError(updateErr, 'programadas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -203,7 +204,7 @@ export async function deleteScheduled(id: string) {
     .from('scheduled_transactions')
     .delete()
     .eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'programadas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -237,7 +238,7 @@ export async function toggleScheduledActive(id: string, active: boolean) {
     .from('scheduled_transactions')
     .update({ active })
     .eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'programadas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }

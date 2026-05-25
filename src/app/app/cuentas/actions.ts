@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { safeError } from '@/lib/errors'
 import {
   isDebtType,
   accountCategoryFromType,
@@ -91,7 +92,7 @@ export async function createAccount(input: AccountInput) {
 
   const { error } = await supabase.from('accounts').insert(insertRow)
 
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'cuentas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -153,7 +154,7 @@ export async function updateAccount(input: UpdateAccountInput) {
     .update(updates)
     .eq('id', input.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'cuentas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -185,7 +186,7 @@ export async function setAccountClosed(accountId: string, closed: boolean) {
     .from('accounts')
     .update({ closed })
     .eq('id', accountId)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'cuentas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -215,7 +216,7 @@ export async function deleteAccount(accountId: string) {
 
   // Cascade deletes transactions through the FK on transactions.account_id
   const { error } = await supabase.from('accounts').delete().eq('id', accountId)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'cuentas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -317,7 +318,7 @@ export async function reconcileAccount(
       cleared: 'reconciled' as const,
       category_id: null,
     })
-    if (insertErr) return { error: insertErr.message }
+    if (insertErr) return { error: safeError(insertErr, 'cuentas') }
   }
 
   // 2. Lock all non-reconciled transactions in this account.
@@ -327,7 +328,7 @@ export async function reconcileAccount(
     .eq('account_id', accountId)
     .neq('cleared', 'reconciled')
     .select('id')
-  if (lockErr) return { error: lockErr.message }
+  if (lockErr) return { error: safeError(lockErr, 'cuentas') }
 
   // The adjustment txn we inserted in step 1 already pushed the
   // balance to the right number via the `transactions_balance_sync`
@@ -365,7 +366,7 @@ export async function unreconcileAccount(accountId: string): Promise<{
       args: RpcArgs,
     ) => Promise<{ data: number | null; error: { message: string } | null }>
   }).rpc('unreconcile_account', { p_account_id: accountId })
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'cuentas') }
   revalidatePath('/app', 'layout')
   return { unlocked: data ?? 0 }
 }
@@ -411,7 +412,7 @@ export async function setTransactionCleared(
     .from('transactions')
     .update({ cleared: status })
     .eq('id', transactionId)
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'cuentas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }

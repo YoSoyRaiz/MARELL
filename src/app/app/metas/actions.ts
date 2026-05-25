@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { safeError } from '@/lib/errors'
 import { ensurePro } from '@/lib/billing/check-server'
 
 export type GoalType = 'monthly_spending' | 'savings_balance' | 'needed_by'
@@ -78,7 +79,7 @@ export async function updateGoal(input: UpdateGoalInput) {
     .update(update)
     .eq('id', input.categoryId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'metas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -201,7 +202,7 @@ export async function createMeta(input: CreateMetaInput) {
     goal_date: input.goalDate,
   })
 
-  if (insertErr) return { error: insertErr.message }
+  if (insertErr) return { error: safeError(insertErr, 'metas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
@@ -353,7 +354,7 @@ export async function clearGoal(categoryId: string) {
     })
     .eq('id', categoryId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'metas') }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }

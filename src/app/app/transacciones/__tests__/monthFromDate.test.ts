@@ -1,17 +1,9 @@
 import { describe, it, expect } from 'vitest'
+import { monthFromDate } from '@/lib/dates'
 
-// `monthFromDate` is module-private inside actions.ts (which has
-// 'use server'). We re-implement the same regex here so the contract
-// is locked down by tests — if the implementation drifts, this fails.
-//
-// If the regex ever moves to a shared module, switch this import to
-// the real export.
-
-function monthFromDate(iso: string): string | null {
-  const m = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.exec(iso)
-  if (!m) return null
-  return `${m[1]}-${m[2]}`
-}
+// monthFromDate vivía privadamente dentro de actions.ts. Se movió a
+// lib/dates.ts como helper puro (auditoría calidad M8) y este test
+// ahora importa la versión real.
 
 describe('monthFromDate (strict)', () => {
   it('extracts YYYY-MM from a valid ISO date', () => {

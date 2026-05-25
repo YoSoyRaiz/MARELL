@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { currentMonthDR } from '@/lib/dates'
+import { safeError } from '@/lib/errors'
 
 const isValidMonth = (s: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
 
@@ -248,7 +249,7 @@ export async function quickAssign(
       },
       { onConflict: 'category_id,month' },
     )
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'plan') }
 
   return {
     success: true,
@@ -383,7 +384,7 @@ export async function applyAutoAssign(
         },
         { onConflict: 'category_id,month' },
       )
-    if (error) return { error: error.message }
+    if (error) return { error: safeError(error, 'plan') }
     totalDelta += rounded - previous
     changedCount += 1
   }
@@ -688,7 +689,7 @@ export async function moveMoneyBetweenCategories(
     ],
     { onConflict: 'category_id,month' },
   )
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'plan') }
 
   return {
     success: true,
@@ -745,6 +746,6 @@ export async function updateAssignment(
       { onConflict: 'category_id,month' },
     )
 
-  if (error) return { error: error.message }
+  if (error) return { error: safeError(error, 'plan') }
   return { success: true as const }
 }

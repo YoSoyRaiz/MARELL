@@ -103,6 +103,18 @@ export function formatMonthLabel(month: string): string {
   return `${MONTH_NAMES_FULL[m - 1]} ${y}`
 }
 
+/**
+ * Extrae 'YYYY-MM' desde una fecha ISO 'YYYY-MM-DD'. Regex estricta
+ * que rechaza fechas imposibles (2026-13-01, 2026-02-31). Devuelve
+ * null si el input es inválido. Usado por la lógica de CC bucket que
+ * key-ea monthly_assignments por mes.
+ */
+export function monthFromDate(iso: string): string | null {
+  const m = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.exec(iso)
+  if (!m) return null
+  return `${m[1]}-${m[2]}`
+}
+
 /** "15 May" — short date label desde 'YYYY-MM-DD'. */
 export function formatDayShort(iso: string): string {
   const [, m, d] = iso.split('-').map(Number)
