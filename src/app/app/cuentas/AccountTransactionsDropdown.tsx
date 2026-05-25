@@ -10,6 +10,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { MONTH_NAMES_SHORT_LOWER } from '@/lib/dates'
 import { useFormatMoney } from '../CurrencyProvider'
 
 interface AccountTxRow {
@@ -30,13 +31,12 @@ interface Props {
   currency: 'DOP' | 'USD'
 }
 
-const SHORT_MONTHS_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 function formatShortDate(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
   if (!m) return iso
   const [, , mm, dd] = m
   const monthIdx = parseInt(mm, 10) - 1
-  return `${parseInt(dd, 10)} ${SHORT_MONTHS_ES[monthIdx] ?? ''}`.trim()
+  return `${parseInt(dd, 10)} ${MONTH_NAMES_SHORT_LOWER[monthIdx] ?? ''}`.trim()
 }
 
 /**

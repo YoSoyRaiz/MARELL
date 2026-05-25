@@ -15,6 +15,7 @@ import {
   type CategoryHistoryTxn,
 } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
+import { MONTH_NAMES_SHORT } from '@/lib/dates'
 
 interface CategoryDrillModalProps {
   isOpen: boolean
@@ -42,19 +43,14 @@ interface LoadedHistory {
   }
 }
 
-const SHORT_MONTHS = [
-  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
-]
-
 const formatMonthLabel = (yyyymm: string) => {
   const [, m] = yyyymm.split('-').map(Number)
-  return SHORT_MONTHS[m - 1] ?? '—'
+  return MONTH_NAMES_SHORT[m - 1] ?? '—'
 }
 
 const formatTxnDate = (iso: string) => {
   const [, m, d] = iso.split('-').map(Number)
-  return `${d} ${SHORT_MONTHS[m - 1]}`
+  return `${d} ${MONTH_NAMES_SHORT[m - 1]}`
 }
 
 export function CategoryDrillModal({

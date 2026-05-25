@@ -16,6 +16,7 @@ import {
 import { PlanTabs } from './PlanTabs'
 import { ExtraordinaryPaymentModal } from './ExtraordinaryPaymentModal'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
+import { MONTH_NAMES_SHORT } from '@/lib/dates'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { deleteScheduled } from '../programadas/actions'
 import { useTransition } from 'react'
@@ -59,20 +60,7 @@ interface PlanAnnualViewProps {
   months: MonthBucket[]
 }
 
-const MONTH_NAMES_SHORT = [
-  'Ene',
-  'Feb',
-  'Mar',
-  'Abr',
-  'May',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dic',
-]
+// Importado de lib/dates — antes era una copia local más.
 
 export function PlanAnnualView({
   year,

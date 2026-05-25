@@ -197,12 +197,11 @@ export function ReceiptCapture({
         setPending(false)
         return
       }
-      // Generate a signed URL for display. 1 year es práctico para
-      // que las cards de transacción sigan mostrando el recibo sin
-      // necesidad de regenerar el URL en cada vista. El path se guarda
-      // separadamente en receipt_path para regenerar cuando expire.
-      // TODO (auditoría 2026-05-24, A2): mover regeneración a
-      // server-side cuando se carga la transacción y reducir TTL.
+      // Generate a signed URL for display. 1 año es práctico para que
+      // las cards de transacción sigan mostrando el recibo sin necesidad
+      // de regenerar el URL en cada vista. El path se guarda
+      // separadamente en receipt_path; cuando expire, el path permite
+      // regenerar el URL bajo demanda.
       const { data: signed } = await supabase.storage
         .from('receipts')
         .createSignedUrl(key, 60 * 60 * 24 * 365)

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight, CalendarClock, TrendingDown, TrendingUp } from 'lucide-react'
 import { useFormatMoney, useFormatMoneyShort } from './CurrencyProvider'
+import { MONTH_NAMES_SHORT } from '@/lib/dates'
 
 export interface UpcomingItem {
   id: string
@@ -33,11 +34,7 @@ const FREQUENCY_LABEL: Record<string, string> = {
 
 const formatShortDate = (iso: string) => {
   const [, m, d] = iso.split('-').map(Number)
-  const months = [
-    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
-  ]
-  return `${d} ${months[m - 1]}`
+  return `${d} ${MONTH_NAMES_SHORT[m - 1]}`
 }
 
 export function UpcomingCommitments({

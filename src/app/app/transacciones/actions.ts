@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
+import { MONTH_NAMES_SHORT_LOWER } from '@/lib/dates'
 import {
   ccBucketDelta,
   type AutoBucketContribution,
@@ -14,7 +15,6 @@ export type TransactionType = 'income' | 'expense'
 // from the mobile FAB quick-add when the OCR didn't catch the merchant
 // name), build a readable fallback from the date so the row isn't
 // blank in the list.
-const SHORT_MONTHS_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 function payeeOrFallback(name: string, date: string): string {
   const trimmed = name.trim()
   if (trimmed) return trimmed
@@ -22,7 +22,7 @@ function payeeOrFallback(name: string, date: string): string {
   if (!m) return 'Recibo'
   const [, , mm, dd] = m
   const monthIdx = parseInt(mm, 10) - 1
-  const month = SHORT_MONTHS_ES[monthIdx] ?? ''
+  const month = MONTH_NAMES_SHORT_LOWER[monthIdx] ?? ''
   return month ? `Recibo del ${parseInt(dd, 10)} ${month}` : 'Recibo'
 }
 
@@ -93,19 +93,10 @@ async function applyCcBucketDelta(
 
   // Single atomic upsert via the `assignments_increment` RPC (migration
   // 2026_05_04). Replaces the read-then-write pattern that was racey
-  // when two writes hit the same (category, month) at once.
-  type RpcArgs = {
-    p_budget_id: string
-    p_category_id: string
-    p_month: string
-    p_delta: number
-  }
-  await (supabase as unknown as {
-    rpc: (
-      fn: string,
-      args: RpcArgs,
-    ) => Promise<{ data: number | null; error: unknown }>
-  }).rpc('assignments_increment', {
+  // when two writes hit the same (category, month) at once. La RPC
+  // está tipada en lib/supabase/types.ts — antes esto necesitaba un
+  // cast `as unknown as { rpc: ... }`.
+  await supabase.rpc('assignments_increment', {
     p_budget_id: budgetId,
     p_category_id: paymentCatId,
     p_month: month,

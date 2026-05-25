@@ -17,12 +17,12 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { GoalFormModal, type InitialGoal } from './GoalFormModal'
 import { clearGoal, type GoalType } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
+import { MONTH_NAMES_SHORT } from '@/lib/dates'
 
 const formatGoalDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
   const date = new Date(y, m - 1, d)
-  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
-  return `${months[date.getMonth()]} ${date.getFullYear()}`
+  return `${MONTH_NAMES_SHORT[date.getMonth()]} ${date.getFullYear()}`
 }
 
 const monthsUntil = (iso: string): number => {

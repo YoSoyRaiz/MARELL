@@ -24,6 +24,7 @@ import {
   type AomRange,
   type AgeOfMoneyPoint,
 } from './AgeOfMoneyReport'
+import { MONTH_NAMES_FULL, MONTH_NAMES_SHORT } from '@/lib/dates'
 
 const todayLocal = () => {
   const d = new Date()
@@ -32,36 +33,6 @@ const todayLocal = () => {
 
 const formatISODate = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-
-const MONTH_NAMES_FULL = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-]
-
-const MONTH_NAMES_SHORT = [
-  'Ene',
-  'Feb',
-  'Mar',
-  'Abr',
-  'May',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dic',
-]
 
 // ── Period helpers (Spending Breakdown) ─────────────────────
 

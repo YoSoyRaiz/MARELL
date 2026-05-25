@@ -19,31 +19,16 @@ import { FirstMonthGuide } from './FirstMonthGuide'
 import { CategoryAccordion } from './CategoryAccordion'
 import { MonthSummaryCard } from './MonthSummaryCard'
 import { materializeDue } from './programadas/actions'
-import { currentMonthDR, monthBoundsISO, todayISODR } from '@/lib/dates'
+import {
+  currentMonthDR,
+  monthBoundsISO,
+  todayISODR,
+  formatMonthLabel,
+} from '@/lib/dates'
 import { UpcomingCommitments, type UpcomingItem } from './UpcomingCommitments'
 
 const currentMonth = currentMonthDR
 const monthBounds = monthBoundsISO
-
-const MONTH_NAMES = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-]
-
-const formatMonthLabel = (month: string) => {
-  const [y, m] = month.split('-').map(Number)
-  return `${MONTH_NAMES[m - 1]} ${y}`
-}
 
 export default async function ResumenPage() {
   const supabase = await createClient()

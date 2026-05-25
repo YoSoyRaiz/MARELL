@@ -22,26 +22,11 @@ import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
 import { PayFromAccountMenu } from '../PayFromAccountMenu'
 import { createTransaction } from '../transacciones/actions'
-
-const MONTH_NAMES = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-]
-
+import { MONTH_NAMES_FULL } from '@/lib/dates'
 
 const formatMonthLabel = (month: string) => {
   const [year, m] = month.split('-').map(Number)
-  return `${MONTH_NAMES[m - 1]} ${year}`
+  return `${MONTH_NAMES_FULL[m - 1]} ${year}`
 }
 
 const adjustMonth = (month: string, delta: number) => {

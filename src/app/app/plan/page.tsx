@@ -3,25 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
 import { PlanView, type PlanCategory, type PlanGroup } from './PlanView'
 import { PlanAnnualView, type AnnualOneOff } from './PlanAnnualView'
-import { currentMonthDR, monthBoundsISO } from '@/lib/dates'
+import { currentMonthDR, monthBoundsISO, MONTH_NAMES_FULL } from '@/lib/dates'
 
 const currentMonth = currentMonthDR
 const monthBounds = monthBoundsISO
-
-const MONTH_NAMES_FULL = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-]
 
 const isValidMonth = (s: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
 const isValidYear = (s: string) => /^\d{4}$/.test(s)

@@ -343,6 +343,18 @@ export type Database = {
           year_month: string
         }>
       }
+      // Atomic upsert+increment para monthly_assignments — migration
+      // 2026_05_04_atomic_money_ops.sql. Antes esto se hacía con un
+      // cast `as unknown as { rpc: ... }` en actions.ts.
+      assignments_increment: {
+        Args: {
+          p_budget_id: string
+          p_category_id: string
+          p_month: string
+          p_delta: number
+        }
+        Returns: number
+      }
       // Rate limit DB-based — migration 2026_05_24_rate_limits.sql
       check_rate_limit: {
         Args: {

@@ -43,3 +43,68 @@ export function monthBoundsISO(month: string): { first: string; last: string } {
   const last = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
   return { first, last }
 }
+
+// ── Nombres de mes en español ───────────────────────────────────
+// Centralizados acá para que cualquier formatter de la app use los
+// mismos strings (antes estaban duplicados en 7 archivos: page.tsx
+// de plan/programadas/analisis/etc., MonthStatusHero, ScheduledFormModal…).
+
+/** Nombres completos: Enero, Febrero, ... */
+export const MONTH_NAMES_FULL = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+] as const
+
+/** Abreviados 3 letras capitalizados: Ene, Feb, Mar, ... */
+export const MONTH_NAMES_SHORT = [
+  'Ene',
+  'Feb',
+  'Mar',
+  'Abr',
+  'May',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dic',
+] as const
+
+/** Abreviados lowercase para slugs y fallback strings de payee: ene, feb, … */
+export const MONTH_NAMES_SHORT_LOWER = [
+  'ene',
+  'feb',
+  'mar',
+  'abr',
+  'may',
+  'jun',
+  'jul',
+  'ago',
+  'sep',
+  'oct',
+  'nov',
+  'dic',
+] as const
+
+/** "Mayo 2026" — full month label desde 'YYYY-MM'. */
+export function formatMonthLabel(month: string): string {
+  const [y, m] = month.split('-').map(Number)
+  return `${MONTH_NAMES_FULL[m - 1]} ${y}`
+}
+
+/** "15 May" — short date label desde 'YYYY-MM-DD'. */
+export function formatDayShort(iso: string): string {
+  const [, m, d] = iso.split('-').map(Number)
+  return `${String(d).padStart(2, '0')} ${MONTH_NAMES_SHORT[m - 1]}`
+}

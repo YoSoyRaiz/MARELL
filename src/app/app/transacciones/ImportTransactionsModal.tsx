@@ -17,6 +17,7 @@ import { detectBank, type BankDetection } from './bankDetectors'
 import { bulkCreateTransactions, suggestCategoriesForPayees } from './actions'
 import { suggestCategoryFromMerchantPattern } from './merchantPatterns'
 import { useFormatMoney } from '../CurrencyProvider'
+import { MONTH_NAMES_SHORT } from '@/lib/dates'
 
 interface AccountOption {
   id: string
@@ -57,8 +58,7 @@ type SourceKind = 'csv' | 'pdf'
 const formatDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
   const date = new Date(y, m - 1, d)
-  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
-  return `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()]}`
+  return `${String(date.getDate()).padStart(2, '0')} ${MONTH_NAMES_SHORT[date.getMonth()]}`
 }
 
 const CSV_MAX_BYTES = 5 * 1024 * 1024

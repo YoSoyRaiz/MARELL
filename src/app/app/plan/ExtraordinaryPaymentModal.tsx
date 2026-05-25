@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { X, AlertCircle, Calendar } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { createScheduled, type ScheduledType } from '../programadas/actions'
+import { MONTH_NAMES_FULL } from '@/lib/dates'
 
 interface AccountOption {
   id: string
@@ -28,20 +29,7 @@ interface ExtraordinaryPaymentModalProps {
   categories: CategoryOption[]
 }
 
-const MONTH_NAMES_FULL = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-]
+// MONTH_NAMES_FULL importado desde @/lib/dates.
 
 /**
  * Crea un "pago extraordinario": una transacción programada one-off
