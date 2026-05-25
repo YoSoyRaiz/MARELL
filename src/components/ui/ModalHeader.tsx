@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { IconButton } from './IconButton'
 
 // Chrome compartido para headers de modal. Antes el patrón
 // `<header className="px-6 pt-5 pb-4 border-b ... flex items-start
@@ -31,14 +32,13 @@ export function ModalHeader({
       className={`px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4 ${className}`}
     >
       {children}
-      <button
-        type="button"
+      <IconButton
         onClick={onClose}
         aria-label={closeAriaLabel}
-        className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        className="shrink-0"
       >
         <X size={18} strokeWidth={2.2} />
-      </button>
+      </IconButton>
     </header>
   )
 }

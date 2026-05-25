@@ -27,6 +27,7 @@ import { logout } from '@/app/(auth)/actions'
 import { resetOnboarding } from '@/app/onboarding/actions'
 import { useOnboardingStore } from '@/app/onboarding/wizard/store'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { IconButton } from '@/components/ui/IconButton'
 import { useMobileNav } from './MobileNavProvider'
 
 const NAV = [
@@ -225,19 +226,19 @@ export function Sidebar({
           </Link>
         )}
         {hydrated && (
-          <button
-            type="button"
+          <IconButton
             onClick={toggleCollapsed}
             aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
             title={collapsed ? 'Expandir' : 'Colapsar'}
-            className="hidden lg:inline-flex w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] items-center justify-center transition-colors shrink-0"
+            inline
+            className="hidden lg:inline-flex shrink-0"
           >
             {collapsed ? (
               <PanelLeftOpen size={16} strokeWidth={2.2} />
             ) : (
               <PanelLeftClose size={16} strokeWidth={2.2} />
             )}
-          </button>
+          </IconButton>
         )}
       </div>
 

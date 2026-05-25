@@ -18,6 +18,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { IconBadge } from '@/components/ui/IconBadge'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { IconButton } from '@/components/ui/IconButton'
 import { unreconcileAccount } from './actions'
 import { ReconcileModal } from './ReconcileModal'
 import type { LucideIcon } from 'lucide-react'
@@ -347,18 +348,19 @@ export function CuentasClient({
                                     <Scale size={12} strokeWidth={2.4} />
                                     <span className="hidden sm:inline">Reconciliar</span>
                                   </button>
-                                  <button
-                                    type="button"
+                                  <IconButton
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       handleUnreconcile(a)
                                     }}
                                     title="Desreconciliar (deshacer la última reconciliación)"
                                     aria-label={`Desreconciliar ${a.name}`}
-                                    className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] inline-flex items-center justify-center transition-colors"
+                                    inline
+                                    size="sm"
+                                    tone="danger"
                                   >
                                     <Unlock size={12} strokeWidth={2.4} />
-                                  </button>
+                                  </IconButton>
                                 </div>
                               )}
                               <button

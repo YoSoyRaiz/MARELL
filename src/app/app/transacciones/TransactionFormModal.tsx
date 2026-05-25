@@ -25,6 +25,7 @@ import { ReceiptCapture } from './ReceiptCapture'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { AlertBanner } from '@/components/ui/AlertBanner'
+import { IconButton } from '@/components/ui/IconButton'
 import { FormField } from '@/components/ui/FormField'
 import { NativeSelect } from '@/components/ui/NativeSelect'
 import { Spinner } from '@/components/ui/Spinner'
@@ -683,15 +684,14 @@ export function TransactionFormModal({
                       onChange={(v) => updateSplit(i, { amount: v ?? 0 })}
                       placeholder="0.00"
                     />
-                    <button
-                      type="button"
+                    <IconButton
+                      tone="danger"
                       onClick={() => removeSplitRow(i)}
                       disabled={splits.length <= 2}
                       aria-label="Quitar fila"
-                      className="w-9 h-9 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] transition-colors disabled:opacity-30 disabled:pointer-events-none"
                     >
                       <Trash2 size={14} strokeWidth={2} />
-                    </button>
+                    </IconButton>
                   </div>
                 ))}
               </div>

@@ -17,6 +17,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { IconButton } from '@/components/ui/IconButton'
 import { GoalFormModal, type InitialGoal } from './GoalFormModal'
 import { clearGoal, type GoalType } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
@@ -301,8 +302,9 @@ export function MetasClient({ goals, hasBudget }: Props) {
                         Lista
                       </div>
                     )}
-                    <button
-                      type="button"
+                    <IconButton
+                      size="sm"
+                      tone="danger"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDelete(g)
@@ -310,10 +312,10 @@ export function MetasClient({ goals, hasBudget }: Props) {
                       disabled={deletingPending}
                       aria-label={`Eliminar meta de ${g.categoryName}`}
                       title="Eliminar meta"
-                      className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)]"
+                      className="shrink-0"
                     >
                       <Trash2 size={14} strokeWidth={2} />
-                    </button>
+                    </IconButton>
                   </div>
 
                   {/* Remaining hero */}

@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { IconButton } from '@/components/ui/IconButton'
 import { useFormatMoney } from '../CurrencyProvider'
 import {
   ScheduledFormModal,
@@ -369,15 +370,15 @@ export function ProgramadasClient({
                       >
                         <Pencil size={14} strokeWidth={2} />
                       </button>
-                      <button
-                        type="button"
+                      <IconButton
+                        size="sm"
+                        tone="danger"
                         onClick={() => handleDelete(s)}
                         aria-label={`Eliminar ${s.payeeName}`}
                         title="Eliminar"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] transition-colors"
                       >
                         <Trash2 size={14} strokeWidth={2} />
-                      </button>
+                      </IconButton>
                     </div>
                   </div>
                 </div>

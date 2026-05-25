@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { IconBadge } from '@/components/ui/IconBadge'
+import { IconButton } from '@/components/ui/IconButton'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { AlertBanner } from '@/components/ui/AlertBanner'
 import {
@@ -206,15 +207,16 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
                     {roleLabel(inv.role)} · expira {formatDate(inv.expiresAt) ?? '—'}
                   </div>
                 </div>
-                <button
-                  type="button"
+                <IconButton
+                  size="sm"
+                  tone="danger"
                   onClick={() => handleRevoke(inv)}
                   disabled={pending}
-                  className="text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0"
                   aria-label="Cancelar invitación"
+                  className="shrink-0"
                 >
                   <Trash2 size={13} strokeWidth={2} />
-                </button>
+                </IconButton>
               </li>
             ))}
           </ul>
@@ -265,15 +267,15 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
                     <option value="editor">Editor</option>
                     <option value="viewer">Solo ver</option>
                   </select>
-                  <button
-                    type="button"
+                  <IconButton
+                    size="sm"
+                    tone="danger"
                     onClick={() => handleRemove(m)}
                     disabled={pending}
-                    className="text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
                     aria-label="Quitar miembro"
                   >
                     <Trash2 size={13} strokeWidth={2} />
-                  </button>
+                  </IconButton>
                 </div>
               )}
             </li>

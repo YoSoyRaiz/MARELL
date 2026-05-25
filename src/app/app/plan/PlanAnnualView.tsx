@@ -18,6 +18,7 @@ import { ExtraordinaryPaymentModal } from './ExtraordinaryPaymentModal'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 import { MONTH_NAMES_SHORT } from '@/lib/dates'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { IconButton } from '@/components/ui/IconButton'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { deleteScheduled } from '../programadas/actions'
 import { useTransition } from 'react'
@@ -258,15 +259,15 @@ export function PlanAnnualView({
                             {isIncome ? '+' : '−'}
                             {fmtMoney(Math.abs(o.amount))}
                           </div>
-                          <button
-                            type="button"
+                          <IconButton
+                            size="sm"
+                            tone="danger"
                             onClick={() => handleDelete(o)}
                             disabled={deletingPending}
                             aria-label="Eliminar pago"
-                            className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.10)] flex items-center justify-center transition-colors disabled:opacity-50"
                           >
                             <Trash2 size={13} strokeWidth={2} />
-                          </button>
+                          </IconButton>
                         </li>
                       )
                     })}

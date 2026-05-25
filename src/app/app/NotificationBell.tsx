@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Bell, AlertCircle, Calendar, Flame, Target, Sparkles } from 'lucide-react'
+import { IconButton } from '@/components/ui/IconButton'
 
 export interface NotificationItem {
   id: string
@@ -85,18 +86,17 @@ export function NotificationBell({
 
   return (
     <div className="relative" ref={containerRef}>
-      <button
-        type="button"
+      <IconButton
         onClick={handleOpen}
         aria-label="Notificaciones"
         aria-expanded={open}
-        className="relative w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
+        className="relative"
       >
         <Bell size={16} strokeWidth={2.2} />
         {hasUnseen && (
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[var(--coral)] border border-[var(--s1)]" />
         )}
-      </button>
+      </IconButton>
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-[340px] sm:w-[380px] max-h-[70vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step z-40">

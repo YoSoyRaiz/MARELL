@@ -22,6 +22,7 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { IconButton } from '@/components/ui/IconButton'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { ImportTransactionsModal } from './ImportTransactionsModal'
 import { BulkActionBar } from './BulkActionBar'
@@ -417,14 +418,12 @@ export function TransactionsClient({
 
           {/* Month nav */}
           <div className="flex items-center gap-1 ml-auto">
-            <button
-              type="button"
+            <IconButton
               onClick={() => pushParams({ month: adjustMonth(filters.month, -1) })}
               aria-label="Mes anterior"
-              className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
             >
               <ChevronLeft size={16} strokeWidth={2.2} />
-            </button>
+            </IconButton>
             <button
               type="button"
               onClick={() =>
@@ -434,15 +433,13 @@ export function TransactionsClient({
             >
               {formatMonthLabel(filters.month)}
             </button>
-            <button
-              type="button"
+            <IconButton
               onClick={() => pushParams({ month: adjustMonth(filters.month, 1) })}
               aria-label="Mes siguiente"
               disabled={filters.month === 'all'}
-              className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors disabled:opacity-30 disabled:pointer-events-none"
             >
               <ChevronRight size={16} strokeWidth={2.2} />
-            </button>
+            </IconButton>
           </div>
 
           {filtersActive && (
