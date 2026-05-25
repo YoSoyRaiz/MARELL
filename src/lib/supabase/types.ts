@@ -49,6 +49,9 @@ type Profile = {
   last_payment_at: string | null
   next_billing_at: string | null
   subscription_canceled_at: string | null
+  // Capeo de "Rehacer onboarding" para prevenir trial infinito
+  // (migration 2026_05_24_trial_reset_cap.sql).
+  trial_reset_count: number
 }
 
 type Budget = {
@@ -319,6 +322,26 @@ export type Database = {
         Returns: void
       }
       get_ocr_usage: {
+        Args: Record<string, never>
+        Returns: Array<{
+          used: number
+          year_month: string
+        }>
+      }
+      // PDF parse usage — migration 2026_05_24_pdf_parse_usage.sql
+      increment_pdf_parse_usage: {
+        Args: Record<string, never>
+        Returns: Array<{
+          allowed: boolean
+          used: number
+          limit_value: number
+        }>
+      }
+      decrement_pdf_parse_usage: {
+        Args: Record<string, never>
+        Returns: void
+      }
+      get_pdf_parse_usage: {
         Args: Record<string, never>
         Returns: Array<{
           used: number

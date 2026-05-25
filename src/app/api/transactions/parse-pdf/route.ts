@@ -64,6 +64,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
   }
 
+  // Valida el upload ANTES de consumir cuota — un PDF inválido no
+  // debería quemar el slot mensual del usuario.
   let form: FormData
   try {
     form = await request.formData()
@@ -84,6 +86,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Solo archivos PDF' },
       { status: 400 },
+    )
+  }
+
+  // Cuota mensual atomic: el RPC busca el plan del user en SQL (no
+  // confía en el cliente) y serializa concurrentes con row lock.
+  // Caps: free=0, trial=5, pro=20 (definidos en _pdf_parse_limit_for).
+  // Critical para no exponernos a quema de cuota Anthropic — un PDF
+  // típico de estado de cuenta cuesta $0.02-0.10, y sin esto un loop
+  // malicioso podía costar miles de dólares por hora.
+  const { data: usage, error: usageErr } = await supabase
+    .rpc('increment_pdf_parse_usage')
+    .single<{ allowed: boolean; used: number; limit_value: number }>()
+  if (usageErr) {
+    return NextResponse.json(
+      { error: `quota check failed: ${usageErr.message}` },
+      { status: 500 },
+    )
+  }
+  if (!usage?.allowed) {
+    return NextResponse.json(
+      {
+        error: 'quota_exceeded',
+        message:
+          (usage?.limit_value ?? 0) === 0
+            ? 'La importación de PDF está disponible solo para planes Trial o Pro.'
+            : `Llegaste a tu límite mensual de ${usage?.limit_value} PDFs. Se reinicia el primer día del mes.`,
+        used: usage?.used ?? 0,
+        limit: usage?.limit_value ?? 0,
+      },
+      { status: 429 },
     )
   }
 
@@ -117,6 +149,9 @@ export async function POST(request: NextRequest) {
       .join('')
       .trim()
   } catch (e) {
+    // Refund el slot — el usuario no debería perder cuota si Anthropic
+    // está caído o devuelve error.
+    await supabase.rpc('decrement_pdf_parse_usage')
     const msg = e instanceof Error ? e.message : 'fallo del parser'
     return NextResponse.json({ error: msg }, { status: 502 })
   }
@@ -131,6 +166,7 @@ export async function POST(request: NextRequest) {
   try {
     parsed = JSON.parse(jsonText) as ParsedResponse
   } catch {
+    await supabase.rpc('decrement_pdf_parse_usage')
     return NextResponse.json(
       { error: 'respuesta del modelo no es JSON', raw },
       { status: 502 },

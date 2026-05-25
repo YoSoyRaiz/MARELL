@@ -261,33 +261,44 @@ export async function resetOnboarding() {
   //    por budget, así que el cascade no la toca.
   await supabase.from('receipt_ocr_usage').delete().eq('user_id', user.id)
 
-  // 4. Resetear el flag de onboarded para que /onboarding deje pasar
-  //    Y refrescar el trial a 90 días fresh — el usuario está "rehaciendo
-  //    el onboarding", debería tener tiempo completo para evaluar la app
-  //    de nuevo. Cubre tres casos:
-  //      - plan='trial': refresca trial_ends_at a now() + 90 días
-  //      - plan='free' (trial expirado): vuelve a 'trial' con 90 días
-  //      - plan='pro': NO se toca — son clientes pagos testeando el flow
+  // 4. Resetear el flag de onboarded y opcionalmente refrescar el trial.
   //
-  //    Para Pro, solo reseteamos onboarded.
+  // SECURITY (auditoría 2026-05-24): el refresh de trial está capeado
+  // a UN solo reset por user. Sin este cap, un atacante podía clickear
+  // "Rehacer onboarding" cada 89 días y mantener trial infinito,
+  // bypaseando completamente el billing.
+  //
+  // Casos:
+  //   - plan='pro': solo resetea onboarded. Pro nunca pierde su plan
+  //     ni recibe trial fresco (son clientes pagos).
+  //   - plan='trial' o 'free' con trial_reset_count = 0: refresca a
+  //     90 días y suma 1 al contador.
+  //   - plan='trial' o 'free' con trial_reset_count >= 1: solo resetea
+  //     onboarded. El usuario ya gastó su reset.
   const { data: currentProfile } = await supabase
     .from('profiles')
-    .select('plan')
+    .select('plan, trial_reset_count')
     .eq('id', user.id)
     .single()
 
   const isPro = currentProfile?.plan === 'pro'
+  const resetCount = (currentProfile?.trial_reset_count as number | null) ?? 0
+  const TRIAL_RESET_CAP = 1
+  const canRefreshTrial = !isPro && resetCount < TRIAL_RESET_CAP
+
   const freshTrialEnd = new Date(
     Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString()
-  const profileUpdate = isPro
-    ? { onboarded: false }
-    : {
+
+  const profileUpdate = canRefreshTrial
+    ? {
         onboarded: false,
         plan: 'trial' as const,
         trial_ends_at: freshTrialEnd,
         subscription_status: 'trialing' as const,
+        trial_reset_count: resetCount + 1,
       }
+    : { onboarded: false }
 
   const { error: pErr } = await supabase
     .from('profiles')

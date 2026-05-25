@@ -1083,22 +1083,12 @@ export async function bulkDeleteTransactions(ids: string[]): Promise<BulkResult>
     }
   }
 
-  // Roll back balances. Read each account fresh so multiple deletions
-  // against the same account compose correctly.
-  for (const r of rows) {
-    const { data: acc } = await supabase
-      .from('accounts')
-      .select('balance')
-      .eq('id', r.account_id as string)
-      .single()
-    if (!acc) continue
-    const newBalance =
-      Math.round((Number(acc.balance) - Number(r.amount)) * 100) / 100
-    await supabase
-      .from('accounts')
-      .update({ balance: newBalance })
-      .eq('id', r.account_id as string)
-  }
+  // Balance rollback: el trigger `transactions_balance_sync` (migration
+  // 2026_05_04) resta automáticamente OLD.amount del account.balance en
+  // cada DELETE. NO duplicamos ese trabajo manualmente — antes había un
+  // loop aquí que leía y actualizaba balances en JS, causando un
+  // doble-decrement (la auditoría de seguridad lo flaggeó como crítico:
+  // corrupción de data financiera).
 
   // Reverse CC buckets where applicable.
   for (const r of rows) {

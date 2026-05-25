@@ -1,0 +1,24 @@
+-- ============================================================
+-- Migration: cierra leak de RLS en budget_invitations
+-- 2026-05-24
+--
+-- La auditoría de seguridad encontró que la policy 'public_read_by_token'
+-- usaba `using (true)`, lo que permitía a CUALQUIER usuario autenticado
+-- (vía supabase.from('budget_invitations').select('*')) leer:
+--   - Lista completa de emails invitados al sistema (PII massive leak)
+--   - Tokens activos de invitaciones no aceptadas (suplantación)
+--
+-- Esta migration:
+--   1. Drop la policy 'public_read_by_token'.
+--   2. La policy 'owner_manage_invitations' (FOR ALL) ya cubre el caso
+--      del owner del budget viendo/manejando sus propias invitaciones.
+--   3. El flujo /aceptar-invitacion ya usa createAdminClient() para
+--      buscar por token (bypassa RLS) — sigue funcionando sin la
+--      policy pública. acceptInvitation() también usa admin client.
+--
+-- Resultado: nadie sin admin key ni ownership puede leer invitations.
+--
+-- Idempotente. Run once en SQL Editor.
+-- ============================================================
+
+drop policy if exists "public_read_by_token" on public.budget_invitations;
