@@ -6,6 +6,7 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { moveMoneyBetweenCategories } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
+import { Button } from '@/components/ui/Button'
 import type { PlanGroup } from './PlanView'
 
 interface MoveMoneyModalProps {
@@ -250,21 +251,23 @@ export function MoveMoneyModal({
         </div>
 
         <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--overlay-1)]">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="tight"
             onClick={onClose}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-xl transition-colors"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
+            variant="gradient"
+            size="tight"
             disabled={!canSubmit}
-            className="h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] disabled:opacity-40 disabled:pointer-events-none"
+            iconRight={<ArrowRight size={14} strokeWidth={2.4} />}
           >
             Mover
-            <ArrowRight size={14} strokeWidth={2.4} />
-          </button>
+          </Button>
         </footer>
       </form>
     </div>

@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
+import { Button } from './Button'
 
 export type ConfirmTone = 'danger' | 'default'
 
@@ -136,25 +137,23 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-2 bg-[var(--overlay-1)]">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="tight"
                 onClick={() => close(false)}
-                className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] rounded-lg transition-colors"
               >
                 {cancelLabel}
-              </button>
-              <button
+              </Button>
+              <Button
                 ref={confirmBtnRef}
                 type="button"
+                variant={isDanger ? 'danger' : 'gradient'}
+                size="tight"
                 onClick={() => close(true)}
-                className={`h-10 px-5 font-semibold text-[13px] rounded-xl transition-[filter,background-color] inline-flex items-center gap-2 ${
-                  isDanger
-                    ? 'bg-[var(--coral)] text-[#0B0B0C] hover:brightness-110 active:brightness-95'
-                    : 'gradient-bg text-[#0B0B0C] glow-on-hover hover:brightness-105'
-                }`}
               >
                 {confirmLabel}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

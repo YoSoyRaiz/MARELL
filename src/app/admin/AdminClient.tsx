@@ -16,6 +16,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/Button'
 import {
   recordPayment,
   extendTrial,
@@ -562,22 +563,24 @@ function PaymentDialog({
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="tight"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] rounded-lg transition-colors"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="gradient"
+            size="tight"
             onClick={handleConfirm}
             disabled={pending}
-            className="h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 transition-[filter] disabled:opacity-50"
           >
             {pending ? 'Guardando...' : 'Confirmar pago'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -651,22 +654,24 @@ function TrialDialog({
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="tight"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] rounded-lg transition-colors"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="gradient"
+            size="tight"
             onClick={handleConfirm}
             disabled={pending}
-            className="h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 transition-[filter] disabled:opacity-50"
           >
             {pending ? 'Guardando...' : 'Extender'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -21,6 +21,7 @@ import {
 import { useTheme, type ThemeMode } from '@/components/ui/ThemeProvider'
 import Link from 'next/link'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/Button'
 import { logout } from '@/app/(auth)/actions'
 import {
   updateProfile,
@@ -494,19 +495,21 @@ function SaveBar({
   if (!dirty) return null
   return (
     <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="tight"
         onClick={onReset}
         disabled={pending}
-        className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-lg transition-colors disabled:opacity-60"
       >
         Descartar
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="gradient"
+        size="tight"
         onClick={onSave}
         disabled={pending}
-        className="h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-2"
       >
         {pending ? (
           <>
@@ -516,7 +519,7 @@ function SaveBar({
         ) : (
           'Guardar cambios'
         )}
-      </button>
+      </Button>
     </div>
   )
 }

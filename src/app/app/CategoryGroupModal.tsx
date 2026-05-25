@@ -7,6 +7,7 @@ import { InlineMoneyEdit } from './plan/InlineMoneyEdit'
 import { updateAssignment } from './plan/actions'
 import { useReadyToAssign } from './ReadyToAssignProvider'
 import { useFormatMoney } from './CurrencyProvider'
+import { Button } from '@/components/ui/Button'
 
 export interface ModalCategory {
   id: string
@@ -206,13 +207,14 @@ export function CategoryGroupModal({
               {fmtMoney(totalAssigned)}
             </span>
           </div>
-          <button
+          <Button
             type="button"
+            variant="gradient"
+            size="tight"
             onClick={onClose}
-            className="h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter]"
           >
             Listo
-          </button>
+          </Button>
         </footer>
       </div>
     </div>

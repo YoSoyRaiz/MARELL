@@ -6,6 +6,7 @@ import { X, AlertCircle, Trash2, Archive, ArchiveRestore } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { AccountTypeSelect } from '@/app/onboarding/wizard/components/AccountTypeSelect'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/Button'
 import type { AccountType } from '@/app/onboarding/wizard/types'
 import {
   createAccount,
@@ -365,19 +366,21 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
         </div>
 
         <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--overlay-1)]">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="tight"
             onClick={onClose}
             disabled={pending}
-            className="h-10 px-4 text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-lg transition-colors disabled:opacity-60"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="gradient"
+            size="tight"
             onClick={handleSubmit}
             disabled={!valid || pending}
-            className="h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-2"
           >
             {pending ? (
               <>
@@ -389,7 +392,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
             ) : (
               'Agregar cuenta'
             )}
-          </button>
+          </Button>
         </footer>
       </div>
     </div>

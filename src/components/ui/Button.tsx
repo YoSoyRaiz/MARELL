@@ -1,13 +1,18 @@
 import Link from 'next/link'
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
-type Variant = 'gradient' | 'outline' | 'ghost' | 'subtle'
-type Size = 'sm' | 'md' | 'lg'
+type Variant = 'gradient' | 'outline' | 'ghost' | 'subtle' | 'danger'
+type Size = 'sm' | 'md' | 'lg' | 'tight'
 
 const sizeClasses: Record<Size, string> = {
   sm: 'h-9 px-4 text-[13px] rounded-[10px]',
   md: 'h-11 px-5 text-sm rounded-xl',
   lg: 'h-[52px] px-7 text-[15px] rounded-2xl',
+  // `tight` matches the in-modal footer buttons (Cancelar/Guardar)
+  // que estaban duplicados inline en 15+ archivos antes de
+  // la consolidación. Pixel-equivalent al primary CTA inline:
+  // h-10, px-5, text-[13px], rounded-xl.
+  tight: 'h-10 px-5 text-[13px] rounded-xl',
 }
 
 const variantClasses: Record<Variant, string> = {
@@ -19,6 +24,8 @@ const variantClasses: Record<Variant, string> = {
     'bg-transparent text-[var(--text2)] font-medium hover:text-[var(--text)] hover:bg-[var(--overlay-2)]',
   subtle:
     'bg-[var(--overlay-2)] text-[var(--text)] font-medium border border-[var(--border)] hover:bg-[var(--overlay-3)] hover:border-[var(--border3)]',
+  danger:
+    'bg-[var(--coral)] text-[#0B0B0C] font-semibold hover:brightness-110 active:brightness-95',
 }
 
 const baseClasses =
@@ -33,11 +40,14 @@ type CommonProps = {
   children: ReactNode
 }
 
+// ComponentProps (no -WithoutRef) incluye `ref` como prop — necesario
+// para que React 19 lo forwardée al <button> nativo. ConfirmDialog usa
+// confirmBtnRef para enfocar el botón cuando se abre el dialog.
 type ButtonAsButton = CommonProps &
-  Omit<ComponentPropsWithoutRef<'button'>, keyof CommonProps> & { href?: never }
+  Omit<ComponentProps<'button'>, keyof CommonProps> & { href?: never }
 
 type ButtonAsLink = CommonProps &
-  Omit<ComponentPropsWithoutRef<typeof Link>, keyof CommonProps | 'href'> & { href: string }
+  Omit<ComponentProps<typeof Link>, keyof CommonProps | 'href'> & { href: string }
 
 export function Button(props: ButtonAsButton | ButtonAsLink) {
   const {
@@ -62,14 +72,14 @@ export function Button(props: ButtonAsButton | ButtonAsLink) {
 
   if ('href' in props && props.href) {
     return (
-      <Link {...(rest as ComponentPropsWithoutRef<typeof Link>)} href={props.href} className={classes}>
+      <Link {...(rest as ComponentProps<typeof Link>)} href={props.href} className={classes}>
         {inner}
       </Link>
     )
   }
 
   return (
-    <button {...(rest as ComponentPropsWithoutRef<'button'>)} className={classes}>
+    <button {...(rest as ComponentProps<'button'>)} className={classes}>
       {inner}
     </button>
   )
