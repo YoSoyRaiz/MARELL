@@ -17,6 +17,9 @@ import {
   RotateCcw,
   Calendar,
   Receipt,
+  ChevronDown,
+  Check,
+  Search,
 } from 'lucide-react'
 import {
   fetchAssignContext,
@@ -84,12 +87,24 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
   const popoverRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Category combobox state. The native <select> made it painful to find
+  // a category in budgets with 30+ entries — typeahead lets the user
+  // filter as they type.
+  const [catOpen, setCatOpen] = useState(false)
+  const [catQuery, setCatQuery] = useState('')
+  const [catActiveIndex, setCatActiveIndex] = useState(0)
+  const catButtonRef = useRef<HTMLButtonElement>(null)
+  const catListRef = useRef<HTMLDivElement>(null)
+  const catSearchRef = useRef<HTMLInputElement>(null)
+
   // Load context the first time we open and reset on close.
   useEffect(() => {
     if (!open) {
       setError(null)
       setOkMessage(null)
       setAmountText('')
+      setCatOpen(false)
+      setCatQuery('')
       return
     }
     if (ctx) return // already loaded once
@@ -137,6 +152,21 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
     }
   }, [open, onClose, anchorRef])
 
+  // Combobox close-on-outside-click. Listens only while open and only
+  // closes the combobox panel — never the parent popover.
+  useEffect(() => {
+    if (!catOpen) return
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as Node | null
+      if (!target) return
+      if (catListRef.current?.contains(target)) return
+      if (catButtonRef.current?.contains(target)) return
+      setCatOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [catOpen])
+
   // Lock body scroll on mobile while the sheet is open so the page
   // underneath doesn't peek through when the keyboard pushes content.
   useEffect(() => {
@@ -170,6 +200,27 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
 
   const selectedCategory = ctx?.categories.find((c) => c.id === categoryId) ?? null
   const amount = parseAmount(amountText)
+
+  // Flatten + filter for the combobox. We keep groupName so we can show
+  // a small caption next to each result; the user often remembers the
+  // group ("Vida diaria") faster than the exact category name.
+  const normalize = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
+  const catQueryNorm = normalize(catQuery.trim())
+  const filteredCats = (() => {
+    if (!ctx) return [] as { id: string; name: string; groupName: string }[]
+    const flat = ctx.categories.map((c) => ({
+      id: c.id,
+      name: c.name,
+      groupName: c.groupName,
+    }))
+    if (!catQueryNorm) return flat
+    return flat.filter(
+      (c) =>
+        normalize(c.name).includes(catQueryNorm) ||
+        normalize(c.groupName).includes(catQueryNorm),
+    )
+  })()
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -340,7 +391,10 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
             />
           </div>
 
-          {/* Category select */}
+          {/* Category combobox — typeahead replaces the native <select>
+              because budgets with 30+ categories made scrolling painful.
+              The button shows the current pick; clicking opens a
+              filter+list panel. */}
           <div>
             <label
               htmlFor="qa-cat"
@@ -348,23 +402,154 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
             >
               Categoría
             </label>
-            <select
-              id="qa-cat"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full mt-1 !text-emph !py-3.5 !px-4 !rounded-xl appearance-none cursor-pointer"
-            >
-              {grouped.map((g) => (
-                <optgroup key={g.name} label={g.name}>
-                  {g.cats.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {selectedCategory && (
+            <div className="relative mt-1">
+              <button
+                ref={catButtonRef}
+                id="qa-cat"
+                type="button"
+                onClick={() => {
+                  setCatOpen((v) => {
+                    const next = !v
+                    if (next) {
+                      setCatQuery('')
+                      const idx = filteredCats.findIndex((c) => c.id === categoryId)
+                      setCatActiveIndex(idx >= 0 ? idx : 0)
+                      window.requestAnimationFrame(() => catSearchRef.current?.focus())
+                    }
+                    return next
+                  })
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setCatOpen(true)
+                    setCatQuery('')
+                    const idx = filteredCats.findIndex((c) => c.id === categoryId)
+                    setCatActiveIndex(idx >= 0 ? idx : 0)
+                    window.requestAnimationFrame(() => catSearchRef.current?.focus())
+                  }
+                }}
+                aria-haspopup="listbox"
+                aria-expanded={catOpen}
+                aria-controls="qa-cat-listbox"
+                className="w-full !text-emph !py-3.5 !px-4 !rounded-xl bg-[var(--s1)] border border-[var(--border2)] hover:border-[var(--brand-2)]/40 text-left text-[var(--text)] inline-flex items-center justify-between gap-2 transition-colors"
+              >
+                <span className="truncate">
+                  {selectedCategory ? selectedCategory.name : 'Elige una categoría'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  strokeWidth={2.2}
+                  className={`text-[var(--muted)] shrink-0 transition-transform ${
+                    catOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {catOpen && (
+                <div
+                  ref={catListRef}
+                  className="absolute left-0 right-0 top-full mt-1.5 z-10 rounded-xl border border-[var(--border2)] bg-[var(--s2)] shadow-[0_16px_40px_rgba(0,0,0,0.5)] overflow-hidden animate-step"
+                >
+                  <div className="px-3 py-2 border-b border-[var(--border)] flex items-center gap-2">
+                    <Search
+                      size={13}
+                      strokeWidth={2.2}
+                      className="text-[var(--muted)] shrink-0"
+                    />
+                    <input
+                      ref={catSearchRef}
+                      type="text"
+                      value={catQuery}
+                      onChange={(e) => {
+                        setCatQuery(e.target.value)
+                        setCatActiveIndex(0)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault()
+                          setCatActiveIndex((i) =>
+                            filteredCats.length === 0
+                              ? 0
+                              : Math.min(i + 1, filteredCats.length - 1),
+                          )
+                        } else if (e.key === 'ArrowUp') {
+                          e.preventDefault()
+                          setCatActiveIndex((i) => Math.max(i - 1, 0))
+                        } else if (e.key === 'Enter') {
+                          e.preventDefault()
+                          const pick = filteredCats[catActiveIndex]
+                          if (pick) {
+                            setCategoryId(pick.id)
+                            setCatOpen(false)
+                            catButtonRef.current?.focus()
+                          }
+                        } else if (e.key === 'Escape') {
+                          e.preventDefault()
+                          setCatOpen(false)
+                          catButtonRef.current?.focus()
+                        }
+                      }}
+                      placeholder="Buscar categoría…"
+                      autoComplete="off"
+                      className="flex-1 bg-transparent border-0 outline-none !text-body-sm !p-0 !rounded-none text-[var(--text)] placeholder:text-[var(--muted2)]"
+                    />
+                  </div>
+                  <ul
+                    id="qa-cat-listbox"
+                    role="listbox"
+                    aria-label="Categorías"
+                    className="max-h-64 overflow-y-auto py-1"
+                  >
+                    {filteredCats.length === 0 ? (
+                      <li className="px-3 py-3 text-meta text-[var(--muted)] text-center">
+                        Sin resultados para “{catQuery}”
+                      </li>
+                    ) : (
+                      filteredCats.map((c, i) => {
+                        const isSelected = c.id === categoryId
+                        const isActive = i === catActiveIndex
+                        return (
+                          <li
+                            key={c.id}
+                            role="option"
+                            aria-selected={isSelected}
+                            onMouseEnter={() => setCatActiveIndex(i)}
+                            onClick={() => {
+                              setCategoryId(c.id)
+                              setCatOpen(false)
+                              catButtonRef.current?.focus()
+                            }}
+                            className={`px-3 py-2 cursor-pointer flex items-center gap-2 ${
+                              isActive
+                                ? 'bg-[var(--overlay-2)]'
+                                : 'hover:bg-[var(--overlay-1)]'
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="text-body-sm text-[var(--text)] truncate">
+                                {c.name}
+                              </div>
+                              <div className="text-tiny text-[var(--muted)] truncate">
+                                {c.groupName}
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <Check
+                                size={14}
+                                strokeWidth={2.4}
+                                className="text-[var(--brand-text)] shrink-0"
+                              />
+                            )}
+                          </li>
+                        )
+                      })
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+            {selectedCategory && !catOpen && (
               <p className="mt-1.5 text-eyebrow text-[var(--muted)] num tabular-nums">
                 Actualmente: <span className="text-[var(--text2)]">{fmtMoney(selectedCategory.assigned)}</span>
                 {selectedCategory.goalAmount && selectedCategory.goalAmount > 0 ? (
