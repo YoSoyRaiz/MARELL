@@ -279,7 +279,7 @@ export function ReceiptCapture({
             </button>
           </div>
           <div
-            className={`px-4 py-2 border-t text-[12px] font-medium inline-flex items-center gap-1.5 w-full ${
+            className={`px-4 py-2 border-t text-meta font-medium inline-flex items-center gap-1.5 w-full ${
               quotaHit
                 ? 'bg-[rgba(245,200,66,0.10)] border-[var(--warn)]/20 text-[var(--warn-text)]'
                 : 'bg-[rgba(61,220,151,0.10)] border-[var(--brand-2)]/20 text-[var(--brand-text)]'
@@ -324,7 +324,7 @@ export function ReceiptCapture({
           </div>
           <div className="text-left flex-1 min-w-0">
             <div className="inline-flex items-center gap-2 mb-1">
-              <span className="text-[15px] font-bold text-[var(--text)]">
+              <span className="text-emph font-bold text-[var(--text)]">
                 {pending ? 'Subiendo…' : 'Tomar foto del recibo'}
               </span>
               {!pending && (
@@ -333,7 +333,7 @@ export function ReceiptCapture({
                 </span>
               )}
             </div>
-            <div className="text-[12px] text-[var(--text2)] leading-snug">
+            <div className="text-meta text-[var(--text2)] leading-snug">
               {pending
                 ? 'Un momento, cargando tu foto…'
                 : 'Apunta al recibo y registra el gasto en segundos.'}
@@ -343,13 +343,13 @@ export function ReceiptCapture({
       )}
 
       {error && (
-        <p className="text-[11px] text-[var(--coral-text)] mt-2 leading-relaxed">
+        <p className="text-eyebrow text-[var(--coral-text)] mt-2 leading-relaxed">
           {error}
         </p>
       )}
 
       {usage && !url && (
-        <p className="text-[10px] text-[var(--muted2)] mt-1.5 num tabular-nums">
+        <p className="text-tiny text-[var(--muted2)] mt-1.5 num tabular-nums">
           Lectura automática: {Math.max(0, usage.limit - usage.used)} de{' '}
           {usage.limit} escaneos restantes este mes
         </p>

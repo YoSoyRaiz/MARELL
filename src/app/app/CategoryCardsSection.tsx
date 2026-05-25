@@ -91,14 +91,14 @@ export function CategoryCardsSection({
       <Card as="section" className="overflow-hidden">
         <CardHeader gap="none">
           <div>
-            <h2 className="text-[15px] font-semibold text-[var(--text)]">Categorías</h2>
-            <p className="text-[12px] text-[var(--muted)] mt-0.5">
+            <h2 className="text-emph font-semibold text-[var(--text)]">Categorías</h2>
+            <p className="text-meta text-[var(--muted)] mt-0.5">
               Click en un grupo para asignar dinero
             </p>
           </div>
           <Link
             href="/app/plan"
-            className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
+            className="text-meta text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
           >
             Ver plan completo <ArrowRight size={12} strokeWidth={2.4} />
           </Link>
@@ -126,30 +126,30 @@ export function CategoryCardsSection({
                   <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center group-hover:text-[var(--brand-text)] transition-colors">
                     <Icon size={16} strokeWidth={2} />
                   </div>
-                  <div className="text-[13px] font-medium text-[var(--text)]">{g.name}</div>
+                  <div className="text-body-sm font-medium text-[var(--text)]">{g.name}</div>
                 </div>
                 {isUnassigned ? (
                   <>
-                    <div className="text-[15px] font-semibold text-[var(--muted)] leading-snug">
+                    <div className="text-emph font-semibold text-[var(--muted)] leading-snug">
                       Aún sin asignar
                     </div>
-                    <div className="text-[11px] text-[var(--brand-text)] mt-1 group-hover:underline underline-offset-4">
+                    <div className="text-eyebrow text-[var(--brand-text)] mt-1 group-hover:underline underline-offset-4">
                       Click para asignar →
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                    <div className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                       {isOverspent ? 'Excedido' : 'Disponible'}
                     </div>
                     <div
-                      className={`text-[20px] font-bold tabular-nums num leading-none mt-0.5 ${
+                      className={`text-h2 font-bold tabular-nums num leading-none mt-0.5 ${
                         isOverspent ? 'text-[var(--coral-text)]' : 'gradient-text'
                       }`}
                     >
                       {fmtMoneyShort(g.available)}
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] mt-1.5 num tabular-nums">
+                    <div className="text-eyebrow text-[var(--muted)] mt-1.5 num tabular-nums">
                       {fmtMoneyShort(g.spent)} gastado este mes · {fmtMoneyShort(g.assigned)}{' '}
                       asignado
                     </div>

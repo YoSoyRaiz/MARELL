@@ -136,7 +136,7 @@ export function UpgradeClient({
               <div className="text-[16px] font-semibold text-[var(--text)]">
                 Pro activo
               </div>
-              <div className="text-[12px] text-[var(--muted)] mt-0.5">
+              <div className="text-meta text-[var(--muted)] mt-0.5">
                 {subscription.provider === 'azul'
                   ? subscription.cardLast4
                     ? `Tarjeta ${subscription.cardBrand ?? ''} •••• ${subscription.cardLast4} (Azul)`
@@ -146,21 +146,21 @@ export function UpgradeClient({
                     : ''}
               </div>
               {nextBilling && (
-                <div className="text-[12px] text-[var(--muted)] mt-1 num tabular-nums">
+                <div className="text-meta text-[var(--muted)] mt-1 num tabular-nums">
                   Próximo cobro: {nextBilling}
                 </div>
               )}
             </div>
           </div>
           <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between gap-3">
-            <p className="text-[12px] text-[var(--text2)]">
+            <p className="text-meta text-[var(--text2)]">
               Cancela cuando quieras. Mantienes acceso hasta el fin del ciclo.
             </p>
             <button
               type="button"
               onClick={handleCancel}
               disabled={pending}
-              className="text-[12px] font-medium text-[var(--coral-text)] hover:underline underline-offset-4 disabled:opacity-50"
+              className="text-meta font-medium text-[var(--coral-text)] hover:underline underline-offset-4 disabled:opacity-50"
             >
               Cancelar suscripción
             </button>
@@ -172,16 +172,16 @@ export function UpgradeClient({
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-6 space-y-5">
             <div className="flex items-baseline justify-between gap-3 flex-wrap">
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+                <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                   MARELL Pro
                 </div>
                 <div className="mt-2 inline-flex items-baseline gap-2">
                   <span className="text-[44px] font-bold tabular-nums num gradient-text leading-none">
                     RD${MARELL_PRO_DOP.pricePerMonth.toLocaleString('en-US')}
                   </span>
-                  <span className="text-[14px] text-[var(--muted)]">/mes</span>
+                  <span className="text-body text-[var(--muted)]">/mes</span>
                 </div>
-                <p className="text-[12px] text-[var(--muted)] mt-1">
+                <p className="text-meta text-[var(--muted)] mt-1">
                   Cancela cuando quieras. Sin permanencia.
                 </p>
               </div>
@@ -191,7 +191,7 @@ export function UpgradeClient({
               {MARELL_PRO_DOP.features.map((f) => (
                 <li
                   key={f}
-                  className="flex items-start gap-2 text-[13px] text-[var(--text)]"
+                  className="flex items-start gap-2 text-body-sm text-[var(--text)]"
                 >
                   <Check
                     size={14}
@@ -204,7 +204,7 @@ export function UpgradeClient({
             </ul>
 
             <div className="pt-3 border-t border-[var(--border)] space-y-3">
-              <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+              <div className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                 Elige cómo pagar
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -218,10 +218,10 @@ export function UpgradeClient({
                     <CreditCard size={18} strokeWidth={2} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[14px] font-semibold text-[var(--text)]">
+                    <div className="text-body font-semibold text-[var(--text)]">
                       Tarjeta vía Azul
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                    <div className="text-eyebrow text-[var(--muted)] mt-0.5 leading-snug">
                       {pendingProvider === 'azul'
                         ? 'Redirigiendo…'
                         : 'Visa, Mastercard, AmEx. Cobro mensual automático en RD$.'}
@@ -235,13 +235,13 @@ export function UpgradeClient({
                   className="rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] px-4 py-3.5 text-left flex items-start gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                 >
                   <div className="w-10 h-10 rounded-lg bg-[rgba(245,200,66,0.10)] text-[var(--warn-text)] flex items-center justify-center shrink-0">
-                    <span className="font-bold text-[13px]">PP</span>
+                    <span className="font-bold text-body-sm">PP</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[14px] font-semibold text-[var(--text)]">
+                    <div className="text-body font-semibold text-[var(--text)]">
                       PayPal
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                    <div className="text-eyebrow text-[var(--muted)] mt-0.5 leading-snug">
                       {pendingProvider === 'paypal'
                         ? 'Redirigiendo…'
                         : 'Cobro mensual en USD. Para usuarios fuera de RD o que prefieran PayPal.'}
@@ -249,7 +249,7 @@ export function UpgradeClient({
                   </div>
                 </button>
               </div>
-              <p className="text-[11px] text-[var(--muted2)] leading-relaxed">
+              <p className="text-eyebrow text-[var(--muted2)] leading-relaxed">
                 Tus datos de tarjeta nunca pasan por MARELL. Azul y PayPal manejan el cobro y solo nos avisan cuando completaste el pago.
               </p>
             </div>
@@ -263,7 +263,7 @@ export function UpgradeClient({
                 strokeWidth={2.2}
                 className="text-[var(--coral-text)] shrink-0 mt-0.5"
               />
-              <div className="text-[13px]">
+              <div className="text-body-sm">
                 <div className="font-semibold text-[var(--text)]">
                   El último pago falló.
                 </div>

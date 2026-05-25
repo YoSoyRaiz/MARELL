@@ -52,9 +52,9 @@ export function Callout({
       role="note"
     >
       <s.Icon size={18} strokeWidth={2.2} className={`${s.text} shrink-0 mt-0.5`} />
-      <div className="text-[14px] text-[var(--text)] leading-relaxed flex-1">
+      <div className="text-body text-[var(--text)] leading-relaxed flex-1">
         {title && (
-          <div className={`${s.text} font-semibold mb-1 text-[13px]`}>
+          <div className={`${s.text} font-semibold mb-1 text-body-sm`}>
             {title}
           </div>
         )}
@@ -67,7 +67,7 @@ export function Callout({
 /** Inline keyboard key badge — `<Kbd>N</Kbd>`. */
 export function Kbd({ children }: { children: ReactNode }) {
   return (
-    <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md border border-[var(--border2)] bg-white/[0.04] text-[11px] font-semibold tabular-nums text-[var(--text)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.4)]">
+    <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md border border-[var(--border2)] bg-white/[0.04] text-eyebrow font-semibold tabular-nums text-[var(--text)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.4)]">
       {children}
     </kbd>
   )
@@ -81,12 +81,12 @@ export function StepList({ children }: { children: ReactNode }) {
 export function Step({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <li className="relative pl-12 doc-step">
-      <span className="doc-step-bullet absolute left-0 top-0 w-9 h-9 rounded-xl gradient-bg text-[#0B0B0C] font-bold text-[15px] flex items-center justify-center shadow-[0_4px_16px_rgba(61,220,151,0.18)]" />
+      <span className="doc-step-bullet absolute left-0 top-0 w-9 h-9 rounded-xl gradient-bg text-[#0B0B0C] font-bold text-emph flex items-center justify-center shadow-[0_4px_16px_rgba(61,220,151,0.18)]" />
       <h3 className="text-[16px] font-semibold text-[var(--text)] leading-snug mt-1">
         {title}
       </h3>
       {children && (
-        <div className="mt-2 text-[14px] text-[var(--text2)] leading-relaxed">
+        <div className="mt-2 text-body text-[var(--text2)] leading-relaxed">
           {children}
         </div>
       )}
@@ -114,10 +114,10 @@ export function FeatureCard({
       <div className="w-10 h-10 rounded-xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)] flex items-center justify-center">
         <Icon size={18} strokeWidth={2.2} />
       </div>
-      <div className="text-[15px] font-semibold text-[var(--text)] leading-snug">
+      <div className="text-emph font-semibold text-[var(--text)] leading-snug">
         {title}
       </div>
-      <div className="text-[13px] text-[var(--text2)] leading-relaxed">
+      <div className="text-body-sm text-[var(--text2)] leading-relaxed">
         {children}
       </div>
     </div>
@@ -136,7 +136,7 @@ export function ScreenshotPlaceholder({
 }) {
   return (
     <div
-      className="my-6 rounded-2xl border border-dashed border-[var(--border2)] bg-[var(--s1)]/40 flex items-center justify-center text-[12px] text-[var(--muted)]"
+      className="my-6 rounded-2xl border border-dashed border-[var(--border2)] bg-[var(--s1)]/40 flex items-center justify-center text-meta text-[var(--muted)]"
       style={{ aspectRatio: ratio }}
     >
       {label}

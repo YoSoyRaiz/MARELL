@@ -15,10 +15,10 @@ export function DocsSidebar({ onNavigate }: DocsSidebarProps) {
   const pathname = usePathname() ?? ''
 
   return (
-    <nav aria-label="Documentación" className="text-[14px]">
+    <nav aria-label="Documentación" className="text-body">
       {DOCS_NAV.map((section) => (
         <div key={section.title} className="mb-6">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted2)] mb-2 px-3">
+          <div className="text-tiny font-semibold uppercase tracking-[0.18em] text-[var(--muted2)] mb-2 px-3">
             {section.title}
           </div>
           <ul className="space-y-0.5">

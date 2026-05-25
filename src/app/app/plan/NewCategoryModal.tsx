@@ -134,7 +134,7 @@ export function NewCategoryModal({
               )}
             </NativeSelect>
             {isMetasGroup && (
-              <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-2">
+              <p className="text-eyebrow text-[var(--muted)] leading-relaxed mt-2">
                 Las categorías del grupo Metas no aparecen en Plan — las
                 configuras y trackeas desde la sección Metas.
               </p>

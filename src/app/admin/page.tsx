@@ -41,13 +41,13 @@ export default async function AdminPage() {
         <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Logo height={28} />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--brand-2)]">
+            <span className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-[var(--brand-2)]">
               Admin
             </span>
           </div>
           <Link
             href="/app"
-            className="text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] inline-flex items-center gap-1.5"
+            className="text-body-sm font-medium text-[var(--text2)] hover:text-[var(--text)] inline-flex items-center gap-1.5"
           >
             <ArrowLeft size={14} strokeWidth={2.2} />
             Volver a la app

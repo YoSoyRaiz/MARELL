@@ -15,15 +15,15 @@ export default function AppLoading() {
     <div className="fixed inset-0 z-40 bg-[var(--bg)] flex flex-col items-center justify-center px-8">
       <div className="flex flex-col items-center gap-4">
         <Logo variant="icon" height={72} />
-        <span className="text-[20px] font-bold tracking-[0.2em] text-[var(--text)]">
+        <span className="text-h2 font-bold tracking-[0.2em] text-[var(--text)]">
           MARELL
         </span>
       </div>
       <div className="text-center space-y-1 mt-6">
-        <p className="text-[14px] text-[var(--text)] font-medium">
+        <p className="text-body text-[var(--text)] font-medium">
           Tu dinero. Tu futuro.
         </p>
-        <p className="text-[12px] text-[var(--muted)]">Bajo control.</p>
+        <p className="text-meta text-[var(--muted)]">Bajo control.</p>
       </div>
       <div className="mt-10 flex items-center gap-2" aria-label="Cargando">
         <span className="w-2 h-2 rounded-full gradient-bg animate-[marellDot_1.2s_ease-in-out_infinite] [animation-delay:0s]" />

@@ -75,10 +75,10 @@ export function LandingAccounts() {
                       <Icon size={16} strokeWidth={2.2} />
                     </span>
                     <div>
-                      <p className="text-[14px] font-semibold leading-tight">
+                      <p className="text-body font-semibold leading-tight">
                         {title}
                       </p>
-                      <p className="mt-0.5 text-[13px] text-[var(--text2)]">
+                      <p className="mt-0.5 text-body-sm text-[var(--text2)]">
                         {desc}
                       </p>
                     </div>
@@ -108,7 +108,7 @@ export function LandingAccounts() {
                   <div className="mb-3 flex items-baseline justify-between">
                     <h3 className="text-base font-bold">Cuentas</h3>
                     <div className="text-right">
-                      <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">
+                      <p className="text-tiny uppercase tracking-wider text-[var(--muted)]">
                         Saldo total
                       </p>
                       <p className="num text-lg font-bold">$20,434.00</p>
@@ -118,7 +118,7 @@ export function LandingAccounts() {
                   <div className="space-y-4">
                     {accounts.map((sec) => (
                       <div key={sec.section}>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+                        <p className="text-tiny font-semibold uppercase tracking-wider text-[var(--muted)]">
                           {sec.section}
                         </p>
                         <div className="mt-1.5 divide-y divide-[var(--border)]">
@@ -131,17 +131,17 @@ export function LandingAccounts() {
                                 {r.icon}
                               </span>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-medium truncate">
+                                <p className="text-body-sm font-medium truncate">
                                   {r.label}
                                 </p>
                                 {r.sub && (
-                                  <p className="text-[11px] text-[var(--muted)]">
+                                  <p className="text-eyebrow text-[var(--muted)]">
                                     {r.sub}
                                   </p>
                                 )}
                               </div>
                               <p
-                                className={`num text-[13px] font-semibold ${
+                                className={`num text-body-sm font-semibold ${
                                   r.tone === 'red' ? 'text-[var(--coral-text)]' : ''
                                 }`}
                               >
@@ -158,7 +158,7 @@ export function LandingAccounts() {
                 {/* Donut breakdown */}
                 <div className="flex flex-col items-center justify-center">
                   <Donut />
-                  <ul className="mt-5 w-full space-y-2.5 text-[13px]">
+                  <ul className="mt-5 w-full space-y-2.5 text-body-sm">
                     {donutSegments.map((s) => (
                       <li
                         key={s.label}
@@ -171,7 +171,7 @@ export function LandingAccounts() {
                           />
                           {s.label}
                         </span>
-                        <span className="num text-[12px] font-semibold">
+                        <span className="num text-meta font-semibold">
                           {s.pct}%
                         </span>
                       </li>
@@ -236,7 +236,7 @@ function Donut() {
       </svg>
       <div className="absolute inset-0 grid place-items-center">
         <div className="text-center">
-          <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">
+          <p className="text-tiny uppercase tracking-wider text-[var(--muted)]">
             Activos
           </p>
           <p className="num text-lg font-bold">$19,250.00</p>

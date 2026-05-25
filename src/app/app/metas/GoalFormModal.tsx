@@ -230,7 +230,7 @@ export function GoalFormModal({
                   : 'Ej: Viaje a Punta Cana, Boda, Carro nuevo…'
               }
             />
-            <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
+            <p className="text-eyebrow text-[var(--muted)] leading-relaxed mt-1.5">
               {isEdit
                 ? 'Usa un nombre con el que te identifiques en lugar del genérico.'
                 : 'Será una nueva meta dentro del grupo "Metas".'}
@@ -247,7 +247,7 @@ export function GoalFormModal({
               <button
                 type="button"
                 onClick={() => setGoalType('savings_balance')}
-                className={`py-2.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2.5 rounded-lg text-meta font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   goalType === 'savings_balance'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -259,7 +259,7 @@ export function GoalFormModal({
               <button
                 type="button"
                 onClick={() => setGoalType('needed_by')}
-                className={`py-2.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2.5 rounded-lg text-meta font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   goalType === 'needed_by'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -269,7 +269,7 @@ export function GoalFormModal({
                 Por fecha
               </button>
             </div>
-            <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-2">
+            <p className="text-eyebrow text-[var(--muted)] leading-relaxed mt-2">
               {goalType === 'savings_balance'
                 ? 'Acumulas hasta llegar al monto total (ej: fondo de emergencia, viajes).'
                 : goalType === 'needed_by'
@@ -294,16 +294,16 @@ export function GoalFormModal({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold text-[var(--text)] inline-flex items-center gap-1.5">
+                  <div className="text-body-sm font-semibold text-[var(--text)] inline-flex items-center gap-1.5">
                     <Sparkles size={11} strokeWidth={2.4} className="text-[var(--brand-text)]" />
                     Sugerencia basada en tu historial
                   </div>
                   {loadingSuggestion ? (
-                    <div className="text-[12px] text-[var(--muted)] mt-1">
+                    <div className="text-meta text-[var(--muted)] mt-1">
                       Calculando con base en tu historial…
                     </div>
                   ) : emergencySuggestion && emergencySuggestion.basedOnMonths ? (
-                    <div className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
+                    <div className="text-meta text-[var(--muted)] mt-1 leading-relaxed">
                       Tu gasto promedio mensual es{' '}
                       <span className="text-[var(--text2)] font-medium">
                         {fmtMoney(emergencySuggestion.monthlyAverage)}
@@ -315,7 +315,7 @@ export function GoalFormModal({
                         : ' Estima cuántos meses de gastos quieres acumular para esta meta.'}
                     </div>
                   ) : (
-                    <div className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
+                    <div className="text-meta text-[var(--muted)] mt-1 leading-relaxed">
                       Aún no tienes suficiente historial para calcular tu gasto promedio.
                       {isEmergencyFund
                         ? ' Empieza con un monto que represente 3-6 meses de tus gastos típicos.'
@@ -351,21 +351,21 @@ export function GoalFormModal({
                         }`}
                       >
                         <span
-                          className={`text-[10px] uppercase tracking-[0.12em] font-semibold ${
+                          className={`text-tiny uppercase tracking-[0.12em] font-semibold ${
                             isPicked ? 'text-[var(--brand-text)]' : 'text-[var(--muted)]'
                           }`}
                         >
                           {opt.months} meses
                         </span>
                         <span
-                          className={`text-[13px] font-bold tabular-nums num ${
+                          className={`text-body-sm font-bold tabular-nums num ${
                             isPicked ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                           }`}
                         >
                           {fmtMoney(opt.amount)}
                         </span>
                         {sublabel && (
-                          <span className="text-[10px] text-[var(--muted2)]">
+                          <span className="text-tiny text-[var(--muted2)]">
                             {sublabel}
                           </span>
                         )}
@@ -398,7 +398,7 @@ export function GoalFormModal({
               value={date}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
             />
-            <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
+            <p className="text-eyebrow text-[var(--muted)] leading-relaxed mt-1.5">
               {goalType === 'needed_by'
                 ? 'Fecha en que necesitas tener el dinero completo.'
                 : 'Útil para metas con plazo (boda, vacaciones, prima de casa).'}
@@ -412,13 +412,13 @@ export function GoalFormModal({
                 type="button"
                 onClick={handleClear}
                 disabled={pending}
-                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-[13px] transition-colors disabled:opacity-60 bg-[var(--overlay-1)] hover:bg-[rgba(255,122,89,0.10)] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral-text)]"
+                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-body-sm transition-colors disabled:opacity-60 bg-[var(--overlay-1)] hover:bg-[rgba(255,122,89,0.10)] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral-text)]"
               >
                 <span className="inline-flex items-center gap-2">
                   <Trash2 size={14} strokeWidth={2} />
                   Eliminar meta
                 </span>
-                <span className="text-[11px] opacity-70">La categoría se mantiene</span>
+                <span className="text-eyebrow opacity-70">La categoría se mantiene</span>
               </button>
             </div>
           )}

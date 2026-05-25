@@ -4,6 +4,39 @@
    (1440px instead of the 1280px default). */
 @theme {
   --container-7xl: 90rem;
+
+  /* ──────────────────────────────────────────────────────
+     Tipografía — escala canónica de MARELL.
+
+     Antes el codebase tenía 18+ font-sizes ad-hoc
+     (text-[9px]…text-[56px]). Esta escala reduce a 8
+     niveles + 2 display-only para hero/wizard.
+
+     Cómo usarlos:
+       text-tiny    → 10px — column headers de tabla, captions extra-small
+       text-eyebrow → 11px — uppercase eyebrows, small descriptions
+       text-meta    → 12px — descriptions, hints, secondary text
+       text-body-sm → 13px — table rows, list secondary
+       text-body    → 14px — default body, list primary, h4
+       text-emph    → 15px — section h3 dentro de cards
+       text-h3      → 18px — modal titles compact, hero values medium
+       text-h2      → 20px — modal titles default, big stat values
+
+     Page titles (PageHeader / WizardHeading) usan tamaños
+     responsive embebidos en el componente — no necesitan token.
+
+     Si necesitas un tamaño fuera de esta escala, párate y
+     pregúntate por qué. La consistencia visual depende de
+     respetar la escala.
+     ────────────────────────────────────────────────────── */
+  --text-tiny:    0.625rem;  /* 10px */
+  --text-eyebrow: 0.6875rem; /* 11px */
+  --text-meta:    0.75rem;   /* 12px */
+  --text-body-sm: 0.8125rem; /* 13px */
+  --text-body:    0.875rem;  /* 14px */
+  --text-emph:    0.9375rem; /* 15px */
+  --text-h3:      1.125rem;  /* 18px */
+  --text-h2:      1.25rem;   /* 20px */
 }
 
 /* ─────────────────────────────────────────────

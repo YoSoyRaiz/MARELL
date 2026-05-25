@@ -20,7 +20,7 @@ export function TextInput({
   className = '',
   ...rest
 }: TextInputProps) {
-  const base = 'w-full !text-[14px] !py-3 !px-4 !rounded-xl'
+  const base = 'w-full !text-body !py-3 !px-4 !rounded-xl'
   const numericClass = numeric ? 'tabular-nums num' : ''
   return (
     <input {...rest} className={`${base} ${numericClass} ${className}`} />

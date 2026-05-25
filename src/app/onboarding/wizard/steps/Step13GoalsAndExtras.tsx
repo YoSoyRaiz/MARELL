@@ -67,10 +67,10 @@ export function Step13GoalsAndExtras() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Goals (required) */}
         <div className="space-y-3">
-          <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+          <div className="text-meta uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
             Metas a priorizar
           </div>
-          <p className="text-[13px] text-[var(--muted)] leading-snug">
+          <p className="text-body-sm text-[var(--muted)] leading-snug">
             Las grandes se logran apartando poco a poco cada mes.
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -91,11 +91,11 @@ export function Step13GoalsAndExtras() {
 
         {/* Additional categories (optional) */}
         <div className="space-y-3">
-          <div className="text-[12px] uppercase tracking-[0.18em] font-semibold">
+          <div className="text-meta uppercase tracking-[0.18em] font-semibold">
             <span className="text-[var(--muted)]">Qué disfrutar · </span>
             <span className="text-[var(--brand-text)]">opcional</span>
           </div>
-          <p className="text-[13px] text-[var(--muted)] leading-snug">
+          <p className="text-body-sm text-[var(--muted)] leading-snug">
             La vida que vale la pena vivir también necesita su categoría.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

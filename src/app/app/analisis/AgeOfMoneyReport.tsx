@@ -153,30 +153,30 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)] px-6 py-6">
         <div className="flex items-center justify-between gap-6 flex-wrap">
           <div>
-            <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+            <div className="text-meta uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
               {latestLabel ? `Edad del dinero · ${latestLabel}` : 'Edad del dinero'}
             </div>
             <div className="flex items-baseline gap-2 mt-2">
               <div className="text-[48px] sm:text-[56px] font-bold tabular-nums num leading-none gradient-text">
                 {latestAge !== null ? Math.round(latestAge) : '—'}
               </div>
-              <div className="text-[18px] font-semibold text-[var(--text2)]">días</div>
+              <div className="text-h3 font-semibold text-[var(--text2)]">días</div>
             </div>
             <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--overlay-1)]">
               <Sparkles size={12} strokeWidth={2.4} className="text-[var(--brand-text)]" />
-              <span className="text-[12px] font-medium text-[var(--text)]">{interp.tag}</span>
+              <span className="text-meta font-medium text-[var(--text)]">{interp.tag}</span>
             </div>
-            <p className="text-[13px] text-[var(--text2)] leading-relaxed mt-3 max-w-md">
+            <p className="text-body-sm text-[var(--text2)] leading-relaxed mt-3 max-w-md">
               {interp.copy}
             </p>
           </div>
           {delta !== null && Math.abs(delta) > 0.5 && (
             <div className="text-right shrink-0">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)] font-semibold">
+              <div className="text-eyebrow uppercase tracking-[0.18em] text-[var(--muted)] font-semibold">
                 vs hace {rangeLabel.toLowerCase()}
               </div>
               <div
-                className={`text-[20px] font-bold tabular-nums num mt-2 inline-flex items-center gap-1.5 ${
+                className={`text-h2 font-bold tabular-nums num mt-2 inline-flex items-center gap-1.5 ${
                   delta > 0 ? 'text-[var(--brand-text)]' : 'text-[var(--coral-text)]'
                 }`}
               >
@@ -227,8 +227,8 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
       ) : (
         <Card padding="md" className="overflow-x-auto">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-            <h2 className="text-[15px] font-semibold text-[var(--text)]">Evolución mensual</h2>
-            <div className="text-[11px] text-[var(--muted)]">
+            <h2 className="text-emph font-semibold text-[var(--text)]">Evolución mensual</h2>
+            <div className="text-eyebrow text-[var(--muted)]">
               {validPoints.length} {validPoints.length === 1 ? 'mes con datos' : 'meses con datos'}
             </div>
           </div>
@@ -237,7 +237,7 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
       )}
 
       {/* Disclaimer */}
-      <p className="text-[11px] text-[var(--muted)] leading-relaxed max-w-2xl">
+      <p className="text-eyebrow text-[var(--muted)] leading-relaxed max-w-2xl">
         Calculado con FIFO: cada peso de ingreso se &quot;sella&quot; con su fecha y se gasta de los más viejos
         primero. La edad del dinero del mes es el promedio ponderado de los días entre que cada peso
         gastado entró y se gastó.

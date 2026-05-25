@@ -111,17 +111,17 @@ export function CategoryDrillModal({
               <Icon size={18} strokeWidth={2} />
             </IconBadge>
             <div className="min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+              <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 {data?.category.groupName ?? '—'}
               </div>
               <h2
                 id="drill-title"
-                className="text-[20px] font-bold leading-tight tracking-tight truncate"
+                className="text-h2 font-bold leading-tight tracking-tight truncate"
               >
                 {data?.category.name ?? 'Cargando…'}
               </h2>
               {data?.category.goalAmount && data.category.goalAmount > 0 && (
-                <div className="text-[11px] text-[var(--muted)] num tabular-nums mt-0.5">
+                <div className="text-eyebrow text-[var(--muted)] num tabular-nums mt-0.5">
                   Meta:{' '}
                   <span className="text-[var(--text2)]">
                     {fmtMoney(data.category.goalAmount)}
@@ -140,7 +140,7 @@ export function CategoryDrillModal({
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {loading && (
-            <div className="text-center text-[13px] text-[var(--muted)] py-8">
+            <div className="text-center text-body-sm text-[var(--muted)] py-8">
               Cargando historial…
             </div>
           )}
@@ -186,10 +186,10 @@ export function CategoryDrillModal({
               {/* Monthly bar chart: assigned vs spent */}
               <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-[12px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
+                  <div className="text-meta uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
                     12 meses
                   </div>
-                  <div className="flex items-center gap-3 text-[10px] text-[var(--muted)]">
+                  <div className="flex items-center gap-3 text-tiny text-[var(--muted)]">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-[var(--overlay-4)]" />
                       Asignado
@@ -238,15 +238,15 @@ export function CategoryDrillModal({
               {/* Recent transactions */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-[12px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
+                  <div className="text-meta uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
                     Transacciones
                   </div>
-                  <div className="text-[11px] text-[var(--muted2)] num tabular-nums">
+                  <div className="text-eyebrow text-[var(--muted2)] num tabular-nums">
                     {data.transactions.length} mostradas
                   </div>
                 </div>
                 {data.transactions.length === 0 ? (
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-6 text-center text-[12px] text-[var(--muted)]">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-6 text-center text-meta text-[var(--muted)]">
                     Sin transacciones para esta categoría todavía.
                   </div>
                 ) : (
@@ -256,14 +256,14 @@ export function CategoryDrillModal({
                         key={t.id}
                         className="px-4 py-2.5 flex items-center gap-3"
                       >
-                        <div className="w-12 text-[10px] text-[var(--muted2)] tabular-nums shrink-0">
+                        <div className="w-12 text-tiny text-[var(--muted2)] tabular-nums shrink-0">
                           {formatTxnDate(t.date)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-[12.5px] text-[var(--text)] truncate">
                             {t.payeeName ?? 'Sin nombre'}
                             {t.isSplit && (
-                              <span className="ml-2 text-[10px] uppercase tracking-wide text-[var(--brand-text)]">
+                              <span className="ml-2 text-tiny uppercase tracking-wide text-[var(--brand-text)]">
                                 · split
                               </span>
                             )}
@@ -311,7 +311,7 @@ function Stat({ label, value, hint, Icon, iconColor, highlight }: StatProps) {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5">
       <div className="flex items-center justify-between gap-2 mb-1">
-        <div className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+        <div className="text-tiny uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
           {label}
         </div>
         {Icon && (
@@ -322,11 +322,11 @@ function Stat({ label, value, hint, Icon, iconColor, highlight }: StatProps) {
           />
         )}
       </div>
-      <div className={`text-[15px] font-bold tabular-nums num leading-none ${valueClass}`}>
+      <div className={`text-emph font-bold tabular-nums num leading-none ${valueClass}`}>
         {value}
       </div>
       {hint && (
-        <div className="text-[10px] text-[var(--muted2)] mt-0.5">{hint}</div>
+        <div className="text-tiny text-[var(--muted2)] mt-0.5">{hint}</div>
       )}
     </div>
   )

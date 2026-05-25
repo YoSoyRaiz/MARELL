@@ -66,10 +66,10 @@ export function RecentTransactionsSection({
       <Card as="section" className="overflow-hidden">
         <CardHeader>
           <div className="min-w-0">
-            <h2 className="text-[15px] font-semibold text-[var(--text)]">
+            <h2 className="text-emph font-semibold text-[var(--text)]">
               Transacciones recientes
             </h2>
-            <p className="text-[12px] text-[var(--muted)] mt-0.5">
+            <p className="text-meta text-[var(--muted)] mt-0.5">
               Últimos movimientos del mes
             </p>
           </div>
@@ -78,14 +78,14 @@ export function RecentTransactionsSection({
               type="button"
               onClick={() => setImportOpen(true)}
               disabled={!canAdd}
-              className="text-[12px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] inline-flex items-center gap-1.5 h-8 px-3 rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              className="text-meta font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] inline-flex items-center gap-1.5 h-8 px-3 rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
               <Upload size={12} strokeWidth={2.2} />
               Importar
             </button>
             <Link
               href="/app/transacciones"
-              className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 px-2"
+              className="text-meta text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 px-2"
             >
               Ver todas <ArrowRight size={12} strokeWidth={2.4} />
             </Link>
@@ -97,10 +97,10 @@ export function RecentTransactionsSection({
             <div className="w-12 h-12 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Receipt size={20} strokeWidth={2} />
             </div>
-            <div className="text-[14px] text-[var(--text)] font-medium">
+            <div className="text-body text-[var(--text)] font-medium">
               Aún sin transacciones
             </div>
-            <p className="text-[12px] text-[var(--muted)] max-w-xs mx-auto leading-relaxed">
+            <p className="text-meta text-[var(--muted)] max-w-xs mx-auto leading-relaxed">
               Cuando agregues tu primera transacción, aparecerá aquí con su categoría y fecha.
             </p>
             <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
@@ -108,7 +108,7 @@ export function RecentTransactionsSection({
                 type="button"
                 onClick={() => setAddOpen(true)}
                 disabled={!canAdd}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-body-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
               >
                 <Plus size={14} strokeWidth={2.2} />
                 Agregar
@@ -117,7 +117,7 @@ export function RecentTransactionsSection({
                 type="button"
                 onClick={() => setImportOpen(true)}
                 disabled={!canAdd}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-body-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
               >
                 <Upload size={14} strokeWidth={2.2} />
                 Importar
@@ -146,15 +146,15 @@ export function RecentTransactionsSection({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[14px] text-[var(--text)] truncate">
+                    <div className="text-body text-[var(--text)] truncate">
                       {t.payee_name ?? 'Sin nombre'}
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] truncate">
+                    <div className="text-eyebrow text-[var(--muted)] truncate">
                       {t.category_name ?? 'Sin categoría'} · {t.date}
                     </div>
                   </div>
                   <div
-                    className={`text-[14px] tabular-nums num font-semibold ${
+                    className={`text-body tabular-nums num font-semibold ${
                       isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                     }`}
                   >

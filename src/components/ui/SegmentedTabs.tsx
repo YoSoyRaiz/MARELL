@@ -42,7 +42,7 @@ export function SegmentedTabs<T extends string>({
             aria-selected={active}
             type="button"
             onClick={() => onChange(opt.value)}
-            className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
+            className={`h-8 px-4 text-meta font-medium rounded-full transition-colors ${
               active
                 ? 'gradient-bg text-[#0B0B0C]'
                 : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'

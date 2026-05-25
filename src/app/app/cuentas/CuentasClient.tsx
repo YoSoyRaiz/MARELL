@@ -180,7 +180,7 @@ export function CuentasClient({
               type="button"
               onClick={() => setAddOpen(true)}
               disabled={!hasBudget}
-              className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none"
+              className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none"
             >
               <Plus size={14} strokeWidth={2.4} />
               Agregar cuenta
@@ -242,14 +242,14 @@ export function CuentasClient({
                           <g.Icon size={16} strokeWidth={2} />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+                          <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                             {g.label}
                           </h3>
-                          <p className="text-[11px] text-[var(--muted)] truncate">{g.hint}</p>
+                          <p className="text-eyebrow text-[var(--muted)] truncate">{g.hint}</p>
                         </div>
                       </div>
                       <div
-                        className={`text-[14px] tabular-nums num font-semibold shrink-0 ${
+                        className={`text-body tabular-nums num font-semibold shrink-0 ${
                           g.key === 'credit' || g.key === 'loan'
                             ? 'text-[var(--coral-text)]'
                             : 'text-[var(--text)]'
@@ -310,7 +310,7 @@ export function CuentasClient({
                                 <g.Icon size={14} strokeWidth={2} />
                               </IconBadge>
                               <div className="flex-1 min-w-0">
-                                <div className="text-[14px] text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
+                                <div className="text-body text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
                                   {a.name}
                                   {a.currency === 'USD' && (
                                     <span className="text-[9px] uppercase tracking-[0.15em] text-[var(--info-text)] bg-[rgba(77,168,255,0.12)] px-1.5 py-0.5 rounded">
@@ -318,13 +318,13 @@ export function CuentasClient({
                                     </span>
                                   )}
                                   {a.closed && (
-                                    <span className="text-[10px] uppercase tracking-[0.15em] text-[var(--muted2)] inline-flex items-center gap-1">
+                                    <span className="text-tiny uppercase tracking-[0.15em] text-[var(--muted2)] inline-flex items-center gap-1">
                                       <Archive size={10} strokeWidth={2} />
                                       Cerrada
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-[11px] text-[var(--muted)] truncate">
+                                <div className="text-eyebrow text-[var(--muted)] truncate">
                                   {labelForAccountType(a.type)}
                                   {a.interestRateApr != null && <> · {a.interestRateApr.toFixed(2)}% APR</>}
                                   {a.cycleCloseDay != null && <> · corte día {a.cycleCloseDay}</>}
@@ -341,7 +341,7 @@ export function CuentasClient({
                                     }}
                                     title="Reconciliar contra el banco"
                                     aria-label={`Reconciliar ${a.name}`}
-                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text2)] hover:text-[var(--brand-text)] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors"
+                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text2)] hover:text-[var(--brand-text)] text-eyebrow font-semibold uppercase tracking-[0.12em] transition-colors"
                                   >
                                     <Scale size={12} strokeWidth={2.4} />
                                     <span className="hidden sm:inline">Reconciliar</span>
@@ -374,7 +374,7 @@ export function CuentasClient({
                                 <Pencil size={12} strokeWidth={2.4} />
                               </button>
                               <div
-                                className={`text-[15px] tabular-nums num font-semibold shrink-0 ${
+                                className={`text-emph tabular-nums num font-semibold shrink-0 ${
                                   isDebt
                                     ? 'text-[var(--coral-text)]'
                                     : a.balance < -0.005
@@ -472,7 +472,7 @@ function SummaryCard({
 
   return (
     <Card padding="sm">
-      <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+      <div className="text-eyebrow uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
         {label}
       </div>
       <div className={`text-[22px] font-bold tabular-nums num leading-none mt-2 ${color}`}>

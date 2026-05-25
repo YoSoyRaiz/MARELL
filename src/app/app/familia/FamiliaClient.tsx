@@ -144,7 +144,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
           <UserPlus size={16} strokeWidth={2.2} className="text-[var(--brand-text)]" />
-          <h2 className="text-[15px] font-semibold text-[var(--text)]">Invitar a alguien</h2>
+          <h2 className="text-emph font-semibold text-[var(--text)]">Invitar a alguien</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-2">
           <input
@@ -152,12 +152,12 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="correo@ejemplo.com"
-            className="!text-[14px] !py-3 !px-4 !rounded-xl"
+            className="!text-body !py-3 !px-4 !rounded-xl"
           />
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as 'editor' | 'viewer')}
-            className="!text-[14px] !py-3 !px-4 !rounded-xl appearance-none cursor-pointer"
+            className="!text-body !py-3 !px-4 !rounded-xl appearance-none cursor-pointer"
           >
             <option value="editor">Editor</option>
             <option value="viewer">Solo ver</option>
@@ -166,13 +166,13 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
             type="button"
             onClick={handleInvite}
             disabled={pending || !email.trim()}
-            className="h-12 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none inline-flex items-center justify-center gap-2 transition-[filter]"
+            className="h-12 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none inline-flex items-center justify-center gap-2 transition-[filter]"
           >
             <Mail size={14} strokeWidth={2.4} />
             Invitar
           </button>
         </div>
-        <p className="text-[11px] text-[var(--muted)] leading-relaxed">
+        <p className="text-eyebrow text-[var(--muted)] leading-relaxed">
           Editor puede asignar dinero, agregar transacciones y editar metas. Solo ver puede consultar pero no modificar.
         </p>
         {error && (
@@ -192,7 +192,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
         <Card as="section" className="overflow-hidden">
           <header className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-2">
             <Clock size={14} strokeWidth={2.2} className="text-[var(--warn-text)]" />
-            <h2 className="text-[14px] font-semibold text-[var(--text)]">
+            <h2 className="text-body font-semibold text-[var(--text)]">
               Invitaciones pendientes
             </h2>
           </header>
@@ -203,8 +203,8 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
                   <Mail size={14} strokeWidth={2} />
                 </IconBadge>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] text-[var(--text)] truncate">{inv.email}</div>
-                  <div className="text-[11px] text-[var(--muted)] mt-0.5">
+                  <div className="text-body-sm text-[var(--text)] truncate">{inv.email}</div>
+                  <div className="text-eyebrow text-[var(--muted)] mt-0.5">
                     {roleLabel(inv.role)} · expira {formatDate(inv.expiresAt) ?? '—'}
                   </div>
                 </div>
@@ -228,7 +228,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
       <Card as="section" className="overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-2">
           <Users size={14} strokeWidth={2.2} className="text-[var(--brand-text)]" />
-          <h2 className="text-[14px] font-semibold text-[var(--text)]">
+          <h2 className="text-body font-semibold text-[var(--text)]">
             Miembros {budgetName ? `de ${budgetName}` : ''}
           </h2>
         </header>
@@ -245,11 +245,11 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
                 )}
               </IconBadge>
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] text-[var(--text)] truncate">
+                <div className="text-body-sm text-[var(--text)] truncate">
                   {m.displayName ?? m.email ?? 'Sin nombre'}
                   {m.isYou && <span className="text-[var(--muted)] ml-2">(tú)</span>}
                 </div>
-                <div className="text-[11px] text-[var(--muted)] mt-0.5">
+                <div className="text-eyebrow text-[var(--muted)] mt-0.5">
                   {m.email && m.email !== m.displayName ? m.email + ' · ' : ''}
                   {roleLabel(m.role)}
                   {m.joinedAt && ` · se unió ${formatDate(m.joinedAt)}`}
@@ -263,7 +263,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
                       handleRoleChange(m, e.target.value as 'editor' | 'viewer')
                     }
                     disabled={pending}
-                    className="!text-[12px] !py-1.5 !px-2 !rounded-lg appearance-none cursor-pointer"
+                    className="!text-meta !py-1.5 !px-2 !rounded-lg appearance-none cursor-pointer"
                   >
                     <option value="editor">Editor</option>
                     <option value="viewer">Solo ver</option>

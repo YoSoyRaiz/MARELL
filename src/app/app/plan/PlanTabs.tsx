@@ -19,7 +19,7 @@ export function PlanTabs({ view }: PlanTabsProps) {
       <Link
         href="/app/plan"
         prefetch
-        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold transition-colors ${
+        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-body-sm font-semibold transition-colors ${
           view === 'mensual'
             ? 'gradient-bg text-[#0B0B0C]'
             : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
@@ -31,7 +31,7 @@ export function PlanTabs({ view }: PlanTabsProps) {
       <Link
         href="/app/plan?view=anual"
         prefetch
-        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold transition-colors ${
+        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-body-sm font-semibold transition-colors ${
           view === 'anual'
             ? 'gradient-bg text-[#0B0B0C]'
             : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'

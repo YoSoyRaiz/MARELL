@@ -103,10 +103,10 @@ export function ReconcileModal({
               <div className="w-14 h-14 rounded-2xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] flex items-center justify-center mx-auto">
                 <CheckCircle2 size={24} strokeWidth={2} />
               </div>
-              <div className="text-[15px] text-[var(--text)] font-semibold">
+              <div className="text-emph text-[var(--text)] font-semibold">
                 Cuenta reconciliada
               </div>
-              <div className="text-[13px] text-[var(--muted)] leading-relaxed">
+              <div className="text-body-sm text-[var(--muted)] leading-relaxed">
                 {done.adjustment !== 0 && (
                   <div className="num tabular-nums">
                     Ajuste: <span className="text-[var(--text2)]">{fmtMoney(done.adjustment)}</span>
@@ -132,21 +132,21 @@ export function ReconcileModal({
           <>
             <div className="px-6 py-5 space-y-4">
               <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
-                <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
+                <div className="text-eyebrow uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
                   {isDebt ? 'Lo que MARELL dice que debes' : 'Balance actual en MARELL'}
                 </div>
-                <div className="text-[18px] font-bold tabular-nums num text-[var(--text)]">
+                <div className="text-h3 font-bold tabular-nums num text-[var(--text)]">
                   {fmtMoney(displayedCurrent)}
                 </div>
               </div>
 
               <div>
-                <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 block">
+                <label className="text-meta text-[var(--text2)] font-medium mb-1.5 block">
                   {isDebt ? 'Lo que realmente debes según tu banco' : 'Balance según tu banco'}
                 </label>
                 <MoneyInput value={actual} onChange={setActual} placeholder="0.00" />
                 {isDebt && (
-                  <p className="text-[11px] text-[var(--muted)] mt-1.5 leading-relaxed">
+                  <p className="text-eyebrow text-[var(--muted)] mt-1.5 leading-relaxed">
                     Pon el saldo pendiente como número positivo (lo que aparece en el estado).
                   </p>
                 )}
@@ -154,7 +154,7 @@ export function ReconcileModal({
 
               {actual !== null && (
                 <div
-                  className={`rounded-xl border px-3.5 py-2.5 text-[12px] flex items-start gap-2 ${
+                  className={`rounded-xl border px-3.5 py-2.5 text-meta flex items-start gap-2 ${
                     matches
                       ? 'border-[var(--success)]/40 bg-[rgba(61,220,151,0.06)] text-[var(--text)]'
                       : 'border-[var(--warn)]/40 bg-[rgba(245,200,66,0.06)] text-[var(--text)]'

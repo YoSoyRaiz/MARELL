@@ -95,7 +95,7 @@ export function LandingDownload() {
             Instala MARELL en tu{' '}
             <span className="gradient-text">teléfono</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-[var(--text2)]">
+          <p className="mx-auto mt-5 max-w-2xl text-emph leading-relaxed text-[var(--text2)]">
             Sin descargar nada de las stores. Una app nativa en tu pantalla
             de inicio que abre instantáneo y funciona en pantalla completa.
           </p>
@@ -139,7 +139,7 @@ export function LandingDownload() {
           </div>
         )}
 
-        <p className="mt-8 text-center text-[12px] text-[var(--muted)]">
+        <p className="mt-8 text-center text-meta text-[var(--muted)]">
           También funciona en desktop: instala desde Chrome / Edge clickeando
           el icono de instalar en la barra de direcciones.
         </p>
@@ -194,13 +194,13 @@ function InstallCard({
             {icon}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[18px] font-bold leading-tight">{label}</div>
-            <div className="text-[12px] text-[var(--muted)] mt-0.5">
+            <div className="text-h3 font-bold leading-tight">{label}</div>
+            <div className="text-meta text-[var(--muted)] mt-0.5">
               {sublabel}
             </div>
           </div>
         </div>
-        <div className="mt-5 inline-flex items-center gap-2 text-[13px] font-semibold gradient-text">
+        <div className="mt-5 inline-flex items-center gap-2 text-body-sm font-semibold gradient-text">
           {cta}
           <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
             →
@@ -220,7 +220,7 @@ function InstalledState() {
       <p className="text-[16px] font-semibold text-[var(--text)]">
         Ya tienes MARELL instalada
       </p>
-      <p className="text-[13px] text-[var(--text2)] mt-1 leading-relaxed">
+      <p className="text-body-sm text-[var(--text2)] mt-1 leading-relaxed">
         Búscala en tu pantalla de inicio. Tip: las notificaciones push están
         disponibles desde Ajustes.
       </p>
@@ -279,7 +279,7 @@ function IosInstructions({ onClose }: { onClose: () => void }) {
         </ol>
 
         <div className="px-6 pb-5 pt-1">
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)]/50 px-4 py-3 text-[12px] text-[var(--muted)] leading-relaxed">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)]/50 px-4 py-3 text-meta text-[var(--muted)] leading-relaxed">
             Tip: una vez instalada, el ícono de MARELL queda en tu pantalla de
             inicio como cualquier otra app. Abre instantáneo, sin Safari de por
             medio.
@@ -304,20 +304,20 @@ function Step({
 }) {
   return (
     <li className="flex items-start gap-3">
-      <div className="size-8 rounded-full bg-[var(--overlay-2)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center shrink-0 text-[13px] font-bold">
+      <div className="size-8 rounded-full bg-[var(--overlay-2)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center shrink-0 text-body-sm font-bold">
         {n}
       </div>
       <div className="flex-1 min-w-0 pt-0.5">
-        <div className="text-[14px] font-semibold text-[var(--text)] leading-snug">
+        <div className="text-body font-semibold text-[var(--text)] leading-snug">
           {title}
         </div>
-        <p className="text-[12px] text-[var(--text2)] mt-1 leading-relaxed">
+        <p className="text-meta text-[var(--text2)] mt-1 leading-relaxed">
           {description}
         </p>
         {iconHint && (
           <div className="mt-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[var(--overlay-2)] border border-[var(--border)]">
             <span className="text-[var(--brand-text)]">{iconHint}</span>
-            <span className="text-[11px] text-[var(--text)]">{iconLabel}</span>
+            <span className="text-eyebrow text-[var(--text)]">{iconLabel}</span>
           </div>
         )}
       </div>

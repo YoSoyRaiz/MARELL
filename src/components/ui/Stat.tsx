@@ -42,7 +42,7 @@ export function Stat({
   valueClass = 'text-[var(--text)]',
   size = 'md',
 }: StatProps) {
-  const valueSize = size === 'lg' ? 'text-[22px]' : 'text-[20px]'
+  const valueSize = size === 'lg' ? 'text-[22px]' : 'text-h2'
   return (
     <Card padding="md">
       {Icon && (
@@ -54,14 +54,14 @@ export function Stat({
           </div>
         </div>
       )}
-      <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
+      <div className="text-eyebrow uppercase tracking-[0.15em] text-[var(--muted)] font-semibold mb-1">
         {label}
       </div>
       <div className={`${valueSize} font-bold tabular-nums num leading-none ${valueClass}`}>
         {value}
       </div>
       {sub && (
-        <div className="text-[11px] text-[var(--muted)] mt-1 num tabular-nums">
+        <div className="text-eyebrow text-[var(--muted)] mt-1 num tabular-nums">
           {sub}
         </div>
       )}

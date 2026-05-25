@@ -30,7 +30,7 @@ export function LandingHero() {
         {/* Left: copy */}
         <div className="px-6 lg:pl-[max(24px,calc((100vw-1400px)/2))] lg:pr-0">
           <div className="max-w-xl">
-            <span className="mb-7 inline-flex items-center gap-2 rounded-full landing-pill px-3 py-1.5 text-[12px]">
+            <span className="mb-7 inline-flex items-center gap-2 rounded-full landing-pill px-3 py-1.5 text-meta">
               <span className="size-2 rounded-full bg-[var(--success)] shadow-[0_0_18px_rgba(61,220,151,.75)]" />
               La app de finanzas personales que te da claridad
             </span>
@@ -88,7 +88,7 @@ export function LandingHero() {
                 ].map((a, i) => (
                   <div
                     key={i}
-                    className="grid size-9 place-items-center rounded-full border-2 border-[var(--bg)] text-[10px] font-bold text-[#0B0B0C]"
+                    className="grid size-9 place-items-center rounded-full border-2 border-[var(--bg)] text-tiny font-bold text-[#0B0B0C]"
                     style={{ background: `linear-gradient(135deg, ${a.from}, ${a.to})` }}
                   >
                     {a.initials}

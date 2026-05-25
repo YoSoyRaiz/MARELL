@@ -65,7 +65,7 @@ export default async function ResumenPage() {
         </PageHeader>
         <Link
           href="/onboarding"
-          className="inline-flex items-center gap-2 h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 transition-[filter]"
+          className="inline-flex items-center gap-2 h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body rounded-xl glow-on-hover hover:brightness-105 transition-[filter]"
         >
           Empezar onboarding <ArrowRight size={14} strokeWidth={2.4} />
         </Link>
@@ -726,8 +726,8 @@ export default async function ResumenPage() {
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-[14px] font-semibold text-[var(--text)]">Progreso del plan</h2>
-              <p className="text-[11px] text-[var(--muted)] mt-0.5">% gastado de lo asignado</p>
+              <h2 className="text-body font-semibold text-[var(--text)]">Progreso del plan</h2>
+              <p className="text-eyebrow text-[var(--muted)] mt-0.5">% gastado de lo asignado</p>
             </div>
           </div>
           <div className="flex items-center gap-5">
@@ -735,7 +735,7 @@ export default async function ResumenPage() {
               <DonutChart value={totalExpenses} total={totalAssigned} size={120} stroke={12} />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-[18px] font-bold tabular-nums num">
+                  <div className="text-h3 font-bold tabular-nums num">
                     {totalAssigned > 0
                       ? `${Math.round((totalExpenses / totalAssigned) * 100)}%`
                       : '0%'}
@@ -743,7 +743,7 @@ export default async function ResumenPage() {
                 </div>
               </div>
             </div>
-            <ul className="flex-1 space-y-2 text-[12px]">
+            <ul className="flex-1 space-y-2 text-meta">
               <li className="flex items-center justify-between">
                 <span className="text-[var(--text2)]">Asignado</span>
                 <span className="num tabular-nums text-[var(--text)]">
@@ -781,12 +781,12 @@ export default async function ResumenPage() {
         {prevMonthHadActivity && (
           <Card as="section" className="overflow-hidden">
             <CardHeader>
-              <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
+              <h2 className="text-body font-semibold text-[var(--text)] truncate">
                 Cierre de {formatMonthLabel(prevMonth)}
               </h2>
               <Link
                 href="/app/analisis"
-                className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
+                className="text-meta text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
               >
                 Ver análisis
                 <ArrowRight size={12} strokeWidth={2.4} />
@@ -794,23 +794,23 @@ export default async function ResumenPage() {
             </CardHeader>
             <ul className="divide-y divide-[var(--border)]">
               <li className="px-5 py-3 flex items-center justify-between">
-                <span className="text-[13px] text-[var(--text2)]">Ingresos</span>
-                <span className="text-[14px] tabular-nums num font-semibold text-[var(--brand-text)]">
+                <span className="text-body-sm text-[var(--text2)]">Ingresos</span>
+                <span className="text-body tabular-nums num font-semibold text-[var(--brand-text)]">
                   {fmtMoney(prevMonthIncome)}
                 </span>
               </li>
               <li className="px-5 py-3 flex items-center justify-between">
-                <span className="text-[13px] text-[var(--text2)]">Gastos</span>
-                <span className="text-[14px] tabular-nums num font-semibold text-[var(--text)]">
+                <span className="text-body-sm text-[var(--text2)]">Gastos</span>
+                <span className="text-body tabular-nums num font-semibold text-[var(--text)]">
                   {fmtMoney(prevMonthExpenses)}
                 </span>
               </li>
               <li className="px-5 py-3 flex items-center justify-between">
-                <span className="text-[13px] text-[var(--text2)]">
+                <span className="text-body-sm text-[var(--text2)]">
                   {prevMonthSavings >= 0 ? 'Ahorrado' : 'Excedido'}
                 </span>
                 <span
-                  className={`text-[14px] tabular-nums num font-semibold ${
+                  className={`text-body tabular-nums num font-semibold ${
                     prevMonthSavings >= 0 ? 'gradient-text' : 'text-[var(--coral-text)]'
                   }`}
                 >
@@ -826,12 +826,12 @@ export default async function ResumenPage() {
           <CardHeader gap="none">
             <div className="flex items-center gap-2">
               <Target size={14} strokeWidth={2.2} className="text-[var(--brand-text)]" />
-              <h2 className="text-[14px] font-semibold text-[var(--text)]">Metas</h2>
+              <h2 className="text-body font-semibold text-[var(--text)]">Metas</h2>
             </div>
             {goals.length > 0 && (
               <Link
                 href="/app/metas"
-                className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
+                className="text-meta text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1"
               >
                 Todas <ArrowRight size={12} strokeWidth={2.4} />
               </Link>
@@ -840,13 +840,13 @@ export default async function ResumenPage() {
 
           {goals.length === 0 ? (
             <div className="px-5 py-6 text-center space-y-3">
-              <p className="text-[13px] text-[var(--muted)] leading-relaxed">
+              <p className="text-body-sm text-[var(--muted)] leading-relaxed">
                 Aún no tienes metas. Define cuánto quieres apartar mensualmente o
                 acumular en total para mantener el rumbo.
               </p>
               <Link
                 href="/app/metas"
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg gradient-bg text-[#0B0B0C] font-semibold text-[12px] glow-on-hover hover:brightness-105 transition-[filter]"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg gradient-bg text-[#0B0B0C] font-semibold text-meta glow-on-hover hover:brightness-105 transition-[filter]"
               >
                 <Target size={12} strokeWidth={2.4} />
                 Crear meta
@@ -859,9 +859,9 @@ export default async function ResumenPage() {
                 return (
                   <li key={g.id} className="px-5 py-3 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] text-[var(--text)] truncate">{g.name}</span>
+                      <span className="text-body-sm text-[var(--text)] truncate">{g.name}</span>
                       <span
-                        className={`text-[11px] tabular-nums num shrink-0 ${
+                        className={`text-eyebrow tabular-nums num shrink-0 ${
                           isComplete ? 'text-[var(--brand-text)] font-semibold' : 'text-[var(--muted)]'
                         }`}
                       >
@@ -874,7 +874,7 @@ export default async function ResumenPage() {
                         style={{ width: `${g.progress * 100}%` }}
                       />
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] num tabular-nums flex items-center justify-between gap-2">
+                    <div className="text-eyebrow text-[var(--muted)] num tabular-nums flex items-center justify-between gap-2">
                       <span>
                         {fmtMoneyShort(g.current)} de {fmtMoneyShort(g.goal)}
                       </span>

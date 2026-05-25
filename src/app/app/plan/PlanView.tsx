@@ -294,7 +294,7 @@ export function PlanView({
     <div className={`space-y-6 transition-opacity duration-200 ${navPending ? 'opacity-60' : ''}`}>
       {/* Header: month nav + title + view tabs */}
       <div className="space-y-4">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+        <div className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Plan
         </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -307,7 +307,7 @@ export function PlanView({
             >
               <ChevronLeft size={18} strokeWidth={2.2} />
             </button>
-            <h1 className="text-[20px] sm:text-[28px] lg:text-[32px] leading-none font-bold tracking-tight tabular-nums">
+            <h1 className="text-h2 sm:text-[28px] lg:text-[32px] leading-none font-bold tracking-tight tabular-nums">
               {formatMonthLabel(month)}
             </h1>
             <button
@@ -323,7 +323,7 @@ export function PlanView({
             <button
               type="button"
               onClick={() => setNewCategoryOpen(true)}
-              className="h-10 px-4 rounded-xl text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] inline-flex items-center gap-1.5 transition-colors"
+              className="h-10 px-4 rounded-xl text-body-sm font-medium text-[var(--text2)] hover:text-[var(--text)] bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] inline-flex items-center gap-1.5 transition-colors"
             >
               <Plus size={14} strokeWidth={2.4} />
               Nueva categoría
@@ -345,11 +345,11 @@ export function PlanView({
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <div
-              className={`text-[12px] uppercase tracking-[0.18em] font-semibold ${heroLabelColor}`}
+              className={`text-meta uppercase tracking-[0.18em] font-semibold ${heroLabelColor}`}
             >
               Por asignar
             </div>
-            <div className="text-[13px] text-[var(--text2)] mt-1">
+            <div className="text-body-sm text-[var(--text2)] mt-1">
               {isNegative
                 ? 'Asignaste de más. Reduce alguna categoría.'
                 : isPositive
@@ -381,7 +381,7 @@ export function PlanView({
       {/* Empty state */}
       {filteredGroups.length === 0 && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-10 text-center">
-          <div className="text-[var(--text2)] text-[14px]">
+          <div className="text-[var(--text2)] text-body">
             Sin categorías que coincidan con este filtro.
           </div>
         </div>
@@ -417,24 +417,24 @@ export function PlanView({
                       isCollapsed ? '-rotate-90' : 'rotate-0'
                     }`}
                   />
-                  <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] truncate">
+                  <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] truncate">
                     {g.name}
                   </h3>
-                  <span className="text-[11px] text-[var(--muted)] tabular-nums shrink-0">
+                  <span className="text-eyebrow text-[var(--muted)] tabular-nums shrink-0">
                     {g.categories.length}
                   </span>
                 </div>
-                <div className="hidden sm:flex items-center gap-3 md:gap-6 text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] tabular-nums num shrink-0">
+                <div className="hidden sm:flex items-center gap-3 md:gap-6 text-eyebrow uppercase tracking-[0.15em] text-[var(--muted)] tabular-nums num shrink-0">
                   <span>
                     Presup{' '}
-                    <span className="text-[var(--text2)] normal-case tracking-normal text-[12px] ml-1">
+                    <span className="text-[var(--text2)] normal-case tracking-normal text-meta ml-1">
                       {fmtMoney(groupAssigned)}
                     </span>
                   </span>
                   <span>
                     Disp{' '}
                     <span
-                      className={`normal-case tracking-normal text-[12px] ml-1 font-semibold ${
+                      className={`normal-case tracking-normal text-meta ml-1 font-semibold ${
                         groupAvailable < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--text2)]'
                       }`}
                     >
@@ -444,7 +444,7 @@ export function PlanView({
                 </div>
                 {/* Mobile: just available, the most actionable number */}
                 <div
-                  className={`sm:hidden tabular-nums num text-[12px] font-semibold shrink-0 ${
+                  className={`sm:hidden tabular-nums num text-meta font-semibold shrink-0 ${
                     groupAvailable < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--text2)]'
                   }`}
                 >
@@ -455,7 +455,7 @@ export function PlanView({
               {!isCollapsed && (
                 <div id={panelId}>
               {/* Column headers */}
-              <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px] gap-2 px-5 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
+              <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px] gap-2 px-5 py-2 text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
                 <div>Categoría</div>
                 <div className="text-right" title="Monto presupuestado este mes">
                   Presupuesto
@@ -497,11 +497,11 @@ export function PlanView({
                             onClick={() => setDrillCategoryId(c.id)}
                             className="min-w-0 flex-1 text-left"
                           >
-                            <div className="text-[14px] text-[var(--text)] truncate hover:text-[var(--brand-text)] transition-colors">
+                            <div className="text-body text-[var(--text)] truncate hover:text-[var(--brand-text)] transition-colors">
                               {c.name}
                             </div>
                             {c.goal_amount && c.goal_amount > 0 && (
-                              <div className="text-[11px] text-[var(--muted)] num">
+                              <div className="text-eyebrow text-[var(--muted)] num">
                                 meta: ${c.goal_amount.toLocaleString('en-US')}
                               </div>
                             )}
@@ -514,7 +514,7 @@ export function PlanView({
                             />
                           </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2 pl-12 text-[11px]">
+                        <div className="flex items-center justify-between gap-2 pl-12 text-eyebrow">
                           <span className="text-[var(--muted)] tabular-nums num">
                             Actividad:{' '}
                             <span className="text-[var(--text2)]">
@@ -544,11 +544,11 @@ export function PlanView({
                               <Icon size={16} strokeWidth={2} />
                             </div>
                             <div className="min-w-0">
-                              <div className="text-[14px] text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
+                              <div className="text-body text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
                                 {c.name}
                               </div>
                               {c.goal_amount && c.goal_amount > 0 && (
-                                <div className="text-[11px] text-[var(--muted)] num">
+                                <div className="text-eyebrow text-[var(--muted)] num">
                                   meta: ${c.goal_amount.toLocaleString('en-US')}
                                 </div>
                               )}
@@ -575,14 +575,14 @@ export function PlanView({
                             ariaLabel={`Asignar a ${c.name}`}
                           />
                         </div>
-                        <div className="text-right text-[14px] tabular-nums num text-[var(--muted)]">
+                        <div className="text-right text-body tabular-nums num text-[var(--muted)]">
                           {c.activity === 0 ? '—' : fmtMoney(c.activity)}
                         </div>
                         <div className="text-right">
                           <button
                             type="button"
                             onClick={() => setMoveSourceId(c.id)}
-                            className={`text-[14px] tabular-nums num font-semibold underline-offset-4 hover:underline ${availableColor}`}
+                            className={`text-body tabular-nums num font-semibold underline-offset-4 hover:underline ${availableColor}`}
                             aria-label={`Mover dinero desde ${c.name}`}
                           >
                             {fmtMoney(available)}
@@ -648,7 +648,7 @@ export function PlanView({
             strokeWidth={2.4}
             className="text-[var(--brand-text)] shrink-0"
           />
-          <span className="text-[14px] font-medium text-[var(--text)]">
+          <span className="text-body font-medium text-[var(--text)]">
             {payToast}
           </span>
         </div>
@@ -658,7 +658,7 @@ export function PlanView({
           role="alert"
           className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border border-[var(--coral)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step"
         >
-          <span className="text-[14px] text-[var(--coral-text)] font-medium">
+          <span className="text-body text-[var(--coral-text)] font-medium">
             {payError}
           </span>
         </div>

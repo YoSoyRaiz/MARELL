@@ -5,14 +5,14 @@ type Variant = 'gradient' | 'outline' | 'ghost' | 'subtle' | 'danger'
 type Size = 'sm' | 'md' | 'lg' | 'tight'
 
 const sizeClasses: Record<Size, string> = {
-  sm: 'h-9 px-4 text-[13px] rounded-[10px]',
+  sm: 'h-9 px-4 text-body-sm rounded-[10px]',
   md: 'h-11 px-5 text-sm rounded-xl',
-  lg: 'h-[52px] px-7 text-[15px] rounded-2xl',
+  lg: 'h-[52px] px-7 text-emph rounded-2xl',
   // `tight` matches the in-modal footer buttons (Cancelar/Guardar)
   // que estaban duplicados inline en 15+ archivos antes de
   // la consolidación. Pixel-equivalent al primary CTA inline:
-  // h-10, px-5, text-[13px], rounded-xl.
-  tight: 'h-10 px-5 text-[13px] rounded-xl',
+  // h-10, px-5, text-body-sm, rounded-xl.
+  tight: 'h-10 px-5 text-body-sm rounded-xl',
 }
 
 const variantClasses: Record<Variant, string> = {

@@ -125,13 +125,13 @@ export default async function MasPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+        <div className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           Más
         </div>
         <h1 className="text-[26px] sm:text-[32px] leading-[1.05] font-bold tracking-tight">
           Hola, <span className="gradient-text">{firstName ?? 'amigo'}</span>.
         </h1>
-        <p className="text-[14px] text-[var(--text2)] leading-relaxed">
+        <p className="text-body text-[var(--text2)] leading-relaxed">
           Las funciones que no caben en la barra inferior viven aquí.
         </p>
       </div>
@@ -146,14 +146,14 @@ export default async function MasPage() {
             <ShieldCheck size={20} strokeWidth={2.4} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[14px] font-semibold text-[var(--text)]">
+            <div className="text-body font-semibold text-[var(--text)]">
               {plan === 'pro'
                 ? 'MARELL Pro activo'
                 : plan === 'trial'
                   ? 'Prueba Pro activa'
                   : 'Pasa a Pro'}
             </div>
-            <div className="text-[12px] text-[var(--muted)] leading-relaxed">
+            <div className="text-meta text-[var(--muted)] leading-relaxed">
               {plan === 'pro'
                 ? 'Todas las funciones desbloqueadas'
                 : plan === 'trial'
@@ -184,10 +184,10 @@ export default async function MasPage() {
                 >
                   <Icon size={18} strokeWidth={2} />
                 </div>
-                <div className="text-[14px] font-semibold text-[var(--text)] leading-tight">
+                <div className="text-body font-semibold text-[var(--text)] leading-tight">
                   {item.label}
                 </div>
-                <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                <div className="text-eyebrow text-[var(--muted)] mt-0.5 leading-snug">
                   {item.description}
                 </div>
               </Link>
@@ -207,10 +207,10 @@ export default async function MasPage() {
               <ShieldCheck size={18} strokeWidth={2} />
             </div>
             <div className="flex-1">
-              <div className="text-[14px] font-semibold text-[var(--text)]">
+              <div className="text-body font-semibold text-[var(--text)]">
                 Panel admin
               </div>
-              <div className="text-[11px] text-[var(--muted)]">
+              <div className="text-eyebrow text-[var(--muted)]">
                 Solo visible para tu cuenta
               </div>
             </div>
@@ -230,7 +230,7 @@ export default async function MasPage() {
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
         >
           <LifeBuoy size={18} strokeWidth={2} className="shrink-0" />
-          <div className="flex-1 text-[14px]">Ayuda y soporte</div>
+          <div className="flex-1 text-body">Ayuda y soporte</div>
           <ChevronRight size={16} strokeWidth={2.2} className="shrink-0" />
         </Link>
         <form action={logout}>
@@ -239,12 +239,12 @@ export default async function MasPage() {
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.06)] transition-colors text-left"
           >
             <LogOut size={18} strokeWidth={2} className="shrink-0" />
-            <div className="flex-1 text-[14px]">Cerrar sesión</div>
+            <div className="flex-1 text-body">Cerrar sesión</div>
           </button>
         </form>
       </div>
 
-      <div className="text-center text-[11px] text-[var(--muted2)] pt-4 pb-2">
+      <div className="text-center text-eyebrow text-[var(--muted2)] pt-4 pb-2">
         MARELL · v1.0
       </div>
     </div>

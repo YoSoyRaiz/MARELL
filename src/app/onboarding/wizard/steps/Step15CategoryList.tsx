@@ -44,10 +44,10 @@ export function Step15CategoryList() {
           {groups.map((g) => (
             <Card key={g.name} className="overflow-hidden">
               <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)] flex items-center justify-between">
-                <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+                <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
                   {g.name}
                 </h3>
-                <span className="text-[12px] text-[var(--muted)] tabular-nums">
+                <span className="text-meta text-[var(--muted)] tabular-nums">
                   {g.items.length}
                 </span>
               </div>
@@ -55,7 +55,7 @@ export function Step15CategoryList() {
                 {g.items.map((item, i) => (
                   <li
                     key={`${g.name}-${i}`}
-                    className="px-5 py-3 flex items-center gap-3 text-[14px] border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--overlay-2)] transition-colors"
+                    className="px-5 py-3 flex items-center gap-3 text-body border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--overlay-2)] transition-colors"
                   >
                     <span className="text-[var(--text2)] flex items-center">
                       <item.Icon size={16} strokeWidth={2} />
@@ -78,7 +78,7 @@ export function Step15CategoryList() {
               <h3 className="text-[22px] font-bold leading-tight">
                 Tu plan está en <span className="gradient-text">marcha</span>
               </h3>
-              <p className="text-[14px] text-[var(--text2)] leading-relaxed">
+              <p className="text-body text-[var(--text2)] leading-relaxed">
                 Genial trabajo. En el siguiente paso afinaremos los montos y conectaremos tus
                 cuentas para que cada peso tenga su lugar.
               </p>
@@ -87,7 +87,7 @@ export function Step15CategoryList() {
               <button
                 type="button"
                 onClick={handleStartOver}
-                className="text-[13px] text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline transition-colors"
+                className="text-body-sm text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline transition-colors"
               >
                 Empezar de nuevo
               </button>

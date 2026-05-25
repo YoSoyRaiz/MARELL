@@ -110,7 +110,7 @@ export function NetWorthReport({
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)] px-6 py-5">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+            <div className="text-meta uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
               Patrimonio neto · hoy
             </div>
             <div
@@ -123,11 +123,11 @@ export function NetWorthReport({
           </div>
           {series.length > 1 && Math.abs(delta) > 0.005 && (
             <div className="text-right">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)] font-semibold">
+              <div className="text-eyebrow uppercase tracking-[0.18em] text-[var(--muted)] font-semibold">
                 vs hace {rangeLabel.toLowerCase()}
               </div>
               <div
-                className={`text-[20px] font-bold tabular-nums num mt-2 inline-flex items-center gap-1.5 ${
+                className={`text-h2 font-bold tabular-nums num mt-2 inline-flex items-center gap-1.5 ${
                   delta > 0 ? 'text-[var(--brand-text)]' : 'text-[var(--coral-text)]'
                 }`}
               >
@@ -138,7 +138,7 @@ export function NetWorthReport({
                 )}
                 {fmtMoney(Math.abs(delta))}
               </div>
-              <div className="text-[12px] text-[var(--muted)] tabular-nums num mt-0.5">
+              <div className="text-meta text-[var(--muted)] tabular-nums num mt-0.5">
                 {deltaPct > 0 ? '+' : ''}
                 {deltaPct.toFixed(1)}%
               </div>
@@ -182,8 +182,8 @@ export function NetWorthReport({
       ) : (
         <Card padding="md" className="overflow-x-auto">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-            <h2 className="text-[15px] font-semibold text-[var(--text)]">Evolución mensual</h2>
-            <div className="text-[11px] text-[var(--muted)]">
+            <h2 className="text-emph font-semibold text-[var(--text)]">Evolución mensual</h2>
+            <div className="text-eyebrow text-[var(--muted)]">
               {series.length} {series.length === 1 ? 'punto' : 'puntos'} ·{' '}
               <span className="text-[var(--text2)]">fin de mes</span>
             </div>
@@ -193,7 +193,7 @@ export function NetWorthReport({
       )}
 
       {/* Disclaimer */}
-      <p className="text-[11px] text-[var(--muted)] leading-relaxed max-w-2xl">
+      <p className="text-eyebrow text-[var(--muted)] leading-relaxed max-w-2xl">
         Reconstruimos cada punto restando las transacciones posteriores al cierre de mes desde el
         balance actual de cada cuenta. Es una aproximación cercana — más precisa mientras más
         transacciones registres.

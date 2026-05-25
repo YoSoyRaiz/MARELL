@@ -372,10 +372,10 @@ export function ImportTransactionsModal({
               <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mx-auto text-[#0B0B0C] mb-4">
                 <Upload size={22} strokeWidth={2.4} />
               </div>
-              <div className="text-[15px] font-semibold text-[var(--text)] mb-1">
+              <div className="text-emph font-semibold text-[var(--text)] mb-1">
                 Arrastra tu archivo aquí
               </div>
-              <div className="text-[12px] text-[var(--muted)]">
+              <div className="text-meta text-[var(--muted)]">
                 o click para seleccionar (CSV o PDF)
               </div>
               <input
@@ -396,10 +396,10 @@ export function ImportTransactionsModal({
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-6 flex items-center gap-4">
               <div className="w-10 h-10 rounded-full border-2 border-[var(--brand-2)]/30 border-t-[var(--brand-2)] animate-spin" />
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] font-semibold text-[var(--text)]">
+                <div className="text-body font-semibold text-[var(--text)]">
                   Leyendo PDF con IA…
                 </div>
-                <div className="text-[12px] text-[var(--muted)] mt-0.5">
+                <div className="text-meta text-[var(--muted)] mt-0.5">
                   Esto puede tardar 10-30 segundos según el tamaño.
                 </div>
               </div>
@@ -413,18 +413,18 @@ export function ImportTransactionsModal({
                 <FileText size={18} strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] font-semibold text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
+                <div className="text-body font-semibold text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
                   <span className="truncate">{file.name}</span>
-                  <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-2 py-0.5 rounded-full bg-[var(--overlay-1)] text-[var(--text2)] border border-[var(--border)]">
+                  <span className="inline-flex items-center gap-1 text-tiny uppercase tracking-[0.12em] font-semibold px-2 py-0.5 rounded-full bg-[var(--overlay-1)] text-[var(--text2)] border border-[var(--border)]">
                     {sourceKind === 'pdf' ? 'PDF · IA' : 'CSV'}
                   </span>
                   {bankDetection && (
-                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-2 py-0.5 rounded-full bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] border border-[var(--brand-2)]/20">
+                    <span className="inline-flex items-center gap-1 text-tiny uppercase tracking-[0.12em] font-semibold px-2 py-0.5 rounded-full bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] border border-[var(--brand-2)]/20">
                       {bankDetection.displayName}
                     </span>
                   )}
                 </div>
-                <div className="text-[12px] text-[var(--muted)] mt-0.5">
+                <div className="text-meta text-[var(--muted)] mt-0.5">
                   {rows.length} {rows.length === 1 ? 'movimiento' : 'movimientos'}
                   {autoCount > 0 && (
                     <>
@@ -440,7 +440,7 @@ export function ImportTransactionsModal({
               <button
                 type="button"
                 onClick={resetFile}
-                className="text-[12px] text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline px-2 py-1"
+                className="text-meta text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline px-2 py-1"
               >
                 Cambiar archivo
               </button>
@@ -499,10 +499,10 @@ export function ImportTransactionsModal({
               {/* Editable per-row list */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+                  <div className="text-eyebrow uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
                     Movimientos ({totalKept})
                   </div>
-                  <div className="text-[11px] text-[var(--muted)]">
+                  <div className="text-eyebrow text-[var(--muted)]">
                     Click en categoría para asignar
                   </div>
                 </div>
@@ -517,7 +517,7 @@ export function ImportTransactionsModal({
                             r.excluded ? 'opacity-40' : ''
                           }`}
                         >
-                          <div className="text-[11px] text-[var(--muted)] tabular-nums num pt-2">
+                          <div className="text-eyebrow text-[var(--muted)] tabular-nums num pt-2">
                             {formatDate(r.date)}
                           </div>
                           <div className="min-w-0 space-y-1.5">
@@ -542,7 +542,7 @@ export function ImportTransactionsModal({
                                   updateRow(i, { payeeName: e.target.value })
                                 }
                                 disabled={r.excluded}
-                                className="flex-1 min-w-0 bg-transparent text-[13px] text-[var(--text)] border-b border-transparent hover:border-[var(--border)] focus:border-[var(--brand-2)] focus:outline-none py-0.5"
+                                className="flex-1 min-w-0 bg-transparent text-body-sm text-[var(--text)] border-b border-transparent hover:border-[var(--border)] focus:border-[var(--brand-2)] focus:outline-none py-0.5"
                                 aria-label={`Pagado a — fila ${i + 1}`}
                               />
                             </div>
@@ -561,7 +561,7 @@ export function ImportTransactionsModal({
                               {r.autoSource === 'history' && (
                                 <span
                                   title="Categoría aprendida de tu historial"
-                                  className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] border border-[var(--brand-2)]/20"
+                                  className="inline-flex items-center gap-1 text-tiny uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(61,220,151,0.12)] text-[var(--brand-text)] border border-[var(--brand-2)]/20"
                                 >
                                   <Sparkles size={9} strokeWidth={2.6} />
                                   historial
@@ -570,7 +570,7 @@ export function ImportTransactionsModal({
                               {r.autoSource === 'merchant' && (
                                 <span
                                   title="Sugerido por el tipo de comercio (banco de patrones RD)"
-                                  className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[var(--overlay-1)] text-[var(--text2)] border border-[var(--border2)]"
+                                  className="inline-flex items-center gap-1 text-tiny uppercase tracking-[0.12em] font-semibold px-1.5 py-0.5 rounded-md bg-[var(--overlay-1)] text-[var(--text2)] border border-[var(--border2)]"
                                 >
                                   <Sparkles size={9} strokeWidth={2.6} />
                                   comercio
@@ -580,7 +580,7 @@ export function ImportTransactionsModal({
                           </div>
                           <div className="flex flex-col items-end gap-1.5 pt-1">
                             <div
-                              className={`text-[13px] tabular-nums num font-semibold ${
+                              className={`text-body-sm tabular-nums num font-semibold ${
                                 isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                               }`}
                             >
@@ -592,7 +592,7 @@ export function ImportTransactionsModal({
                               onClick={() =>
                                 updateRow(i, { excluded: !r.excluded })
                               }
-                              className="text-[10px] uppercase tracking-[0.12em] font-semibold text-[var(--muted)] hover:text-[var(--coral-text)] transition-colors"
+                              className="text-tiny uppercase tracking-[0.12em] font-semibold text-[var(--muted)] hover:text-[var(--coral-text)] transition-colors"
                             >
                               {r.excluded ? 'incluir' : 'excluir'}
                             </button>
@@ -665,7 +665,7 @@ function RowCategorySelect({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         aria-label="Categoría"
-        className="w-full appearance-none !text-[12px] !py-1.5 !pl-2.5 !pr-7 !rounded-md bg-[var(--overlay-1)] border border-[var(--border)] cursor-pointer hover:border-[var(--brand-2)]/40 disabled:cursor-not-allowed"
+        className="w-full appearance-none !text-meta !py-1.5 !pl-2.5 !pr-7 !rounded-md bg-[var(--overlay-1)] border border-[var(--border)] cursor-pointer hover:border-[var(--brand-2)]/40 disabled:cursor-not-allowed"
       >
         <option value="">Sin categoría</option>
         {Object.entries(groupedCategories).map(([groupName, cats]) => (

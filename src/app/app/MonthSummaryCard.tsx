@@ -50,16 +50,16 @@ export function MonthSummaryCard({
     <Card as="section" className="overflow-hidden">
       <CardHeader>
         <div className="min-w-0">
-          <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
+          <h2 className="text-body font-semibold text-[var(--text)] truncate">
             Resumen de {monthLabel}
           </h2>
-          <p className="text-[11px] text-[var(--muted)] mt-0.5">
+          <p className="text-eyebrow text-[var(--muted)] mt-0.5">
             Cómo se compone tu mes
           </p>
         </div>
         <Link
           href="/app/plan"
-          className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
+          className="text-meta text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
         >
           Plan
           <ArrowRight size={12} strokeWidth={2.4} />
@@ -111,7 +111,7 @@ function Row({
     <li className="px-5 py-3 flex items-start justify-between gap-3">
       <div className="min-w-0">
         <div
-          className={`text-[13px] ${
+          className={`text-body-sm ${
             bold
               ? 'font-semibold text-[var(--text)]'
               : 'text-[var(--text2)]'
@@ -120,13 +120,13 @@ function Row({
           {label}
         </div>
         {hint && (
-          <div className="text-[10px] text-[var(--muted2)] mt-0.5 leading-snug">
+          <div className="text-tiny text-[var(--muted2)] mt-0.5 leading-snug">
             {hint}
           </div>
         )}
       </div>
       <div
-        className={`text-[14px] tabular-nums num shrink-0 ${
+        className={`text-body tabular-nums num shrink-0 ${
           bold ? 'font-bold' : 'font-semibold'
         } ${tone}`}
       >

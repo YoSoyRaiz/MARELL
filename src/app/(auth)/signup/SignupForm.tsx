@@ -21,15 +21,15 @@ export function SignupForm() {
         <div className="mx-auto w-12 h-12 rounded-2xl bg-[rgba(61,220,151,0.16)] text-[var(--brand-2)] inline-flex items-center justify-center">
           <MailCheck size={22} strokeWidth={2.2} />
         </div>
-        <h2 className="text-[18px] font-bold text-[var(--text)]">
+        <h2 className="text-h3 font-bold text-[var(--text)]">
           Revisa tu correo
         </h2>
-        <p className="text-[13px] leading-relaxed text-[var(--text2)]">
+        <p className="text-body-sm leading-relaxed text-[var(--text2)]">
           Te enviamos un enlace de confirmación a{' '}
           <strong className="text-[var(--text)]">{state.email}</strong>.
           Cuando lo abras, tu prueba de 31 días arranca automáticamente.
         </p>
-        <p className="text-[12px] leading-relaxed text-[var(--muted)] pt-2">
+        <p className="text-meta leading-relaxed text-[var(--muted)] pt-2">
           ¿No te llegó? Revisa en spam, o vuelve a intentar con el mismo
           email — te reenviaremos otro.
         </p>

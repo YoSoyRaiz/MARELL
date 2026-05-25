@@ -89,7 +89,7 @@ export function InlineMoneyEdit({ value, onSave, ariaLabel }: InlineMoneyEditPro
         type="button"
         onClick={startEdit}
         aria-label={ariaLabel ?? 'Editar monto asignado'}
-        className="w-full text-right text-[14px] tabular-nums num text-[var(--text)] hover:text-[var(--brand-text)] py-1.5 px-2 -my-1.5 -mx-2 rounded-md hover:bg-[var(--overlay-1)] transition-colors"
+        className="w-full text-right text-body tabular-nums num text-[var(--text)] hover:text-[var(--brand-text)] py-1.5 px-2 -my-1.5 -mx-2 rounded-md hover:bg-[var(--overlay-1)] transition-colors"
       >
         {fmt(value)}
       </button>
@@ -117,7 +117,7 @@ export function InlineMoneyEdit({ value, onSave, ariaLabel }: InlineMoneyEditPro
       disabled={saving}
       placeholder="0 o +500 para sumar"
       title="Escribe un monto total. Empieza con + para sumar al actual (ej: +1000)."
-      className={`num !w-full !text-right !text-[14px] tabular-nums !py-1.5 !px-2 !rounded-md transition-opacity ${
+      className={`num !w-full !text-right !text-body tabular-nums !py-1.5 !px-2 !rounded-md transition-opacity ${
         saving ? 'opacity-60' : ''
       }`}
     />

@@ -75,7 +75,7 @@ interface ModalTitleProps {
   eyebrow?: ReactNode
   id?: string
   description?: ReactNode
-  /** `default` = text-[20px], `compact` = text-[18px] para títulos
+  /** `default` = text-h2, `compact` = text-h3 para títulos
    *  largos donde 20px envolvería. */
   size?: 'default' | 'compact'
   children: ReactNode
@@ -88,11 +88,11 @@ export function ModalTitle({
   size = 'default',
   children,
 }: ModalTitleProps) {
-  const titleSize = size === 'compact' ? 'text-[18px]' : 'text-[20px]'
+  const titleSize = size === 'compact' ? 'text-h3' : 'text-h2'
   return (
     <div className="min-w-0">
       {eyebrow && (
-        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+        <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
           {eyebrow}
         </div>
       )}
@@ -105,7 +105,7 @@ export function ModalTitle({
         {children}
       </h2>
       {description && (
-        <div className="text-[12px] text-[var(--muted)] mt-1">
+        <div className="text-meta text-[var(--muted)] mt-1">
           {description}
         </div>
       )}

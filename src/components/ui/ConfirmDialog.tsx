@@ -128,7 +128,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                   {state.description && (
                     <p
                       id="confirm-dialog-desc"
-                      className="text-[13px] text-[var(--text2)] leading-relaxed mt-2"
+                      className="text-body-sm text-[var(--text2)] leading-relaxed mt-2"
                     >
                       {state.description}
                     </p>

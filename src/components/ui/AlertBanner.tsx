@@ -37,8 +37,8 @@ const sizeStyles: Record<
   Size,
   { padding: string; text: string; gap: string; iconSize: number }
 > = {
-  sm: { padding: 'px-3 py-2', text: 'text-[12px]', gap: 'gap-2', iconSize: 14 },
-  md: { padding: 'px-4 py-3', text: 'text-[13px]', gap: 'gap-3', iconSize: 16 },
+  sm: { padding: 'px-3 py-2', text: 'text-meta', gap: 'gap-2', iconSize: 14 },
+  md: { padding: 'px-4 py-3', text: 'text-body-sm', gap: 'gap-3', iconSize: 16 },
 }
 
 interface AlertBannerProps {

@@ -52,13 +52,13 @@ export function UpcomingCommitments({
       <CardHeader>
         <div className="flex items-center gap-2 min-w-0">
           <CalendarClock size={14} strokeWidth={2.2} className="text-[var(--brand-text)] shrink-0" />
-          <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
+          <h2 className="text-body font-semibold text-[var(--text)] truncate">
             Próximos 14 días
           </h2>
         </div>
         <Link
           href="/app/programadas"
-          className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
+          className="text-meta text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
         >
           Ver todas
           <ArrowRight size={12} strokeWidth={2.4} />
@@ -67,7 +67,7 @@ export function UpcomingCommitments({
 
       {items.length === 0 ? (
         <div className="px-5 py-6 text-center">
-          <p className="text-[12px] text-[var(--muted)] leading-relaxed">
+          <p className="text-meta text-[var(--muted)] leading-relaxed">
             No tienes compromisos programados en los próximos 14 días.
           </p>
         </div>
@@ -75,18 +75,18 @@ export function UpcomingCommitments({
         <>
           <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)]">
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
+              <div className="text-eyebrow uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
                 Caja proyectada
               </div>
               <div
-                className={`text-[15px] font-bold tabular-nums num ${
+                className={`text-emph font-bold tabular-nums num ${
                   projectedCash < -0.005 ? 'text-[var(--coral-text)]' : 'gradient-text'
                 }`}
               >
                 {fmtMoneyShort(projectedCash)}
               </div>
             </div>
-            <div className="text-[11px] text-[var(--muted)] mt-1 num tabular-nums inline-flex items-center gap-1">
+            <div className="text-eyebrow text-[var(--muted)] mt-1 num tabular-nums inline-flex items-center gap-1">
               {netFlow < 0 ? (
                 <>
                   <TrendingDown size={11} strokeWidth={2.2} className="text-[var(--coral-text)]" />
@@ -125,7 +125,7 @@ export function UpcomingCommitments({
                     </div>
                   </div>
                   <div
-                    className={`text-[13px] font-semibold tabular-nums num shrink-0 ${
+                    className={`text-body-sm font-semibold tabular-nums num shrink-0 ${
                       isOutflow ? 'text-[var(--coral-text)]' : 'text-[var(--brand-text)]'
                     }`}
                   >

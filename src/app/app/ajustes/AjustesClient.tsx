@@ -206,12 +206,12 @@ export function AjustesClient({
             readOnly
             className="!bg-[var(--bg)] !text-[var(--muted)] cursor-not-allowed"
           />
-          <p className="text-[11px] text-[var(--muted)] mt-1.5">
+          <p className="text-eyebrow text-[var(--muted)] mt-1.5">
             El email se gestiona desde tu proveedor de autenticación.
           </p>
         </FormField>
         <FormField label="Plan">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--overlay-1)] border border-[var(--border)] text-[12px] font-semibold capitalize text-[var(--text2)]">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--overlay-1)] border border-[var(--border)] text-meta font-semibold capitalize text-[var(--text2)]">
             {plan}
           </div>
         </FormField>
@@ -245,7 +245,7 @@ export function AjustesClient({
               <button
                 type="button"
                 onClick={() => setCurrency('DOP')}
-                className={`py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
+                className={`py-2.5 rounded-lg text-body-sm font-semibold transition-all ${
                   currency === 'DOP'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -256,7 +256,7 @@ export function AjustesClient({
               <button
                 type="button"
                 onClick={() => setCurrency('USD')}
-                className={`py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
+                className={`py-2.5 rounded-lg text-body-sm font-semibold transition-all ${
                   currency === 'USD'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -265,14 +265,14 @@ export function AjustesClient({
                 USD · Dólar
               </button>
             </div>
-            <p className="text-[11px] text-[var(--muted)] mt-1.5">
+            <p className="text-eyebrow text-[var(--muted)] mt-1.5">
               DOP muestra <span className="num">RD$1,234.56</span>; USD muestra{' '}
               <span className="num">$1,234.56</span>.
             </p>
           </FormField>
           <FormField label="Tipo de cambio USD↔DOP">
             <div className="flex items-center gap-2">
-              <span className="text-[12px] text-[var(--text2)] tabular-nums num shrink-0">
+              <span className="text-meta text-[var(--text2)] tabular-nums num shrink-0">
                 1 USD =
               </span>
               <input
@@ -281,11 +281,11 @@ export function AjustesClient({
                 value={usdRate}
                 onChange={(e) => setUsdRate(e.target.value)}
                 placeholder="60.00"
-                className="w-32 !text-[14px] !py-2.5 !px-3 !rounded-xl tabular-nums num text-right"
+                className="w-32 !text-body !py-2.5 !px-3 !rounded-xl tabular-nums num text-right"
               />
-              <span className="text-[12px] text-[var(--text2)] shrink-0">DOP</span>
+              <span className="text-meta text-[var(--text2)] shrink-0">DOP</span>
             </div>
-            <p className="text-[11px] text-[var(--muted)] mt-1.5 leading-relaxed">
+            <p className="text-eyebrow text-[var(--muted)] mt-1.5 leading-relaxed">
               Se actualiza solo cada día con la tasa del Banco Central. Edítala aquí solo si quieres usar una tasa específica (la del banco que usas, por ejemplo).
             </p>
           </FormField>
@@ -306,10 +306,10 @@ export function AjustesClient({
       <Section title="Notificaciones" Icon={Bell} error={emailNotifError}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-medium text-[var(--text)]">
+            <p className="text-body font-medium text-[var(--text)]">
               Correo electrónico
             </p>
-            <p className="text-[12px] text-[var(--muted)] leading-relaxed mt-1">
+            <p className="text-meta text-[var(--muted)] leading-relaxed mt-1">
               Recibe avisos a <span className="text-[var(--text2)]">{email}</span> cuando
               se acerca un movimiento programado, una deuda próxima a vencer o tu
               suscripción está por expirar.
@@ -345,14 +345,14 @@ export function AjustesClient({
       <Section title="Plan y suscripción" Icon={Sparkles}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <div className="text-[14px] font-medium text-[var(--text)]">
+            <div className="text-body font-medium text-[var(--text)]">
               {plan === 'pro'
                 ? 'MARELL Pro activo'
                 : plan === 'trial'
                   ? 'Prueba gratuita activa'
                   : 'Plan gratis'}
             </div>
-            <p className="text-[12px] text-[var(--muted)] leading-relaxed mt-1">
+            <p className="text-meta text-[var(--muted)] leading-relaxed mt-1">
               {plan === 'pro'
                 ? 'Todas las funciones desbloqueadas. Cancela cuando quieras.'
                 : plan === 'trial'
@@ -362,7 +362,7 @@ export function AjustesClient({
           </div>
           <Link
             href="/app/upgrade"
-            className="h-10 px-4 text-[13px] font-semibold rounded-xl gradient-bg text-[#0B0B0C] hover:brightness-105 inline-flex items-center gap-2 transition-[filter] shrink-0"
+            className="h-10 px-4 text-body-sm font-semibold rounded-xl gradient-bg text-[#0B0B0C] hover:brightness-105 inline-flex items-center gap-2 transition-[filter] shrink-0"
           >
             {plan === 'pro' ? 'Administrar' : 'Pasar a Pro'}
           </Link>
@@ -374,13 +374,13 @@ export function AjustesClient({
 
       {/* Session */}
       <Section title="Sesión" Icon={LogOut}>
-        <p className="text-[13px] text-[var(--text2)] leading-relaxed">
+        <p className="text-body-sm text-[var(--text2)] leading-relaxed">
           Cierra sesión en este dispositivo. Tus datos quedan intactos.
         </p>
         <form action={logout}>
           <button
             type="submit"
-            className="h-10 px-5 text-[13px] font-medium rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] transition-colors inline-flex items-center gap-2"
+            className="h-10 px-5 text-body-sm font-medium rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] transition-colors inline-flex items-center gap-2"
           >
             <LogOut size={14} strokeWidth={2.2} />
             Cerrar sesión
@@ -394,7 +394,7 @@ export function AjustesClient({
         Icon={Trash2}
         tone="danger"
       >
-        <p className="text-[13px] text-[var(--text2)] leading-relaxed">
+        <p className="text-body-sm text-[var(--text2)] leading-relaxed">
           Eliminar tu cuenta borra <strong className="text-[var(--text)]">todos</strong> tus datos
           (presupuesto, cuentas, transacciones, metas, recurrencias) de forma permanente.
           Te enviamos al login después.
@@ -402,7 +402,7 @@ export function AjustesClient({
         <button
           type="button"
           onClick={handleDeleteAccount}
-          className="h-10 px-5 text-[13px] font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral-text)] border border-[var(--coral)]/30 transition-colors inline-flex items-center gap-2"
+          className="h-10 px-5 text-body-sm font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral-text)] border border-[var(--coral)]/30 transition-colors inline-flex items-center gap-2"
         >
           <Trash2 size={14} strokeWidth={2.2} />
           Eliminar cuenta
@@ -441,7 +441,7 @@ function Section({ title, Icon, children, savedAt, error, tone = 'default' }: Se
             <Icon size={16} strokeWidth={2} />
           </div>
           <h2
-            className={`text-[15px] font-semibold tracking-tight ${
+            className={`text-emph font-semibold tracking-tight ${
               isDanger ? 'text-[var(--coral-text)]' : 'text-[var(--text)]'
             }`}
           >
@@ -449,7 +449,7 @@ function Section({ title, Icon, children, savedAt, error, tone = 'default' }: Se
           </h2>
         </div>
         {savedAt && (
-          <div className="inline-flex items-center gap-1.5 text-[11px] text-[var(--brand-text)] font-semibold animate-step">
+          <div className="inline-flex items-center gap-1.5 text-eyebrow text-[var(--brand-text)] font-semibold animate-step">
             <Check size={12} strokeWidth={2.4} />
             Guardado
           </div>
@@ -549,7 +549,7 @@ function ExportSection() {
 
   return (
     <Section title="Tus datos" Icon={Download} error={error}>
-      <p className="text-[13px] text-[var(--text2)] leading-relaxed">
+      <p className="text-body-sm text-[var(--text2)] leading-relaxed">
         Descarga tu información cuando quieras. Es tuya, sin candados.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -563,10 +563,10 @@ function ExportSection() {
             <FileJson size={16} strokeWidth={2} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-semibold text-[var(--text)]">
+            <div className="text-body-sm font-semibold text-[var(--text)]">
               Backup JSON
             </div>
-            <div className="text-[11px] text-[var(--muted)] leading-relaxed mt-0.5">
+            <div className="text-eyebrow text-[var(--muted)] leading-relaxed mt-0.5">
               {pendingType === 'json' ? 'Generando…' : 'Todo: presupuesto, cuentas, transacciones, metas.'}
             </div>
           </div>
@@ -581,10 +581,10 @@ function ExportSection() {
             <FileSpreadsheet size={16} strokeWidth={2} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-semibold text-[var(--text)]">
+            <div className="text-body-sm font-semibold text-[var(--text)]">
               Transacciones CSV
             </div>
-            <div className="text-[11px] text-[var(--muted)] leading-relaxed mt-0.5">
+            <div className="text-eyebrow text-[var(--muted)] leading-relaxed mt-0.5">
               {pendingType === 'csv' ? 'Generando…' : 'Para Excel, Numbers o Google Sheets.'}
             </div>
           </div>
@@ -644,10 +644,10 @@ function PushToggle() {
     <>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-medium text-[var(--text)]">
+          <p className="text-body font-medium text-[var(--text)]">
             Notificaciones push
           </p>
-          <p className="text-[12px] text-[var(--muted)] leading-relaxed mt-1">
+          <p className="text-meta text-[var(--muted)] leading-relaxed mt-1">
             Recibe alertas en tu teléfono o navegador cuando se asignan pagos, vencen metas o se acerca una transacción programada.
           </p>
         </div>
@@ -665,7 +665,7 @@ function PushToggle() {
         </button>
       </div>
       {error && (
-        <p className="text-[11px] text-[var(--coral-text)] mt-2 leading-relaxed">{error}</p>
+        <p className="text-eyebrow text-[var(--coral-text)] mt-2 leading-relaxed">{error}</p>
       )}
     </>
   )
@@ -685,7 +685,7 @@ function ThemeSection() {
 
   return (
     <Section title="Apariencia" Icon={Palette}>
-      <p className="text-[12px] text-[var(--muted)] mb-3 leading-relaxed">
+      <p className="text-meta text-[var(--muted)] mb-3 leading-relaxed">
         Elige entre claro u oscuro.
       </p>
       <div
@@ -702,7 +702,7 @@ function ThemeSection() {
               role="radio"
               aria-checked={active}
               onClick={() => setMode(opt.id)}
-              className={`h-11 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
+              className={`h-11 rounded-lg text-body-sm font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
                 active
                   ? 'gradient-bg text-[#0B0B0C] shadow-[0_4px_16px_rgba(61,220,151,0.18)]'
                   : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'

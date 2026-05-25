@@ -94,7 +94,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
     <div className="fixed bottom-[calc(68px+env(safe-area-inset-bottom)+16px)] lg:bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:left-auto z-40 max-w-md mx-auto sm:mx-0">
       <div className="rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] p-3 space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <div className="text-[12px] text-[var(--text)] font-semibold">
+          <div className="text-meta text-[var(--text)] font-semibold">
             {ids.length} {ids.length === 1 ? 'seleccionada' : 'seleccionadas'}
           </div>
           <button
@@ -113,7 +113,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
               type="button"
               onClick={() => setPickerOpen((v) => !v)}
               disabled={pending}
-              className="w-full h-10 px-3 text-[12px] font-semibold rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+              className="w-full h-10 px-3 text-meta font-semibold rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
             >
               {pendingAction === 'recategorize' ? (
                 <>
@@ -137,13 +137,13 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
                 <button
                   type="button"
                   onClick={() => handleRecategorize(null)}
-                  className="w-full text-left px-3 py-2 text-[12px] text-[var(--text2)] hover:bg-[var(--overlay-1)] hover:text-[var(--text)] transition-colors"
+                  className="w-full text-left px-3 py-2 text-meta text-[var(--text2)] hover:bg-[var(--overlay-1)] hover:text-[var(--text)] transition-colors"
                 >
                   Sin categoría
                 </button>
                 {Object.entries(grouped).map(([gname, cats]) => (
                   <div key={gname} className="border-t border-[var(--border)]">
-                    <div className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] text-[var(--brand-text)] font-semibold bg-[var(--overlay-1)]">
+                    <div className="px-3 py-1.5 text-tiny uppercase tracking-[0.15em] text-[var(--brand-text)] font-semibold bg-[var(--overlay-1)]">
                       {gname}
                     </div>
                     {cats.map((c) => (
@@ -151,7 +151,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
                         key={c.id}
                         type="button"
                         onClick={() => handleRecategorize(c.id)}
-                        className="w-full text-left px-3 py-2 text-[12px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
+                        className="w-full text-left px-3 py-2 text-meta text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
                       >
                         {c.name}
                       </button>
@@ -165,7 +165,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
             type="button"
             onClick={handleDelete}
             disabled={pending}
-            className="h-10 px-3 text-[12px] font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral-text)] border border-[var(--coral)]/30 transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+            className="h-10 px-3 text-meta font-semibold rounded-xl bg-[var(--coral)]/15 hover:bg-[var(--coral)]/25 text-[var(--coral-text)] border border-[var(--coral)]/30 transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
           >
             {pendingAction === 'delete' ? (
               <>
@@ -182,10 +182,10 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
         </div>
 
         {error && (
-          <div className="text-[11px] text-[var(--coral-text)] leading-relaxed">{error}</div>
+          <div className="text-eyebrow text-[var(--coral-text)] leading-relaxed">{error}</div>
         )}
         {hint && (
-          <div className="text-[11px] text-[var(--muted)] leading-relaxed">{hint}</div>
+          <div className="text-eyebrow text-[var(--muted)] leading-relaxed">{hint}</div>
         )}
       </div>
     </div>

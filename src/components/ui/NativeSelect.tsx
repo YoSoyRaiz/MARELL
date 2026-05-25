@@ -31,7 +31,7 @@ export function NativeSelect({
         onChange={(e) => onChange(e.target.value)}
         aria-label={ariaLabel}
         disabled={disabled}
-        className="w-full appearance-none !text-[14px] !py-3 !pl-4 !pr-10 !rounded-xl bg-[var(--s1)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full appearance-none !text-body !py-3 !pl-4 !pr-10 !rounded-xl bg-[var(--s1)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {children}
       </select>

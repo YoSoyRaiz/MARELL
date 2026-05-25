@@ -32,7 +32,7 @@ export function OfflineBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="bg-[var(--coral)]/15 border-b border-[var(--coral)]/30 px-4 py-2 flex items-center justify-center gap-2 text-[12px] text-[var(--coral-text)] font-medium"
+      className="bg-[var(--coral)]/15 border-b border-[var(--coral)]/30 px-4 py-2 flex items-center justify-center gap-2 text-meta text-[var(--coral-text)] font-medium"
     >
       <WifiOff size={13} strokeWidth={2.4} />
       Sin conexión — los cambios se guardan cuando vuelvas en línea.

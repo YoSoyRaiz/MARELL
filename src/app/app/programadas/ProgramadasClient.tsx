@@ -215,7 +215,7 @@ export function ProgramadasClient({
             type="button"
             onClick={() => setAddOpen(true)}
             disabled={!hasBudget || noAccounts}
-            className="h-10 sm:h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none self-start sm:self-auto"
+            className="h-10 sm:h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none self-start sm:self-auto"
             title={noAccounts ? 'Necesitas al menos una cuenta abierta' : undefined}
           >
             <Plus size={14} strokeWidth={2.4} />
@@ -293,7 +293,7 @@ export function ProgramadasClient({
         {/* List */}
         {!isEmpty && filtered.length === 0 && (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-10 text-center">
-            <div className="text-[var(--text2)] text-[14px]">
+            <div className="text-[var(--text2)] text-body">
               Sin recurrencias en este filtro.
             </div>
           </div>
@@ -324,10 +324,10 @@ export function ProgramadasClient({
                       <Icon size={18} strokeWidth={2} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[15px] font-semibold text-[var(--text)] truncate">
+                      <div className="text-emph font-semibold text-[var(--text)] truncate">
                         {s.payeeName}
                       </div>
-                      <div className="text-[11px] text-[var(--muted)] truncate inline-flex items-center gap-1.5">
+                      <div className="text-eyebrow text-[var(--muted)] truncate inline-flex items-center gap-1.5">
                         <span>{s.accountName}</span>
                         {s.categoryName && (
                           <>
@@ -347,7 +347,7 @@ export function ProgramadasClient({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-3 text-[11px] text-[var(--muted)]">
+                  <div className="flex items-center justify-between gap-3 text-eyebrow text-[var(--muted)]">
                     <div className="inline-flex items-center gap-3 flex-wrap">
                       <span className="inline-flex items-center gap-1.5">
                         <Repeat size={12} strokeWidth={2} />

@@ -101,10 +101,10 @@ export function NotificationBell({
       {open && (
         <div className="absolute right-0 top-full mt-2 w-[340px] sm:w-[380px] max-h-[70vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step z-40">
           <header className="px-5 pt-4 pb-3 border-b border-[var(--border)]">
-            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+            <div className="text-eyebrow font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
               Notificaciones
             </div>
-            <p className="text-[12px] text-[var(--muted)] mt-0.5">
+            <p className="text-meta text-[var(--muted)] mt-0.5">
               Lo que necesita tu atención hoy.
             </p>
           </header>
@@ -113,7 +113,7 @@ export function NotificationBell({
               <div className="w-12 h-12 rounded-full bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center mx-auto mb-3">
                 <Bell size={18} strokeWidth={2} />
               </div>
-              <p className="text-[13px] text-[var(--muted)] leading-relaxed">
+              <p className="text-body-sm text-[var(--muted)] leading-relaxed">
                 Todo en orden — ningún aviso pendiente.
               </p>
             </div>

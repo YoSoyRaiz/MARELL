@@ -37,10 +37,10 @@ export function Step23ZeroBased() {
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/40 bg-[rgba(61,220,151,0.04)] px-6 py-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="text-[12px] uppercase tracking-[0.18em] font-semibold text-[var(--brand-2)]">
+            <div className="text-meta uppercase tracking-[0.18em] font-semibold text-[var(--brand-2)]">
               Por asignar
             </div>
-            <div className="text-[13px] text-[var(--text2)] mt-1 max-w-md">
+            <div className="text-body-sm text-[var(--text2)] mt-1 max-w-md">
               Listo para tu plan. Vas a asignar categoría por categoría cuando llegues al
               dashboard.
             </div>
@@ -54,24 +54,24 @@ export function Step23ZeroBased() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <Card padding="sm">
-          <div className="text-[11px] text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
+          <div className="text-eyebrow text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
             Categorías
           </div>
           <div className="text-[26px] font-bold tabular-nums num text-[var(--text)] mt-1">
             {totalCategories}
           </div>
-          <div className="text-[12px] text-[var(--muted)] mt-0.5">
+          <div className="text-meta text-[var(--muted)] mt-0.5">
             listas para recibir tu dinero
           </div>
         </Card>
         <Card padding="sm">
-          <div className="text-[11px] text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
+          <div className="text-eyebrow text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
             Cuentas
           </div>
           <div className="text-[26px] font-bold tabular-nums num text-[var(--text)] mt-1">
             {answers.accounts.length}
           </div>
-          <div className="text-[12px] text-[var(--muted)] mt-0.5">agregadas a tu plan</div>
+          <div className="text-meta text-[var(--muted)] mt-0.5">agregadas a tu plan</div>
         </Card>
       </div>
 
@@ -80,7 +80,7 @@ export function Step23ZeroBased() {
         <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center text-[#0B0B0C] shrink-0">
           <Sparkles size={18} strokeWidth={2.4} />
         </div>
-        <div className="text-[13px] text-[var(--text2)] leading-relaxed">
+        <div className="text-body-sm text-[var(--text2)] leading-relaxed">
           <span className="text-[var(--text)] font-semibold">Cómo funciona en tu plan:</span> cada
           categoría tendrá un botón <span className="text-[var(--text)] font-medium">Asignar</span>.
           Mueves dinero hasta que <span className="num text-[var(--text)] font-medium">Por asignar</span> llegue

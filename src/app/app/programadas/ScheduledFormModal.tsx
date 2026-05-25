@@ -238,7 +238,7 @@ export function ScheduledFormModal({
               users mid-edit. */}
           {!isEdit && (
             <div>
-              <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold mb-2">
+              <div className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold mb-2">
                 Plantillas RD
               </div>
               <div className="space-y-2">
@@ -251,10 +251,10 @@ export function ScheduledFormModal({
                     <Gift size={14} strokeWidth={2.2} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-semibold text-[var(--text)] leading-tight">
+                    <div className="text-body-sm font-semibold text-[var(--text)] leading-tight">
                       Regalía pascual
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                    <div className="text-eyebrow text-[var(--muted)] mt-0.5 leading-snug">
                       Llena tipo, frecuencia, fecha (24-dic) y memo. Solo añade el monto y la cuenta.
                     </div>
                   </div>
@@ -271,10 +271,10 @@ export function ScheduledFormModal({
                     <CreditCard size={14} strokeWidth={2.2} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-semibold text-[var(--text)] leading-tight">
+                    <div className="text-body-sm font-semibold text-[var(--text)] leading-tight">
                       Cuota mensual
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+                    <div className="text-eyebrow text-[var(--muted)] mt-0.5 leading-snug">
                       Financiamiento a plazos: calcula la cuota y la programa cada mes.
                     </div>
                   </div>
@@ -286,7 +286,7 @@ export function ScheduledFormModal({
               {installmentOpen && (
                 <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3.5 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--brand-text)] font-semibold inline-flex items-center gap-1.5">
+                    <div className="text-eyebrow uppercase tracking-[0.12em] text-[var(--brand-text)] font-semibold inline-flex items-center gap-1.5">
                       <Calculator size={11} strokeWidth={2.4} />
                       Calculadora de cuotas
                     </div>
@@ -301,7 +301,7 @@ export function ScheduledFormModal({
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <label className="block">
-                      <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                      <span className="text-tiny uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                         Total
                       </span>
                       <input
@@ -310,11 +310,11 @@ export function ScheduledFormModal({
                         value={installmentTotal}
                         onChange={(e) => setInstallmentTotal(e.target.value)}
                         placeholder="60,000"
-                        className="w-full mt-1 !text-[13px] !py-2 !px-2 !rounded-lg tabular-nums num"
+                        className="w-full mt-1 !text-body-sm !py-2 !px-2 !rounded-lg tabular-nums num"
                       />
                     </label>
                     <label className="block">
-                      <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                      <span className="text-tiny uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                         # cuotas
                       </span>
                       <input
@@ -323,11 +323,11 @@ export function ScheduledFormModal({
                         value={installmentCount}
                         onChange={(e) => setInstallmentCount(e.target.value)}
                         placeholder="12"
-                        className="w-full mt-1 !text-[13px] !py-2 !px-2 !rounded-lg tabular-nums num"
+                        className="w-full mt-1 !text-body-sm !py-2 !px-2 !rounded-lg tabular-nums num"
                       />
                     </label>
                     <label className="block">
-                      <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                      <span className="text-tiny uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                         Tasa anual %
                       </span>
                       <input
@@ -336,12 +336,12 @@ export function ScheduledFormModal({
                         value={installmentRate}
                         onChange={(e) => setInstallmentRate(e.target.value)}
                         placeholder="0"
-                        className="w-full mt-1 !text-[13px] !py-2 !px-2 !rounded-lg tabular-nums num"
+                        className="w-full mt-1 !text-body-sm !py-2 !px-2 !rounded-lg tabular-nums num"
                       />
                     </label>
                   </div>
                   <div className="flex items-center justify-between gap-2 pt-1">
-                    <div className="text-[11px] text-[var(--muted)]">
+                    <div className="text-eyebrow text-[var(--muted)]">
                       Cuota mensual:{' '}
                       <span className="text-[var(--text)] font-semibold tabular-nums num">
                         {computedCuota > 0
@@ -356,7 +356,7 @@ export function ScheduledFormModal({
                       type="button"
                       onClick={applyCuotaToAmount}
                       disabled={computedCuota <= 0}
-                      className="text-[11px] font-semibold text-[var(--brand-text)] hover:underline disabled:opacity-40"
+                      className="text-eyebrow font-semibold text-[var(--brand-text)] hover:underline disabled:opacity-40"
                     >
                       Usar este monto
                     </button>
@@ -371,7 +371,7 @@ export function ScheduledFormModal({
             <button
               type="button"
               onClick={() => setType('expense')}
-              className={`py-2.5 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2.5 rounded-lg text-body-sm font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                 type === 'expense'
                   ? 'bg-[var(--coral)]/15 text-[var(--coral-text)]'
                   : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -383,7 +383,7 @@ export function ScheduledFormModal({
             <button
               type="button"
               onClick={() => setType('income')}
-              className={`py-2.5 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2.5 rounded-lg text-body-sm font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                 type === 'income'
                   ? 'gradient-bg text-[#0B0B0C]'
                   : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -428,7 +428,7 @@ export function ScheduledFormModal({
               value={nextDate}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setNextDate(e.target.value)}
             />
-            <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5 inline-flex items-center gap-1.5">
+            <p className="text-eyebrow text-[var(--muted)] leading-relaxed mt-1.5 inline-flex items-center gap-1.5">
               <Repeat size={11} strokeWidth={2} />
               {frequency === 'once'
                 ? 'Se materializa una vez en esta fecha.'
@@ -488,7 +488,7 @@ export function ScheduledFormModal({
               placeholder="Notas adicionales..."
               maxLength={200}
               rows={2}
-              className="w-full !text-[14px] !py-2.5 !px-4 !rounded-xl resize-none"
+              className="w-full !text-body !py-2.5 !px-4 !rounded-xl resize-none"
             />
           </FormField>
 

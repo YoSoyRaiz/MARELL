@@ -442,7 +442,7 @@ export function TransactionFormModal({
               <button
                 type="button"
                 onClick={() => setType('expense')}
-                className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2.5 rounded-lg text-meta sm:text-body-sm font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   type === 'expense'
                     ? 'bg-[var(--coral)]/15 text-[var(--coral-text)]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -456,7 +456,7 @@ export function TransactionFormModal({
               <button
                 type="button"
                 onClick={() => setType('income')}
-                className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2.5 rounded-lg text-meta sm:text-body-sm font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   type === 'income'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -471,7 +471,7 @@ export function TransactionFormModal({
                 type="button"
                 onClick={() => !isEdit && setType('transfer')}
                 disabled={isEdit && isTransfer}
-                className={`py-2.5 rounded-lg text-[12px] sm:text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2.5 rounded-lg text-meta sm:text-body-sm font-semibold inline-flex items-center justify-center gap-1.5 transition-all ${
                   isTransfer
                     ? 'bg-[var(--info)]/15 text-[var(--info-text)]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -521,7 +521,7 @@ export function TransactionFormModal({
               type="date"
               value={date}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
-              className="w-full !text-[16px] sm:!text-[14px] !py-3.5 sm:!py-3 !px-4 !rounded-xl"
+              className="w-full !text-[16px] sm:!text-body !py-3.5 sm:!py-3 !px-4 !rounded-xl"
             />
           </FormField>
 
@@ -577,7 +577,7 @@ export function TransactionFormModal({
                   : 'Supermercado Nacional, etc.'
               }
               maxLength={80}
-              className="w-full !text-[16px] sm:!text-[14px] !py-3.5 sm:!py-3 !px-4 !rounded-xl"
+              className="w-full !text-[16px] sm:!text-body !py-3.5 sm:!py-3 !px-4 !rounded-xl"
             />
           </FormField>
           )}
@@ -615,7 +615,7 @@ export function TransactionFormModal({
                 ))}
               </NativeSelect>
               {suggestedFromPayee && categoryId === suggestedFromPayee && (
-                <p className="text-[11px] text-[var(--brand-text)] mt-1.5 leading-relaxed">
+                <p className="text-eyebrow text-[var(--brand-text)] mt-1.5 leading-relaxed">
                   Auto-rellenada según tus transacciones anteriores con este pagado.
                 </p>
               )}
@@ -633,7 +633,7 @@ export function TransactionFormModal({
                     newSplit(),
                   ])
                 }}
-                className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
+                className="mt-2 inline-flex items-center gap-1.5 text-meta font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
               >
                 <Split size={12} strokeWidth={2.2} />
                 Dividir en varias categorías
@@ -642,7 +642,7 @@ export function TransactionFormModal({
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <label className="text-[12px] text-[var(--text2)] font-medium inline-flex items-center gap-1.5">
+                <label className="text-meta text-[var(--text2)] font-medium inline-flex items-center gap-1.5">
                   <Split size={12} strokeWidth={2.2} />
                   Split en {splits.length} categorías
                 </label>
@@ -652,7 +652,7 @@ export function TransactionFormModal({
                     setSplitMode(false)
                     setSplits([newSplit(), newSplit()])
                   }}
-                  className="text-[11px] text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+                  className="text-eyebrow text-[var(--muted)] hover:text-[var(--text)] transition-colors"
                 >
                   Quitar split
                 </button>
@@ -701,7 +701,7 @@ export function TransactionFormModal({
                   <button
                     type="button"
                     onClick={addSplitRow}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-meta font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
                   >
                     <Plus size={12} strokeWidth={2.4} />
                     Añadir categoría
@@ -710,14 +710,14 @@ export function TransactionFormModal({
                     <button
                       type="button"
                       onClick={equalizeSplits}
-                      className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
+                      className="inline-flex items-center gap-1.5 text-meta font-medium text-[var(--text2)] hover:text-[var(--brand-text)] transition-colors"
                       title="Distribuir el monto en partes iguales"
                     >
                       Igualar
                     </button>
                   )}
                   {amount !== null && amount > 0 && splits.length === 2 && (
-                    <div className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-[var(--muted2)]">
+                    <div className="inline-flex items-center gap-1 text-tiny uppercase tracking-[0.12em] text-[var(--muted2)]">
                       <button
                         type="button"
                         onClick={() => distributeByPercentages([50, 50])}
@@ -745,7 +745,7 @@ export function TransactionFormModal({
                   )}
                 </div>
                 {amount !== null && amount > 0 && (
-                  <div className="text-[11px] tabular-nums num">
+                  <div className="text-eyebrow tabular-nums num">
                     {splitsBalanced ? (
                       <span className="text-[var(--brand-text)] font-semibold">
                         Cuadrado · ${splitsSum.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -779,14 +779,14 @@ export function TransactionFormModal({
                 placeholder="Notas adicionales..."
                 maxLength={200}
                 rows={2}
-                className="w-full !text-[16px] sm:!text-[14px] !py-3 sm:!py-2.5 !px-4 !rounded-xl resize-none"
+                className="w-full !text-[16px] sm:!text-body !py-3 sm:!py-2.5 !px-4 !rounded-xl resize-none"
               />
             </FormField>
           </div>
         </div>
 
         {!valid && missingFields.length > 0 && (
-          <div className="px-6 pb-2 text-[11px] text-[var(--muted)] leading-snug">
+          <div className="px-6 pb-2 text-eyebrow text-[var(--muted)] leading-snug">
             Falta: <span className="text-[var(--text2)]">{missingFields.join(' · ')}</span>
           </div>
         )}
@@ -796,7 +796,7 @@ export function TransactionFormModal({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-12 sm:h-10 px-4 text-[14px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-xl sm:rounded-lg transition-colors disabled:opacity-60"
+            className="h-12 sm:h-10 px-4 text-body sm:text-body-sm font-medium text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] rounded-xl sm:rounded-lg transition-colors disabled:opacity-60"
           >
             Cancelar
           </button>
@@ -804,7 +804,7 @@ export function TransactionFormModal({
             type="button"
             onClick={handleSubmit}
             disabled={!valid || pending}
-            className="h-12 sm:h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[14px] sm:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-2"
+            className="h-12 sm:h-10 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body sm:text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-2"
           >
             {pending ? (
               <>

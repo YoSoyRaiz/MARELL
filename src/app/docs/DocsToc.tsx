@@ -56,8 +56,8 @@ export function DocsToc() {
   if (items.length === 0) return null
 
   return (
-    <div className="text-[12px]">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted2)] mb-3">
+    <div className="text-meta">
+      <div className="text-tiny font-semibold uppercase tracking-[0.18em] text-[var(--muted2)] mb-3">
         En esta página
       </div>
       <ul className="space-y-1.5 border-l border-[var(--border)]">

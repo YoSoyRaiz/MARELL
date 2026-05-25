@@ -58,7 +58,7 @@ export function PayFromAccountMenu({ accounts, onSelect }: Props) {
         aria-expanded={open}
         aria-haspopup="menu"
         title="Pagar desde una cuenta"
-        className="inline-flex items-center gap-1 h-7 px-2 rounded-md bg-[var(--overlay-1)] hover:bg-[var(--overlay-2)] text-[var(--text2)] hover:text-[var(--brand-text)] text-[11px] font-semibold uppercase tracking-[0.10em] transition-colors"
+        className="inline-flex items-center gap-1 h-7 px-2 rounded-md bg-[var(--overlay-1)] hover:bg-[var(--overlay-2)] text-[var(--text2)] hover:text-[var(--brand-text)] text-eyebrow font-semibold uppercase tracking-[0.10em] transition-colors"
       >
         <Wallet size={11} strokeWidth={2.4} />
         Pagar
@@ -74,7 +74,7 @@ export function PayFromAccountMenu({ accounts, onSelect }: Props) {
           role="menu"
           className="absolute right-0 top-full mt-1 z-30 min-w-[200px] max-w-[260px] rounded-xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] overflow-hidden animate-step"
         >
-          <div className="px-3 pt-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
+          <div className="px-3 pt-2.5 pb-1.5 text-tiny font-semibold uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
             Pagar desde
           </div>
           <ul className="max-h-[240px] overflow-y-auto">
@@ -88,7 +88,7 @@ export function PayFromAccountMenu({ accounts, onSelect }: Props) {
                     setOpen(false)
                     onSelect(a.id)
                   }}
-                  className="w-full text-left px-3 py-2 text-[13px] text-[var(--text)] hover:bg-[var(--overlay-1)] hover:text-[var(--brand-text)] transition-colors"
+                  className="w-full text-left px-3 py-2 text-body-sm text-[var(--text)] hover:bg-[var(--overlay-1)] hover:text-[var(--brand-text)] transition-colors"
                 >
                   {a.name}
                 </button>

@@ -43,7 +43,7 @@ export function EmptyState({
         {title}
       </div>
       {description && (
-        <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
+        <p className="text-body-sm text-[var(--muted)] max-w-md mx-auto leading-relaxed">
           {description}
         </p>
       )}

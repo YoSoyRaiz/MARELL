@@ -219,7 +219,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
               <button
                 type="button"
                 onClick={() => setCurrency('DOP')}
-                className={`h-11 rounded-xl text-[13px] font-semibold transition-colors ${
+                className={`h-11 rounded-xl text-body-sm font-semibold transition-colors ${
                   currency === 'DOP'
                     ? 'gradient-bg text-[#0B0B0C] shadow-[0_4px_16px_rgba(61,220,151,0.18)]'
                     : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:bg-[var(--overlay-2)] hover:text-[var(--text)]'
@@ -230,7 +230,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
               <button
                 type="button"
                 onClick={() => setCurrency('USD')}
-                className={`h-11 rounded-xl text-[13px] font-semibold transition-colors ${
+                className={`h-11 rounded-xl text-body-sm font-semibold transition-colors ${
                   currency === 'USD'
                     ? 'gradient-bg text-[#0B0B0C] shadow-[0_4px_16px_rgba(61,220,151,0.18)]'
                     : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:bg-[var(--overlay-2)] hover:text-[var(--text)]'
@@ -282,7 +282,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
               placeholder="Detalles adicionales (tasa de interés, número de cuenta, etc.)"
               maxLength={200}
               rows={2}
-              className="w-full !text-[14px] !py-2.5 !px-4 !rounded-xl resize-none"
+              className="w-full !text-body !py-2.5 !px-4 !rounded-xl resize-none"
             />
           </FormField>
 
@@ -293,7 +293,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                 type="button"
                 onClick={handleToggleClosed}
                 disabled={pending}
-                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-1)] border border-[var(--border)] hover:border-[var(--border3)] text-[13px] text-[var(--text)] transition-colors disabled:opacity-60"
+                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-1)] border border-[var(--border)] hover:border-[var(--border3)] text-body-sm text-[var(--text)] transition-colors disabled:opacity-60"
               >
                 <span className="inline-flex items-center gap-2">
                   {initial.closed ? (
@@ -308,7 +308,7 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                     </>
                   )}
                 </span>
-                <span className="text-[11px] text-[var(--muted)]">
+                <span className="text-eyebrow text-[var(--muted)]">
                   {initial.closed ? 'Está cerrada' : 'Mantiene historial'}
                 </span>
               </button>
@@ -316,13 +316,13 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                 type="button"
                 onClick={handleDelete}
                 disabled={pending}
-                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-[13px] transition-colors disabled:opacity-60 bg-[var(--overlay-1)] hover:bg-[rgba(255,122,89,0.10)] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral-text)]"
+                className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl text-body-sm transition-colors disabled:opacity-60 bg-[var(--overlay-1)] hover:bg-[rgba(255,122,89,0.10)] border border-[var(--border)] hover:border-[var(--coral)]/40 text-[var(--text2)] hover:text-[var(--coral-text)]"
               >
                 <span className="inline-flex items-center gap-2">
                   <Trash2 size={14} strokeWidth={2} />
                   Eliminar cuenta
                 </span>
-                <span className="text-[11px] opacity-70">Borra transacciones</span>
+                <span className="text-eyebrow opacity-70">Borra transacciones</span>
               </button>
             </div>
           )}

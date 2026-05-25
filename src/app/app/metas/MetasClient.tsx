@@ -135,7 +135,7 @@ export function MetasClient({ goals, hasBudget }: Props) {
             type="button"
             onClick={() => setAddOpen(true)}
             disabled={!hasBudget}
-            className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+            className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0 disabled:opacity-50 disabled:pointer-events-none"
           >
             <Plus size={14} strokeWidth={2.4} />
             Nueva meta
@@ -216,10 +216,10 @@ export function MetasClient({ goals, hasBudget }: Props) {
                         <Icon size={18} strokeWidth={2} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[15px] font-semibold text-[var(--text)] truncate">
+                        <div className="text-emph font-semibold text-[var(--text)] truncate">
                           {g.categoryName}
                         </div>
-                        <div className="text-[11px] text-[var(--muted)] truncate inline-flex items-center gap-1.5">
+                        <div className="text-eyebrow text-[var(--muted)] truncate inline-flex items-center gap-1.5">
                           <span>{g.groupName}</span>
                           <span className="text-[var(--muted2)]">·</span>
                           <span className="text-[var(--warn-text)] font-medium">
@@ -228,7 +228,7 @@ export function MetasClient({ goals, hasBudget }: Props) {
                         </div>
                       </div>
                     </div>
-                    <div className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[var(--brand-text)]">
+                    <div className="inline-flex items-center gap-1.5 text-meta font-semibold text-[var(--brand-text)]">
                       <Target size={12} strokeWidth={2.4} />
                       Configurar meta
                     </div>
@@ -272,10 +272,10 @@ export function MetasClient({ goals, hasBudget }: Props) {
                       <Icon size={18} strokeWidth={2} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[15px] font-semibold text-[var(--text)] truncate">
+                      <div className="text-emph font-semibold text-[var(--text)] truncate">
                         {g.categoryName}
                       </div>
-                      <div className="text-[11px] text-[var(--muted)] truncate inline-flex items-center gap-1.5">
+                      <div className="text-eyebrow text-[var(--muted)] truncate inline-flex items-center gap-1.5">
                         <span>{g.groupName}</span>
                         <span className="text-[var(--muted2)]">·</span>
                         {g.goalType === 'monthly_spending' ? (
@@ -297,7 +297,7 @@ export function MetasClient({ goals, hasBudget }: Props) {
                       </div>
                     </div>
                     {isComplete && (
-                      <div className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] text-[11px] font-semibold">
+                      <div className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] text-eyebrow font-semibold">
                         <CheckCircle2 size={11} strokeWidth={2.4} />
                         Lista
                       </div>
@@ -322,18 +322,18 @@ export function MetasClient({ goals, hasBudget }: Props) {
                   <div>
                     <div className="flex items-baseline justify-between mb-2 gap-3">
                       <div>
-                        <div className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                        <div className="text-tiny uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                           {isComplete ? 'Meta cumplida' : 'Te falta'}
                         </div>
                         <div
-                          className={`text-[20px] font-bold tabular-nums num leading-none mt-0.5 ${
+                          className={`text-h2 font-bold tabular-nums num leading-none mt-0.5 ${
                             isComplete ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                           }`}
                         >
                           {fmtMoney(remaining)}
                         </div>
                       </div>
-                      <div className="text-[11px] text-[var(--muted)] tabular-nums num text-right">
+                      <div className="text-eyebrow text-[var(--muted)] tabular-nums num text-right">
                         {fmtMoney(g.current)}
                         <br />
                         <span className="text-[var(--muted2)]">de {fmtMoney(g.goalAmount)}</span>
@@ -348,7 +348,7 @@ export function MetasClient({ goals, hasBudget }: Props) {
                   </div>
 
                   {/* Footer hints */}
-                  <div className="flex items-center justify-between gap-3 text-[11px] text-[var(--muted)]">
+                  <div className="flex items-center justify-between gap-3 text-eyebrow text-[var(--muted)]">
                     {g.goalDate ? (
                       <div className="inline-flex items-center gap-1.5">
                         <Calendar size={12} strokeWidth={2} />

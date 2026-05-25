@@ -31,10 +31,10 @@ export default function AppError({ error, reset }: ErrorPageProps) {
         <div className="w-14 h-14 rounded-2xl bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)] flex items-center justify-center mx-auto">
           <AlertCircle size={26} strokeWidth={2.2} />
         </div>
-        <h1 className="text-[20px] font-bold tracking-tight text-[var(--text)]">
+        <h1 className="text-h2 font-bold tracking-tight text-[var(--text)]">
           Algo se rompió en esta página
         </h1>
-        <p className="text-[13px] text-[var(--text2)] leading-relaxed">
+        <p className="text-body-sm text-[var(--text2)] leading-relaxed">
           Ya guardamos el detalle del error para revisarlo. Si el problema
           persiste, escríbenos a{' '}
           <a
@@ -46,7 +46,7 @@ export default function AppError({ error, reset }: ErrorPageProps) {
           {error.digest && (
             <>
               {' '}
-              con el código <span className="font-mono text-[12px]">{error.digest}</span>.
+              con el código <span className="font-mono text-meta">{error.digest}</span>.
             </>
           )}
         </p>
@@ -54,14 +54,14 @@ export default function AppError({ error, reset }: ErrorPageProps) {
           <button
             type="button"
             onClick={reset}
-            className="h-10 px-4 text-[13px] font-semibold rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] transition-colors inline-flex items-center gap-2"
+            className="h-10 px-4 text-body-sm font-semibold rounded-xl bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] transition-colors inline-flex items-center gap-2"
           >
             <RotateCw size={13} strokeWidth={2.4} />
             Intentar de nuevo
           </button>
           <Link
             href="/app"
-            className="h-10 px-4 text-[13px] font-semibold rounded-xl gradient-bg text-[#0B0B0C] hover:brightness-105 transition-[filter] inline-flex items-center gap-2"
+            className="h-10 px-4 text-body-sm font-semibold rounded-xl gradient-bg text-[#0B0B0C] hover:brightness-105 transition-[filter] inline-flex items-center gap-2"
           >
             Ir al resumen
             <ArrowRight size={13} strokeWidth={2.4} />

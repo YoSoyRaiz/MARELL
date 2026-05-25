@@ -155,7 +155,7 @@ export function KeyboardShortcuts() {
             description={
               <>
                 Presiona{' '}
-                <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--overlay-1)] border border-[var(--border)] font-mono text-[10px]">
+                <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--overlay-1)] border border-[var(--border)] font-mono text-tiny">
                   g
                 </kbd>{' '}
                 seguido de la letra para navegar.
@@ -171,8 +171,8 @@ export function KeyboardShortcuts() {
               key={s.keys}
               className="py-2.5 flex items-center justify-between gap-3"
             >
-              <span className="text-[13px] text-[var(--text)]">{s.label}</span>
-              <span className="font-mono text-[11px] text-[var(--text2)] tracking-wide">
+              <span className="text-body-sm text-[var(--text)]">{s.label}</span>
+              <span className="font-mono text-eyebrow text-[var(--text2)] tracking-wide">
                 {s.keys.split('  ').map((k, i, arr) => (
                   <span key={i} className="inline-flex items-center">
                     <kbd className="px-2 py-0.5 rounded-md bg-[var(--overlay-1)] border border-[var(--border)]">

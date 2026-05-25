@@ -181,20 +181,20 @@ export function Step07Lifestyle() {
                     <s.Icon size={13} strokeWidth={2.4} />
                   </span>
                   <span className="flex flex-col items-start min-w-0">
-                    <span className="text-[13px] font-semibold text-[var(--text)] leading-tight">
+                    <span className="text-body-sm font-semibold text-[var(--text)] leading-tight">
                       {s.shortLabel}
                     </span>
                     {done ? (
-                      <span className="text-[10px] text-[var(--brand-text)] font-medium leading-tight mt-0.5 inline-flex items-center gap-1">
+                      <span className="text-tiny text-[var(--brand-text)] font-medium leading-tight mt-0.5 inline-flex items-center gap-1">
                         <Check size={9} strokeWidth={3} />
                         {count}
                       </span>
                     ) : missing ? (
-                      <span className="text-[10px] text-[var(--coral-text)] font-medium leading-tight mt-0.5">
+                      <span className="text-tiny text-[var(--coral-text)] font-medium leading-tight mt-0.5">
                         Requerido
                       </span>
                     ) : (
-                      <span className="text-[10px] text-[var(--muted)] leading-tight mt-0.5">
+                      <span className="text-tiny text-[var(--muted)] leading-tight mt-0.5">
                         Opcional
                       </span>
                     )}
@@ -345,8 +345,8 @@ function Panel({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-[15px] font-semibold text-[var(--text)]">{title}</h2>
-        <p className="text-[12px] text-[var(--muted)] mt-0.5">{subtitle}</p>
+        <h2 className="text-emph font-semibold text-[var(--text)]">{title}</h2>
+        <p className="text-meta text-[var(--muted)] mt-0.5">{subtitle}</p>
       </div>
       <div
         className={`grid gap-3 grid-cols-1 sm:grid-cols-2 ${

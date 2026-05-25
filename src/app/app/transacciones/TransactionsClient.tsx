@@ -342,7 +342,7 @@ export function TransactionsClient({
               type="button"
               onClick={() => setImportOpen(true)}
               disabled={!hasBudget || accounts.length === 0}
-              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] inline-flex items-center gap-1.5 sm:gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl text-meta sm:text-body-sm font-medium text-[var(--text2)] hover:text-[var(--text)] bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] inline-flex items-center gap-1.5 sm:gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
               <Upload size={14} strokeWidth={2.2} />
               <span>Importar</span>
@@ -354,7 +354,7 @@ export function TransactionsClient({
                 setAddOpen(true)
               }}
               disabled={!hasBudget || accounts.length === 0}
-              className="h-10 sm:h-11 px-4 sm:px-5 gradient-bg text-[#0B0B0C] font-semibold text-[12px] sm:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1.5 sm:gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none flex-1 lg:flex-initial justify-center"
+              className="h-10 sm:h-11 px-4 sm:px-5 gradient-bg text-[#0B0B0C] font-semibold text-meta sm:text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1.5 sm:gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none flex-1 lg:flex-initial justify-center"
             >
               <Plus size={14} strokeWidth={2.4} />
               <span className="hidden sm:inline">Agregar transacción</span>
@@ -377,7 +377,7 @@ export function TransactionsClient({
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Buscar por nombre del pagador..."
-              className="w-full !h-10 !pl-10 !pr-10 !text-[13px] !rounded-xl"
+              className="w-full !h-10 !pl-10 !pr-10 !text-body-sm !rounded-xl"
             />
             {searchInput && (
               <button
@@ -406,7 +406,7 @@ export function TransactionsClient({
                   key={t.id}
                   type="button"
                   onClick={() => pushParams({ type: t.id === 'all' ? null : t.id })}
-                  className={`h-8 px-3 text-[12px] font-medium rounded-lg transition-colors ${
+                  className={`h-8 px-3 text-meta font-medium rounded-lg transition-colors ${
                     active
                       ? 'gradient-bg text-[#0B0B0C]'
                       : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -431,7 +431,7 @@ export function TransactionsClient({
               onClick={() =>
                 pushParams({ month: filters.month === 'all' ? null : 'all' })
               }
-              className="h-9 px-3 text-[13px] font-medium tabular-nums rounded-lg hover:bg-[var(--overlay-1)] text-[var(--text)] transition-colors min-w-[140px]"
+              className="h-9 px-3 text-body-sm font-medium tabular-nums rounded-lg hover:bg-[var(--overlay-1)] text-[var(--text)] transition-colors min-w-[140px]"
             >
               {formatMonthLabel(filters.month)}
             </button>
@@ -448,7 +448,7 @@ export function TransactionsClient({
             <button
               type="button"
               onClick={clearFilters}
-              className="text-[12px] text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline px-2 transition-colors"
+              className="text-meta text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline px-2 transition-colors"
             >
               Limpiar filtros
             </button>
@@ -488,17 +488,17 @@ export function TransactionsClient({
             <div className="w-12 h-12 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
               <Search size={20} strokeWidth={2} />
             </div>
-            <div className="text-[14px] text-[var(--text)] font-medium">
+            <div className="text-body text-[var(--text)] font-medium">
               Sin resultados
             </div>
-            <p className="text-[12px] text-[var(--muted)] max-w-sm mx-auto leading-relaxed">
+            <p className="text-meta text-[var(--muted)] max-w-sm mx-auto leading-relaxed">
               No hay transacciones que coincidan con los filtros. Prueba ampliar el rango o
               limpiar la búsqueda.
             </p>
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-1.5 mt-1 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 mt-1 h-9 px-4 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-body-sm font-medium transition-colors"
             >
               Limpiar filtros
             </button>
@@ -511,7 +511,7 @@ export function TransactionsClient({
               navPending ? 'opacity-60' : ''
             }`}
           >
-            <div className="hidden md:grid grid-cols-[28px_80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-2.5 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)] items-center">
+            <div className="hidden md:grid grid-cols-[28px_80px_1fr_180px_180px_120px_40px] gap-4 px-5 py-2.5 text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)] items-center">
               <div>
                 <button
                   type="button"
@@ -590,11 +590,11 @@ export function TransactionsClient({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3">
-                          <div className="text-[14px] text-[var(--text)] font-medium truncate">
+                          <div className="text-body text-[var(--text)] font-medium truncate">
                             {t.payee_name ?? 'Sin nombre'}
                           </div>
                           <div
-                            className={`text-[14px] tabular-nums num font-semibold whitespace-nowrap ${
+                            className={`text-body tabular-nums num font-semibold whitespace-nowrap ${
                               isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                             }`}
                           >
@@ -602,7 +602,7 @@ export function TransactionsClient({
                             {fmtMoney(t.amount)}
                           </div>
                         </div>
-                        <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
+                        <div className="mt-0.5 flex items-center gap-1.5 text-eyebrow text-[var(--muted)]">
                           <span className="tabular-nums num shrink-0">{formatDate(t.date)}</span>
                           <span className="text-[var(--muted2)]">·</span>
                           {t.is_split ? (
@@ -632,7 +632,7 @@ export function TransactionsClient({
                           <span className="truncate">{t.account_name}</span>
                         </div>
                         {t.memo && (
-                          <div className="mt-1 text-[11px] text-[var(--muted)] truncate">{t.memo}</div>
+                          <div className="mt-1 text-eyebrow text-[var(--muted)] truncate">{t.memo}</div>
                         )}
                       </div>
                       <button
@@ -675,7 +675,7 @@ export function TransactionsClient({
                           </svg>
                         )}
                       </button>
-                      <div className="text-[12px] text-[var(--muted)] tabular-nums num">
+                      <div className="text-meta text-[var(--muted)] tabular-nums num">
                         {formatDate(t.date)}
                       </div>
                       <div className="flex items-center gap-3 min-w-0">
@@ -689,15 +689,15 @@ export function TransactionsClient({
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-[14px] text-[var(--text)] truncate">
+                          <div className="text-body text-[var(--text)] truncate">
                             {t.payee_name ?? 'Sin nombre'}
                           </div>
                           {t.memo && (
-                            <div className="text-[11px] text-[var(--muted)] truncate">{t.memo}</div>
+                            <div className="text-eyebrow text-[var(--muted)] truncate">{t.memo}</div>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 min-w-0 text-[13px] text-[var(--text2)]">
+                      <div className="flex items-center gap-2 min-w-0 text-body-sm text-[var(--text2)]">
                         {t.is_split ? (
                           <button
                             type="button"
@@ -724,9 +724,9 @@ export function TransactionsClient({
                           </>
                         )}
                       </div>
-                      <div className="text-[13px] text-[var(--text2)] truncate">{t.account_name}</div>
+                      <div className="text-body-sm text-[var(--text2)] truncate">{t.account_name}</div>
                       <div
-                        className={`text-right text-[14px] tabular-nums num font-semibold ${
+                        className={`text-right text-body tabular-nums num font-semibold ${
                           isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                         }`}
                       >
@@ -757,8 +757,8 @@ export function TransactionsClient({
                               <li key={s.id} className="py-2">
                                 {/* Mobile: simple payee/amount row */}
                                 <div className="md:hidden flex items-center gap-2 pl-9">
-                                  <span className="text-[var(--muted2)] text-[12px]">↳</span>
-                                  <div className="flex items-center gap-1.5 flex-1 min-w-0 text-[12px] text-[var(--text2)]">
+                                  <span className="text-[var(--muted2)] text-meta">↳</span>
+                                  <div className="flex items-center gap-1.5 flex-1 min-w-0 text-meta text-[var(--text2)]">
                                     {SubIcon && (
                                       <SubIcon size={11} strokeWidth={2} className="shrink-0" />
                                     )}
@@ -767,7 +767,7 @@ export function TransactionsClient({
                                     </span>
                                   </div>
                                   <div
-                                    className={`text-[12px] tabular-nums num font-medium whitespace-nowrap ${
+                                    className={`text-meta tabular-nums num font-medium whitespace-nowrap ${
                                       s.amount >= 0 ? 'text-[var(--brand-text)]' : 'text-[var(--text2)]'
                                     }`}
                                   >
@@ -783,14 +783,14 @@ export function TransactionsClient({
                                   <div />
                                   <div />
                                   <div className="flex items-center gap-3 min-w-0 pl-11">
-                                    <span className="text-[var(--muted2)] text-[14px]">↳</span>
+                                    <span className="text-[var(--muted2)] text-body">↳</span>
                                     {s.memo && (
-                                      <span className="text-[11px] text-[var(--muted)] truncate">
+                                      <span className="text-eyebrow text-[var(--muted)] truncate">
                                         {s.memo}
                                       </span>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-2 min-w-0 text-[12px] text-[var(--text2)]">
+                                  <div className="flex items-center gap-2 min-w-0 text-meta text-[var(--text2)]">
                                     {SubIcon && (
                                       <SubIcon size={12} strokeWidth={2} className="shrink-0" />
                                     )}
@@ -800,7 +800,7 @@ export function TransactionsClient({
                                   </div>
                                   <div />
                                   <div
-                                    className={`text-right text-[12px] tabular-nums num ${
+                                    className={`text-right text-meta tabular-nums num ${
                                       s.amount >= 0 ? 'text-[var(--brand-text)]' : 'text-[var(--text2)]'
                                     }`}
                                   >
@@ -827,7 +827,7 @@ export function TransactionsClient({
             compartir un enlace específico o usar back/forward del
             navegador. (Auditoría calidad L3.) */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between gap-3 px-1 py-3 text-[12px]">
+          <div className="flex items-center justify-between gap-3 px-1 py-3 text-meta">
             <div className="text-[var(--muted)]">
               {(pagination.page - 1) * pagination.pageSize + 1}–
               {Math.min(
@@ -913,7 +913,7 @@ export function TransactionsClient({
             strokeWidth={2.2}
             className="text-[var(--brand-text)] shrink-0"
           />
-          <span className="text-[18px] sm:text-[20px] font-bold text-[var(--text)] tracking-tight">
+          <span className="text-h3 sm:text-h2 font-bold text-[var(--text)] tracking-tight">
             {savedToast}
           </span>
         </div>

@@ -37,7 +37,7 @@ export function PricingClient({ userId, userEmail }: Props) {
     return (
       <Link
         href="/signup"
-        className="mt-8 h-11 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter]"
+        className="mt-8 h-11 gradient-bg text-[#0B0B0C] font-semibold text-body rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter]"
       >
         Empieza gratis
         <ArrowRight size={14} strokeWidth={2.4} />
@@ -52,7 +52,7 @@ export function PricingClient({ userId, userEmail }: Props) {
     <div className="mt-8 flex flex-col items-center gap-3">
       <Link
         href="/app/upgrade"
-        className="h-11 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter] px-6"
+        className="h-11 gradient-bg text-[#0B0B0C] font-semibold text-body rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter] px-6"
       >
         Pasar a Pro con tarjeta o PayPal
         <ArrowRight size={14} strokeWidth={2.4} />
@@ -60,7 +60,7 @@ export function PricingClient({ userId, userEmail }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-[12px] text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline"
+        className="text-meta text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline"
       >
         ¿Prefieres pagar por transferencia bancaria?
       </button>
@@ -124,14 +124,14 @@ function PaymentDialog({
         <div className="px-6 py-5 space-y-5">
           {/* Cycle toggle */}
           <div>
-            <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 block">
+            <label className="text-meta text-[var(--text2)] font-medium mb-1.5 block">
               Plan
             </label>
             <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--bg)] rounded-xl">
               <button
                 type="button"
                 onClick={() => setCycle('month')}
-                className={`py-3 rounded-lg text-[13px] font-semibold transition-all ${
+                className={`py-3 rounded-lg text-body-sm font-semibold transition-all ${
                   cycle === 'month'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -142,7 +142,7 @@ function PaymentDialog({
               <button
                 type="button"
                 onClick={() => setCycle('year')}
-                className={`py-3 rounded-lg text-[13px] font-semibold transition-all ${
+                className={`py-3 rounded-lg text-body-sm font-semibold transition-all ${
                   cycle === 'year'
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -176,7 +176,7 @@ function PaymentDialog({
                 >
                   <div className="flex items-center gap-2">
                     <Building2 size={14} strokeWidth={2.2} className="text-[var(--brand-2)]" />
-                    <span className="text-[13px] font-semibold">{acc.bank}</span>
+                    <span className="text-body-sm font-semibold">{acc.bank}</span>
                   </div>
                   <Row label="Beneficiario" value={acc.holder} />
                   <Row label="Tipo" value={acc.type} />
@@ -194,7 +194,7 @@ function PaymentDialog({
           >
             <a
               href={mailto}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--overlay-2)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[13px] font-medium transition-colors"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--overlay-2)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-body-sm font-medium transition-colors"
             >
               <Mail size={14} strokeWidth={2.2} />
               Abrir correo a {PAYMENT_SUPPORT_EMAIL}
@@ -203,7 +203,7 @@ function PaymentDialog({
 
           <div className="rounded-xl border border-[var(--success)]/30 bg-[rgba(61,220,151,0.05)] p-4 flex gap-3">
             <Sparkles size={16} strokeWidth={2.2} className="text-[var(--brand-2)] shrink-0 mt-0.5" />
-            <div className="text-[13px] leading-relaxed text-[var(--text)]">
+            <div className="text-body-sm leading-relaxed text-[var(--text)]">
               <strong className="font-semibold">Mientras tanto:</strong> tu trial
               sigue activo. Podemos extenderlo mientras procesamos el pago — solo
               avísanos al correo.
@@ -228,12 +228,12 @@ function Step({
   return (
     <div className="space-y-2.5">
       <div className="flex items-start gap-3">
-        <span className="grid size-6 place-items-center rounded-full bg-[var(--success)]/[0.15] text-[var(--success)] text-[12px] font-bold shrink-0 mt-0.5">
+        <span className="grid size-6 place-items-center rounded-full bg-[var(--success)]/[0.15] text-[var(--success)] text-meta font-bold shrink-0 mt-0.5">
           {n}
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-semibold leading-tight">{title}</p>
-          <p className="text-[12px] text-[var(--muted)] leading-relaxed mt-0.5">
+          <p className="text-body font-semibold leading-tight">{title}</p>
+          <p className="text-meta text-[var(--muted)] leading-relaxed mt-0.5">
             {subtitle}
           </p>
         </div>
@@ -256,13 +256,13 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-[11px] uppercase tracking-[0.12em] font-semibold text-[var(--muted)]">
+      <span className="text-eyebrow uppercase tracking-[0.12em] font-semibold text-[var(--muted)]">
         {label}
       </span>
       {copy ? (
         <CopyRow value={value} mono={mono} small />
       ) : (
-        <span className={`text-[13px] ${mono ? 'num tabular-nums' : ''}`}>{value}</span>
+        <span className={`text-body-sm ${mono ? 'num tabular-nums' : ''}`}>{value}</span>
       )}
     </div>
   )
@@ -294,7 +294,7 @@ function CopyRow({
       type="button"
       onClick={handleCopy}
       className={`inline-flex items-center gap-2 px-3 rounded-lg border border-[var(--border)] bg-[var(--bg)]/60 hover:border-[var(--border3)] hover:bg-[var(--bg)] transition-colors ${
-        large ? 'h-11 text-[14px] w-full justify-between' : 'h-8 text-[12px]'
+        large ? 'h-11 text-body w-full justify-between' : 'h-8 text-meta'
       } ${mono ? 'num tabular-nums' : ''}`}
       aria-label={`Copiar ${value}`}
     >
@@ -305,7 +305,7 @@ function CopyRow({
         {copied ? (
           <>
             <Check size={12} strokeWidth={2.4} className="text-[var(--brand-2)]" />
-            <span className="text-[11px] text-[var(--brand-2)] font-semibold">
+            <span className="text-eyebrow text-[var(--brand-2)] font-semibold">
               Copiado
             </span>
           </>

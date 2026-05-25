@@ -113,7 +113,7 @@ export function InsightsSection({ inputs }: InsightsSectionProps) {
         <div className="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center text-[#0B0B0C]">
           <Sparkles size={12} strokeWidth={2.4} />
         </div>
-        <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+        <div className="text-meta uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
           Ideas para ti
         </div>
       </div>
@@ -135,16 +135,16 @@ export function InsightsSection({ inputs }: InsightsSectionProps) {
                 <Icon size={14} strokeWidth={2.2} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className={`text-[12px] font-semibold ${tone.label}`}>
+                <div className={`text-meta font-semibold ${tone.label}`}>
                   {ins.title}
                 </div>
-                <div className="text-[12px] text-[var(--text)] leading-relaxed mt-0.5">
+                <div className="text-meta text-[var(--text)] leading-relaxed mt-0.5">
                   {ins.message}
                 </div>
                 {ins.href && ins.ctaLabel && (
                   <Link
                     href={ins.href}
-                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
+                    className="mt-2 inline-flex items-center gap-1 text-eyebrow font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
                   >
                     {ins.ctaLabel}
                     <ArrowRight size={11} strokeWidth={2.4} />

@@ -120,7 +120,7 @@ function TabLink({ item, active }: { item: TabItem; active: boolean }) {
           strokeWidth={active ? 2.4 : 2}
           className="transition-transform"
         />
-        <span className="text-[10px] font-semibold tracking-wide">
+        <span className="text-tiny font-semibold tracking-wide">
           {item.label}
         </span>
       </Link>

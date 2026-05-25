@@ -155,8 +155,8 @@ export function MoveMoneyModal({
               <SourceIcon size={14} strokeWidth={2} />
             </IconBadge>
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] text-[var(--text)] truncate">{sourceCategory.name}</div>
-              <div className="text-[11px] text-[var(--muted)] truncate">
+              <div className="text-body-sm text-[var(--text)] truncate">{sourceCategory.name}</div>
+              <div className="text-eyebrow text-[var(--muted)] truncate">
                 {sourceCategory.groupName}
               </div>
             </div>
@@ -166,7 +166,7 @@ export function MoveMoneyModal({
           <div>
             <label
               htmlFor="mm-amount"
-              className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold"
+              className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold"
             >
               Monto
             </label>
@@ -179,13 +179,13 @@ export function MoveMoneyModal({
               value={amountText}
               onChange={(e) => setAmountText(formatTyping(e.target.value))}
               placeholder="0.00"
-              className="w-full mt-1 !text-[18px] !font-bold !py-3 !px-4 !rounded-xl tabular-nums num"
+              className="w-full mt-1 !text-h3 !font-bold !py-3 !px-4 !rounded-xl tabular-nums num"
             />
             {fromAvailable > 0.005 && (
               <button
                 type="button"
                 onClick={() => setAmountText(formatTyping(String(fromAvailable.toFixed(2))))}
-                className="mt-1.5 text-[11px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 num tabular-nums"
+                className="mt-1.5 text-eyebrow text-[var(--brand-text)] font-medium hover:underline underline-offset-4 num tabular-nums"
               >
                 Mover todo: {fmtMoney(fromAvailable)}
               </button>
@@ -196,7 +196,7 @@ export function MoveMoneyModal({
           <div>
             <label
               htmlFor="mm-to"
-              className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold"
+              className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold"
             >
               Categoría destino
             </label>
@@ -204,7 +204,7 @@ export function MoveMoneyModal({
               id="mm-to"
               value={toId}
               onChange={(e) => setToId(e.target.value)}
-              className="w-full mt-1 !text-[14px] !py-3 !px-4 !rounded-xl appearance-none cursor-pointer"
+              className="w-full mt-1 !text-body !py-3 !px-4 !rounded-xl appearance-none cursor-pointer"
             >
               <option value="">Selecciona…</option>
               {groups.map((g) => (

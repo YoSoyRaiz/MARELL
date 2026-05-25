@@ -112,14 +112,14 @@ export function FirstMonthGuide({
           aria-expanded={false}
           aria-controls="first-month-guide"
         >
-          <div className="text-[12px] text-[var(--text)] font-semibold">
+          <div className="text-meta text-[var(--text)] font-semibold">
             Tu primer mes ·{' '}
             <span className="text-[var(--brand-text)] num tabular-nums">
               {completed}/{total}
             </span>
           </div>
           {nextStep && (
-            <div className="text-[11px] text-[var(--muted)] truncate mt-0.5">
+            <div className="text-eyebrow text-[var(--muted)] truncate mt-0.5">
               Siguiente: {nextStep.label}
             </div>
           )}
@@ -127,7 +127,7 @@ export function FirstMonthGuide({
         {nextStep && (
           <Link
             href={nextStep.href}
-            className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
+            className="shrink-0 inline-flex items-center gap-1 text-meta font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
           >
             {nextStep.cta}
             <ArrowRight size={11} strokeWidth={2.4} />
@@ -178,10 +178,10 @@ export function FirstMonthGuide({
           <Sparkles size={18} strokeWidth={2.4} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+          <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
             Tu primer mes
           </div>
-          <h2 className="text-[18px] font-bold leading-tight tracking-tight mt-1">
+          <h2 className="text-h3 font-bold leading-tight tracking-tight mt-1">
             {allDone ? (
               <>
                 Dominaste el <span className="gradient-text">flujo</span>.
@@ -192,7 +192,7 @@ export function FirstMonthGuide({
               </>
             )}
           </h2>
-          <div className="text-[12px] text-[var(--muted)] mt-1 num tabular-nums">
+          <div className="text-meta text-[var(--muted)] mt-1 num tabular-nums">
             {completed} de {total} completados
           </div>
         </div>
@@ -223,20 +223,20 @@ export function FirstMonthGuide({
             </div>
             <div className="min-w-0 flex-1">
               <div
-                className={`text-[13px] font-semibold ${
+                className={`text-body-sm font-semibold ${
                   step.done ? 'text-[var(--brand-text)] line-through' : 'text-[var(--text)]'
                 }`}
               >
                 {step.label}
               </div>
-              <div className="text-[11px] text-[var(--muted)] leading-relaxed mt-0.5">
+              <div className="text-eyebrow text-[var(--muted)] leading-relaxed mt-0.5">
                 {step.description}
               </div>
             </div>
             {!step.done && (
               <Link
                 href={step.href}
-                className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
+                className="shrink-0 inline-flex items-center gap-1 text-meta font-semibold text-[var(--brand-text)] hover:underline underline-offset-4"
               >
                 {step.cta}
                 <ArrowRight size={11} strokeWidth={2.4} />
@@ -247,7 +247,7 @@ export function FirstMonthGuide({
       </ul>
 
       {allDone && (
-        <div className="rounded-xl bg-[rgba(61,220,151,0.06)] border border-[var(--brand-2)]/30 px-4 py-3 text-[12px] text-[var(--text)] leading-relaxed">
+        <div className="rounded-xl bg-[rgba(61,220,151,0.06)] border border-[var(--brand-2)]/30 px-4 py-3 text-meta text-[var(--text)] leading-relaxed">
           ¡Buen trabajo! Si quieres, puedes ocultar esta guía con la X arriba a la derecha.
         </div>
       )}

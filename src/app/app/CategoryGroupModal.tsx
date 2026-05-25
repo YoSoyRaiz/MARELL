@@ -110,7 +110,7 @@ export function CategoryGroupModal({
           )}
 
           {/* Column headers */}
-          <div className="hidden sm:grid grid-cols-[1fr_120px_100px] gap-4 px-6 pt-3 pb-2 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)]">
+          <div className="hidden sm:grid grid-cols-[1fr_120px_100px] gap-4 px-6 pt-3 pb-2 text-tiny uppercase tracking-[0.18em] text-[var(--muted2)]">
             <div>Categoría</div>
             <div className="text-right">Asignado</div>
             <div className="text-right">Disponible</div>
@@ -140,9 +140,9 @@ export function CategoryGroupModal({
                       <Icon size={16} strokeWidth={2} />
                     </IconBadge>
                     <div className="min-w-0">
-                      <div className="text-[14px] text-[var(--text)] truncate">{c.name}</div>
+                      <div className="text-body text-[var(--text)] truncate">{c.name}</div>
                       {c.goal_amount && c.goal_amount > 0 && (
-                        <div className="text-[11px] text-[var(--muted)] num">
+                        <div className="text-eyebrow text-[var(--muted)] num">
                           meta: ${c.goal_amount.toLocaleString('en-US')}
                         </div>
                       )}
@@ -154,7 +154,7 @@ export function CategoryGroupModal({
                     ariaLabel={`Asignar a ${c.name}`}
                   />
                   <div
-                    className={`text-right text-[14px] font-semibold tabular-nums num ${availColor}`}
+                    className={`text-right text-body font-semibold tabular-nums num ${availColor}`}
                   >
                     {fmtMoney(available)}
                   </div>
@@ -166,7 +166,7 @@ export function CategoryGroupModal({
 
         {/* Footer */}
         <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-between gap-4 bg-[var(--overlay-1)]">
-          <div className="text-[12px] text-[var(--text2)]">
+          <div className="text-meta text-[var(--text2)]">
             Total asignado:{' '}
             <span className="num tabular-nums font-semibold text-[var(--text)] ml-1">
               {fmtMoney(totalAssigned)}

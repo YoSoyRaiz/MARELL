@@ -149,7 +149,7 @@ export function CategoryAccordion({
   if (groups.length === 0) {
     return (
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 text-center">
-        <p className="text-[13px] text-[var(--muted)]">
+        <p className="text-body-sm text-[var(--muted)]">
           No tienes categorías todavía.
         </p>
       </section>
@@ -159,10 +159,10 @@ export function CategoryAccordion({
   return (
     <Card as="section" className="overflow-hidden">
       <CardHeader>
-        <h2 className="text-[14px] font-semibold text-[var(--text)]">Categorías</h2>
+        <h2 className="text-body font-semibold text-[var(--text)]">Categorías</h2>
         <Link
           href="/app/plan"
-          className="text-[12px] text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
+          className="text-meta text-[var(--brand-text)] font-medium hover:underline underline-offset-4 inline-flex items-center gap-1 shrink-0"
         >
           Ver plan
           <ArrowRight size={12} strokeWidth={2.4} />
@@ -170,7 +170,7 @@ export function CategoryAccordion({
       </CardHeader>
 
       {error && (
-        <div className="px-5 py-2 bg-[rgba(255,122,89,0.08)] border-b border-[var(--coral)]/30 text-[12px] text-[var(--coral-text)]">
+        <div className="px-5 py-2 bg-[rgba(255,122,89,0.08)] border-b border-[var(--coral)]/30 text-meta text-[var(--coral-text)]">
           No pudimos guardar: {error}
         </div>
       )}
@@ -201,10 +201,10 @@ export function CategoryAccordion({
                 }`}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold text-[var(--text)] truncate">
+                  <div className="text-body-sm font-semibold text-[var(--text)] truncate">
                     {g.name}
                   </div>
-                  <div className="text-[11px] text-[var(--muted)] tabular-nums num">
+                  <div className="text-eyebrow text-[var(--muted)] tabular-nums num">
                     {g.categories.length}{' '}
                     {g.categories.length === 1 ? 'categoría' : 'categorías'}
                     {' · '}
@@ -212,7 +212,7 @@ export function CategoryAccordion({
                   </div>
                 </div>
                 <span
-                  className={`text-[12px] font-semibold tabular-nums num shrink-0 ${
+                  className={`text-meta font-semibold tabular-nums num shrink-0 ${
                     overspent
                       ? 'text-[var(--coral-text)]'
                       : 'text-[var(--brand-text)]'
@@ -235,7 +235,7 @@ export function CategoryAccordion({
                   className="bg-[var(--bg)]/40 border-t border-[var(--border)]"
                 >
                   {g.categories.length === 0 ? (
-                    <p className="px-5 py-4 text-[12px] text-[var(--muted)]">
+                    <p className="px-5 py-4 text-meta text-[var(--muted)]">
                       Este grupo aún no tiene categorías.
                     </p>
                   ) : (
@@ -283,7 +283,7 @@ export function CategoryAccordion({
                                   <div className="w-7 h-7 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0 group-hover:text-[var(--brand-text)] transition-colors">
                                     <Icon size={12} strokeWidth={2} />
                                   </div>
-                                  <span className="text-[13px] text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
+                                  <span className="text-body-sm text-[var(--text)] truncate group-hover:text-[var(--brand-text)] transition-colors">
                                     {c.name}
                                   </span>
                                 </button>
@@ -313,7 +313,7 @@ export function CategoryAccordion({
                                 />
                               </div>
                               <span
-                                className={`text-[12px] tabular-nums num text-right ${
+                                className={`text-meta tabular-nums num text-right ${
                                   hasActivity
                                     ? 'text-[var(--text2)]'
                                     : 'text-[var(--muted)]'
@@ -322,7 +322,7 @@ export function CategoryAccordion({
                                 {hasActivity ? fmtMoney(activity) : '—'}
                               </span>
                               <span
-                                className={`text-[12px] font-semibold tabular-nums num text-right ${
+                                className={`text-meta font-semibold tabular-nums num text-right ${
                                   catOver
                                     ? 'text-[var(--coral-text)]'
                                     : 'text-[var(--text)]'
@@ -368,7 +368,7 @@ export function CategoryAccordion({
             strokeWidth={2.4}
             className="text-[var(--brand-text)] shrink-0"
           />
-          <span className="text-[14px] font-medium text-[var(--text)]">
+          <span className="text-body font-medium text-[var(--text)]">
             {payToast}
           </span>
         </div>
@@ -378,7 +378,7 @@ export function CategoryAccordion({
           role="alert"
           className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border border-[var(--coral)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step"
         >
-          <span className="text-[14px] text-[var(--coral-text)] font-medium">
+          <span className="text-body text-[var(--coral-text)] font-medium">
             {payError}
           </span>
         </div>

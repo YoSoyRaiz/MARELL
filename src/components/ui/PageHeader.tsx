@@ -4,9 +4,9 @@ import type { ReactNode } from 'react'
 //
 // Antes el patrón vivía duplicado en 20+ páginas:
 //   <div className="space-y-2">
-//     <div className="text-[11px] font-semibold uppercase ...">{eyebrow}</div>
+//     <div className="text-eyebrow font-semibold uppercase ...">{eyebrow}</div>
 //     <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] ...">{title}</h1>
-//     <p className="text-[var(--text2)] text-[14px] ...">{description}</p>
+//     <p className="text-[var(--text2)] text-body ...">{description}</p>
 //   </div>
 //
 // El title puede contener spans con gradient-text, así que va como children.
@@ -14,7 +14,7 @@ import type { ReactNode } from 'react'
 interface PageHeaderProps {
   eyebrow: string
   description?: ReactNode
-  /** El description default es text-[14px]; algunas páginas (como
+  /** El description default es text-body; algunas páginas (como
    *  Plan vacío o Resumen sin presupuesto) usan text-[16px] para más
    *  énfasis. */
   descriptionSize?: 'sm' | 'md'
@@ -34,7 +34,7 @@ export function PageHeader({
   children,
 }: PageHeaderProps) {
   const descriptionTextSize =
-    descriptionSize === 'md' ? 'text-[16px]' : 'text-[14px]'
+    descriptionSize === 'md' ? 'text-[16px]' : 'text-body'
   const descriptionMaxWidth =
     descriptionWidth === 'none'
       ? ''
@@ -44,7 +44,7 @@ export function PageHeader({
 
   return (
     <div className="space-y-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+      <div className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
         {eyebrow}
       </div>
       <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">

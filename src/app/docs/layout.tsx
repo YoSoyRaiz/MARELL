@@ -23,7 +23,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <Link href="/" aria-label="MARELL" className="shrink-0">
               <Logo variant="horizontal" height={26} />
             </Link>
-            <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-white/[0.04] border border-[var(--border)] text-[10px] uppercase tracking-[0.18em] font-semibold text-[var(--text2)]">
+            <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-white/[0.04] border border-[var(--border)] text-tiny uppercase tracking-[0.18em] font-semibold text-[var(--text2)]">
               Docs
             </span>
           </div>
@@ -32,7 +32,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <DocsMobileNav />
             <Link
               href="/app"
-              className="h-9 px-4 gradient-bg text-[#0B0B0C] font-semibold text-[12px] sm:text-[13px] rounded-xl glow-on-hover hover:brightness-105 inline-flex items-center gap-1.5 transition-[filter]"
+              className="h-9 px-4 gradient-bg text-[#0B0B0C] font-semibold text-meta sm:text-body-sm rounded-xl glow-on-hover hover:brightness-105 inline-flex items-center gap-1.5 transition-[filter]"
             >
               Abrir app
               <ArrowRight size={12} strokeWidth={2.4} />
@@ -63,7 +63,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
 
       {/* Footer */}
       <footer className="border-t border-[var(--border)] mt-12 py-8">
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[12px] text-[var(--muted)]">
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-meta text-[var(--muted)]">
           <div className="flex items-center gap-2">
             <Logo variant="icon" height={20} />
             <span>© {new Date().getFullYear()} MARELL · Hecho en RD</span>

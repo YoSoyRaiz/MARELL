@@ -77,7 +77,7 @@ function PhoneMockup() {
             <div className="h-1.5 w-14 rounded-full bg-black" />
           </div>
 
-          <div className="flex items-center justify-between px-5 text-[10px] font-medium text-[#C8C8C0]">
+          <div className="flex items-center justify-between px-5 text-tiny font-medium text-[#C8C8C0]">
             <span className="num">9:41</span>
             <div className="flex items-center gap-1">
               <span className="size-2 rounded-sm border border-white/30" />
@@ -87,7 +87,7 @@ function PhoneMockup() {
           </div>
 
           <div className="px-5 pb-9 pt-10 text-center">
-            <p className="text-[13px] font-medium text-[#C8C8C0]">
+            <p className="text-body-sm font-medium text-[#C8C8C0]">
               Martes, 30 de abril
             </p>
 
@@ -98,10 +98,10 @@ function PhoneMockup() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[11px] font-bold tracking-tight">MARELL</p>
-                    <p className="text-[10px] text-[#8A8A82]">Ahora</p>
+                    <p className="text-eyebrow font-bold tracking-tight">MARELL</p>
+                    <p className="text-tiny text-[#8A8A82]">Ahora</p>
                   </div>
-                  <p className="mt-1 text-[11px] leading-snug text-white">
+                  <p className="mt-1 text-eyebrow leading-snug text-white">
                     Gastaste $1,248 más que el mes pasado en categorías
                     variables.
                   </p>

@@ -59,11 +59,11 @@ export function Step22SavingsAllocation() {
                     <PiggyBank size={20} strokeWidth={2} />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-semibold text-[15px] text-[var(--text)] truncate">{a.name}</div>
-                    <div className="text-[12px] text-[var(--muted)] mt-0.5">Cuenta de ahorros</div>
+                    <div className="font-semibold text-emph text-[var(--text)] truncate">{a.name}</div>
+                    <div className="text-meta text-[var(--muted)] mt-0.5">Cuenta de ahorros</div>
                   </div>
                 </div>
-                <div className="text-[18px] font-bold tabular-nums num text-[var(--text)] shrink-0">
+                <div className="text-h3 font-bold tabular-nums num text-[var(--text)] shrink-0">
                   {fmtMoney(a.balance)}
                 </div>
               </div>
@@ -73,7 +73,7 @@ export function Step22SavingsAllocation() {
                 <button
                   type="button"
                   onClick={() => setAside(a.id, false)}
-                  className={`py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
+                  className={`py-2.5 rounded-lg text-body-sm font-semibold transition-all ${
                     !aside
                       ? 'gradient-bg text-[#0B0B0C]'
                       : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -84,7 +84,7 @@ export function Step22SavingsAllocation() {
                 <button
                   type="button"
                   onClick={() => setAside(a.id, true)}
-                  className={`py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
+                  className={`py-2.5 rounded-lg text-body-sm font-semibold transition-all ${
                     aside
                       ? 'bg-[var(--overlay-3)] text-[var(--text)]'
                       : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -94,7 +94,7 @@ export function Step22SavingsAllocation() {
                 </button>
               </div>
 
-              <p className="text-[12px] text-[var(--muted)] leading-relaxed">
+              <p className="text-meta text-[var(--muted)] leading-relaxed">
                 {aside
                   ? 'Este dinero queda como colchón — no se reparte entre categorías.'
                   : 'Este dinero se suma a lo disponible para asignar.'}

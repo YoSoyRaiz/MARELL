@@ -51,7 +51,7 @@ export function ThemeToggle() {
       onClick={() => setMode(NEXT[mode])}
       aria-label={`${FULL_LABELS[mode]} — ${NEXT_LABELS[mode].toLowerCase()}`}
       title={`${FULL_LABELS[mode]} · ${NEXT_LABELS[mode]}`}
-      className={`h-9 rounded-full border inline-flex items-center gap-1.5 px-3 text-[12px] font-semibold transition-colors ${palette}`}
+      className={`h-9 rounded-full border inline-flex items-center gap-1.5 px-3 text-meta font-semibold transition-colors ${palette}`}
     >
       <Icon size={14} strokeWidth={2.4} />
       <span className="hidden sm:inline">{LABELS[mode]}</span>

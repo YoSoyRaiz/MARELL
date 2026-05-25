@@ -39,7 +39,7 @@ export function Step05HousingCombo() {
 
       {/* Block 1 — tipo de vivienda */}
       <div className="space-y-3">
-        <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--muted)] font-semibold">
+        <div className="text-meta uppercase tracking-[0.18em] text-[var(--muted)] font-semibold">
           ¿Dónde vives?
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -64,7 +64,7 @@ export function Step05HousingCombo() {
       {/* Block 2 — hipoteca (solo si es propietario) */}
       {housing === 'own' && (
         <div className="space-y-3 animate-step">
-          <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+          <div className="text-meta uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
             ¿Tienes hipoteca?
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

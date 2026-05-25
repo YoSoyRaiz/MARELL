@@ -93,7 +93,7 @@ export default async function AcceptInvitationPage({
           <h1 className="text-[22px] font-bold tracking-tight leading-tight">
             Te invitaron a un <span className="gradient-text">presupuesto</span>
           </h1>
-          <p className="text-[14px] text-[var(--text2)] leading-relaxed">
+          <p className="text-body text-[var(--text2)] leading-relaxed">
             Al aceptar te unes al presupuesto{' '}
             <strong className="text-[var(--text)]">
               {(budget?.name as string | undefined) ?? 'compartido'}
@@ -107,14 +107,14 @@ export default async function AcceptInvitationPage({
           <input type="hidden" name="token" value={token} />
           <button
             type="submit"
-            className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter]"
+            className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter]"
           >
             Aceptar invitación
             <ArrowRight size={14} strokeWidth={2.4} />
           </button>
           <Link
             href="/app"
-            className="h-10 text-center text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] inline-flex items-center justify-center transition-colors"
+            className="h-10 text-center text-body-sm font-medium text-[var(--text2)] hover:text-[var(--text)] inline-flex items-center justify-center transition-colors"
           >
             Cancelar
           </Link>
@@ -147,7 +147,7 @@ function Message({
         >
           <Icon size={24} strokeWidth={2.2} />
         </div>
-        <div className="text-[14px] text-[var(--text)] leading-relaxed">{children}</div>
+        <div className="text-body text-[var(--text)] leading-relaxed">{children}</div>
       </div>
     </main>
   )

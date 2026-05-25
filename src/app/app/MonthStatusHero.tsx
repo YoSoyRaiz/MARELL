@@ -88,7 +88,7 @@ export function MonthStatusHero({
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
           <div
-            className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
+            className={`text-eyebrow font-semibold uppercase tracking-[0.18em] ${
               tone === 'coral'
                 ? 'text-[var(--coral-text)]'
                 : 'text-[var(--brand-text)]'
@@ -101,7 +101,7 @@ export function MonthStatusHero({
             format={fmtMoney}
             className={`block mt-2 text-[36px] sm:text-[44px] lg:text-[52px] font-bold leading-[1] tabular-nums num tracking-tight ${valueColor}`}
           />
-          <p className="mt-2 text-[13px] sm:text-[14px] text-[var(--text2)] leading-relaxed">
+          <p className="mt-2 text-body-sm sm:text-body text-[var(--text2)] leading-relaxed">
             {headline}
           </p>
         </div>
@@ -109,14 +109,14 @@ export function MonthStatusHero({
         {(isPositive || isNegative) && (
           <Link
             href="/app/plan"
-            className="shrink-0 h-10 px-4 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1.5 transition-[filter]"
+            className="shrink-0 h-10 px-4 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1.5 transition-[filter]"
           >
             {isNegative ? 'Reducir asignaciones' : 'Asignar dinero'}
             <ArrowRight size={12} strokeWidth={2.4} />
           </Link>
         )}
         {isZero && (
-          <span className="shrink-0 inline-flex items-center gap-1.5 h-10 px-4 rounded-xl border border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.06)] text-[var(--brand-text)] text-[12px] font-semibold uppercase tracking-[0.12em]">
+          <span className="shrink-0 inline-flex items-center gap-1.5 h-10 px-4 rounded-xl border border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.06)] text-[var(--brand-text)] text-meta font-semibold uppercase tracking-[0.12em]">
             <CheckCircle2 size={14} strokeWidth={2.4} />
             En cero
           </span>
@@ -185,7 +185,7 @@ function StatusChip({ tone, label, Icon, href }: StatusChipProps) {
 
   const inner = (
     <span
-      className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full border ${palette} text-[12px] font-medium`}
+      className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full border ${palette} text-meta font-medium`}
     >
       <Icon size={12} strokeWidth={2.4} />
       {label}

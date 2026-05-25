@@ -66,7 +66,7 @@ export function Step20AccountsRecap() {
       {/* Totales */}
       <div className="grid grid-cols-2 gap-3">
         <Card padding="sm">
-          <div className="text-[11px] text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
+          <div className="text-eyebrow text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
             Disponible
           </div>
           <div className="text-[22px] font-bold tabular-nums num gradient-text mt-1">
@@ -74,7 +74,7 @@ export function Step20AccountsRecap() {
           </div>
         </Card>
         <Card padding="sm">
-          <div className="text-[11px] text-[var(--muted)] uppercase tracking-[0.18em] font-semibold">
+          <div className="text-eyebrow text-[var(--muted)] uppercase tracking-[0.18em] font-semibold">
             Deudas
           </div>
           <div className="text-[22px] font-bold tabular-nums num text-[var(--text)] mt-1">
@@ -94,10 +94,10 @@ export function Step20AccountsRecap() {
               className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4 flex items-center gap-4"
             >
               <div className="min-w-0 flex-1">
-                <div className="font-semibold text-[15px] text-[var(--text)] truncate">
+                <div className="font-semibold text-emph text-[var(--text)] truncate">
                   {a.name}
                 </div>
-                <div className="text-[12px] text-[var(--muted)] mt-0.5">
+                <div className="text-meta text-[var(--muted)] mt-0.5">
                   {labelForAccountType(a.type)}
                   {a.interestRate !== undefined && ` · ${a.interestRate}% interés`}
                 </div>
@@ -127,7 +127,7 @@ export function Step20AccountsRecap() {
       <button
         type="button"
         onClick={addAnother}
-        className="w-full h-[52px] rounded-2xl border-2 border-dashed border-[var(--border3)] hover:border-[var(--brand-2)] hover:bg-[var(--overlay-1)] text-[14px] font-medium text-[var(--text2)] hover:text-[var(--text)] transition-colors inline-flex items-center justify-center gap-2"
+        className="w-full h-[52px] rounded-2xl border-2 border-dashed border-[var(--border3)] hover:border-[var(--brand-2)] hover:bg-[var(--overlay-1)] text-body font-medium text-[var(--text2)] hover:text-[var(--text)] transition-colors inline-flex items-center justify-center gap-2"
       >
         <Plus size={16} strokeWidth={2.2} />
         Agregar otra cuenta

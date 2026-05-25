@@ -19,7 +19,7 @@ export function FormField({ label, hint, htmlFor, children }: FormFieldProps) {
     <div>
       <label
         htmlFor={htmlFor}
-        className="text-[12px] text-[var(--text2)] font-medium mb-1.5 flex items-center gap-1.5"
+        className="text-meta text-[var(--text2)] font-medium mb-1.5 flex items-center gap-1.5"
       >
         <span>{label}</span>
         {hint && (

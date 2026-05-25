@@ -260,7 +260,7 @@ export function Sidebar({
               href={item.href}
               title={collapsed ? item.label : undefined}
               aria-label={collapsed ? item.label : undefined}
-              className={`flex items-center rounded-xl text-[14px] transition-all duration-200 ${
+              className={`flex items-center rounded-xl text-body transition-all duration-200 ${
                 collapsed
                   ? 'lg:justify-center lg:px-0 lg:py-2.5 px-3.5 py-3 gap-3'
                   : 'gap-3 px-3.5 py-3 lg:py-2.5'
@@ -271,7 +271,7 @@ export function Sidebar({
               }`}
             >
               <span
-                className={`text-[11px] tabular-nums shrink-0 ${
+                className={`text-eyebrow tabular-nums shrink-0 ${
                   isActive ? 'text-[#0B0B0C]/60' : 'text-[var(--muted2)]'
                 } ${collapsed ? 'lg:hidden' : ''}`}
               >
@@ -290,12 +290,12 @@ export function Sidebar({
           (la card de upsell pierde sentido sin la copy completa). */}
       {plan === 'trial' && !collapsed && (
         <div className="mx-3 mb-3 mt-4 p-4 rounded-2xl bg-[var(--s2)] border border-[var(--border2)] gradient-border space-y-3 lg:block">
-          <div className="text-[13px] font-semibold leading-snug">
+          <div className="text-body-sm font-semibold leading-snug">
             Desbloquea tu <span className="gradient-text">potencial</span> financiero.
           </div>
           <Link
             href="/pricing"
-            className="w-full h-9 gradient-bg text-[#0B0B0C] font-semibold text-[12px] rounded-lg glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] inline-flex items-center justify-center"
+            className="w-full h-9 gradient-bg text-[#0B0B0C] font-semibold text-meta rounded-lg glow-on-hover hover:brightness-105 active:brightness-95 transition-[filter] inline-flex items-center justify-center"
           >
             Mejorar a Premium
           </Link>
@@ -308,7 +308,7 @@ export function Sidebar({
           href="mailto:soporte@marell.app?subject=Ayuda%20MARELL"
           title={collapsed ? 'Ayuda y soporte' : undefined}
           aria-label={collapsed ? 'Ayuda y soporte' : undefined}
-          className={`flex items-center text-[13px] text-[var(--muted)] hover:text-[var(--text)] transition-colors ${
+          className={`flex items-center text-body-sm text-[var(--muted)] hover:text-[var(--text)] transition-colors ${
             collapsed
               ? 'lg:justify-center lg:py-2 lg:rounded-lg lg:hover:bg-[var(--overlay-1)] gap-2 py-2'
               : 'gap-2 py-2'
@@ -340,12 +340,12 @@ export function Sidebar({
               : 'gap-2.5 px-2 py-1.5'
           } ${menuOpen ? 'bg-[var(--overlay-1)]' : 'hover:bg-[var(--overlay-1)]'}`}
         >
-          <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-[13px] shrink-0">
+          <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-body-sm shrink-0">
             {initials}
           </div>
           <div className={`flex-1 min-w-0 text-left ${collapsed ? 'lg:hidden' : ''}`}>
-            <div className="text-[13px] font-medium truncate">{displayName ?? 'Usuario'}</div>
-            <div className="text-[11px] text-[var(--muted)] capitalize truncate">
+            <div className="text-body-sm font-medium truncate">{displayName ?? 'Usuario'}</div>
+            <div className="text-eyebrow text-[var(--muted)] capitalize truncate">
               {plan}
               {trialDaysLeft !== null && trialDaysLeft >= 0 && (
                 <span className="ml-1 normal-case">
@@ -375,25 +375,25 @@ export function Sidebar({
             {/* Identity */}
             <div className="px-4 py-3.5 border-b border-[var(--border)] bg-[var(--overlay-1)]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-[14px] shrink-0">
+                <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-body shrink-0">
                   {initials}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[13px] font-semibold truncate">
+                  <div className="text-body-sm font-semibold truncate">
                     {displayName ?? 'Usuario'}
                   </div>
                   {email && (
-                    <div className="text-[11px] text-[var(--muted)] truncate">{email}</div>
+                    <div className="text-eyebrow text-[var(--muted)] truncate">{email}</div>
                   )}
                 </div>
               </div>
               <div className="mt-3 inline-flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-[var(--overlay-1)] border border-[var(--border)] text-[10px] uppercase tracking-[0.15em] font-semibold text-[var(--text2)]">
+                <span className="px-2 py-0.5 rounded-full bg-[var(--overlay-1)] border border-[var(--border)] text-tiny uppercase tracking-[0.15em] font-semibold text-[var(--text2)]">
                   {plan}
                 </span>
                 {trialDaysLeft !== null && (
                   <span
-                    className={`text-[11px] ${
+                    className={`text-eyebrow ${
                       trialDaysLeft <= 3 ? 'text-[var(--coral-text)]' : 'text-[var(--muted)]'
                     }`}
                   >
@@ -411,7 +411,7 @@ export function Sidebar({
                 href="/app/ajustes"
                 onClick={() => setMenuOpen(false)}
                 role="menuitem"
-                className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 text-body-sm text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
               >
                 <CircleUser size={14} strokeWidth={2} className="text-[var(--text2)]" />
                 Ajustes de cuenta
@@ -421,7 +421,7 @@ export function Sidebar({
                   href="/admin"
                   onClick={() => setMenuOpen(false)}
                   role="menuitem"
-                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-body-sm text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors"
                 >
                   <ShieldCheck size={14} strokeWidth={2} className="text-[var(--brand-text)]" />
                   Panel de admin
@@ -431,7 +431,7 @@ export function Sidebar({
                 type="button"
                 onClick={handleReset}
                 role="menuitem"
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors text-left"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-body-sm text-[var(--text)] hover:bg-[var(--overlay-1)] transition-colors text-left"
               >
                 <RotateCcw size={14} strokeWidth={2} className="text-[var(--text2)]" />
                 Rehacer onboarding
@@ -442,7 +442,7 @@ export function Sidebar({
               <button
                 type="submit"
                 role="menuitem"
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.08)] transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-body-sm text-[var(--coral-text)] hover:bg-[rgba(255,122,89,0.08)] transition-colors"
               >
                 <LogOut size={14} strokeWidth={2} />
                 Cerrar sesión

@@ -29,10 +29,10 @@ interface AddTransactionButtonProps {
 }
 
 const PRIMARY =
-  'h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none'
+  'h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] disabled:opacity-50 disabled:pointer-events-none'
 
 const OUTLINED =
-  'h-11 px-4 inline-flex items-center gap-1.5 rounded-xl border border-[var(--border2)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] text-[var(--text)] font-medium text-[13px] transition-colors disabled:opacity-50 disabled:pointer-events-none'
+  'h-11 px-4 inline-flex items-center gap-1.5 rounded-xl border border-[var(--border2)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] text-[var(--text)] font-medium text-body-sm transition-colors disabled:opacity-50 disabled:pointer-events-none'
 
 export function AddTransactionButton({
   accounts,

@@ -55,7 +55,7 @@ export default async function PricingPage() {
           </Link>
           <Link
             href={user ? '/app' : '/login'}
-            className="text-[13px] font-medium text-[var(--text2)] hover:text-[var(--text)] inline-flex items-center gap-1.5"
+            className="text-body-sm font-medium text-[var(--text2)] hover:text-[var(--text)] inline-flex items-center gap-1.5"
           >
             <ArrowLeft size={14} strokeWidth={2.2} />
             {user ? 'Volver a la app' : 'Iniciar sesión'}
@@ -66,13 +66,13 @@ export default async function PricingPage() {
       <main className="max-w-[1100px] mx-auto px-6 py-16 sm:py-20">
         {/* Hero */}
         <div className="text-center max-w-2xl mx-auto space-y-4">
-          <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--success)]">
+          <div className="text-eyebrow font-bold uppercase tracking-[0.2em] text-[var(--success)]">
             Precios simples
           </div>
           <h1 className="text-[32px] sm:text-[44px] lg:text-[52px] leading-[1.05] font-bold tracking-tight">
             Elige el plan que <span className="gradient-text">funciona para ti</span>.
           </h1>
-          <p className="text-[var(--text2)] text-[15px] sm:text-[16px] leading-relaxed">
+          <p className="text-[var(--text2)] text-emph sm:text-[16px] leading-relaxed">
             Empieza gratis. Cuando quieras desbloquear todo, pasa a Pro por
             menos de un café al mes.
           </p>
@@ -83,16 +83,16 @@ export default async function PricingPage() {
           {/* Free */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-7 sm:p-8 flex flex-col">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+              <div className="text-eyebrow font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
                 Free
               </div>
               <div className="mt-3 flex items-baseline gap-2">
                 <div className="text-[44px] font-extrabold leading-none tracking-tight">
                   RD$0
                 </div>
-                <div className="text-[14px] text-[var(--muted)]">/ siempre</div>
+                <div className="text-body text-[var(--muted)]">/ siempre</div>
               </div>
-              <p className="mt-3 text-[14px] text-[var(--text2)] leading-relaxed">
+              <p className="mt-3 text-body text-[var(--text2)] leading-relaxed">
                 Lo esencial para llevar el control básico de tu dinero. Sin
                 tarjeta de crédito.
               </p>
@@ -100,7 +100,7 @@ export default async function PricingPage() {
 
             <ul className="mt-7 space-y-3 flex-1">
               {FREE_FEATURES.map((f) => (
-                <li key={f} className="flex items-center gap-2.5 text-[14px]">
+                <li key={f} className="flex items-center gap-2.5 text-body">
                   <span className="grid size-5 place-items-center rounded-full bg-[var(--overlay-2)] text-[var(--text2)] shrink-0">
                     <Check size={11} strokeWidth={3} />
                   </span>
@@ -111,7 +111,7 @@ export default async function PricingPage() {
 
             <Link
               href={user ? '/app' : '/signup'}
-              className="mt-8 h-11 inline-flex items-center justify-center rounded-xl bg-[var(--overlay-2)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-[14px] font-semibold transition-colors"
+              className="mt-8 h-11 inline-flex items-center justify-center rounded-xl bg-[var(--overlay-2)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-body font-semibold transition-colors"
             >
               {user ? 'Ya estás en Free' : 'Empezar gratis'}
             </Link>
@@ -119,33 +119,33 @@ export default async function PricingPage() {
 
           {/* Pro */}
           <div className="relative rounded-2xl gradient-border p-7 sm:p-8 flex flex-col bg-[var(--s1)]">
-            <div className="absolute top-0 right-7 -translate-y-1/2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] gradient-bg text-[#0B0B0C]">
+            <div className="absolute top-0 right-7 -translate-y-1/2 px-3 py-1 rounded-full text-tiny font-bold uppercase tracking-[0.18em] gradient-bg text-[#0B0B0C]">
               Recomendado
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--brand-2)]">
+              <div className="text-eyebrow font-bold uppercase tracking-[0.2em] text-[var(--brand-2)]">
                 Pro
               </div>
               <div className="mt-3 flex items-baseline gap-2 flex-wrap">
                 <div className="text-[44px] font-extrabold leading-none tracking-tight num">
                   {fmt(PRO_PRICE_MONTH_DOP)}
                 </div>
-                <div className="text-[14px] text-[var(--muted)]">/ mes</div>
+                <div className="text-body text-[var(--muted)]">/ mes</div>
               </div>
-              <p className="mt-2 text-[13px] text-[var(--text2)]">
+              <p className="mt-2 text-body-sm text-[var(--text2)]">
                 <span className="text-[var(--brand-2)] font-semibold">
                   {fmt(PRO_PRICE_YEAR_DOP)}/año
                 </span>{' '}
                 — ahorras {PRO_PRICE_YEAR_SAVINGS_PCT}%.
               </p>
-              <p className="mt-3 text-[14px] text-[var(--text2)] leading-relaxed">
+              <p className="mt-3 text-body text-[var(--text2)] leading-relaxed">
                 Todas las features pensadas para que cada peso tenga su trabajo.
               </p>
             </div>
 
             <ul className="mt-7 space-y-3 flex-1">
               {PRO_FEATURES.map(({ Icon, text }) => (
-                <li key={text} className="flex items-center gap-2.5 text-[14px]">
+                <li key={text} className="flex items-center gap-2.5 text-body">
                   <span className="grid size-5 place-items-center rounded-full bg-[var(--success)]/[0.15] text-[var(--success)] shrink-0">
                     <Icon size={11} strokeWidth={2.4} />
                   </span>
@@ -181,8 +181,8 @@ export default async function PricingPage() {
 function Note({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
-      <h3 className="text-[14px] font-semibold">{title}</h3>
-      <p className="mt-1.5 text-[13px] text-[var(--text2)] leading-relaxed">
+      <h3 className="text-body font-semibold">{title}</h3>
+      <p className="mt-1.5 text-body-sm text-[var(--text2)] leading-relaxed">
         {body}
       </p>
     </div>

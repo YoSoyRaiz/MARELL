@@ -146,7 +146,7 @@ export function ExtraordinaryPaymentModal({
               <button
                 type="button"
                 onClick={() => setType('expense')}
-                className={`py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
+                className={`py-2.5 rounded-lg text-body-sm font-semibold transition-all ${
                   type === 'expense'
                     ? 'bg-[var(--s1)] text-[var(--text)]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -157,7 +157,7 @@ export function ExtraordinaryPaymentModal({
               <button
                 type="button"
                 onClick={() => setType('income')}
-                className={`py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
+                className={`py-2.5 rounded-lg text-body-sm font-semibold transition-all ${
                   type === 'income'
                     ? 'bg-[var(--s1)] text-[var(--text)]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'

@@ -186,7 +186,7 @@ export function AnalisisClient({
               <MultiSegmentDonut segments={segments} size={200} stroke={22} />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] font-semibold">
+                  <div className="text-tiny uppercase tracking-[0.2em] text-[var(--muted)] font-semibold">
                     Total
                   </div>
                   <div className="text-[22px] font-bold tabular-nums num text-[var(--text)] mt-0.5">
@@ -195,7 +195,7 @@ export function AnalisisClient({
                 </div>
               </div>
             </div>
-            <div className="text-[11px] text-[var(--muted)] mt-4 text-center leading-relaxed">
+            <div className="text-eyebrow text-[var(--muted)] mt-4 text-center leading-relaxed">
               Top {Math.min(5, allRows.length)} en colores ·{' '}
               {rest.length > 0 ? `${rest.length} en gris` : 'todo visible'}
             </div>
@@ -203,8 +203,8 @@ export function AnalisisClient({
 
           <Card className="overflow-hidden">
             <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-              <h2 className="text-[15px] font-semibold text-[var(--text)]">Por categoría</h2>
-              <p className="text-[12px] text-[var(--muted)]">
+              <h2 className="text-emph font-semibold text-[var(--text)]">Por categoría</h2>
+              <p className="text-meta text-[var(--muted)]">
                 {allRows.length} {allRows.length === 1 ? 'categoría' : 'categorías'}
               </p>
             </div>
@@ -232,7 +232,7 @@ export function AnalisisClient({
                             className="text-[var(--text2)] shrink-0"
                           />
                         )}
-                        <span className="text-[14px] text-[var(--text)] truncate">
+                        <span className="text-body text-[var(--text)] truncate">
                           {r.name}
                         </span>
                       </div>
@@ -247,10 +247,10 @@ export function AnalisisClient({
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-[14px] tabular-nums num font-semibold text-[var(--text)]">
+                      <div className="text-body tabular-nums num font-semibold text-[var(--text)]">
                         {fmtMoney(r.amount)}
                       </div>
-                      <div className="text-[11px] text-[var(--muted)] tabular-nums">
+                      <div className="text-eyebrow text-[var(--muted)] tabular-nums">
                         {pct.toFixed(1)}%
                       </div>
                     </div>

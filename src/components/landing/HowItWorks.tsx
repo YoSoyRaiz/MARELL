@@ -77,7 +77,7 @@ function Step({
         {n}
       </div>
       <h3 className="text-xl font-bold tracking-tight">{title}</h3>
-      <p className="mt-3 max-w-xs text-[14px] leading-relaxed text-[var(--text2)]">
+      <p className="mt-3 max-w-xs text-body leading-relaxed text-[var(--text2)]">
         {desc}
       </p>
       <div className="mt-7 w-full max-w-[260px]">{children}</div>
@@ -95,7 +95,7 @@ function AssignVisual() {
     <InteractiveCard
       surface="rounded-2xl landing-card-soft p-4 text-left"
     >
-      <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">
+      <p className="text-tiny uppercase tracking-wider text-[var(--muted)]">
         Asignar disponible
       </p>
       <p className="num mt-1 text-2xl font-bold">$20,434.00</p>
@@ -110,8 +110,8 @@ function AssignVisual() {
             <span className="grid size-7 place-items-center rounded-md bg-[var(--overlay-2)] text-sm">
               {it.icon}
             </span>
-            <span className="flex-1 text-[13px] font-medium">{it.label}</span>
-            <span className="num text-[13px] font-semibold">{it.amount}</span>
+            <span className="flex-1 text-body-sm font-medium">{it.label}</span>
+            <span className="num text-body-sm font-semibold">{it.amount}</span>
             <button
               type="button"
               tabIndex={-1}
@@ -170,7 +170,7 @@ function GoalVisual() {
     <InteractiveCard
       surface="rounded-2xl landing-card-soft p-6 text-center"
     >
-      <p className="text-[11px] uppercase tracking-wider text-[var(--muted)]">
+      <p className="text-eyebrow uppercase tracking-wider text-[var(--muted)]">
         Meta: Viaje a Europa
       </p>
       <p className="num mt-3 text-5xl font-extrabold tracking-tight">

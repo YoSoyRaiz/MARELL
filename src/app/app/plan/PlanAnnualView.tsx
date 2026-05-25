@@ -124,7 +124,7 @@ export function PlanAnnualView({
             <button
               type="button"
               onClick={handleAddGeneric}
-              className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0"
+              className="h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-2 transition-[filter] shrink-0"
             >
               <Plus size={14} strokeWidth={2.4} />
               Pago extraordinario
@@ -187,15 +187,15 @@ export function PlanAnnualView({
                       <span className="text-[9px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold leading-none">
                         {MONTH_NAMES_SHORT[m.monthNum - 1]}
                       </span>
-                      <span className="text-[14px] font-bold text-[var(--text)] leading-none tabular-nums">
+                      <span className="text-body font-bold text-[var(--text)] leading-none tabular-nums">
                         {year}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[15px] font-semibold text-[var(--text)]">
+                      <div className="text-emph font-semibold text-[var(--text)]">
                         {m.monthLabel}
                       </div>
-                      <div className="text-[11px] text-[var(--muted)]">
+                      <div className="text-eyebrow text-[var(--muted)]">
                         Asignado: {fmtMoney(m.totalAssigned)}
                         {m.oneOffs.length > 0 && (
                           <span className="text-[var(--text2)]">
@@ -227,11 +227,11 @@ export function PlanAnnualView({
                           key={o.id}
                           className="px-5 py-3 grid grid-cols-[auto_1fr_auto_auto] gap-3 items-center"
                         >
-                          <div className="text-[11px] text-[var(--muted)] tabular-nums num w-10">
+                          <div className="text-eyebrow text-[var(--muted)] tabular-nums num w-10">
                             {formatDayDate(o.date)}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[13px] text-[var(--text)] font-medium truncate flex items-center gap-1.5">
+                            <div className="text-body-sm text-[var(--text)] font-medium truncate flex items-center gap-1.5">
                               {isIncome ? (
                                 <ArrowUpRight
                                   size={12}
@@ -247,12 +247,12 @@ export function PlanAnnualView({
                               )}
                               {o.payeeName ?? 'Pago programado'}
                             </div>
-                            <div className="text-[11px] text-[var(--muted)] truncate">
+                            <div className="text-eyebrow text-[var(--muted)] truncate">
                               {[o.categoryName, o.accountName].filter(Boolean).join(' · ') || '—'}
                             </div>
                           </div>
                           <div
-                            className={`text-[13px] tabular-nums num font-semibold ${
+                            className={`text-body-sm tabular-nums num font-semibold ${
                               isIncome ? 'text-[var(--brand-text)]' : 'text-[var(--text)]'
                             }`}
                           >
@@ -275,7 +275,7 @@ export function PlanAnnualView({
                 )}
 
                 {m.oneOffs.length === 0 && (
-                  <div className="px-5 py-3 text-[12px] text-[var(--muted)] inline-flex items-center gap-2">
+                  <div className="px-5 py-3 text-meta text-[var(--muted)] inline-flex items-center gap-2">
                     <Sparkles size={11} strokeWidth={2.2} />
                     Sin pagos extraordinarios.{' '}
                     <Link
@@ -296,7 +296,7 @@ export function PlanAnnualView({
           <div className="w-9 h-9 rounded-lg bg-[var(--s1)] flex items-center justify-center shrink-0 text-[var(--text2)]">
             <CalendarRange size={16} strokeWidth={2} />
           </div>
-          <div className="text-[12px] text-[var(--muted)] leading-relaxed">
+          <div className="text-meta text-[var(--muted)] leading-relaxed">
             <span className="text-[var(--text2)] font-medium">¿Necesitas asignar más a una categoría en un mes específico?</span>{' '}
             Haz click en cualquier mes para abrir su vista mensual y ajustar las
             asignaciones por categoría.
@@ -327,7 +327,7 @@ function YearPicker({ year }: { year: number }) {
       >
         <ChevronLeft size={16} strokeWidth={2.2} />
       </Link>
-      <div className="min-w-[80px] px-3 py-2 text-center text-[14px] font-semibold text-[var(--text)] tabular-nums num">
+      <div className="min-w-[80px] px-3 py-2 text-center text-body font-semibold text-[var(--text)] tabular-nums num">
         {year}
       </div>
       <Link
@@ -361,14 +361,14 @@ function KpiCard({
         : 'text-[var(--text)]'
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-4 py-3">
-      <div className="text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+      <div className="text-tiny uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
         {label}
       </div>
-      <div className={`text-[20px] font-bold tabular-nums num mt-1 ${valueTone}`}>
+      <div className={`text-h2 font-bold tabular-nums num mt-1 ${valueTone}`}>
         {value}
       </div>
       {sub && (
-        <div className="text-[11px] text-[var(--muted)] mt-0.5">{sub}</div>
+        <div className="text-eyebrow text-[var(--muted)] mt-0.5">{sub}</div>
       )}
     </div>
   )

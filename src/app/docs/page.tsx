@@ -34,7 +34,7 @@ export default function DocsHome() {
             Tu dinero. <span className="gradient-text">Tu futuro.</span> Bajo
             control.
           </h2>
-          <p className="mt-2 text-[14px] text-[var(--text2)] leading-relaxed">
+          <p className="mt-2 text-body text-[var(--text2)] leading-relaxed">
             Si nunca has presupuestado antes, empieza por{' '}
             <Link href="/docs/conceptos">Conceptos básicos</Link>. Si vienes
             de otra app o de una hoja de Excel, salta a{' '}
@@ -43,14 +43,14 @@ export default function DocsHome() {
           <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
             <Link
               href="/app"
-              className="h-10 px-4 gradient-bg text-[#0B0B0C] font-semibold text-[13px] rounded-xl glow-on-hover hover:brightness-105 inline-flex items-center gap-1.5 transition-[filter]"
+              className="h-10 px-4 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 inline-flex items-center gap-1.5 transition-[filter]"
             >
               Abrir la app
               <ArrowRight size={12} strokeWidth={2.4} />
             </Link>
             <Link
               href="/docs/conceptos"
-              className="h-10 px-4 rounded-xl border border-[var(--border)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.03] text-[var(--text)] font-medium text-[13px] inline-flex items-center gap-1.5 transition-colors"
+              className="h-10 px-4 rounded-xl border border-[var(--border)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.03] text-[var(--text)] font-medium text-body-sm inline-flex items-center gap-1.5 transition-colors"
             >
               Conceptos básicos
             </Link>

@@ -65,10 +65,10 @@ export function TopBar({
           </button>
 
           <div className="hidden lg:block min-w-0">
-            <div className="text-[16px] sm:text-[20px] md:text-[24px] font-bold leading-tight tracking-tight text-[var(--text)] truncate">
+            <div className="text-[16px] sm:text-h2 md:text-[24px] font-bold leading-tight tracking-tight text-[var(--text)] truncate">
               Hola, {firstName ?? 'amigo'} <span aria-hidden>👋</span>
             </div>
-            <div className="hidden sm:flex items-center gap-1.5 text-[12px] text-[var(--muted)] mt-0.5">
+            <div className="hidden sm:flex items-center gap-1.5 text-meta text-[var(--muted)] mt-0.5">
               <span className="font-medium text-[var(--text2)] tabular-nums num">
                 Asignar disponible {fmtMoney(readyToAssign)}
               </span>
@@ -103,7 +103,7 @@ export function TopBar({
             >
               <div className="leading-none">
                 <div
-                  className={`text-[9px] md:text-[10px] uppercase tracking-[0.18em] font-semibold ${
+                  className={`text-[9px] md:text-tiny uppercase tracking-[0.18em] font-semibold ${
                     isNegative
                       ? 'text-[var(--coral-text)]'
                       : 'text-[var(--brand-text)]'
@@ -114,7 +114,7 @@ export function TopBar({
                 <AnimatedNumber
                   value={readyToAssign}
                   format={fmtMoney}
-                  className={`text-[16px] sm:text-[20px] md:text-[28px] font-bold tabular-nums num leading-none mt-1 block ${
+                  className={`text-[16px] sm:text-h2 md:text-[28px] font-bold tabular-nums num leading-none mt-1 block ${
                     isNegative
                       ? 'text-[var(--coral-text)]'
                       : isPositive
@@ -129,7 +129,7 @@ export function TopBar({
                 aria-expanded={assignOpen}
                 aria-haspopup="dialog"
                 aria-label="Abrir popover para asignar dinero"
-                className="h-9 md:h-10 px-3 md:px-4 gradient-bg text-[#0B0B0C] font-semibold text-[12px] md:text-[13px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1 md:gap-1.5 transition-[filter]"
+                className="h-9 md:h-10 px-3 md:px-4 gradient-bg text-[#0B0B0C] font-semibold text-meta md:text-body-sm rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center gap-1 md:gap-1.5 transition-[filter]"
               >
                 <span className="hidden sm:inline">Asignar</span>
                 <ChevronDown
@@ -165,7 +165,7 @@ export function TopBar({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar transacciones..."
               aria-label="Buscar transacciones"
-              className="w-full !h-11 !pl-10 !pr-3 !text-[13px] !rounded-xl"
+              className="w-full !h-11 !pl-10 !pr-3 !text-body-sm !rounded-xl"
             />
           </form>
         </div>

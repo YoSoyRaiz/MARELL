@@ -184,10 +184,10 @@ export function HerramientasClient() {
               <Briefcase size={16} strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold text-[var(--text)]">
+              <h2 className="text-emph font-semibold text-[var(--text)]">
                 Sueldo bruto → neto
               </h2>
-              <p className="text-[12px] text-[var(--muted)] mt-0.5">
+              <p className="text-meta text-[var(--muted)] mt-0.5">
                 AFP, SFS e ISR según escala 2026.
               </p>
             </div>
@@ -197,7 +197,7 @@ export function HerramientasClient() {
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-3">
             <label className="block">
-              <span className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+              <span className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                 Sueldo bruto mensual (DOP)
               </span>
               <input
@@ -206,7 +206,7 @@ export function HerramientasClient() {
                 value={salaryInput}
                 onChange={(e) => setSalaryInput(formatMoneyInput(e.target.value))}
                 placeholder="50,000"
-                className="w-full mt-1 !text-[18px] !font-bold !py-3 !px-4 !rounded-xl tabular-nums num"
+                className="w-full mt-1 !text-h3 !font-bold !py-3 !px-4 !rounded-xl tabular-nums num"
               />
             </label>
             <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 inline-flex items-start gap-2">
@@ -215,7 +215,7 @@ export function HerramientasClient() {
                 strokeWidth={2.2}
                 className="text-[var(--muted2)] shrink-0 mt-0.5"
               />
-              <p className="text-[11px] text-[var(--muted)] leading-relaxed">
+              <p className="text-eyebrow text-[var(--muted)] leading-relaxed">
                 Asumimos que tu empleador retiene TSS (AFP 2.87% + SFS 3.04%) e ISR mensual prorrateado. No incluye seguros adicionales ni aportes voluntarios.
               </p>
             </div>
@@ -261,10 +261,10 @@ export function HerramientasClient() {
               <CreditCard size={16} strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold text-[var(--text)]">
+              <h2 className="text-emph font-semibold text-[var(--text)]">
                 Cuotas de financiamiento
               </h2>
-              <p className="text-[12px] text-[var(--muted)] mt-0.5">
+              <p className="text-meta text-[var(--muted)] mt-0.5">
                 Cuánto pagarás por mes y cuánto realmente te cuesta el crédito.
               </p>
             </div>
@@ -274,7 +274,7 @@ export function HerramientasClient() {
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-3">
             <label className="block">
-              <span className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+              <span className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                 Total a financiar
               </span>
               <input
@@ -289,14 +289,14 @@ export function HerramientasClient() {
                 }`}
               />
               {missingTotal && (
-                <span className="block mt-1 text-[11px] text-[var(--coral-text)] font-medium">
+                <span className="block mt-1 text-eyebrow text-[var(--coral-text)] font-medium">
                   Requerido — escribe cuánto vas a financiar
                 </span>
               )}
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
-                <span className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                <span className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                   Cuotas
                 </span>
                 <input
@@ -308,18 +308,18 @@ export function HerramientasClient() {
                   }
                   placeholder="12"
                   aria-invalid={missingCount || undefined}
-                  className={`w-full mt-1 !text-[15px] !py-2.5 !px-3 !rounded-xl tabular-nums num ${
+                  className={`w-full mt-1 !text-emph !py-2.5 !px-3 !rounded-xl tabular-nums num ${
                     missingCount ? '!border-[var(--coral)]/50' : ''
                   }`}
                 />
                 {missingCount && (
-                  <span className="block mt-1 text-[11px] text-[var(--coral-text)] font-medium">
+                  <span className="block mt-1 text-eyebrow text-[var(--coral-text)] font-medium">
                     Requerido
                   </span>
                 )}
               </label>
               <label className="block">
-                <span className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                <span className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
                   Tasa anual %
                 </span>
                 <input
@@ -329,16 +329,16 @@ export function HerramientasClient() {
                   onChange={(e) => setCuotaRate(e.target.value)}
                   placeholder="0"
                   aria-invalid={missingRate || undefined}
-                  className={`w-full mt-1 !text-[15px] !py-2.5 !px-3 !rounded-xl tabular-nums num ${
+                  className={`w-full mt-1 !text-emph !py-2.5 !px-3 !rounded-xl tabular-nums num ${
                     missingRate ? '!border-[var(--coral)]/50' : ''
                   }`}
                 />
                 {missingRate ? (
-                  <span className="block mt-1 text-[11px] text-[var(--coral-text)] font-medium">
+                  <span className="block mt-1 text-eyebrow text-[var(--coral-text)] font-medium">
                     Requerido · escribe 0 si es sin interés
                   </span>
                 ) : (
-                  <span className="block mt-1 text-[11px] text-[var(--muted)]">
+                  <span className="block mt-1 text-eyebrow text-[var(--muted)]">
                     Escribe 0 si el préstamo es sin interés
                   </span>
                 )}
@@ -349,10 +349,10 @@ export function HerramientasClient() {
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] divide-y divide-[var(--border)]">
             {cuotaIncomplete ? (
               <div className="px-4 py-6 text-center space-y-1">
-                <div className="text-[13px] font-semibold text-[var(--coral-text)]">
+                <div className="text-body-sm font-semibold text-[var(--coral-text)]">
                   Completa los campos requeridos
                 </div>
-                <div className="text-[12px] text-[var(--muted)] leading-relaxed">
+                <div className="text-meta text-[var(--muted)] leading-relaxed">
                   {(() => {
                     const missing: string[] = []
                     if (missingTotal) missing.push('Total a financiar')
@@ -394,7 +394,7 @@ export function HerramientasClient() {
         <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-[#0B0B0C] shrink-0">
           <Calculator size={14} strokeWidth={2.4} />
         </div>
-        <div className="text-[12px] text-[var(--text2)] leading-relaxed">
+        <div className="text-meta text-[var(--text2)] leading-relaxed">
           Las escalas ISR se actualizan al inicio de cada año fiscal. Cuando DGII
           publique nuevos rangos, los actualizamos en MARELL automáticamente.
         </div>
@@ -413,18 +413,18 @@ interface RowProps {
 function Row({ label, value, hint, tone = 'default' }: RowProps) {
   const valueClass =
     tone === 'hero'
-      ? 'gradient-text text-[18px]'
+      ? 'gradient-text text-h3'
       : tone === 'warn'
-        ? 'text-[var(--warn-text)] text-[14px]'
+        ? 'text-[var(--warn-text)] text-body'
         : tone === 'muted'
-          ? 'text-[var(--text2)] text-[14px]'
-          : 'text-[var(--text)] text-[14px]'
+          ? 'text-[var(--text2)] text-body'
+          : 'text-[var(--text)] text-body'
   return (
     <div className="px-4 py-3 flex items-baseline justify-between gap-3">
-      <div className="text-[12px] text-[var(--text2)]">{label}</div>
+      <div className="text-meta text-[var(--text2)]">{label}</div>
       <div className="text-right">
         <div className={`font-semibold tabular-nums num ${valueClass}`}>{value}</div>
-        {hint && <div className="text-[10px] text-[var(--muted2)] mt-0.5">{hint}</div>}
+        {hint && <div className="text-tiny text-[var(--muted2)] mt-0.5">{hint}</div>}
       </div>
     </div>
   )

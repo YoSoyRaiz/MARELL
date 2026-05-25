@@ -21,7 +21,7 @@ export function Article({ pathname, eyebrow, title, lead, children }: ArticlePro
     <article data-doc className="docs-article">
       <header className="mb-8 pb-6 border-b border-[var(--border)]">
         {eyebrow && (
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] mb-3">
+          <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] mb-3">
             {eyebrow}
           </div>
         )}
@@ -44,11 +44,11 @@ export function Article({ pathname, eyebrow, title, lead, children }: ArticlePro
               href={prev.href}
               className="rounded-2xl border border-[var(--border)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] p-4 transition-colors group"
             >
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)] mb-1 inline-flex items-center gap-1.5">
+              <div className="text-tiny font-semibold uppercase tracking-[0.18em] text-[var(--muted)] mb-1 inline-flex items-center gap-1.5">
                 <ArrowLeft size={11} strokeWidth={2.4} />
                 Anterior
               </div>
-              <div className="text-[15px] font-semibold text-[var(--text)] group-hover:text-[var(--brand-2)] transition-colors">
+              <div className="text-emph font-semibold text-[var(--text)] group-hover:text-[var(--brand-2)] transition-colors">
                 {prev.label}
               </div>
             </Link>
@@ -60,11 +60,11 @@ export function Article({ pathname, eyebrow, title, lead, children }: ArticlePro
               href={next.href}
               className="rounded-2xl border border-[var(--border)] hover:border-[var(--brand-2)]/40 hover:bg-white/[0.02] p-4 transition-colors group text-right"
             >
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)] mb-1 inline-flex items-center gap-1.5 justify-end w-full">
+              <div className="text-tiny font-semibold uppercase tracking-[0.18em] text-[var(--muted)] mb-1 inline-flex items-center gap-1.5 justify-end w-full">
                 Siguiente
                 <ArrowRight size={11} strokeWidth={2.4} />
               </div>
-              <div className="text-[15px] font-semibold text-[var(--text)] group-hover:text-[var(--brand-2)] transition-colors">
+              <div className="text-emph font-semibold text-[var(--text)] group-hover:text-[var(--brand-2)] transition-colors">
                 {next.label}
               </div>
             </Link>

@@ -47,10 +47,10 @@ export function Step17Targets() {
       {/* Total bar */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4 flex items-center justify-between">
         <div>
-          <div className="text-[12px] text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
+          <div className="text-meta text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
             Total mensual
           </div>
-          <div className="text-[13px] text-[var(--text2)] mt-0.5">
+          <div className="text-body-sm text-[var(--text2)] mt-0.5">
             {filledCount > 0
               ? `${filledCount} ${filledCount === 1 ? 'categoría' : 'categorías'} con presupuesto`
               : 'Aún sin presupuestos — está bien.'}
@@ -66,10 +66,10 @@ export function Step17Targets() {
         {groups.map((g) => (
           <Card key={g.name} className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)] flex items-center justify-between">
-              <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+              <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
                 {g.name}
               </h3>
-              <span className="text-[12px] text-[var(--muted)] tabular-nums">
+              <span className="text-meta text-[var(--muted)] tabular-nums">
                 {g.items.length}
               </span>
             </div>
@@ -86,7 +86,7 @@ export function Step17Targets() {
                       <span className="text-[var(--text2)] flex items-center shrink-0">
                         <item.Icon size={16} strokeWidth={2} />
                       </span>
-                      <span className="text-[14px] text-[var(--text)] truncate">{item.name}</span>
+                      <span className="text-body text-[var(--text)] truncate">{item.name}</span>
                     </div>
                     <MoneyInput
                       value={value}
@@ -105,7 +105,7 @@ export function Step17Targets() {
         <button
           type="button"
           onClick={handleSkipAll}
-          className="text-[13px] text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline transition-colors"
+          className="text-body-sm text-[var(--muted)] hover:text-[var(--text)] underline-offset-4 hover:underline transition-colors"
         >
           Continuar sin presupuestos
         </button>

@@ -102,16 +102,16 @@ export function TrialBanner({ plan, trialEndsAt }: TrialBannerProps) {
       <div className="mx-auto max-w-[1700px] px-4 sm:px-6 md:px-8 py-2.5 flex items-center gap-3">
         <Icon size={16} strokeWidth={2.2} className={`shrink-0 ${tone.iconColor}`} />
         <div className="flex-1 min-w-0 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-          <span className={`text-[13px] font-semibold ${tone.accent}`}>
+          <span className={`text-body-sm font-semibold ${tone.accent}`}>
             {title}
           </span>
-          <span className="text-[12px] text-[var(--text2)] truncate">
+          <span className="text-meta text-[var(--text2)] truncate">
             {subtitle}
           </span>
         </div>
         <Link
           href="/pricing"
-          className="shrink-0 h-8 px-3.5 rounded-lg gradient-bg text-[#0B0B0C] text-[12px] font-semibold inline-flex items-center gap-1.5 hover:brightness-105 active:brightness-95 transition-[filter]"
+          className="shrink-0 h-8 px-3.5 rounded-lg gradient-bg text-[#0B0B0C] text-meta font-semibold inline-flex items-center gap-1.5 hover:brightness-105 active:brightness-95 transition-[filter]"
         >
           Pasar a Pro
         </Link>

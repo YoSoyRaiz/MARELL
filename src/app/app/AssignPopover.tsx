@@ -252,10 +252,10 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <div className="w-10 h-1 rounded-full bg-[var(--overlay-4)]" />
         </div>
         <header className="px-5 pt-3 pb-3 border-b border-[var(--border)]">
-          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+          <div className="text-eyebrow font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
             Asignar dinero
           </div>
-          <p className="text-[13px] text-[var(--muted)] mt-1 leading-relaxed">
+          <p className="text-body-sm text-[var(--muted)] mt-1 leading-relaxed">
             Manda un monto a una categoría sin abrir el plan completo.
           </p>
         </header>
@@ -267,7 +267,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
             <button
               type="button"
               onClick={() => setTab('manual')}
-              className={`py-1.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
+              className={`py-1.5 rounded-lg text-meta font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
                 tab === 'manual'
                   ? 'gradient-bg text-[#0B0B0C]'
                   : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -278,7 +278,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
             <button
               type="button"
               onClick={() => setTab('auto')}
-              className={`py-1.5 rounded-lg text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
+              className={`py-1.5 rounded-lg text-meta font-semibold inline-flex items-center justify-center gap-1.5 transition-colors ${
                 tab === 'auto'
                   ? 'gradient-bg text-[#0B0B0C]'
                   : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -292,11 +292,11 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
       )}
 
       {loading && !ctx ? (
-        <div className="px-5 py-8 text-center text-[13px] text-[var(--muted)]">
+        <div className="px-5 py-8 text-center text-body-sm text-[var(--muted)]">
           Cargando categorías…
         </div>
       ) : ctx === null ? (
-        <div className="px-5 py-8 text-center text-[13px] text-[var(--muted)]">
+        <div className="px-5 py-8 text-center text-body-sm text-[var(--muted)]">
           No tienes presupuesto activo.
         </div>
       ) : tab === 'auto' ? (
@@ -323,7 +323,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <div>
             <label
               htmlFor="qa-amount"
-              className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold"
+              className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold"
             >
               Monto
             </label>
@@ -344,7 +344,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <div>
             <label
               htmlFor="qa-cat"
-              className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)] font-semibold"
+              className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold"
             >
               Categoría
             </label>
@@ -352,7 +352,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               id="qa-cat"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full mt-1 !text-[15px] !py-3.5 !px-4 !rounded-xl appearance-none cursor-pointer"
+              className="w-full mt-1 !text-emph !py-3.5 !px-4 !rounded-xl appearance-none cursor-pointer"
             >
               {grouped.map((g) => (
                 <optgroup key={g.name} label={g.name}>
@@ -365,7 +365,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
               ))}
             </select>
             {selectedCategory && (
-              <p className="mt-1.5 text-[11px] text-[var(--muted)] num tabular-nums">
+              <p className="mt-1.5 text-eyebrow text-[var(--muted)] num tabular-nums">
                 Actualmente: <span className="text-[var(--text2)]">{fmtMoney(selectedCategory.assigned)}</span>
                 {selectedCategory.goalAmount && selectedCategory.goalAmount > 0 ? (
                   <>
@@ -385,7 +385,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <button
             type="submit"
             disabled={!selectedCategory || amount <= 0}
-            className="w-full h-12 sm:h-11 gradient-bg text-[#0B0B0C] font-semibold text-[15px] sm:text-[14px] rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter] disabled:opacity-40 disabled:pointer-events-none"
+            className="w-full h-12 sm:h-11 gradient-bg text-[#0B0B0C] font-semibold text-emph sm:text-body rounded-xl glow-on-hover hover:brightness-105 active:brightness-95 inline-flex items-center justify-center gap-2 transition-[filter] disabled:opacity-40 disabled:pointer-events-none"
           >
             Asignar
             <ArrowRight size={14} strokeWidth={2.4} />
@@ -410,7 +410,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
         </div>
       )}
 
-      <footer className="px-5 py-3 border-t border-[var(--border)] flex items-center justify-between gap-3 text-[12px]">
+      <footer className="px-5 py-3 border-t border-[var(--border)] flex items-center justify-between gap-3 text-meta">
         <span className="text-[var(--muted)] inline-flex items-center gap-1.5">
           <Sparkles size={12} strokeWidth={2.2} className="text-[var(--brand-text)]" />
           Acción rápida
@@ -512,10 +512,10 @@ function AutoTabContent({ budgetId, month, onError, onSuccess }: AutoTabContentP
               <Icon size={14} strokeWidth={2.2} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-semibold text-[var(--text)] leading-tight">
+              <div className="text-body-sm font-semibold text-[var(--text)] leading-tight">
                 {opt.label}
               </div>
-              <div className="text-[11px] text-[var(--muted)] mt-0.5 leading-snug">
+              <div className="text-eyebrow text-[var(--muted)] mt-0.5 leading-snug">
                 {isPending ? 'Aplicando…' : opt.description}
               </div>
             </div>

@@ -119,8 +119,8 @@ export function SpendingTrendsReport({
           {/* Chart */}
           <Card padding="md" className="overflow-x-auto">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-              <h2 className="text-[15px] font-semibold text-[var(--text)]">Por categoría</h2>
-              <div className="flex items-center gap-3 text-[12px] flex-wrap">
+              <h2 className="text-emph font-semibold text-[var(--text)]">Por categoría</h2>
+              <div className="flex items-center gap-3 text-meta flex-wrap">
                 {lines.map((l) => (
                   <span
                     key={l.id}
@@ -145,14 +145,14 @@ export function SpendingTrendsReport({
 
           <Card className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
-              <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+              <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 Detalle
               </h3>
-              <span className="text-[11px] text-[var(--muted)]">
+              <span className="text-eyebrow text-[var(--muted)]">
                 {categories.length} {categories.length === 1 ? 'categoría' : 'categorías'}
               </span>
             </div>
-            <div className="hidden md:grid grid-cols-[auto_1fr_140px_140px] gap-4 px-5 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
+            <div className="hidden md:grid grid-cols-[auto_1fr_140px_140px] gap-4 px-5 py-2 text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
               <div className="w-3"></div>
               <div>Categoría</div>
               <div className="text-right">Total</div>
@@ -174,12 +174,12 @@ export function SpendingTrendsReport({
                     />
                     <div className="flex items-center gap-2 min-w-0">
                       <Icon size={14} strokeWidth={2} className="text-[var(--text2)] shrink-0" />
-                      <span className="text-[14px] text-[var(--text)] truncate">{c.name}</span>
+                      <span className="text-body text-[var(--text)] truncate">{c.name}</span>
                     </div>
-                    <div className="text-right text-[14px] tabular-nums num font-semibold text-[var(--text)]">
+                    <div className="text-right text-body tabular-nums num font-semibold text-[var(--text)]">
                       {fmtMoney(c.total)}
                     </div>
-                    <div className="text-right text-[13px] tabular-nums num text-[var(--text2)]">
+                    <div className="text-right text-body-sm tabular-nums num text-[var(--text2)]">
                       {fmtMoney(avg)}
                     </div>
                   </li>

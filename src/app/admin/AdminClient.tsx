@@ -264,7 +264,7 @@ export function AdminClient({ users }: Props) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar por email o nombre"
-              className="w-full !h-10 !pl-10 !pr-3 !text-[13px] !rounded-xl"
+              className="w-full !h-10 !pl-10 !pr-3 !text-body-sm !rounded-xl"
             />
           </div>
         </div>
@@ -272,7 +272,7 @@ export function AdminClient({ users }: Props) {
         {error && <AlertBanner tone="danger">{error}</AlertBanner>}
 
         <Card className="overflow-hidden">
-          <div className="hidden md:grid grid-cols-[2fr_1fr_140px_140px_140px] gap-4 px-5 py-3 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
+          <div className="hidden md:grid grid-cols-[2fr_1fr_140px_140px_140px] gap-4 px-5 py-3 text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
             <div>Usuario</div>
             <div>Estado</div>
             <div>Registro</div>
@@ -281,7 +281,7 @@ export function AdminClient({ users }: Props) {
           </div>
 
           {filtered.length === 0 ? (
-            <div className="p-12 text-center text-[14px] text-[var(--muted)]">
+            <div className="p-12 text-center text-body text-[var(--muted)]">
               Sin resultados.
             </div>
           ) : (
@@ -302,18 +302,18 @@ export function AdminClient({ users }: Props) {
                   >
                     {/* User */}
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-[12px] shrink-0">
+                      <div className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-[#0B0B0C] font-bold text-meta shrink-0">
                         {initials}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-[14px] font-medium truncate">
+                        <div className="text-body font-medium truncate">
                           {u.displayName ?? '—'}
                         </div>
-                        <div className="text-[11px] text-[var(--muted)] truncate">
+                        <div className="text-eyebrow text-[var(--muted)] truncate">
                           {u.email}
                         </div>
                         {!u.onboarded && (
-                          <div className="text-[10px] text-[var(--warn)] mt-0.5">
+                          <div className="text-tiny text-[var(--warn)] mt-0.5">
                             Sin onboarding completo
                           </div>
                         )}
@@ -323,31 +323,31 @@ export function AdminClient({ users }: Props) {
                     {/* Status */}
                     <div className="mt-2 md:mt-0">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] uppercase tracking-[0.12em] font-semibold border ${TONE_CLASSES[status.tone]}`}
+                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-tiny uppercase tracking-[0.12em] font-semibold border ${TONE_CLASSES[status.tone]}`}
                       >
                         {status.label}
                       </span>
                       {status.detail && (
-                        <div className="text-[10px] text-[var(--muted)] mt-1">
+                        <div className="text-tiny text-[var(--muted)] mt-1">
                           {status.detail}
                         </div>
                       )}
                     </div>
 
                     {/* Signup */}
-                    <div className="hidden md:block text-[12px] text-[var(--text2)]">
+                    <div className="hidden md:block text-meta text-[var(--text2)]">
                       <div className="num tabular-nums">{fmtDate(u.signedUpAt)}</div>
-                      <div className="text-[10px] text-[var(--muted)]">
+                      <div className="text-tiny text-[var(--muted)]">
                         {fmtRelative(u.signedUpAt)}
                       </div>
                     </div>
 
                     {/* Last sign in */}
-                    <div className="hidden md:block text-[12px] text-[var(--text2)]">
+                    <div className="hidden md:block text-meta text-[var(--text2)]">
                       <div className="num tabular-nums">
                         {fmtDate(u.lastSignInAt)}
                       </div>
-                      <div className="text-[10px] text-[var(--muted)]">
+                      <div className="text-tiny text-[var(--muted)]">
                         {fmtRelative(u.lastSignInAt) ?? 'nunca'}
                       </div>
                     </div>
@@ -437,10 +437,10 @@ function Stat({
           <Icon size={14} strokeWidth={2} />
         </span>
       </div>
-      <div className="text-[10px] uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
+      <div className="text-tiny uppercase tracking-[0.15em] text-[var(--muted)] font-semibold">
         {label}
       </div>
-      <div className="text-[20px] font-bold num tabular-nums">{value}</div>
+      <div className="text-h2 font-bold num tabular-nums">{value}</div>
     </div>
   )
 }
@@ -462,7 +462,7 @@ function ActionButton({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-medium transition-colors ${
+      className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-eyebrow font-medium transition-colors ${
         tone === 'danger'
           ? 'text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]'
           : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'
@@ -507,17 +507,17 @@ function PaymentDialog({
     <Modal isOpen={true} onClose={onClose} variant="center" size="sm">
       <div className="p-6 space-y-5">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+          <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
             Marcar pago recibido
           </div>
-          <h2 className="text-[18px] font-bold mt-1 leading-tight">{user.email}</h2>
-          <p className="text-[12px] text-[var(--muted)] mt-1">
+          <h2 className="text-h3 font-bold mt-1 leading-tight">{user.email}</h2>
+          <p className="text-meta text-[var(--muted)] mt-1">
             Activa Pro y extiende la fecha de vencimiento.
           </p>
         </div>
 
         <div>
-          <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 block">
+          <label className="text-meta text-[var(--text2)] font-medium mb-1.5 block">
             Meses pagados
           </label>
           <div className="grid grid-cols-4 gap-2 p-1 bg-[var(--bg)] rounded-xl">
@@ -526,7 +526,7 @@ function PaymentDialog({
                 key={m}
                 type="button"
                 onClick={() => setMonths(m)}
-                className={`py-2 rounded-lg text-[13px] font-semibold transition-all ${
+                className={`py-2 rounded-lg text-body-sm font-semibold transition-all ${
                   months === m
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'
@@ -536,7 +536,7 @@ function PaymentDialog({
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-[var(--muted)] mt-2">
+          <p className="text-eyebrow text-[var(--muted)] mt-2">
             Se suma a la fecha actual de expiración (no se sobreescribe).
           </p>
         </div>
@@ -599,14 +599,14 @@ function TrialDialog({
     <Modal isOpen={true} onClose={onClose} variant="center" size="sm">
       <div className="p-6 space-y-5">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+          <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
             Extender trial
           </div>
-          <h2 className="text-[18px] font-bold mt-1 leading-tight">{user.email}</h2>
+          <h2 className="text-h3 font-bold mt-1 leading-tight">{user.email}</h2>
         </div>
 
         <div>
-          <label className="text-[12px] text-[var(--text2)] font-medium mb-1.5 block">
+          <label className="text-meta text-[var(--text2)] font-medium mb-1.5 block">
             Días extra
           </label>
           <div className="grid grid-cols-4 gap-2 p-1 bg-[var(--bg)] rounded-xl">
@@ -615,7 +615,7 @@ function TrialDialog({
                 key={d}
                 type="button"
                 onClick={() => setDays(d)}
-                className={`py-2 rounded-lg text-[13px] font-semibold transition-all ${
+                className={`py-2 rounded-lg text-body-sm font-semibold transition-all ${
                   days === d
                     ? 'gradient-bg text-[#0B0B0C]'
                     : 'text-[var(--text2)] hover:text-[var(--text)]'

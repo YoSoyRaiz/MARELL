@@ -105,18 +105,18 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
   return (
     <div className="px-5 pb-4 pt-1 bg-[var(--overlay-1)]">
       {loading && rows === null ? (
-        <div className="py-4 text-center text-[12px] text-[var(--muted)]">
+        <div className="py-4 text-center text-meta text-[var(--muted)]">
           Cargando transacciones…
         </div>
       ) : rows && rows.length > 0 ? (
         <>
           <div className="flex items-center justify-between py-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted2)]">
+            <div className="text-tiny font-semibold uppercase tracking-[0.18em] text-[var(--muted2)]">
               Últimas transacciones
             </div>
             <Link
               href={`/app/transacciones?account=${accountId}&new=1`}
-              className="text-[11px] font-medium text-[var(--brand-text)] hover:underline underline-offset-4 inline-flex items-center gap-1"
+              className="text-eyebrow font-medium text-[var(--brand-text)] hover:underline underline-offset-4 inline-flex items-center gap-1"
             >
               <Plus size={11} strokeWidth={2.4} />
               Agregar
@@ -146,19 +146,19 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
                   >
                     <Icon size={14} strokeWidth={2.2} />
                   </div>
-                  <div className="text-[11px] font-medium text-[var(--muted)] num tabular-nums">
+                  <div className="text-eyebrow font-medium text-[var(--muted)] num tabular-nums">
                     {formatShortDate(t.date)}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[13px] text-[var(--text)] truncate">
+                    <div className="text-body-sm text-[var(--text)] truncate">
                       {t.payeeName || 'Sin descripción'}
                     </div>
-                    <div className="text-[11px] text-[var(--muted)] truncate">
+                    <div className="text-eyebrow text-[var(--muted)] truncate">
                       {t.categoryName ?? (isTransfer ? 'Transferencia' : 'Sin categoría')}
                     </div>
                   </div>
                   <div
-                    className={`text-[13px] font-semibold tabular-nums num text-right ${
+                    className={`text-body-sm font-semibold tabular-nums num text-right ${
                       isIncome
                         ? 'text-[var(--brand-text)]'
                         : 'text-[var(--text)]'
@@ -172,7 +172,7 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
           </ul>
           <Link
             href={`/app/transacciones?account=${accountId}`}
-            className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--brand-text)] hover:underline underline-offset-4"
+            className="mt-3 inline-flex items-center gap-1.5 text-meta font-medium text-[var(--brand-text)] hover:underline underline-offset-4"
           >
             Ver todas las transacciones de esta cuenta
             <ArrowRight size={11} strokeWidth={2.4} />
@@ -180,12 +180,12 @@ export function AccountTransactionsDropdown({ accountId, open, currency }: Props
         </>
       ) : (
         <div className="py-6 text-center space-y-3">
-          <p className="text-[12px] text-[var(--muted)]">
+          <p className="text-meta text-[var(--muted)]">
             Esta cuenta aún no tiene transacciones.
           </p>
           <Link
             href={`/app/transacciones?account=${accountId}&new=1`}
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl border border-[var(--border2)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-2)] text-[var(--text)] text-[12px] font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl border border-[var(--border2)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-2)] text-[var(--text)] text-meta font-medium transition-colors"
           >
             <Plus size={12} strokeWidth={2.4} />
             Agregar transacción
