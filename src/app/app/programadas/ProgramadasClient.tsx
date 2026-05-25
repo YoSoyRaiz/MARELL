@@ -17,6 +17,8 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { useFormatMoney } from '../CurrencyProvider'
 import {
   ScheduledFormModal,
@@ -243,58 +245,36 @@ export function ProgramadasClient({
           </div>
         )}
 
-        {/* Empty state */}
         {isEmpty && (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
-              <Repeat size={22} strokeWidth={2} />
-            </div>
-            <div className="text-[16px] text-[var(--text)] font-semibold">
-              Aún sin recurrencias
-            </div>
-            <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
-              Agrega lo que pagas o cobras siempre: sueldo, alquiler, Netflix, gimnasio.
-              MARELL crea cada movimiento automáticamente cuando toca.
-            </p>
-            <button
-              type="button"
-              onClick={() => setAddOpen(true)}
-              disabled={!hasBudget || noAccounts}
-              className="inline-flex items-center gap-1.5 mt-2 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
-            >
-              <Plus size={14} strokeWidth={2.4} />
-              Programar primera
-            </button>
-          </div>
+          <EmptyState
+            Icon={Repeat}
+            title="Aún sin recurrencias"
+            description="Agrega lo que pagas o cobras siempre: sueldo, alquiler, Netflix, gimnasio. MARELL crea cada movimiento automáticamente cuando toca."
+            action={
+              <button
+                type="button"
+                onClick={() => setAddOpen(true)}
+                disabled={!hasBudget || noAccounts}
+                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
+              >
+                <Plus size={14} strokeWidth={2.4} />
+                Programar primera
+              </button>
+            }
+          />
         )}
 
-        {/* Filter chips */}
         {!isEmpty && (
-          <div className="flex items-center gap-2 flex-wrap">
-            {(
-              [
-                { id: 'todas', label: 'Todas' },
-                { id: 'activas', label: 'Activas' },
-                { id: 'pausadas', label: 'Pausadas' },
-              ] as { id: Filter; label: string }[]
-            ).map((c) => {
-              const active = filter === c.id
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setFilter(c.id)}
-                  className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
-                    active
-                      ? 'gradient-bg text-[#0B0B0C]'
-                      : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
-                  }`}
-                >
-                  {c.label}
-                </button>
-              )
-            })}
-          </div>
+          <SegmentedTabs
+            value={filter}
+            onChange={setFilter}
+            ariaLabel="Filtro de programadas"
+            options={[
+              { value: 'todas', label: 'Todas' },
+              { value: 'activas', label: 'Activas' },
+              { value: 'pausadas', label: 'Pausadas' },
+            ]}
+          />
         )}
 
         {/* List */}

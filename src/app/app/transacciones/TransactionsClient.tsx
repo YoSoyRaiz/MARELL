@@ -21,6 +21,7 @@ import {
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { ImportTransactionsModal } from './ImportTransactionsModal'
 import { BulkActionBar } from './BulkActionBar'
@@ -455,32 +456,32 @@ export function TransactionsClient({
           )}
         </div>
 
-        {/* Empty state */}
         {isEmpty && !filtersActive && (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
-              <Receipt size={22} strokeWidth={2} />
-            </div>
-            <div className="text-[16px] text-[var(--text)] font-semibold">
-              Aún sin transacciones
-            </div>
-            <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
-              Cuando agregues una, aparecerá aquí con su categoría, cuenta, fecha y monto.
-              También va a alimentar la columna <span className="text-[var(--text)] font-medium">Actividad</span> de tu plan.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setAddCompact(false)
-                setAddOpen(true)
-              }}
-              disabled={!hasBudget || accounts.length === 0}
-              className="inline-flex items-center gap-1.5 mt-2 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
-            >
-              <Plus size={14} strokeWidth={2.4} />
-              Agregar la primera
-            </button>
-          </div>
+          <EmptyState
+            Icon={Receipt}
+            title="Aún sin transacciones"
+            description={
+              <>
+                Cuando agregues una, aparecerá aquí con su categoría, cuenta, fecha y monto.
+                También va a alimentar la columna{' '}
+                <span className="text-[var(--text)] font-medium">Actividad</span> de tu plan.
+              </>
+            }
+            action={
+              <button
+                type="button"
+                onClick={() => {
+                  setAddCompact(false)
+                  setAddOpen(true)
+                }}
+                disabled={!hasBudget || accounts.length === 0}
+                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
+              >
+                <Plus size={14} strokeWidth={2.4} />
+                Agregar la primera
+              </button>
+            }
+          />
         )}
 
         {/* Empty filtered state */}

@@ -4,9 +4,10 @@ import { useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Hourglass, Sparkles, Calendar, ArrowUp, ArrowDown } from 'lucide-react'
 import { AgeOfMoneyChart } from './AgeOfMoneyChart'
-import { ReportEmptyState } from './ReportEmptyState'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 
 export type AomRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
 
@@ -137,26 +138,15 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
         ¿Qué tan <span className="gradient-text">viejo</span> es tu dinero?
       </PageHeader>
 
-      {/* Range chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {(Object.keys(RANGE_LABELS) as AomRange[]).map((r) => {
-          const active = range === r
-          return (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
-                active
-                  ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
-              }`}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          )
-        })}
-      </div>
+      <SegmentedTabs
+        value={range}
+        onChange={setRange}
+        ariaLabel="Rango"
+        options={(Object.keys(RANGE_LABELS) as AomRange[]).map((r) => ({
+          value: r,
+          label: RANGE_LABELS[r],
+        }))}
+      />
 
       {/* Hero card */}
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)] px-6 py-6">
@@ -228,7 +218,7 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
 
       {/* Chart */}
       {!hasData ? (
-        <ReportEmptyState
+        <EmptyState
           Icon={Hourglass}
           title="Sin datos suficientes"
           description="Necesitas al menos un mes con ingresos y gastos registrados para calcular este indicador."

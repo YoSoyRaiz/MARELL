@@ -18,6 +18,7 @@ import {
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import {
   recordPayment,
   extendTrial,
@@ -239,33 +240,18 @@ export function AdminClient({ users }: Props) {
 
         {/* Filters + search */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 flex-wrap">
-            {(
-              [
-                { id: 'todos', label: 'Todos' },
-                { id: 'trial', label: 'Trial' },
-                { id: 'pro', label: 'Pro' },
-                { id: 'vencidos', label: 'Vencidos' },
-                { id: 'sin_aprobar', label: 'Sin aprobar' },
-              ] as { id: Filter; label: string }[]
-            ).map((c) => {
-              const active = filter === c.id
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setFilter(c.id)}
-                  className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
-                    active
-                      ? 'gradient-bg text-[#0B0B0C]'
-                      : 'bg-[var(--overlay-2)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
-                  }`}
-                >
-                  {c.label}
-                </button>
-              )
-            })}
-          </div>
+          <SegmentedTabs
+            value={filter}
+            onChange={setFilter}
+            ariaLabel="Filtro de usuarios"
+            options={[
+              { value: 'todos', label: 'Todos' },
+              { value: 'trial', label: 'Trial' },
+              { value: 'pro', label: 'Pro' },
+              { value: 'vencidos', label: 'Vencidos' },
+              { value: 'sin_aprobar', label: 'Sin aprobar' },
+            ]}
+          />
           <div className="relative w-full sm:w-[280px]">
             <Search
               size={14}

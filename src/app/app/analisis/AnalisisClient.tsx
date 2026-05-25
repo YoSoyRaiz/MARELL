@@ -7,7 +7,8 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { MultiSegmentDonut } from './MultiSegmentDonut'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { ReportEmptyState } from './ReportEmptyState'
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
 // Brand-aligned palette for category segments. The 6th and beyond
@@ -116,26 +117,15 @@ export function AnalisisClient({
         ¿En qué se va tu <span className="gradient-text">dinero</span>?
       </PageHeader>
 
-      {/* Period chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => {
-          const active = period === p
-          return (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPeriod(p)}
-              className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
-                active
-                  ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
-              }`}
-            >
-              {PERIOD_LABELS[p]}
-            </button>
-          )
-        })}
-      </div>
+      <SegmentedTabs
+        value={period}
+        onChange={setPeriod}
+        ariaLabel="Período"
+        options={(Object.keys(PERIOD_LABELS) as Period[]).map((p) => ({
+          value: p,
+          label: PERIOD_LABELS[p],
+        }))}
+      />
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -173,7 +163,7 @@ export function AnalisisClient({
 
       {/* Donut + ranked list */}
       {!hasData ? (
-        <ReportEmptyState
+        <EmptyState
           Icon={ChartPie}
           title="Sin gastos en este período"
           description='Cuando registres gastos, aparecerá aquí la distribución por categoría. Prueba ampliar el rango con "Todas".'

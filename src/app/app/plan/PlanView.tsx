@@ -18,6 +18,7 @@ import { CategoryDrillModal } from './CategoryDrillModal'
 import { NewCategoryModal } from './NewCategoryModal'
 import { PlanTabs } from './PlanTabs'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
@@ -373,32 +374,16 @@ export function PlanView({
         </div>
       </div>
 
-      {/* Filter chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {(
-          [
-            { id: 'todas', label: 'Todas' },
-            { id: 'subfondeadas', label: 'Subfondeadas' },
-            { id: 'con-dinero', label: 'Con dinero' },
-          ] as { id: Filter; label: string }[]
-        ).map((c) => {
-          const active = filter === c.id
-          return (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setFilter(c.id)}
-              className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
-                active
-                  ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
-              }`}
-            >
-              {c.label}
-            </button>
-          )
-        })}
-      </div>
+      <SegmentedTabs
+        value={filter}
+        onChange={setFilter}
+        ariaLabel="Filtro de categorías"
+        options={[
+          { value: 'todas', label: 'Todas' },
+          { value: 'subfondeadas', label: 'Subfondeadas' },
+          { value: 'con-dinero', label: 'Con dinero' },
+        ]}
+      />
 
       {/* Empty state */}
       {filteredGroups.length === 0 && (

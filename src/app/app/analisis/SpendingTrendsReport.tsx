@@ -6,7 +6,8 @@ import { TrendingUp } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { SpendingTrendsChart } from './SpendingTrendsChart'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { ReportEmptyState } from './ReportEmptyState'
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { SEGMENT_COLORS } from './AnalisisClient'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
@@ -95,30 +96,19 @@ export function SpendingTrendsReport({
         Hacia dónde se mueven tus <span className="gradient-text">gastos</span>.
       </PageHeader>
 
-      {/* Range chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {(Object.keys(RANGE_LABELS) as TrendsRange[]).map((r) => {
-          const active = range === r
-          return (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
-                active
-                  ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
-              }`}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          )
-        })}
-      </div>
+      <SegmentedTabs
+        value={range}
+        onChange={setRange}
+        ariaLabel="Rango"
+        options={(Object.keys(RANGE_LABELS) as TrendsRange[]).map((r) => ({
+          value: r,
+          label: RANGE_LABELS[r],
+        }))}
+      />
 
       {/* Empty state */}
       {!hasData ? (
-        <ReportEmptyState
+        <EmptyState
           Icon={TrendingUp}
           title="Sin gastos en este rango"
           description="Cuando registres gastos, vas a ver aquí cómo se mueven mes a mes."

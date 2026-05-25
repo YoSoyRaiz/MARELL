@@ -11,9 +11,10 @@ import {
   ArrowDown,
 } from 'lucide-react'
 import { NetWorthChart } from './NetWorthChart'
-import { ReportEmptyState } from './ReportEmptyState'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type NetWorthRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
@@ -94,26 +95,15 @@ export function NetWorthReport({
         Tu <span className="gradient-text">patrimonio</span> en el tiempo.
       </PageHeader>
 
-      {/* Range chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {(Object.keys(RANGE_LABELS) as NetWorthRange[]).map((r) => {
-          const active = range === r
-          return (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
-                active
-                  ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
-              }`}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          )
-        })}
-      </div>
+      <SegmentedTabs
+        value={range}
+        onChange={setRange}
+        ariaLabel="Rango"
+        options={(Object.keys(RANGE_LABELS) as NetWorthRange[]).map((r) => ({
+          value: r,
+          label: RANGE_LABELS[r],
+        }))}
+      />
 
       {/* Hero KPI */}
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)] px-6 py-5">
@@ -183,7 +173,7 @@ export function NetWorthReport({
 
       {/* Chart */}
       {!hasData ? (
-        <ReportEmptyState
+        <EmptyState
           Icon={PiggyBank}
           title="Sin datos suficientes"
           description="Necesitas cuentas y algunas transacciones para reconstruir tu patrimonio en el tiempo."

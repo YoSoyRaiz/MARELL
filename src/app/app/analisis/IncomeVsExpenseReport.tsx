@@ -4,9 +4,10 @@ import { useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TrendingUp, TrendingDown, Wallet, Percent, Scale } from 'lucide-react'
 import { IncomeExpenseChart } from './IncomeExpenseChart'
-import { ReportEmptyState } from './ReportEmptyState'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type Range = 'six_months' | 'twelve_months' | 'twenty_four_months' | 'all'
@@ -84,26 +85,15 @@ export function IncomeVsExpenseReport({
         ¿Estás <span className="gradient-text">ahorrando</span> o gastando?
       </PageHeader>
 
-      {/* Range chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {(Object.keys(RANGE_LABELS) as Range[]).map((r) => {
-          const active = range === r
-          return (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              className={`h-8 px-4 text-[12px] font-medium rounded-full transition-colors ${
-                active
-                  ? 'gradient-bg text-[#0B0B0C]'
-                  : 'bg-[var(--overlay-1)] text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-3)]'
-              }`}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          )
-        })}
-      </div>
+      <SegmentedTabs
+        value={range}
+        onChange={setRange}
+        ariaLabel="Rango"
+        options={(Object.keys(RANGE_LABELS) as Range[]).map((r) => ({
+          value: r,
+          label: RANGE_LABELS[r],
+        }))}
+      />
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -157,7 +147,7 @@ export function IncomeVsExpenseReport({
 
       {/* Chart */}
       {!hasData ? (
-        <ReportEmptyState
+        <EmptyState
           Icon={Scale}
           title="Sin movimientos en el rango"
           description="Cuando registres ingresos y gastos, vas a ver acá la comparación mes a mes."

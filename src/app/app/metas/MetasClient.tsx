@@ -16,6 +16,7 @@ import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { GoalFormModal, type InitialGoal } from './GoalFormModal'
 import { clearGoal, type GoalType } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
@@ -168,27 +169,23 @@ export function MetasClient({ goals, hasBudget }: Props) {
           </div>
         )}
 
-        {/* Empty state */}
         {isEmpty && (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-12 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--overlay-1)] flex items-center justify-center mx-auto text-[var(--text2)]">
-              <Target size={22} strokeWidth={2} />
-            </div>
-            <div className="text-[16px] text-[var(--text)] font-semibold">Aún sin metas</div>
-            <p className="text-[13px] text-[var(--muted)] max-w-md mx-auto leading-relaxed">
-              Define metas para tus categorías: cuánto quieres apartar mensualmente o cuánto
-              acumular en total. Te ayuda a mantener el rumbo.
-            </p>
-            <button
-              type="button"
-              onClick={() => setAddOpen(true)}
-              disabled={!hasBudget}
-              className="inline-flex items-center gap-1.5 mt-2 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
-            >
-              <Plus size={14} strokeWidth={2.4} />
-              Crear primera meta
-            </button>
-          </div>
+          <EmptyState
+            Icon={Target}
+            title="Aún sin metas"
+            description="Define metas para tus categorías: cuánto quieres apartar mensualmente o cuánto acumular en total. Te ayuda a mantener el rumbo."
+            action={
+              <button
+                type="button"
+                onClick={() => setAddOpen(true)}
+                disabled={!hasBudget}
+                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
+              >
+                <Plus size={14} strokeWidth={2.4} />
+                Crear primera meta
+              </button>
+            }
+          />
         )}
 
         {/* Goals list */}
