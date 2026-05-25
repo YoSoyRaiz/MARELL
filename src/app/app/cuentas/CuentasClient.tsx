@@ -15,6 +15,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { IconBadge } from '@/components/ui/IconBadge'
 import { unreconcileAccount } from './actions'
 import { ReconcileModal } from './ReconcileModal'
 import type { LucideIcon } from 'lucide-react'
@@ -311,9 +312,9 @@ export function CuentasClient({
                                   : 'hover:bg-[var(--overlay-1)]'
                               } ${isExpanded ? 'bg-[var(--overlay-1)]' : ''}`}
                             >
-                              <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
+                              <IconBadge>
                                 <g.Icon size={14} strokeWidth={2} />
-                              </div>
+                              </IconBadge>
                               <div className="flex-1 min-w-0">
                                 <div className="text-[14px] text-[var(--text)] truncate flex items-center gap-2 flex-wrap">
                                   {a.name}

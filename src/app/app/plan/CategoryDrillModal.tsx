@@ -17,6 +17,7 @@ import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 import { MONTH_NAMES_SHORT } from '@/lib/dates'
 import { ModalHeader } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { IconBadge } from '@/components/ui/IconBadge'
 
 interface CategoryDrillModalProps {
   isOpen: boolean
@@ -106,9 +107,9 @@ export function CategoryDrillModal({
     >
       <ModalHeader onClose={onClose}>
           <div className="flex items-start gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
+            <IconBadge size="lg">
               <Icon size={18} strokeWidth={2} />
-            </div>
+            </IconBadge>
             <div className="min-w-0">
               <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 {data?.category.groupName ?? '—'}

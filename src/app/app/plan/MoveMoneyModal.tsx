@@ -9,6 +9,7 @@ import { useFormatMoney } from '../CurrencyProvider'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { IconBadge } from '@/components/ui/IconBadge'
 import type { PlanGroup } from './PlanView'
 
 interface MoveMoneyModalProps {
@@ -149,9 +150,9 @@ export function MoveMoneyModal({
         <div className="px-6 py-4 space-y-4">
           {/* Source preview */}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3.5 py-2.5 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
+            <IconBadge size="sm">
               <SourceIcon size={14} strokeWidth={2} />
-            </div>
+            </IconBadge>
             <div className="min-w-0 flex-1">
               <div className="text-[13px] text-[var(--text)] truncate">{sourceCategory.name}</div>
               <div className="text-[11px] text-[var(--muted)] truncate">

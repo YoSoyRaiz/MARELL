@@ -9,6 +9,7 @@ import { useFormatMoney } from './CurrencyProvider'
 import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { IconBadge } from '@/components/ui/IconBadge'
 
 export interface ModalCategory {
   id: string
@@ -134,9 +135,9 @@ export function CategoryGroupModal({
                   className="px-6 py-3 grid grid-cols-[1fr_120px_100px] items-center gap-4 hover:bg-[var(--overlay-1)] transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
+                    <IconBadge>
                       <Icon size={16} strokeWidth={2} />
-                    </div>
+                    </IconBadge>
                     <div className="min-w-0">
                       <div className="text-[14px] text-[var(--text)] truncate">{c.name}</div>
                       {c.goal_amount && c.goal_amount > 0 && (

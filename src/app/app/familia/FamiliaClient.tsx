@@ -14,6 +14,7 @@ import {
   Clock,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { IconBadge } from '@/components/ui/IconBadge'
 import {
   inviteToBudget,
   removeMember,
@@ -204,9 +205,9 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
           <ul className="divide-y divide-[var(--border)]">
             {invitations.map((inv) => (
               <li key={inv.id} className="px-5 py-3 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
+                <IconBadge>
                   <Mail size={14} strokeWidth={2} />
-                </div>
+                </IconBadge>
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] text-[var(--text)] truncate">{inv.email}</div>
                   <div className="text-[11px] text-[var(--muted)] mt-0.5">
@@ -239,7 +240,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
         <ul className="divide-y divide-[var(--border)]">
           {members.map((m) => (
             <li key={m.id} className="px-5 py-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
+              <IconBadge>
                 {m.role === 'owner' ? (
                   <Crown size={14} strokeWidth={2} className="text-[var(--warn-text)]" />
                 ) : m.role === 'viewer' ? (
@@ -247,7 +248,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
                 ) : (
                   <Users size={14} strokeWidth={2} />
                 )}
-              </div>
+              </IconBadge>
               <div className="flex-1 min-w-0">
                 <div className="text-[13px] text-[var(--text)] truncate">
                   {m.displayName ?? m.email ?? 'Sin nombre'}
