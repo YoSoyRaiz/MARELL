@@ -110,7 +110,7 @@ export function NetWorthReport({
       <div className="rounded-2xl border-2 border-[var(--brand-2)]/30 bg-[rgba(61,220,151,0.04)] px-6 py-5">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <div className="text-meta uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+            <div className="text-meta uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold">
               Patrimonio neto · hoy
             </div>
             <div

@@ -101,7 +101,7 @@ export function NotificationBell({
       {open && (
         <div className="absolute right-0 top-full mt-2 w-[340px] sm:w-[380px] max-h-[70vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step z-40">
           <header className="px-5 pt-4 pb-3 border-b border-[var(--border)]">
-            <div className="text-eyebrow font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+            <div className="text-eyebrow font-bold uppercase tracking-[0.18em] text-[var(--muted2)]">
               Notificaciones
             </div>
             <p className="text-meta text-[var(--muted)] mt-0.5">

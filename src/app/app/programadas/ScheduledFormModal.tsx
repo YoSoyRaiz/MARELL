@@ -286,7 +286,7 @@ export function ScheduledFormModal({
               {installmentOpen && (
                 <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3.5 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-eyebrow uppercase tracking-[0.12em] text-[var(--brand-text)] font-semibold inline-flex items-center gap-1.5">
+                    <div className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted2)] font-semibold inline-flex items-center gap-1.5">
                       <Calculator size={11} strokeWidth={2.4} />
                       Calculadora de cuotas
                     </div>

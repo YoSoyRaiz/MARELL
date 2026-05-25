@@ -172,7 +172,7 @@ export function IncomeVsExpenseReport({
 
           <Card className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
-              <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+              <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--muted2)]">
                 Detalle
               </h3>
               <span className="text-eyebrow text-[var(--muted)]">

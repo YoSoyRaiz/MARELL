@@ -111,7 +111,7 @@ export function CategoryDrillModal({
               <Icon size={18} strokeWidth={2} />
             </IconBadge>
             <div className="min-w-0">
-              <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+              <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--muted2)]">
                 {data?.category.groupName ?? '—'}
               </div>
               <h2

@@ -172,7 +172,7 @@ export function UpgradeClient({
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-6 space-y-5">
             <div className="flex items-baseline justify-between gap-3 flex-wrap">
               <div>
-                <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+                <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--muted2)]">
                   MARELL Pro
                 </div>
                 <div className="mt-2 inline-flex items-baseline gap-2">

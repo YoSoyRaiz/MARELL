@@ -178,7 +178,7 @@ export function FirstMonthGuide({
           <Sparkles size={18} strokeWidth={2.4} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+          <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--muted2)]">
             Tu primer mes
           </div>
           <h2 className="text-h3 font-bold leading-tight tracking-tight mt-1">

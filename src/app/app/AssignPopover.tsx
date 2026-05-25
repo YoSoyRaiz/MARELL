@@ -303,7 +303,7 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
           <div className="w-10 h-1 rounded-full bg-[var(--overlay-4)]" />
         </div>
         <header className="px-5 pt-3 pb-3 border-b border-[var(--border)]">
-          <div className="text-eyebrow font-bold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+          <div className="text-eyebrow font-bold uppercase tracking-[0.18em] text-[var(--muted2)]">
             Asignar dinero
           </div>
           <p className="text-body-sm text-[var(--muted)] mt-1 leading-relaxed">

@@ -499,7 +499,7 @@ export function ImportTransactionsModal({
               {/* Editable per-row list */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-eyebrow uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+                  <div className="text-eyebrow uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold">
                     Movimientos ({totalKept})
                   </div>
                   <div className="text-eyebrow text-[var(--muted)]">

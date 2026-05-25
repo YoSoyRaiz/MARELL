@@ -113,7 +113,7 @@ export function InsightsSection({ inputs }: InsightsSectionProps) {
         <div className="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center text-[#0B0B0C]">
           <Sparkles size={12} strokeWidth={2.4} />
         </div>
-        <div className="text-meta uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+        <div className="text-meta uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold">
           Ideas para ti
         </div>
       </div>

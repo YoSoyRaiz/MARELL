@@ -472,7 +472,7 @@ function SummaryCard({
 
   return (
     <Card padding="sm">
-      <div className="text-eyebrow uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
+      <div className="text-eyebrow uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold">
         {label}
       </div>
       <div className={`text-[22px] font-bold tabular-nums num leading-none mt-2 ${color}`}>
