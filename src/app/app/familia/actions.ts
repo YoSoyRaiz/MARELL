@@ -41,7 +41,12 @@ export async function inviteToBudget(input: InviteInput) {
     .maybeSingle()
   if (!budget) return { error: 'Sin presupuesto' }
 
-  // Don't double-invite an email that already accepted.
+  // No te invites a ti mismo (causa confusión y abre puerta a auto-spam).
+  if (user.email?.toLowerCase() === email) {
+    return { error: 'No puedes invitarte a ti mismo' }
+  }
+
+  // No duplicar invitaciones pendientes al mismo email.
   const { data: existing } = await supabase
     .from('budget_invitations')
     .select('id, accepted_at')
@@ -51,6 +56,35 @@ export async function inviteToBudget(input: InviteInput) {
     .maybeSingle()
   if (existing) {
     return { error: 'Ya tienes una invitación pendiente a ese correo' }
+  }
+
+  // No invitar a un email que YA es miembro del budget. Esto requiere
+  // resolver email → user_id vía auth admin client.
+  // (Auditoría 2026-05-24, A1.)
+  try {
+    const admin = createAdminClient()
+    const { data: targetUser } = await admin.auth.admin
+      .listUsers({ page: 1, perPage: 1000 })
+      .then((res) => {
+        const found = res.data?.users?.find(
+          (u) => u.email?.toLowerCase() === email,
+        )
+        return { data: found ?? null }
+      })
+    if (targetUser) {
+      const { data: existingMember } = await supabase
+        .from('budget_members')
+        .select('id')
+        .eq('budget_id', budget.id)
+        .eq('user_id', targetUser.id)
+        .maybeSingle()
+      if (existingMember) {
+        return { error: 'Ese usuario ya es miembro de este presupuesto' }
+      }
+    }
+  } catch {
+    // Si la lookup falla, no bloqueamos la invitación — el peor caso
+    // es enviar un email a alguien que ya es miembro, no es crítico.
   }
 
   const token = randomBytes(24).toString('base64url')

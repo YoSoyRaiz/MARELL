@@ -176,7 +176,15 @@ export function ReceiptCapture({
         await supabase.storage.from('receipts').remove([path])
       }
 
-      const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+      // Whitelist explícito de extensiones. Antes el `ext` venía del
+      // filename del usuario sin restricción, abriendo posible vector
+      // de path traversal o mime spoofing (.jpg.exe, etc.). Si la ext
+      // no está en la lista, default a 'jpg' — el contentType del file
+      // sigue siendo lo que realmente determina cómo se sirve.
+      // (Auditoría 2026-05-24, A4.)
+      const allowedExts = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif'])
+      const rawExt = file.name.split('.').pop()?.toLowerCase() ?? ''
+      const ext = allowedExts.has(rawExt) ? rawExt : 'jpg'
       const key = `${user.id}/${crypto.randomUUID()}.${ext}`
       const { error: upErr } = await supabase.storage
         .from('receipts')
@@ -189,8 +197,12 @@ export function ReceiptCapture({
         setPending(false)
         return
       }
-      // Generate a signed URL for display. 1 year is fine — when the
-      // transaction is deleted we'll wipe the underlying file.
+      // Generate a signed URL for display. 1 year es práctico para
+      // que las cards de transacción sigan mostrando el recibo sin
+      // necesidad de regenerar el URL en cada vista. El path se guarda
+      // separadamente en receipt_path para regenerar cuando expire.
+      // TODO (auditoría 2026-05-24, A2): mover regeneración a
+      // server-side cuando se carga la transacción y reducir TTL.
       const { data: signed } = await supabase.storage
         .from('receipts')
         .createSignedUrl(key, 60 * 60 * 24 * 365)

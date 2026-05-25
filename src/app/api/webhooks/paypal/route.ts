@@ -46,6 +46,20 @@ export async function POST(request: NextRequest) {
   const resource = event.resource ?? {}
   const eventId = event.id
 
+  // Whitelist explícito de campos para guardar en payment_events.
+  // Antes guardábamos el `event` completo, que incluía PII del payer
+  // (email, name, billing address, IP, posiblemente últimos 4 de la
+  // tarjeta). Si la DB se filtra, no exponemos más de lo necesario
+  // para reconciliación. (Auditoría 2026-05-24, A7.)
+  const safeRawPayload: Record<string, unknown> = {
+    event_id: event.id,
+    event_type: event.event_type,
+    create_time: (event as Record<string, unknown>).create_time,
+    resource_id: resource.id,
+    resource_type: (event as Record<string, unknown>).resource_type,
+    summary: (event as Record<string, unknown>).summary,
+  }
+
   // Defense in depth: only accept UUIDs as profile_id from the
   // webhook payload. Anything else is dropped before we hit the DB.
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -147,7 +161,7 @@ export async function POST(request: NextRequest) {
         amount: parseFloat(amount),
         currency: currencyVal,
         status: 'success',
-        raw_payload: event as unknown as Record<string, unknown>,
+        raw_payload: safeRawPayload,
       } as never)
       await supabase
         .from('profiles')
@@ -170,7 +184,7 @@ export async function POST(request: NextRequest) {
         amount: 0,
         currency: 'USD',
         status: 'failed',
-        raw_payload: event as unknown as Record<string, unknown>,
+        raw_payload: safeRawPayload,
       } as never)
       await supabase
         .from('profiles')

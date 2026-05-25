@@ -24,7 +24,10 @@ export const maxDuration = 30
 
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.CRON_SECRET
-  if (!expected) return process.env.NODE_ENV !== 'production'
+  // Fail-closed en TODOS los envs — antes era accesible en preview
+  // de Vercel sin secret, dejando que cualquiera escribiera tasas FX
+  // arbitrarias en todos los budgets. (Auditoría 2026-05-24, A5.)
+  if (!expected) return false
   const auth = request.headers.get('authorization')
   return auth === `Bearer ${expected}`
 }

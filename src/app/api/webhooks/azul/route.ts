@@ -91,6 +91,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, deduped: true })
   }
 
+  // Whitelist explícito de campos. Azul puede mandar de vuelta
+  // datos sensibles del cardholder (nombre, BIN, etc.) en el payload.
+  // Solo guardamos los IDs y status code necesarios para reconciliación.
+  // (Auditoría 2026-05-24, A7.)
+  const safeRawPayload: Record<string, unknown> = {
+    OrderNumber: orderId,
+    AzulOrderId: azulOrderId,
+    ResponseCode: responseCode,
+    CardBrand: cardBrand,
+    // CardNumber/CardLast4 ya viene enmascarado por Azul; safe a guardar.
+    CardLast4: cardLast4,
+  }
+
   // Append to the immutable ledger first so we always have a paper trail.
   await supabase.from('payment_events').insert({
     profile_id: profileId,
@@ -99,7 +112,7 @@ export async function POST(request: NextRequest) {
     amount: 999,
     currency: 'DOP',
     status: success ? 'success' : 'failed',
-    raw_payload: payload,
+    raw_payload: safeRawPayload,
   } as never)
 
   if (success) {

@@ -18,7 +18,11 @@ export const maxDuration = 120
 
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.CRON_SECRET
-  if (!expected) return process.env.NODE_ENV !== 'production'
+  // Fail-closed: si CRON_SECRET no está, RECHAZAR en TODOS los envs.
+  // Antes esto retornaba true en non-prod, dejando los crons
+  // accesibles a cualquiera con la URL en preview de Vercel —
+  // incluyendo cobros reales con Azul. (Auditoría 2026-05-24, A5.)
+  if (!expected) return false
   const auth = request.headers.get('authorization')
   return auth === `Bearer ${expected}`
 }

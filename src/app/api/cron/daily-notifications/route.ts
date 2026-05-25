@@ -16,11 +16,12 @@ export const maxDuration = 60
 // External callers also need to know the secret to fire this manually.
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.CRON_SECRET
-  if (!expected) {
-    // No secret configured — refuse in production, allow locally so the
-    // route is testable without polluting env.
-    return process.env.NODE_ENV !== 'production'
-  }
+  // Fail-closed: si CRON_SECRET no está, RECHAZAR en TODOS los envs.
+  // Antes el fallthrough en non-prod dejaba el cron accesible a
+  // cualquiera con la URL en preview de Vercel — incluyendo envío
+  // real de emails. Para testing local, setea CRON_SECRET en .env.local.
+  // (Auditoría 2026-05-24, A5.)
+  if (!expected) return false
   const auth = request.headers.get('authorization')
   return auth === `Bearer ${expected}`
 }
