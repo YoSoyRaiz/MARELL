@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { Stat } from '@/components/ui/Stat'
+import { Card } from '@/components/ui/Card'
 
 export type AomRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
 
@@ -224,7 +225,7 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
           description="Necesitas al menos un mes con ingresos y gastos registrados para calcular este indicador."
         />
       ) : (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 overflow-x-auto">
+        <Card padding="md" className="overflow-x-auto">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <h2 className="text-[15px] font-semibold text-[var(--text)]">Evolución mensual</h2>
             <div className="text-[11px] text-[var(--muted)]">
@@ -232,7 +233,7 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
             </div>
           </div>
           <AgeOfMoneyChart data={series} />
-        </div>
+        </Card>
       )}
 
       {/* Disclaimer */}

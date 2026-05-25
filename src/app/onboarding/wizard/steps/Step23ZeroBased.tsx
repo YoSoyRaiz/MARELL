@@ -6,6 +6,7 @@ import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
 import { formatMoney } from '@/lib/money'
 import { WizardHeading } from '../components/WizardHeading'
+import { Card } from '@/components/ui/Card'
 
 const fmtMoney = (n: number) => formatMoney(n)
 
@@ -52,7 +53,7 @@ export function Step23ZeroBased() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4">
+        <Card padding="sm">
           <div className="text-[11px] text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
             Categorías
           </div>
@@ -62,8 +63,8 @@ export function Step23ZeroBased() {
           <div className="text-[12px] text-[var(--muted)] mt-0.5">
             listas para recibir tu dinero
           </div>
-        </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4">
+        </Card>
+        <Card padding="sm">
           <div className="text-[11px] text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
             Cuentas
           </div>
@@ -71,7 +72,7 @@ export function Step23ZeroBased() {
             {answers.accounts.length}
           </div>
           <div className="text-[12px] text-[var(--muted)] mt-0.5">agregadas a tu plan</div>
-        </div>
+        </Card>
       </div>
 
       {/* Cómo funciona */}

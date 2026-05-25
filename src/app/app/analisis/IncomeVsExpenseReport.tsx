@@ -157,7 +157,7 @@ export function IncomeVsExpenseReport({
         />
       ) : (
         <>
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 overflow-x-auto">
+          <Card padding="md" className="overflow-x-auto">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <h2 className="text-[15px] font-semibold text-[var(--text)]">
                 Por mes
@@ -168,7 +168,7 @@ export function IncomeVsExpenseReport({
               </div>
             </div>
             <IncomeExpenseChart data={months} fmtMoney={fmtMoney} currency={currency} />
-          </div>
+          </Card>
 
           <Card className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">

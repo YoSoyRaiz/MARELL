@@ -471,13 +471,13 @@ function SummaryCard({
           : 'text-[var(--text)]'
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4">
+    <Card padding="sm">
       <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-text)] font-semibold">
         {label}
       </div>
       <div className={`text-[22px] font-bold tabular-nums num leading-none mt-2 ${color}`}>
         {fmtMoney(value)}
       </div>
-    </div>
+    </Card>
   )
 }

@@ -7,6 +7,7 @@ import { labelForAccountType } from '../components/AccountTypeSelect'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { formatMoney } from '@/lib/money'
 import { WizardHeading } from '../components/WizardHeading'
+import { Card } from '@/components/ui/Card'
 
 const fmtMoney = (n: number) => formatMoney(Math.abs(n))
 
@@ -64,22 +65,22 @@ export function Step20AccountsRecap() {
 
       {/* Totales */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4">
+        <Card padding="sm">
           <div className="text-[11px] text-[var(--brand-2)] uppercase tracking-[0.18em] font-semibold">
             Disponible
           </div>
           <div className="text-[22px] font-bold tabular-nums num gradient-text mt-1">
             {fmtMoney(cashTotal)}
           </div>
-        </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4">
+        </Card>
+        <Card padding="sm">
           <div className="text-[11px] text-[var(--muted)] uppercase tracking-[0.18em] font-semibold">
             Deudas
           </div>
           <div className="text-[22px] font-bold tabular-nums num text-[var(--text)] mt-1">
             {debtTotal > 0 ? `−${fmtMoney(debtTotal)}` : fmtMoney(0)}
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Lista de cuentas */}

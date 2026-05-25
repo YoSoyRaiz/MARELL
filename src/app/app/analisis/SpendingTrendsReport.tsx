@@ -117,7 +117,7 @@ export function SpendingTrendsReport({
       ) : (
         <>
           {/* Chart */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 overflow-x-auto">
+          <Card padding="md" className="overflow-x-auto">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <h2 className="text-[15px] font-semibold text-[var(--text)]">Por categoría</h2>
               <div className="flex items-center gap-3 text-[12px] flex-wrap">
@@ -141,7 +141,7 @@ export function SpendingTrendsReport({
               fmtMoney={fmtMoney}
               currency={currency}
             />
-          </div>
+          </Card>
 
           <Card className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
