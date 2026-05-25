@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { isDebtType, type AccountInput, type AccountType } from '../types'
 import { AccountTypeSelect } from '../components/AccountTypeSelect'
@@ -20,12 +20,25 @@ export function Step19AccountForm() {
   const accounts = useOnboardingStore((s) => s.answers.accounts)
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
   const next = useOnboardingStore((s) => s.next)
+  const editingAccountId = useOnboardingStore((s) => s.editingAccountId)
+  const setEditingAccount = useOnboardingStore((s) => s.setEditingAccount)
 
-  const [name, setName] = useState('')
-  const [type, setType] = useState<AccountType | null>(null)
-  const [balance, setBalance] = useState<number | null>(null)
-  const [interestRate, setInterestRate] = useState<number | null>(null)
-  const [cycleCloseDay, setCycleCloseDay] = useState<string>('')
+  // Modo edición: si Step20 marcó una cuenta para editar, prefileamos
+  // el form con sus valores actuales. El form se inicializa una sola
+  // vez (useState con initializer) para no sobrescribir tipos vacíos.
+  const editing = editingAccountId
+    ? accounts.find((a) => a.id === editingAccountId) ?? null
+    : null
+
+  const [name, setName] = useState<string>(editing?.name ?? '')
+  const [type, setType] = useState<AccountType | null>(editing?.type ?? null)
+  const [balance, setBalance] = useState<number | null>(editing?.balance ?? null)
+  const [interestRate, setInterestRate] = useState<number | null>(
+    editing?.interestRate ?? null,
+  )
+  const [cycleCloseDay, setCycleCloseDay] = useState<string>(
+    editing?.cycleCloseDay !== undefined ? String(editing.cycleCloseDay) : '',
+  )
 
   const isDebt = type ? isDebtType(type) : false
   const isCreditCard = type === 'credit_card'
@@ -44,8 +57,7 @@ export function Step19AccountForm() {
 
   const submit = () => {
     if (!valid || type === null || balance === null) return
-    const account: AccountInput = {
-      id: makeId(),
+    const payload = {
       name: name.trim(),
       type,
       balance,
@@ -53,7 +65,20 @@ export function Step19AccountForm() {
       cycleCloseDay:
         isCreditCard && cycleCloseDayNum !== null ? cycleCloseDayNum : undefined,
     }
-    setAnswer('accounts', [...accounts, account])
+    if (editing) {
+      // Update existing — preservamos el id original para no romper
+      // referencias en el resto del onboarding.
+      setAnswer(
+        'accounts',
+        accounts.map((a) =>
+          a.id === editing.id ? { ...a, ...payload } : a,
+        ),
+      )
+      setEditingAccount(null)
+    } else {
+      const account: AccountInput = { id: makeId(), ...payload }
+      setAnswer('accounts', [...accounts, account])
+    }
     next()
   }
 
@@ -61,8 +86,18 @@ export function Step19AccountForm() {
 
   return (
     <div className="space-y-7">
-      <WizardHeading description="Y no te preocupes — si cambias de idea, puedes vincularla cuando quieras.">
-        {isFirst ? (
+      <WizardHeading
+        description={
+          editing
+            ? 'Cambia los detalles que necesites — el resto se queda igual.'
+            : 'Y no te preocupes — si cambias de idea, puedes vincularla cuando quieras.'
+        }
+      >
+        {editing ? (
+          <>
+            Edita <span className="gradient-text">{editing.name}</span>.
+          </>
+        ) : isFirst ? (
           <>
             Agreguemos tu <span className="gradient-text">primera cuenta</span>.
           </>
@@ -158,8 +193,17 @@ export function Step19AccountForm() {
         disabled={!valid}
         className="w-full h-[52px] gradient-bg text-[#0B0B0C] font-semibold text-emph rounded-2xl glow-on-hover hover:brightness-105 active:scale-[.99] transition-[filter,transform] inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none"
       >
-        Agregar cuenta
-        <ArrowRight size={16} strokeWidth={2.2} />
+        {editing ? (
+          <>
+            Guardar cambios
+            <Check size={16} strokeWidth={2.4} />
+          </>
+        ) : (
+          <>
+            Agregar cuenta
+            <ArrowRight size={16} strokeWidth={2.2} />
+          </>
+        )}
       </button>
     </div>
   )

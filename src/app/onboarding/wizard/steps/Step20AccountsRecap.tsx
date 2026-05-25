@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Pencil } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { accountCategoryFromType, type AccountInput } from '../types'
 import { labelForAccountType } from '../components/AccountTypeSelect'
@@ -16,6 +16,7 @@ export function Step20AccountsRecap() {
   const accounts = useOnboardingStore((s) => s.answers.accounts)
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
   const back = useOnboardingStore((s) => s.back)
+  const setEditingAccount = useOnboardingStore((s) => s.setEditingAccount)
 
   const cashTotal = accounts
     .filter((a) => accountCategoryFromType(a.type) === 'cash')
@@ -43,7 +44,15 @@ export function Step20AccountsRecap() {
     )
   }
 
-  const addAnother = () => back()
+  const addAnother = () => {
+    setEditingAccount(null)
+    back()
+  }
+
+  const editAccount = (id: string) => {
+    setEditingAccount(id)
+    back()
+  }
 
   return (
     <div className="space-y-7">
@@ -91,30 +100,42 @@ export function Step20AccountsRecap() {
           return (
             <div
               key={a.id}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4 flex items-center gap-4"
+              className="group rounded-2xl border border-[var(--border)] bg-[var(--s1)] hover:border-[var(--brand-2)]/40 hover:bg-[var(--overlay-1)] transition-colors flex items-center gap-2 pr-2"
             >
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold text-emph text-[var(--text)] truncate">
-                  {a.name}
-                </div>
-                <div className="text-meta text-[var(--muted)] mt-0.5">
-                  {labelForAccountType(a.type)}
-                  {a.interestRate !== undefined && ` · ${a.interestRate}% interés`}
-                </div>
-              </div>
-              <div
-                className={`text-[16px] font-semibold tabular-nums num ${
-                  isDebt ? 'text-[var(--coral)]' : 'text-[var(--text)]'
-                }`}
+              <button
+                type="button"
+                onClick={() => editAccount(a.id)}
+                aria-label={`Editar ${a.name}`}
+                className="flex-1 min-w-0 px-5 py-4 flex items-center gap-4 text-left"
               >
-                {isDebt ? '−' : ''}
-                {fmtMoney(a.balance)}
-              </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-emph text-[var(--text)] truncate inline-flex items-center gap-2">
+                    {a.name}
+                    <Pencil
+                      size={12}
+                      strokeWidth={2.4}
+                      className="text-[var(--muted)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    />
+                  </div>
+                  <div className="text-meta text-[var(--muted)] mt-0.5">
+                    {labelForAccountType(a.type)}
+                    {a.interestRate !== undefined && ` · ${a.interestRate}% interés`}
+                  </div>
+                </div>
+                <div
+                  className={`text-[16px] font-semibold tabular-nums num ${
+                    isDebt ? 'text-[var(--coral)]' : 'text-[var(--text)]'
+                  }`}
+                >
+                  {isDebt ? '−' : ''}
+                  {fmtMoney(a.balance)}
+                </div>
+              </button>
               <button
                 type="button"
                 onClick={() => removeAccount(a.id)}
                 aria-label={`Eliminar ${a.name}`}
-                className="text-[var(--muted)] hover:text-[var(--coral)] p-2 rounded-lg hover:bg-[var(--overlay-2)] transition-colors"
+                className="text-[var(--muted)] hover:text-[var(--coral)] p-2 rounded-lg hover:bg-[var(--overlay-2)] transition-colors shrink-0"
               >
                 <Trash2 size={16} strokeWidth={2} />
               </button>

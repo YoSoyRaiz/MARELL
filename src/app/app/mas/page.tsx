@@ -122,7 +122,7 @@ export default async function MasPage() {
   const plan = (profile?.plan as string | null) ?? 'trial'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {/* Header */}
       <div className="space-y-2">
         <div className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">

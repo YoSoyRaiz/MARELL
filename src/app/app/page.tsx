@@ -55,7 +55,7 @@ export default async function ResumenPage() {
 
   if (!budget) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-7">
         <PageHeader
           eyebrow="Resumen"
           description="Termina el onboarding para construir tu plan."

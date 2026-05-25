@@ -66,7 +66,7 @@ export function Step17Targets() {
         {groups.map((g) => (
           <Card key={g.name} className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)] flex items-center justify-between">
-              <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+              <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--text)]">
                 {g.name}
               </h3>
               <span className="text-meta text-[var(--muted)] tabular-nums">

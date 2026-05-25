@@ -291,7 +291,7 @@ export function PlanView({
   }
 
   return (
-    <div className={`space-y-6 transition-opacity duration-200 ${navPending ? 'opacity-60' : ''}`}>
+    <div className={`space-y-7 transition-opacity duration-200 ${navPending ? 'opacity-60' : ''}`}>
       {/* Header: month nav + title + view tabs */}
       <div className="space-y-4">
         <div className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
@@ -417,7 +417,7 @@ export function PlanView({
                       isCollapsed ? '-rotate-90' : 'rotate-0'
                     }`}
                   />
-                  <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] truncate">
+                  <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--text)] truncate">
                     {g.name}
                   </h3>
                   <span className="text-eyebrow text-[var(--muted)] tabular-nums shrink-0">

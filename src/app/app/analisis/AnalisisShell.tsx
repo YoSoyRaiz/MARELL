@@ -57,7 +57,7 @@ export function AnalisisShell({ active, children }: AnalisisShellProps) {
   }
 
   return (
-    <div className={`space-y-6 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
+    <div className={`space-y-7 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
       {/* Tab nav */}
       <div className="flex items-center gap-1 p-1 bg-[var(--overlay-1)] rounded-xl overflow-x-auto">
         {TABS.map((t) => {

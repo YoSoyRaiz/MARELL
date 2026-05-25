@@ -12,9 +12,15 @@ interface OnboardingState {
    *  wizard — prevents cross-user contamination on shared devices. */
   ownerId: string | null
   hasHydrated: boolean
+  /** Cuando Step20 quiere editar una cuenta ya capturada, escribe el id
+   *  aquí antes de hacer back(). Step19 lo detecta y prefilea el form;
+   *  al submit, actualiza el AccountInput existente en vez de agregar
+   *  uno nuevo. Se limpia al volver a Step20. */
+  editingAccountId: string | null
   setAnswer: <K extends keyof OnboardingAnswers>(key: K, value: OnboardingAnswers[K]) => void
   setStep: (n: number) => void
   setOwner: (userId: string) => void
+  setEditingAccount: (id: string | null) => void
   next: () => void
   back: () => void
   reset: () => void
@@ -27,14 +33,21 @@ export const useOnboardingStore = create<OnboardingState>()(
       answers: initialAnswers,
       ownerId: null,
       hasHydrated: false,
+      editingAccountId: null,
       setAnswer: (key, value) =>
         set((s) => ({ answers: { ...s.answers, [key]: value } })),
       setStep: (n) => set({ currentStep: Math.max(0, n) }),
       setOwner: (userId) => set({ ownerId: userId }),
+      setEditingAccount: (id) => set({ editingAccountId: id }),
       next: () => set((s) => ({ currentStep: s.currentStep + 1 })),
       back: () => set((s) => ({ currentStep: Math.max(0, s.currentStep - 1) })),
       reset: () =>
-        set({ currentStep: 0, answers: initialAnswers, ownerId: null }),
+        set({
+          currentStep: 0,
+          answers: initialAnswers,
+          ownerId: null,
+          editingAccountId: null,
+        }),
     }),
     {
       name: 'marell:onboarding:v1',

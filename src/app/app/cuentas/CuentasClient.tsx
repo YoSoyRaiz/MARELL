@@ -242,7 +242,7 @@ export function CuentasClient({
                           <g.Icon size={16} strokeWidth={2} />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
+                          <h3 className="text-meta font-semibold uppercase tracking-[0.18em] text-[var(--text)]">
                             {g.label}
                           </h3>
                           <p className="text-eyebrow text-[var(--muted)] truncate">{g.hint}</p>

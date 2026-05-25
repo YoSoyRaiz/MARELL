@@ -225,7 +225,7 @@ export function AdminClient({ users }: Props) {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-7">
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <Stat label="Total" value={stats.total} Icon={Users} />

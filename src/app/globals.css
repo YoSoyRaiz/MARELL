@@ -37,6 +37,27 @@
   --text-emph:    0.9375rem; /* 15px */
   --text-h3:      1.125rem;  /* 18px */
   --text-h2:      1.25rem;   /* 20px */
+
+  /* ──────────────────────────────────────────────────────
+     Spacing — escala canónica de MARELL.
+
+     Tailwind expone toda la escala 0-96, pero usar
+     space-y-1/2/3/4/5/6/7/8 sin reglas hace que cards y
+     secciones se sientan inconsistentes. Política:
+
+       space-y-1 (4px)   → micro: dentro de un row, label+value
+       space-y-2 (8px)   → entre items relacionados de un grupo
+       space-y-3 (12px)  → items en una lista
+       space-y-5 (20px)  → dentro de una sección (header + body)
+       space-y-7 (28px)  → entre secciones de una página
+       space-y-8+        → solo si el contexto lo exige
+
+     gap-1/2/3/4 cubre el 95% de los casos. gap-5+ solo para
+     grids con cards grandes.
+
+     NO usar space-y-6: ambiguo entre 'dentro' y 'entre'. Si
+     dudas, usa 5 o 7.
+     ────────────────────────────────────────────────────── */
 }
 
 /* ─────────────────────────────────────────────
@@ -176,8 +197,25 @@
   body {
     min-height: 100vh;
     background: var(--bg);
+    /* Wash ambient — productos premium (Linear/Vercel) usan halos
+       sutiles para que el dark plano no se sienta plástico. Brand
+       anclado top-right (no centrado, para que la página sienta
+       composición y no spotlight), más un acento muy tenue bottom-
+       left para que el ambient no sea unidireccional. background-
+       attachment fixed mantiene el efecto al hacer scroll sin
+       repetir el wash. */
     background-image:
-      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(61,220,151,.06), transparent 70%);
+      radial-gradient(ellipse 80% 60% at 100% 0%, rgba(61,220,151,.05), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 0% 100%, rgba(61,220,151,.03), transparent 65%);
+    background-attachment: fixed;
+  }
+
+  :root[data-theme='light'] body {
+    /* En light mode el wash es aún más sutil — el ojo del usuario
+       ya está deslumbrado por el fondo claro, no necesita más
+       drama. */
+    background-image:
+      radial-gradient(ellipse 80% 60% at 100% 0%, rgba(61,220,151,.04), transparent 60%);
   }
 
   h1, h2, h3, h4 {
