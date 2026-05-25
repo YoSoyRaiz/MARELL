@@ -150,27 +150,35 @@ export function FirstMonthGuide({
       id="first-month-guide"
       className="rounded-2xl gradient-border p-5 sm:p-6 space-y-4 relative"
     >
-      <div className="absolute top-4 right-4 flex items-center gap-1">
-        {completed > 0 && !allDone && (
-          <button
-            type="button"
-            onClick={() => setExpanded(false)}
-            aria-label="Colapsar guía"
-            aria-expanded={true}
-            aria-controls="first-month-guide"
-            className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors rotate-180"
-          >
-            <ChevronDown size={14} strokeWidth={2.4} />
-          </button>
-        )}
+      {/* Orden intencional: X a la izquierda, chevron-collapse al
+          borde derecho. La chevron mantiene la misma posición exacta
+          que en modo colapsado para que un doble-click al toggle no
+          dismisse la guía por error. Gap-2 + separator visual para
+          que el X no se sienta como continuación del toggle. */}
+      <div className="absolute top-4 right-4 flex items-center gap-2">
         <button
           type="button"
           onClick={handleDismiss}
           aria-label="Cerrar guía"
-          className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
+          className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors"
         >
           <X size={14} strokeWidth={2.4} />
         </button>
+        {completed > 0 && !allDone && (
+          <>
+            <span aria-hidden className="w-px h-4 bg-[var(--border)]" />
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              aria-label="Colapsar guía"
+              aria-expanded={true}
+              aria-controls="first-month-guide"
+              className="w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors rotate-180"
+            >
+              <ChevronDown size={14} strokeWidth={2.4} />
+            </button>
+          </>
+        )}
       </div>
 
       <div className="flex items-start gap-3">
