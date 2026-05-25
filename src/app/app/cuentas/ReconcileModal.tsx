@@ -7,6 +7,7 @@ import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { reconcileAccount } from './actions'
 import { useFormatMoney } from '../CurrencyProvider'
 import { Button } from '@/components/ui/Button'
+import { Spinner } from '@/components/ui/Spinner'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 
@@ -213,7 +214,7 @@ export function ReconcileModal({
               >
                 {pending ? (
                   <>
-                    <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-[#0B0B0C]/30 border-t-[#0B0B0C] animate-spin" />
+                    <Spinner />
                     Reconciliando...
                   </>
                 ) : (

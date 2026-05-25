@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2, FolderInput, X, ChevronDown } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Spinner } from '@/components/ui/Spinner'
 import {
   bulkDeleteTransactions,
   bulkUpdateCategory,
@@ -116,7 +117,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
             >
               {pendingAction === 'recategorize' ? (
                 <>
-                  <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  <Spinner tone="light" />
                   Aplicando…
                 </>
               ) : (
@@ -168,7 +169,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
           >
             {pendingAction === 'delete' ? (
               <>
-                <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-[var(--coral)]/30 border-t-[var(--coral)] animate-spin" />
+                <Spinner tone="coral" />
                 Borrando…
               </>
             ) : (

@@ -22,6 +22,7 @@ import { useTheme, type ThemeMode } from '@/components/ui/ThemeProvider'
 import Link from 'next/link'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
+import { Spinner } from '@/components/ui/Spinner'
 import { FormField } from '@/components/ui/FormField'
 import { logout } from '@/app/(auth)/actions'
 import {
@@ -504,7 +505,7 @@ function SaveBar({
       >
         {pending ? (
           <>
-            <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-[#0B0B0C]/30 border-t-[#0B0B0C] animate-spin" />
+            <Spinner />
             Guardando...
           </>
         ) : (
