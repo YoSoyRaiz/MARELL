@@ -6,7 +6,7 @@ import {
   LayoutDashboard,
   Sparkles,
   ArrowLeftRight,
-  Menu,
+  Wallet,
   Plus,
 } from 'lucide-react'
 import { SHORTCUT_EVENTS } from './KeyboardShortcuts'
@@ -22,10 +22,12 @@ interface TabItem {
   prefix?: boolean
 }
 
-// Five-tab bottom nav per the mobile mockup. Order is by frequency
-// of use: the user mostly toggles between Resumen and Plan, with
-// Asignar (the brand FAB) sitting between them, and Transacciones +
-// Más on the right.
+// Five-tab bottom nav: Resumen + Plan + FAB + Movimientos + Cuentas.
+// Antes había "Más" en lugar de Cuentas — pero Cuentas (reconciliar,
+// ver balances) es acción semanal y la página /app/mas era 2 taps
+// para llegar ahí. Las secciones secundarias (Metas, Análisis,
+// Programadas, Familia, etc.) siguen accesibles via el hamburger del
+// TopBar que abre el Sidebar drawer. (Auditoría UX, hallazgo #1.)
 const TABS: TabItem[] = [
   { id: 'resumen', label: 'Resumen', href: '/app', icon: LayoutDashboard },
   { id: 'plan', label: 'Plan', href: '/app/plan', icon: Sparkles, prefix: true },
@@ -37,7 +39,13 @@ const TABS: TabItem[] = [
     icon: ArrowLeftRight,
     prefix: true,
   },
-  { id: 'mas', label: 'Más', href: '/app/mas', icon: Menu, prefix: true },
+  {
+    id: 'cuentas',
+    label: 'Cuentas',
+    href: '/app/cuentas',
+    icon: Wallet,
+    prefix: true,
+  },
 ]
 
 function isActive(path: string | null, item: TabItem): boolean {
