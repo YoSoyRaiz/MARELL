@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from 'react'
-import { ArrowRight, ArrowLeftRight, AlertCircle } from 'lucide-react'
+import { ArrowRight, ArrowLeftRight } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { moveMoneyBetweenCategories } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { IconBadge } from '@/components/ui/IconBadge'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 import type { PlanGroup } from './PlanView'
 
 interface MoveMoneyModalProps {
@@ -221,14 +222,9 @@ export function MoveMoneyModal({
           </div>
 
           {error && (
-            <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
-              <AlertCircle
-                size={14}
-                strokeWidth={2.2}
-                className="text-[var(--coral-text)] shrink-0 mt-0.5"
-              />
-              <span>{error}</span>
-            </div>
+            <AlertBanner tone="danger" size="sm">
+              {error}
+            </AlertBanner>
           )}
         </div>
 

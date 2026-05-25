@@ -7,7 +7,6 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   ArrowLeftRight,
-  AlertCircle,
   Split,
   Plus,
   Trash2,
@@ -25,6 +24,7 @@ import {
 import { ReceiptCapture } from './ReceiptCapture'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 import { FormField } from '@/components/ui/FormField'
 import { NativeSelect } from '@/components/ui/NativeSelect'
 import { Spinner } from '@/components/ui/Spinner'
@@ -415,10 +415,9 @@ export function TransactionFormModal({
             sees what failed, even if they're scrolled to the bottom of
             the form. */}
         {error && (
-          <div className="mx-6 mt-3 rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.08)] px-4 py-3 flex items-start gap-3">
-            <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
-            <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
-          </div>
+          <AlertBanner tone="danger" className="mx-6 mt-3">
+            {error}
+          </AlertBanner>
         )}
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">

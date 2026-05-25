@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Logo } from '@/components/ui/Logo'
 import { AdminClient, type AdminUser } from './AdminClient'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 
 export const metadata = {
   title: 'MARELL · Admin',
@@ -56,11 +57,9 @@ export default async function AdminPage() {
 
       <main className="max-w-[1400px] mx-auto px-6 py-8">
         {error ? (
-          <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3">
-            <p className="text-[14px] text-[var(--text)]">
-              No pude cargar usuarios: {error.message}
-            </p>
-          </div>
+          <AlertBanner tone="danger">
+            No pude cargar usuarios: {error.message}
+          </AlertBanner>
         ) : (
           <AdminClient users={users} />
         )}

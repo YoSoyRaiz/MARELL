@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 
 interface ReconcileModalProps {
   isOpen: boolean
@@ -184,14 +185,9 @@ export function ReconcileModal({
               )}
 
               {error && (
-                <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
-                  <AlertCircle
-                    size={14}
-                    strokeWidth={2.2}
-                    className="text-[var(--coral-text)] shrink-0 mt-0.5"
-                  />
-                  <span>{error}</span>
-                </div>
+                <AlertBanner tone="danger" size="sm">
+                  {error}
+                </AlertBanner>
               )}
             </div>
 

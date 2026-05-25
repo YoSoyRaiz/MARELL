@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { IconBadge } from '@/components/ui/IconBadge'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 
 export interface ModalCategory {
   id: string
@@ -103,9 +104,9 @@ export function CategoryGroupModal({
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
           {error && (
-            <div className="mx-6 mt-4 rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 text-[13px] text-[var(--text)]">
+            <AlertBanner tone="danger" className="mx-6 mt-4">
               {error}
-            </div>
+            </AlertBanner>
           )}
 
           {/* Column headers */}

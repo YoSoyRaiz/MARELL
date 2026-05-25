@@ -9,13 +9,12 @@ import {
   Crown,
   Eye,
   Trash2,
-  AlertCircle,
-  CheckCircle2,
   Clock,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { IconBadge } from '@/components/ui/IconBadge'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 import {
   inviteToBudget,
   removeMember,
@@ -175,16 +174,14 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
           Editor puede asignar dinero, agregar transacciones y editar metas. Solo ver puede consultar pero no modificar.
         </p>
         {error && (
-          <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
-            <AlertCircle size={14} strokeWidth={2.2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
+          <AlertBanner tone="danger" size="sm">
+            {error}
+          </AlertBanner>
         )}
         {success && (
-          <div className="rounded-xl border border-[var(--success)]/40 bg-[rgba(61,220,151,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
-            <CheckCircle2 size={14} strokeWidth={2.2} className="text-[var(--brand-text)] shrink-0 mt-0.5" />
-            <span>{success}</span>
-          </div>
+          <AlertBanner tone="success" size="sm">
+            {success}
+          </AlertBanner>
         )}
       </section>
 

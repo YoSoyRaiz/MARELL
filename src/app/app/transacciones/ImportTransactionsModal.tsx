@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 import { FormField } from '@/components/ui/FormField'
 import { NativeSelect } from '@/components/ui/NativeSelect'
 
@@ -446,21 +447,12 @@ export function ImportTransactionsModal({
             </div>
           )}
 
-          {/* CSV warnings */}
           {csvSummary && csvSummary.warnings.length > 0 && (
             <div className="space-y-2">
               {csvSummary.warnings.map((w, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-[var(--warn)]/40 bg-[rgba(245,200,66,0.06)] px-4 py-3 flex items-start gap-3"
-                >
-                  <AlertCircle
-                    size={16}
-                    strokeWidth={2}
-                    className="text-[var(--warn-text)] shrink-0 mt-0.5"
-                  />
-                  <div className="text-[13px] text-[var(--text)]">{w}</div>
-                </div>
+                <AlertBanner key={i} tone="warn">
+                  {w}
+                </AlertBanner>
               ))}
             </div>
           )}
@@ -614,12 +606,7 @@ export function ImportTransactionsModal({
             </>
           )}
 
-          {error && (
-            <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-              <AlertCircle size={16} strokeWidth={2} className="text-[var(--coral-text)] shrink-0 mt-0.5" />
-              <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
-            </div>
-          )}
+          {error && <AlertBanner tone="danger">{error}</AlertBanner>}
         </div>
 
         <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--overlay-1)]">

@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, Calendar } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { createScheduled, type ScheduledType } from '../programadas/actions'
 import { MONTH_NAMES_FULL } from '@/lib/dates'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { FormField } from '@/components/ui/FormField'
@@ -260,16 +261,7 @@ export function ExtraordinaryPaymentModal({
             />
           </FormField>
 
-          {error && (
-            <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-              <AlertCircle
-                size={16}
-                strokeWidth={2}
-                className="text-[var(--coral-text)] shrink-0 mt-0.5"
-              />
-              <div className="text-[13px] text-[var(--text)] flex-1">{error}</div>
-            </div>
-          )}
+          {error && <AlertBanner tone="danger">{error}</AlertBanner>}
         </div>
 
         <footer className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-end gap-3 bg-[var(--overlay-1)]">

@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { HandHeart, ArrowRight, AlertCircle } from 'lucide-react'
+import { HandHeart, ArrowRight } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { completeOnboarding } from '@/app/onboarding/actions'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 
 export function Step28Final() {
   const answers = useOnboardingStore((s) => s.answers)
@@ -56,13 +57,10 @@ export function Step28Final() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-          <AlertCircle size={18} strokeWidth={2} className="text-[var(--coral)] shrink-0 mt-0.5" />
-          <div className="text-[14px] text-[var(--text)] leading-relaxed">
-            <div className="font-medium">No pudimos crear tu plan.</div>
-            <div className="text-[var(--text2)] mt-1">{error}</div>
-          </div>
-        </div>
+        <AlertBanner tone="danger">
+          <div className="font-medium">No pudimos crear tu plan.</div>
+          <div className="text-[var(--text2)] mt-1">{error}</div>
+        </AlertBanner>
       )}
     </div>
   )

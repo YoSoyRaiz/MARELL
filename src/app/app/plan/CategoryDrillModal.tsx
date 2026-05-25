@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import {
-  AlertCircle,
   TrendingDown,
   TrendingUp,
   CalendarRange,
@@ -18,6 +17,7 @@ import { MONTH_NAMES_SHORT } from '@/lib/dates'
 import { ModalHeader } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { IconBadge } from '@/components/ui/IconBadge'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 
 interface CategoryDrillModalProps {
   isOpen: boolean
@@ -144,16 +144,7 @@ export function CategoryDrillModal({
               Cargando historial…
             </div>
           )}
-          {error && (
-            <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3 text-[13px]">
-              <AlertCircle
-                size={16}
-                strokeWidth={2}
-                className="text-[var(--coral-text)] shrink-0 mt-0.5"
-              />
-              <span>{error}</span>
-            </div>
-          )}
+          {error && <AlertBanner tone="danger">{error}</AlertBanner>}
 
           {data && (
             <>

@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  AlertCircle,
   CheckCircle2,
   Plus,
 } from 'lucide-react'
@@ -19,6 +18,7 @@ import { NewCategoryModal } from './NewCategoryModal'
 import { PlanTabs } from './PlanTabs'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
@@ -332,19 +332,11 @@ export function PlanView({
         </div>
       </div>
 
-      {/* Error toast */}
       {error && (
-        <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3">
-          <AlertCircle
-            size={18}
-            strokeWidth={2}
-            className="text-[var(--coral-text)] shrink-0 mt-0.5"
-          />
-          <div className="text-[14px] text-[var(--text)] leading-relaxed flex-1">
-            <div className="font-medium">No pudimos guardar el cambio.</div>
-            <div className="text-[var(--text2)] mt-0.5">{error}</div>
-          </div>
-        </div>
+        <AlertBanner tone="danger">
+          <div className="font-medium">No pudimos guardar el cambio.</div>
+          <div className="text-[var(--text2)] mt-0.5">{error}</div>
+        </AlertBanner>
       )}
 
       {/* Ready to Assign hero */}

@@ -19,6 +19,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 import {
   recordPayment,
   extendTrial,
@@ -267,11 +268,7 @@ export function AdminClient({ users }: Props) {
           </div>
         </div>
 
-        {error && (
-          <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 text-[13px]">
-            {error}
-          </div>
-        )}
+        {error && <AlertBanner tone="danger">{error}</AlertBanner>}
 
         {/* Table */}
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">

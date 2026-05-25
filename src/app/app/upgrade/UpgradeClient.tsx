@@ -5,6 +5,7 @@ import { Check, AlertCircle, CreditCard, Sparkles } from 'lucide-react'
 import { startAzulCheckout, startPaypalCheckout, cancelSubscription } from './actions'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 import { useRouter } from 'next/navigation'
 import { MARELL_PRO_DOP } from '@/lib/billing/types'
 
@@ -117,26 +118,12 @@ export function UpgradeClient({
       </PageHeader>
 
       {canceled && (
-        <div className="rounded-xl border border-[var(--warn)]/40 bg-[rgba(245,200,66,0.06)] px-4 py-3 flex items-start gap-3 text-[13px]">
-          <AlertCircle
-            size={16}
-            strokeWidth={2.2}
-            className="text-[var(--warn-text)] shrink-0 mt-0.5"
-          />
-          <span>Cancelaste el proceso. Puedes intentarlo de nuevo cuando quieras.</span>
-        </div>
+        <AlertBanner tone="warn">
+          Cancelaste el proceso. Puedes intentarlo de nuevo cuando quieras.
+        </AlertBanner>
       )}
 
-      {error && (
-        <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-4 py-3 flex items-start gap-3 text-[13px]">
-          <AlertCircle
-            size={16}
-            strokeWidth={2.2}
-            className="text-[var(--coral-text)] shrink-0 mt-0.5"
-          />
-          <span>{error}</span>
-        </div>
-      )}
+      {error && <AlertBanner tone="danger">{error}</AlertBanner>}
 
       {/* Already-subscribed view */}
       {isPro ? (

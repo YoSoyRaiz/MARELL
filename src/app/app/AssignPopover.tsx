@@ -13,8 +13,6 @@ import Link from 'next/link'
 import {
   ArrowRight,
   Sparkles,
-  CheckCircle2,
-  AlertCircle,
   Zap,
   RotateCcw,
   Calendar,
@@ -29,6 +27,7 @@ import {
 } from './plan/actions'
 import { useReadyToAssign } from './ReadyToAssignProvider'
 import { useFormatMoney } from './CurrencyProvider'
+import { AlertBanner } from '@/components/ui/AlertBanner'
 
 interface AssignPopoverProps {
   open: boolean
@@ -399,24 +398,14 @@ export function AssignPopover({ open, onClose, anchorRef }: AssignPopoverProps) 
       {(okMessage || error) && (
         <div className="px-5 pb-4 space-y-2">
           {okMessage && (
-            <div className="rounded-xl border border-[var(--success)]/40 bg-[rgba(61,220,151,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
-              <CheckCircle2
-                size={14}
-                strokeWidth={2.2}
-                className="text-[var(--brand-text)] shrink-0 mt-0.5"
-              />
-              <span>{okMessage}</span>
-            </div>
+            <AlertBanner tone="success" size="sm">
+              {okMessage}
+            </AlertBanner>
           )}
           {error && (
-            <div className="rounded-xl border border-[var(--coral)]/40 bg-[rgba(255,122,89,0.06)] px-3 py-2 flex items-start gap-2 text-[12px] text-[var(--text)]">
-              <AlertCircle
-                size={14}
-                strokeWidth={2.2}
-                className="text-[var(--coral-text)] shrink-0 mt-0.5"
-              />
-              <span>{error}</span>
-            </div>
+            <AlertBanner tone="danger" size="sm">
+              {error}
+            </AlertBanner>
           )}
         </div>
       )}
