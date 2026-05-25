@@ -32,6 +32,21 @@ export async function inviteToBudget(input: InviteInput) {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
+  // Rate limit: 5 invitaciones por día por user. Previene que la app
+  // se use como spam relay vía Resend ("X te invitó a su presupuesto"
+  // como template de spam masivo). (Auditoría 2026-05-24, M8.)
+  const { data: rateOk } = await supabase.rpc('check_rate_limit', {
+    p_bucket: 'invite_user',
+    p_key: user.id,
+    p_max: 5,
+    p_window_seconds: 86400,
+  })
+  if (rateOk === false) {
+    return {
+      error: 'Llegaste al límite de 5 invitaciones por día. Intenta mañana.',
+    }
+  }
+
   const { data: budget } = await supabase
     .from('budgets')
     .select('id, name')

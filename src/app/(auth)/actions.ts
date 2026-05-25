@@ -25,6 +25,20 @@ export type SignupState =
 
 const ADMIN_NOTIFY_EMAIL = 'maxtudiodesign@gmail.com'
 
+/**
+ * Redact an email for logging. "alice@example.com" → "ali***@example.com".
+ * Keeps the domain (for blast-radius analysis) but drops local-part PII.
+ * Auditoría 2026-05-24, M6.
+ */
+function redactEmail(email: string): string {
+  const at = email.indexOf('@')
+  if (at <= 0) return '***'
+  const local = email.slice(0, at)
+  const domain = email.slice(at + 1)
+  const prefix = local.slice(0, Math.min(3, local.length))
+  return `${prefix}***@${domain}`
+}
+
 function validateEmail(email: string): string | null {
   if (!email) return 'El email es requerido'
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Email inválido'
@@ -71,8 +85,44 @@ export async function signup(
   const proto = h.get('x-forwarded-proto') ?? 'https'
   const host = h.get('x-forwarded-host') ?? h.get('host')
   const origin = `${proto}://${host}`
+  // IP del client para rate-limit. Vercel/proxies setean x-forwarded-for.
+  // Fallback a 'unknown' si no hay header (dev local) — efectivamente
+  // se rate-limita globalmente en ese caso, lo cual es seguro.
+  const clientIp =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    h.get('x-real-ip') ??
+    'unknown'
 
   const admin = createAdminClient()
+
+  // Rate limit: 3 signups por hora por IP, 1 por email por hora.
+  // (Auditoría 2026-05-24, M7.) Previene quema de Resend y spam de
+  // emails de confirmación a direcciones ajenas.
+  const { data: ipOk } = await admin.rpc('check_rate_limit', {
+    p_bucket: 'signup_ip',
+    p_key: clientIp,
+    p_max: 3,
+    p_window_seconds: 3600,
+  })
+  if (ipOk === false) {
+    return {
+      status: 'error',
+      error: 'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
+    }
+  }
+  const { data: emailOk } = await admin.rpc('check_rate_limit', {
+    p_bucket: 'signup_email',
+    p_key: email,
+    p_max: 1,
+    p_window_seconds: 3600,
+  })
+  if (emailOk === false) {
+    return {
+      status: 'error',
+      error:
+        'Ya enviamos una confirmación a ese correo recientemente. Revisa tu bandeja antes de reintentar.',
+    }
+  }
 
   // Step 1 — create the user without triggering Supabase's email.
   const { data: createData, error: createErr } = await admin.auth.admin.createUser({
@@ -104,9 +154,11 @@ export async function signup(
   const rollback = async (reason: string) => {
     try {
       await admin.auth.admin.deleteUser(newUserId)
-      console.warn(`[signup rollback] removed ${email} after: ${reason}`)
+      // Redact email para los logs — Vercel logs son accesibles por
+      // cualquier colaborador con dashboard access. (Auditoría M6.)
+      console.warn(`[signup rollback] removed ${redactEmail(email)} after: ${reason}`)
     } catch (err) {
-      console.error('[signup rollback failed]', { email, reason, err })
+      console.error('[signup rollback failed]', { email: redactEmail(email), reason, err })
     }
   }
 
@@ -163,7 +215,9 @@ export async function signup(
       text: adminTpl.text,
     })
     if (!adminSent) {
-      console.warn('[signup] admin notification email did not send', { email })
+      console.warn('[signup] admin notification email did not send', {
+        email: redactEmail(email),
+      })
     }
   } catch (err) {
     console.error('[signup] admin notification threw', err)

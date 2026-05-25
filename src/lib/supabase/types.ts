@@ -255,6 +255,21 @@ export type Database = {
       payment_events: Table<PaymentEvent>
       cron_runs: Table<CronRun>
       push_subscriptions: Table<PushSubscription>
+      // Audit log para cambios de tasa FX — migration 2026_05_24_fx_rate_audit_log.
+      fx_rate_audit: Table<{
+        id: string
+        rate: number
+        source: string
+        budgets_updated: number
+        applied_at: string
+      }>
+      // Rate limiting DB-based — migration 2026_05_24_rate_limits.
+      rate_limits: Table<{
+        bucket: string
+        key: string
+        timestamps: number[]
+        updated_at: string
+      }>
     }
     Views: Record<string, never>
     Functions: {
@@ -327,6 +342,16 @@ export type Database = {
           used: number
           year_month: string
         }>
+      }
+      // Rate limit DB-based — migration 2026_05_24_rate_limits.sql
+      check_rate_limit: {
+        Args: {
+          p_bucket: string
+          p_key: string
+          p_max: number
+          p_window_seconds: number
+        }
+        Returns: boolean
       }
       // PDF parse usage — migration 2026_05_24_pdf_parse_usage.sql
       increment_pdf_parse_usage: {

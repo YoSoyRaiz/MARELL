@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { chargeAzulSavedCard } from '@/lib/billing/azul'
+import { MARELL_PRO_DOP } from '@/lib/billing/types'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
@@ -89,9 +90,13 @@ export async function GET(request: NextRequest) {
     }
 
     const orderId = `marell_renew_${profile.id}_${Date.now()}`
+    // Lee el precio del single source of truth en billing/types — antes
+    // estaba hardcoded a 999 y si subías el precio el cron seguía
+    // cobrando viejo. (Auditoría 2026-05-24, M10.)
+    const renewalAmount = MARELL_PRO_DOP.pricePerMonth
     const result = await chargeAzulSavedCard({
       cardToken: profile.subscription_card_token,
-      amount: 999,
+      amount: renewalAmount,
       currency: 'DOP',
       orderId,
     })
@@ -100,7 +105,7 @@ export async function GET(request: NextRequest) {
       profile_id: profile.id,
       provider: 'azul',
       external_id: result.azulOrderId ?? orderId,
-      amount: 999,
+      amount: renewalAmount,
       currency: 'DOP',
       status: result.success ? 'success' : 'failed',
       error_message: result.errorMessage ?? null,

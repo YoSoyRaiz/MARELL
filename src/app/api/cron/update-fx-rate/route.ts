@@ -148,8 +148,18 @@ export async function GET(request: NextRequest) {
     .neq('id', '00000000-0000-0000-0000-000000000000') // touch every row
     .select('id')
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[cron/update-fx-rate] update failed', error)
+    return NextResponse.json({ error: 'fx update failed' }, { status: 500 })
   }
+
+  // Audit log para detectar tampering post-mortem si alguna vez
+  // CRON_SECRET se compromete o el cron escribe una tasa anormal.
+  // (Auditoría 2026-05-24, M9.)
+  await supabase.from('fx_rate_audit').insert({
+    rate,
+    source: result.source,
+    budgets_updated: updated?.length ?? 0,
+  } as never)
 
   return NextResponse.json({
     ok: true,
