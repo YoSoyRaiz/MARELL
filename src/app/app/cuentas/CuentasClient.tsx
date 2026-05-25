@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { IconBadge } from '@/components/ui/IconBadge'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { unreconcileAccount } from './actions'
 import { ReconcileModal } from './ReconcileModal'
 import type { LucideIcon } from 'lucide-react'
@@ -147,18 +148,17 @@ export function CuentasClient({
       <div className="space-y-7">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2 min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              Cuentas
-            </div>
-            <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
+          <div className="min-w-0">
+            <PageHeader
+              eyebrow="Cuentas"
+              description={
+                isEmpty
+                  ? 'Aún no tienes cuentas. Agrega la primera para empezar.'
+                  : `${accounts.length} ${accounts.length === 1 ? 'cuenta' : 'cuentas'}. Click en una para editarla.`
+              }
+            >
               Todo tu <span className="gradient-text">dinero</span>, en un mapa.
-            </h1>
-            <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-              {isEmpty
-                ? 'Aún no tienes cuentas. Agrega la primera para empezar.'
-                : `${accounts.length} ${accounts.length === 1 ? 'cuenta' : 'cuentas'}. Click en una para editarla.`}
-            </p>
+            </PageHeader>
           </div>
           {/* Dos CTAs en el header: agregar transacción (secundario,
               outlined) abre el modal in-place sin salir de Cuentas;

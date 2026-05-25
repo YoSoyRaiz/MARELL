@@ -24,6 +24,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { FormField } from '@/components/ui/FormField'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { logout } from '@/app/(auth)/actions'
 import {
   updateProfile,
@@ -172,18 +173,13 @@ export function AjustesClient({
 
   return (
     <div className="space-y-7 max-w-2xl">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Ajustes
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Tu <span className="gradient-text">cuenta</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed">
-          Perfil, presupuesto, sesión y zona de peligro.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Ajustes"
+        descriptionWidth="none"
+        description="Perfil, presupuesto, sesión y zona de peligro."
+      >
+        Tu <span className="gradient-text">cuenta</span>.
+      </PageHeader>
 
       {/* Profile */}
       <Section

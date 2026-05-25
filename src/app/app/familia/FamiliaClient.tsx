@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { IconBadge } from '@/components/ui/IconBadge'
+import { PageHeader } from '@/components/ui/PageHeader'
 import {
   inviteToBudget,
   removeMember,
@@ -131,18 +132,12 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
 
   return (
     <div className="space-y-7 max-w-3xl">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Familia
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Comparte tu <span className="gradient-text">presupuesto</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-          Invita a tu pareja, hijos o roommate a ver y editar tu presupuesto. Cada quien registra sus gastos y todos ven el mismo plan.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Familia"
+        description="Invita a tu pareja, hijos o roommate a ver y editar tu presupuesto. Cada quien registra sus gastos y todos ven el mismo plan."
+      >
+        Comparte tu <span className="gradient-text">presupuesto</span>.
+      </PageHeader>
 
       {/* Invite form */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 sm:p-6 space-y-4">

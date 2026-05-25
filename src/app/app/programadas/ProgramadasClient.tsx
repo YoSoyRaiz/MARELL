@@ -16,6 +16,7 @@ import {
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useFormatMoney } from '../CurrencyProvider'
 import {
   ScheduledFormModal,
@@ -194,18 +195,17 @@ export function ProgramadasClient({
       <div className="space-y-7">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2 min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              Programadas
-            </div>
-            <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
+          <div className="min-w-0">
+            <PageHeader
+              eyebrow="Programadas"
+              description={
+                isEmpty
+                  ? 'Programa transacciones recurrentes (alquiler, sueldo, suscripciones) y MARELL las crea por ti cada vez que toca.'
+                  : `${scheduled.length} ${scheduled.length === 1 ? 'recurrencia configurada' : 'recurrencias configuradas'}.`
+              }
+            >
               Lo que <span className="gradient-text">se repite</span>.
-            </h1>
-            <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-              {isEmpty
-                ? 'Programa transacciones recurrentes (alquiler, sueldo, suscripciones) y MARELL las crea por ti cada vez que toca.'
-                : `${scheduled.length} ${scheduled.length === 1 ? 'recurrencia configurada' : 'recurrencias configuradas'}.`}
-            </p>
+            </PageHeader>
           </div>
           <button
             type="button"

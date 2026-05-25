@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ArrowRight, Target } from 'lucide-react'
 import { AddTransactionButton } from './AddTransactionButton'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
 import {
@@ -53,15 +54,13 @@ export default async function ResumenPage() {
   if (!budget) {
     return (
       <div className="space-y-6">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Resumen
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
+        <PageHeader
+          eyebrow="Resumen"
+          description="Termina el onboarding para construir tu plan."
+          descriptionSize="md"
+        >
           Aún no tienes <span className="gradient-text">presupuesto</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[16px] leading-relaxed max-w-xl">
-          Termina el onboarding para construir tu plan.
-        </p>
+        </PageHeader>
         <Link
           href="/onboarding"
           className="inline-flex items-center gap-2 h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-[14px] rounded-xl glow-on-hover hover:brightness-105 transition-[filter]"
@@ -661,13 +660,10 @@ export default async function ResumenPage() {
             sitio (sin navegar a /transacciones) usando los mismos
             accounts/categories que ya alimentan el resto de la vista. */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
-          <div className="space-y-2 min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              Resumen · {formatMonthLabel(month)}
-            </div>
-            <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
+          <div className="min-w-0">
+            <PageHeader eyebrow={`Resumen · ${formatMonthLabel(month)}`}>
               Tu mes en una <span className="gradient-text">mirada</span>, {firstName}.
-            </h1>
+            </PageHeader>
           </div>
           <div className="shrink-0">
             <AddTransactionButton

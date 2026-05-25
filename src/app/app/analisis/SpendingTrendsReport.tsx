@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { TrendingUp } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { SpendingTrendsChart } from './SpendingTrendsChart'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { ReportEmptyState } from './ReportEmptyState'
 import { SEGMENT_COLORS } from './AnalisisClient'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
@@ -65,17 +66,12 @@ export function SpendingTrendsReport({
 
   if (!hasBudget) {
     return (
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis · Tendencias
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Sin presupuesto <span className="gradient-text">aún</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] max-w-xl">
-          Termina el onboarding para ver este reporte.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis · Tendencias"
+        description="Termina el onboarding para ver este reporte."
+      >
+        Sin presupuesto <span className="gradient-text">aún</span>.
+      </PageHeader>
     )
   }
 
@@ -90,19 +86,14 @@ export function SpendingTrendsReport({
 
   return (
     <div className={`space-y-7 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis · Tendencias
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Hacia dónde se mueven tus <span className="gradient-text">gastos</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-          Top {Math.min(5, categories.length)}{' '}
-          {categories.length === 1 ? 'categoría' : 'categorías'} mes a mes · {rangeLabel}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis · Tendencias"
+        description={`Top ${Math.min(5, categories.length)} ${
+          categories.length === 1 ? 'categoría' : 'categorías'
+        } mes a mes · ${rangeLabel}`}
+      >
+        Hacia dónde se mueven tus <span className="gradient-text">gastos</span>.
+      </PageHeader>
 
       {/* Range chips */}
       <div className="flex items-center gap-2 flex-wrap">

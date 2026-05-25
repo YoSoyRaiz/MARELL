@@ -17,6 +17,7 @@ import { MoveMoneyModal } from './MoveMoneyModal'
 import { CategoryDrillModal } from './CategoryDrillModal'
 import { NewCategoryModal } from './NewCategoryModal'
 import { PlanTabs } from './PlanTabs'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
@@ -277,17 +278,13 @@ export function PlanView({
 
   if (!budgetId) {
     return (
-      <div className="space-y-4">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Plan
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Sin presupuesto <span className="gradient-text">aún</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[16px] leading-relaxed max-w-xl">
-          Termina el onboarding para ver tu Plan aquí.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Plan"
+        description="Termina el onboarding para ver tu Plan aquí."
+        descriptionSize="md"
+      >
+        Sin presupuesto <span className="gradient-text">aún</span>.
+      </PageHeader>
     )
   }
 

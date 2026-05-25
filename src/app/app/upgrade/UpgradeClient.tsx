@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Check, AlertCircle, CreditCard, Sparkles } from 'lucide-react'
 import { startAzulCheckout, startPaypalCheckout, cancelSubscription } from './actions'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useRouter } from 'next/navigation'
 import { MARELL_PRO_DOP } from '@/lib/billing/types'
 
@@ -89,37 +90,31 @@ export function UpgradeClient({
 
   return (
     <div className="space-y-7 max-w-3xl">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Plan
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          {isPro ? (
-            <>
-              Estás en <span className="gradient-text">Pro</span>.
-            </>
-          ) : isTrial ? (
-            <>
-              Pasa a <span className="gradient-text">Pro</span> antes de que termine tu prueba.
-            </>
-          ) : (
-            <>
-              Activa <span className="gradient-text">Pro</span> y libera todo MARELL.
-            </>
-          )}
-        </h1>
-        {isTrial && trialEnd && (
-          <p className="text-[14px] text-[var(--text2)] leading-relaxed">
-            Tu prueba gratuita termina el {trialEnd}. Sin compromiso, cancela cuando quieras.
-          </p>
+      <PageHeader
+        eyebrow="Plan"
+        descriptionWidth="none"
+        description={
+          isTrial && trialEnd
+            ? `Tu prueba gratuita termina el ${trialEnd}. Sin compromiso, cancela cuando quieras.`
+            : !isPro && !isTrial
+              ? 'Activa Pro para recuperar acceso a metas, programadas, reportes y más.'
+              : undefined
+        }
+      >
+        {isPro ? (
+          <>
+            Estás en <span className="gradient-text">Pro</span>.
+          </>
+        ) : isTrial ? (
+          <>
+            Pasa a <span className="gradient-text">Pro</span> antes de que termine tu prueba.
+          </>
+        ) : (
+          <>
+            Activa <span className="gradient-text">Pro</span> y libera todo MARELL.
+          </>
         )}
-        {!isPro && !isTrial && (
-          <p className="text-[14px] text-[var(--text2)] leading-relaxed">
-            Activa Pro para recuperar acceso a metas, programadas, reportes y más.
-          </p>
-        )}
-      </div>
+      </PageHeader>
 
       {canceled && (
         <div className="rounded-xl border border-[var(--warn)]/40 bg-[rgba(245,200,66,0.06)] px-4 py-3 flex items-start gap-3 text-[13px]">

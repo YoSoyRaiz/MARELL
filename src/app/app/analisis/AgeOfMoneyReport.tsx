@@ -6,6 +6,7 @@ import { Hourglass, Sparkles, Calendar, ArrowUp, ArrowDown } from 'lucide-react'
 import { AgeOfMoneyChart } from './AgeOfMoneyChart'
 import { ReportEmptyState } from './ReportEmptyState'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 export type AomRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
 
@@ -89,17 +90,12 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
 
   if (!hasBudget) {
     return (
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis · Edad del dinero
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Sin presupuesto <span className="gradient-text">aún</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] max-w-xl">
-          Termina el onboarding para ver este reporte.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis · Edad del dinero"
+        description="Termina el onboarding para ver este reporte."
+      >
+        Sin presupuesto <span className="gradient-text">aún</span>.
+      </PageHeader>
     )
   }
 
@@ -134,18 +130,12 @@ export function AgeOfMoneyReport({ range, rangeLabel, series, hasBudget, hasData
 
   return (
     <div className={`space-y-7 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis · Edad del dinero
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          ¿Qué tan <span className="gradient-text">viejo</span> es tu dinero?
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-          Días entre que el dinero entra y sale · {rangeLabel}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis · Edad del dinero"
+        description={`Días entre que el dinero entra y sale · ${rangeLabel}`}
+      >
+        ¿Qué tan <span className="gradient-text">viejo</span> es tu dinero?
+      </PageHeader>
 
       {/* Range chips */}
       <div className="flex items-center gap-2 flex-wrap">

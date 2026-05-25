@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
 import { AnalisisShell, type ReportKey } from './AnalisisShell'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { AnalisisClient, type CategoryRow, type Period } from './AnalisisClient'
 import {
   IncomeVsExpenseReport,
@@ -722,14 +723,7 @@ export default async function AnalisisPage({
   // Catch-all (shouldn't happen — all 5 reports are wired)
   return (
     <AnalisisShell active={report}>
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Próximamente.
-        </h1>
-      </div>
+      <PageHeader eyebrow="Análisis">Próximamente.</PageHeader>
     </AnalisisShell>
   )
 }

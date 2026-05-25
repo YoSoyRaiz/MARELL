@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { TransactionFormModal, type InitialTransaction } from './TransactionFormModal'
 import { ImportTransactionsModal } from './ImportTransactionsModal'
 import { BulkActionBar } from './BulkActionBar'
@@ -318,20 +319,19 @@ export function TransactionsClient({
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2 min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              Transacciones
-            </div>
-            <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
+          <div className="min-w-0">
+            <PageHeader
+              eyebrow="Transacciones"
+              description={
+                isEmpty
+                  ? filtersActive
+                    ? 'No hay transacciones que coincidan con los filtros actuales.'
+                    : 'Aún no has agregado transacciones. Empieza con la primera.'
+                  : `${transactions.length} ${transactions.length === 1 ? 'movimiento' : 'movimientos'}. Click en una fila para editar.`
+              }
+            >
               Cada movimiento de tu <span className="gradient-text">dinero</span>.
-            </h1>
-            <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-              {isEmpty
-                ? filtersActive
-                  ? 'No hay transacciones que coincidan con los filtros actuales.'
-                  : 'Aún no has agregado transacciones. Empieza con la primera.'
-                : `${transactions.length} ${transactions.length === 1 ? 'movimiento' : 'movimientos'}. Click en una fila para editar.`}
-            </p>
+            </PageHeader>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button

@@ -6,6 +6,7 @@ import { ChartPie, TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { MultiSegmentDonut } from './MultiSegmentDonut'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { ReportEmptyState } from './ReportEmptyState'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
@@ -97,34 +98,23 @@ export function AnalisisClient({
 
   if (!hasBudget) {
     return (
-      <div className="space-y-4">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Sin presupuesto <span className="gradient-text">aún</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-          Termina el onboarding para empezar a ver tus reportes.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis"
+        description="Termina el onboarding para empezar a ver tus reportes."
+      >
+        Sin presupuesto <span className="gradient-text">aún</span>.
+      </PageHeader>
     )
   }
 
   return (
     <div className={`space-y-7 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          ¿En qué se va tu <span className="gradient-text">dinero</span>?
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-          Distribución de gastos por categoría · {periodLabel}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis"
+        description={`Distribución de gastos por categoría · ${periodLabel}`}
+      >
+        ¿En qué se va tu <span className="gradient-text">dinero</span>?
+      </PageHeader>
 
       {/* Period chips */}
       <div className="flex items-center gap-2 flex-wrap">

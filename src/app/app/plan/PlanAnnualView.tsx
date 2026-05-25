@@ -17,6 +17,7 @@ import { PlanTabs } from './PlanTabs'
 import { ExtraordinaryPaymentModal } from './ExtraordinaryPaymentModal'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 import { MONTH_NAMES_SHORT } from '@/lib/dates'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { deleteScheduled } from '../programadas/actions'
 import { useTransition } from 'react'
@@ -111,17 +112,13 @@ export function PlanAnnualView({
         {/* Header */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div className="space-y-2 min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                Plan · Anual
-              </div>
-              <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
+            <div className="min-w-0">
+              <PageHeader
+                eyebrow="Plan · Anual"
+                description="Programa pagos extraordinarios (seguros, matrículas, primas) y planifica asignaciones por mes para todo el año."
+              >
                 Tu año en <span className="gradient-text">una mirada</span>.
-              </h1>
-              <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-                Programa pagos extraordinarios (seguros, matrículas, primas) y planifica
-                asignaciones por mes para todo el año.
-              </p>
+              </PageHeader>
             </div>
             <button
               type="button"

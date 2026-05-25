@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, Wallet, Percent, Scale } from 'lucide-react'
 import { IncomeExpenseChart } from './IncomeExpenseChart'
 import { ReportEmptyState } from './ReportEmptyState'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type Range = 'six_months' | 'twelve_months' | 'twenty_four_months' | 'all'
@@ -65,34 +66,23 @@ export function IncomeVsExpenseReport({
 
   if (!hasBudget) {
     return (
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis · Ingresos vs Gastos
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Sin presupuesto <span className="gradient-text">aún</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] max-w-xl">
-          Termina el onboarding para ver este reporte.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis · Ingresos vs Gastos"
+        description="Termina el onboarding para ver este reporte."
+      >
+        Sin presupuesto <span className="gradient-text">aún</span>.
+      </PageHeader>
     )
   }
 
   return (
     <div className={`space-y-7 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis · Ingresos vs Gastos
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          ¿Estás <span className="gradient-text">ahorrando</span> o gastando?
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-          Comparativa mes por mes · {rangeLabel}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis · Ingresos vs Gastos"
+        description={`Comparativa mes por mes · ${rangeLabel}`}
+      >
+        ¿Estás <span className="gradient-text">ahorrando</span> o gastando?
+      </PageHeader>
 
       {/* Range chips */}
       <div className="flex items-center gap-2 flex-wrap">

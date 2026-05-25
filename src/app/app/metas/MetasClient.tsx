@@ -15,6 +15,7 @@ import {
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { GoalFormModal, type InitialGoal } from './GoalFormModal'
 import { clearGoal, type GoalType } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
@@ -113,20 +114,19 @@ export function MetasClient({ goals, hasBudget }: Props) {
       <div className="space-y-7">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2 min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              Metas
-            </div>
-            <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
+          <div className="min-w-0">
+            <PageHeader
+              eyebrow="Metas"
+              description={
+                isEmpty
+                  ? 'Aún no has definido metas. Crea la primera para empezar a trackear progreso.'
+                  : needsSetupCount > 0
+                    ? `${configuredGoals.length} ${configuredGoals.length === 1 ? 'meta activa' : 'metas activas'} · ${needsSetupCount} por configurar`
+                    : `${goals.length} ${goals.length === 1 ? 'meta activa' : 'metas activas'}. Click para editar.`
+              }
+            >
               Hacia dónde va tu <span className="gradient-text">esfuerzo</span>.
-            </h1>
-            <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-              {isEmpty
-                ? 'Aún no has definido metas. Crea la primera para empezar a trackear progreso.'
-                : needsSetupCount > 0
-                  ? `${configuredGoals.length} ${configuredGoals.length === 1 ? 'meta activa' : 'metas activas'} · ${needsSetupCount} por configurar`
-                  : `${goals.length} ${goals.length === 1 ? 'meta activa' : 'metas activas'}. Click para editar.`}
-            </p>
+            </PageHeader>
           </div>
           <button
             type="button"

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Calculator, Briefcase, CreditCard, Info } from 'lucide-react'
 import { useFormatMoney } from '../CurrencyProvider'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 /**
  * 2026 Dominican Republic payroll constants. The exact thresholds and
@@ -165,19 +166,13 @@ export function HerramientasClient() {
 
   return (
     <div className="space-y-7">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Cálculos
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Cálculos hechos para <span className="gradient-text">RD</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-2xl">
-          Calculadoras prácticas con las tasas y escalas vigentes en República Dominicana.
-          Ideal antes de aceptar un trabajo, planificar una compra a crédito o presupuestar tu mes.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Cálculos"
+        descriptionWidth="2xl"
+        description="Calculadoras prácticas con las tasas y escalas vigentes en República Dominicana. Ideal antes de aceptar un trabajo, planificar una compra a crédito o presupuestar tu mes."
+      >
+        Cálculos hechos para <span className="gradient-text">RD</span>.
+      </PageHeader>
 
       {/* Salary calculator */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">

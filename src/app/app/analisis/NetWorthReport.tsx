@@ -13,6 +13,7 @@ import {
 import { NetWorthChart } from './NetWorthChart'
 import { ReportEmptyState } from './ReportEmptyState'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type NetWorthRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
@@ -69,17 +70,12 @@ export function NetWorthReport({
 
   if (!hasBudget) {
     return (
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis · Patrimonio
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Sin presupuesto <span className="gradient-text">aún</span>.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] max-w-xl">
-          Termina el onboarding para ver este reporte.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis · Patrimonio"
+        description="Termina el onboarding para ver este reporte."
+      >
+        Sin presupuesto <span className="gradient-text">aún</span>.
+      </PageHeader>
     )
   }
 
@@ -91,18 +87,12 @@ export function NetWorthReport({
 
   return (
     <div className={`space-y-7 transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}>
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          Análisis · Patrimonio
-        </div>
-        <h1 className="text-[26px] sm:text-[32px] lg:text-[40px] leading-[1.05] font-bold tracking-tight">
-          Tu <span className="gradient-text">patrimonio</span> en el tiempo.
-        </h1>
-        <p className="text-[var(--text2)] text-[14px] leading-relaxed max-w-xl">
-          Reconstruido desde tus transacciones · {rangeLabel}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Análisis · Patrimonio"
+        description={`Reconstruido desde tus transacciones · ${rangeLabel}`}
+      >
+        Tu <span className="gradient-text">patrimonio</span> en el tiempo.
+      </PageHeader>
 
       {/* Range chips */}
       <div className="flex items-center gap-2 flex-wrap">
