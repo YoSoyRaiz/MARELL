@@ -722,6 +722,15 @@ export default async function ResumenPage() {
           fmtMoney={fmtMoney}
         />
 
+        {/* 14-day cash-flow forecast — sube al 2do slot del rail
+            derecho porque "qué viene esta semana" es la pregunta
+            inmediata después del state-of-the-month. */}
+        <UpcomingCommitments
+          items={upcomingItems}
+          projectedCash={projectedCash}
+          netFlow={upcomingNetFlow}
+        />
+
         {/* Donut */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
           <div className="flex items-center justify-between mb-4">
@@ -768,13 +777,6 @@ export default async function ResumenPage() {
 
         {/* Real-data insights replace the old single-message placeholder. */}
         <InsightsSection inputs={insightInputs} />
-
-        {/* 14-day cash-flow forecast from scheduled transactions. */}
-        <UpcomingCommitments
-          items={upcomingItems}
-          projectedCash={projectedCash}
-          netFlow={upcomingNetFlow}
-        />
 
         {/* Mes pasado review — quick reflection card. Hidden when there's
             no activity to summarize (fresh accounts, future months). */}
