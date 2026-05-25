@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/Button'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { IconButton } from '@/components/ui/IconButton'
@@ -176,15 +177,14 @@ export function MetasClient({ goals, hasBudget }: Props) {
             title="Aún sin metas"
             description="Define metas para tus categorías: cuánto quieres apartar mensualmente o cuánto acumular en total. Te ayuda a mantener el rumbo."
             action={
-              <button
-                type="button"
+              <Button
+                size="tight"
                 onClick={() => setAddOpen(true)}
                 disabled={!hasBudget}
-                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
+                iconLeft={<Plus size={14} strokeWidth={2.4} />}
               >
-                <Plus size={14} strokeWidth={2.4} />
                 Crear primera meta
-              </button>
+              </Button>
             }
           />
         )}

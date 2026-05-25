@@ -20,6 +20,8 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { IconButton } from '@/components/ui/IconButton'
@@ -465,18 +467,17 @@ export function TransactionsClient({
               </>
             }
             action={
-              <button
-                type="button"
+              <Button
+                size="tight"
                 onClick={() => {
                   setAddCompact(false)
                   setAddOpen(true)
                 }}
                 disabled={!hasBudget || accounts.length === 0}
-                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
+                iconLeft={<Plus size={14} strokeWidth={2.4} />}
               >
-                <Plus size={14} strokeWidth={2.4} />
                 Agregar la primera
-              </button>
+              </Button>
             }
           />
         )}
@@ -504,10 +505,9 @@ export function TransactionsClient({
           </div>
         )}
 
-        {/* List */}
         {!isEmpty && (
-          <div
-            className={`rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden transition-opacity duration-200 ${
+          <Card
+            className={`overflow-hidden transition-opacity duration-200 ${
               navPending ? 'opacity-60' : ''
             }`}
           >
@@ -819,7 +819,7 @@ export function TransactionsClient({
                 )
               })}
             </ul>
-          </div>
+          </Card>
         )}
 
         {/* Paginador — solo aparece cuando hay más de 1 página. Se

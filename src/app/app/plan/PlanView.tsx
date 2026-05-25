@@ -19,6 +19,7 @@ import { PlanTabs } from './PlanTabs'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { AlertBanner } from '@/components/ui/AlertBanner'
+import { Card } from '@/components/ui/Card'
 import { updateAssignment } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
@@ -397,10 +398,7 @@ export function PlanView({
           const isCollapsed = collapsed.has(g.id)
           const panelId = `plan-group-${g.id}`
           return (
-            <div
-              key={g.id}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden"
-            >
+            <Card key={g.id} className="overflow-hidden">
               {/* Group header — accordion toggle */}
               <button
                 type="button"
@@ -597,7 +595,7 @@ export function PlanView({
               </ul>
                 </div>
               )}
-            </div>
+            </Card>
           )
         })}
       </div>

@@ -12,6 +12,7 @@ import { AlertBanner } from '@/components/ui/AlertBanner'
 import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { FormField } from '@/components/ui/FormField'
+import { TextInput } from '@/components/ui/TextInput'
 import type { AccountType } from '@/app/onboarding/wizard/types'
 import {
   createAccount,
@@ -193,13 +194,12 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           <FormField label="Nombre">
-            <input
+            <TextInput
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ej: Banreservas Corriente"
               maxLength={50}
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
           </FormField>
 
@@ -245,8 +245,9 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
           {type !== null && CC_TYPES.includes(type) && (
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Tasa de interés" hint="APR %, opcional">
-                <input
+                <TextInput
                   type="number"
+                  numeric
                   inputMode="decimal"
                   step="0.01"
                   min="0"
@@ -254,13 +255,13 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                   value={interestRate}
                   onChange={(e) => setInterestRate(e.target.value)}
                   placeholder="36.50"
-                  className="w-full !text-[14px] !py-3 !px-4 !rounded-xl tabular-nums num"
                 />
               </FormField>
               {type === 'credit_card' && (
                 <FormField label="Día de corte" hint="1–31, opcional">
-                  <input
+                  <TextInput
                     type="number"
+                    numeric
                     inputMode="numeric"
                     step="1"
                     min="1"
@@ -268,7 +269,6 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
                     value={cycleCloseDay}
                     onChange={(e) => setCycleCloseDay(e.target.value)}
                     placeholder="20"
-                    className="w-full !text-[14px] !py-3 !px-4 !rounded-xl tabular-nums num"
                   />
                 </FormField>
               )}

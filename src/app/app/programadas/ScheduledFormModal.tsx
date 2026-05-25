@@ -23,6 +23,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { AlertBanner } from '@/components/ui/AlertBanner'
 import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
+import { TextInput } from '@/components/ui/TextInput'
 import { FormField } from '@/components/ui/FormField'
 import { NativeSelect } from '@/components/ui/NativeSelect'
 
@@ -422,11 +423,10 @@ export function ScheduledFormModal({
             label={frequency === 'once' ? 'Fecha' : 'Próxima fecha'}
             hint={isEdit ? undefined : 'cuando empieza'}
           >
-            <input
+            <TextInput
               type="date"
               value={nextDate}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setNextDate(e.target.value)}
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
             <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5 inline-flex items-center gap-1.5">
               <Repeat size={11} strokeWidth={2} />
@@ -453,7 +453,7 @@ export function ScheduledFormModal({
           </FormField>
 
           <FormField label={type === 'income' ? 'Recibido de' : 'Pagado a'}>
-            <input
+            <TextInput
               type="text"
               value={payeeName}
               onChange={(e) => setPayeeName(e.target.value)}
@@ -463,7 +463,6 @@ export function ScheduledFormModal({
                   : 'Alquiler, Netflix, gimnasio…'
               }
               maxLength={80}
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
           </FormField>
 

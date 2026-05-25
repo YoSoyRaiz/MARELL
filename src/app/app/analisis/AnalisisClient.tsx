@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Stat } from '@/components/ui/Stat'
+import { Card } from '@/components/ui/Card'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
 // Brand-aligned palette for category segments. The 6th and beyond
@@ -199,8 +200,7 @@ export function AnalisisClient({
             </div>
           </div>
 
-          {/* Ranked list */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+          <Card className="overflow-hidden">
             <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
               <h2 className="text-[15px] font-semibold text-[var(--text)]">Por categoría</h2>
               <p className="text-[12px] text-[var(--muted)]">
@@ -257,7 +257,7 @@ export function AnalisisClient({
                 )
               })}
             </ul>
-          </div>
+          </Card>
         </div>
       )}
     </div>

@@ -15,9 +15,11 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/Button'
 import { IconBadge } from '@/components/ui/IconBadge'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Card } from '@/components/ui/Card'
 import { IconButton } from '@/components/ui/IconButton'
 import { unreconcileAccount } from './actions'
 import { ReconcileModal } from './ReconcileModal'
@@ -202,15 +204,14 @@ export function CuentasClient({
             title="Aún sin cuentas"
             description="Agrega tus cuentas corriente, ahorros, tarjetas y préstamos. El tipo determina cómo se calcula tu patrimonio neto."
             action={
-              <button
-                type="button"
+              <Button
+                size="tight"
                 onClick={() => setAddOpen(true)}
                 disabled={!hasBudget}
-                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
+                iconLeft={<Plus size={14} strokeWidth={2.4} />}
               >
-                <Plus size={14} strokeWidth={2.4} />
                 Agregar la primera
-              </button>
+              </Button>
             }
           />
         )}
@@ -234,10 +235,7 @@ export function CuentasClient({
                     ? `−${fmtMoney(groupTotal)}`
                     : fmtMoney(groupTotal)
                 return (
-                  <div
-                    key={g.key}
-                    className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden"
-                  >
+                  <Card key={g.key} className="overflow-hidden">
                     <header className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)] flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-9 h-9 rounded-lg bg-[var(--overlay-1)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
@@ -403,7 +401,7 @@ export function CuentasClient({
                         )
                       })}
                     </ul>
-                  </div>
+                  </Card>
                 )
               })}
           </div>

@@ -8,6 +8,7 @@ import { SpendingTrendsChart } from './SpendingTrendsChart'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Card } from '@/components/ui/Card'
 import { SEGMENT_COLORS } from './AnalisisClient'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
@@ -142,8 +143,7 @@ export function SpendingTrendsReport({
             />
           </div>
 
-          {/* Categories detail */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+          <Card className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
               <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 Detalle
@@ -186,7 +186,7 @@ export function SpendingTrendsReport({
                 )
               })}
             </ul>
-          </div>
+          </Card>
         </>
       )}
     </div>

@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { FormField } from '@/components/ui/FormField'
+import { TextInput } from '@/components/ui/TextInput'
 import { AlertBanner } from '@/components/ui/AlertBanner'
 import {
   updateGoal,
@@ -215,7 +216,7 @@ export function GoalFormModal({
             label={isEdit ? 'Nombre' : 'Nombre de la meta'}
             hint={isEdit ? 'edita el nombre' : undefined}
           >
-            <input
+            <TextInput
               type="text"
               value={customName}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -228,7 +229,6 @@ export function GoalFormModal({
                   ? initial?.categoryName
                   : 'Ej: Viaje a Punta Cana, Boda, Carro nuevo…'
               }
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
             <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
               {isEdit
@@ -393,11 +393,10 @@ export function GoalFormModal({
             label="Fecha objetivo"
             hint={goalType === 'needed_by' ? 'requerida' : 'opcional'}
           >
-            <input
+            <TextInput
               type="date"
               value={date}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
             <p className="text-[11px] text-[var(--muted)] leading-relaxed mt-1.5">
               {goalType === 'needed_by'

@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
 import { MoneyInput } from '../components/MoneyInput'
+import { Card } from '@/components/ui/Card'
 
 const keyOf = (groupName: string, itemName: string) => `${groupName}::${itemName}`
 
@@ -68,10 +69,7 @@ export function Step17Targets() {
       {/* Categories grouped */}
       <div className="space-y-4">
         {groups.map((g) => (
-          <div
-            key={g.name}
-            className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden"
-          >
+          <Card key={g.name} className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)] flex items-center justify-between">
               <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
                 {g.name}
@@ -104,7 +102,7 @@ export function Step17Targets() {
                 )
               })}
             </ul>
-          </div>
+          </Card>
         ))}
       </div>
 

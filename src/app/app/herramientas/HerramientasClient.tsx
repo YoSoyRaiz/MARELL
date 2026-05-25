@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Calculator, Briefcase, CreditCard, Info } from 'lucide-react'
+import { Card } from '@/components/ui/Card'
 import { useFormatMoney } from '../CurrencyProvider'
 import { PageHeader } from '@/components/ui/PageHeader'
 
@@ -175,7 +176,7 @@ export function HerramientasClient() {
       </PageHeader>
 
       {/* Salary calculator */}
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+      <Card as="section" className="overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
@@ -248,11 +249,11 @@ export function HerramientasClient() {
             />
           </div>
         </div>
-      </section>
+      </Card>
 
       {/* Cuotas calculator (standalone, deeper than the inline one in
           scheduled). */}
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+      <Card as="section" className="overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)] flex items-center justify-center shrink-0">
@@ -385,7 +386,7 @@ export function HerramientasClient() {
             )}
           </div>
         </div>
-      </section>
+      </Card>
 
       {/* Tip strip */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] px-5 py-4 flex items-start gap-3">

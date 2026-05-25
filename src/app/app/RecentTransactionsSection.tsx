@@ -14,6 +14,7 @@ import { TransactionFormModal } from './transacciones/TransactionFormModal'
 import { ImportTransactionsModal } from './transacciones/ImportTransactionsModal'
 import { SHORTCUT_EVENTS } from './KeyboardShortcuts'
 import { useFormatMoney } from './CurrencyProvider'
+import { Card } from '@/components/ui/Card'
 
 export interface RecentTxn {
   id: string
@@ -61,7 +62,7 @@ export function RecentTransactionsSection({
 
   return (
     <>
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+      <Card as="section" className="overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-[15px] font-semibold text-[var(--text)]">
@@ -164,7 +165,7 @@ export function RecentTransactionsSection({
             })}
           </ul>
         )}
-      </section>
+      </Card>
 
       <TransactionFormModal
         isOpen={addOpen}

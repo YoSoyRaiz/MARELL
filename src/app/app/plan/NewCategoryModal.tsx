@@ -11,6 +11,7 @@ import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeade
 import { Modal } from '@/components/ui/Modal'
 import { FormField } from '@/components/ui/FormField'
 import { NativeSelect } from '@/components/ui/NativeSelect'
+import { TextInput } from '@/components/ui/TextInput'
 
 interface GroupOption {
   id: string
@@ -102,7 +103,7 @@ export function NewCategoryModal({
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           <FormField label="Nombre">
-            <input
+            <TextInput
               type="text"
               value={name}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
@@ -115,7 +116,6 @@ export function NewCategoryModal({
                   handleSubmit()
                 }
               }}
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
           </FormField>
 

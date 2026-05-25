@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react'
+import { Card } from '@/components/ui/Card'
 import Link from 'next/link'
 
 interface MonthSummaryCardProps {
@@ -45,7 +46,7 @@ export function MonthSummaryCard({
       : 'text-[var(--brand-text)]'
 
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+    <Card as="section" className="overflow-hidden">
       <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
@@ -88,7 +89,7 @@ export function MonthSummaryCard({
           bold
         />
       </ul>
-    </section>
+    </Card>
   )
 }
 

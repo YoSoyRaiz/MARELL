@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { FormField } from '@/components/ui/FormField'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { TextInput } from '@/components/ui/TextInput'
 import { AlertBanner } from '@/components/ui/AlertBanner'
 import { logout } from '@/app/(auth)/actions'
 import {
@@ -190,21 +191,20 @@ export function AjustesClient({
         error={profileError}
       >
         <FormField label="Nombre">
-          <input
+          <TextInput
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
             placeholder="Cómo te llamas"
-            className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
           />
         </FormField>
         <FormField label="Email">
-          <input
+          <TextInput
             type="text"
             value={email}
             readOnly
-            className="w-full !text-[14px] !py-3 !px-4 !rounded-xl !bg-[var(--bg)] !text-[var(--muted)] cursor-not-allowed"
+            className="!bg-[var(--bg)] !text-[var(--muted)] cursor-not-allowed"
           />
           <p className="text-[11px] text-[var(--muted)] mt-1.5">
             El email se gestiona desde tu proveedor de autenticación.
@@ -232,13 +232,12 @@ export function AjustesClient({
           error={budgetError}
         >
           <FormField label="Nombre">
-            <input
+            <TextInput
               type="text"
               value={budgetName}
               onChange={(e) => setBudgetName(e.target.value)}
               maxLength={80}
               placeholder="Mi presupuesto"
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
           </FormField>
           <FormField label="Moneda">

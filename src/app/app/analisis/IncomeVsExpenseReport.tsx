@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { Stat } from '@/components/ui/Stat'
+import { Card } from '@/components/ui/Card'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type Range = 'six_months' | 'twelve_months' | 'twenty_four_months' | 'all'
@@ -169,8 +170,7 @@ export function IncomeVsExpenseReport({
             <IncomeExpenseChart data={months} fmtMoney={fmtMoney} currency={currency} />
           </div>
 
-          {/* Month-by-month table */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+          <Card className="overflow-hidden">
             <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
               <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 Detalle
@@ -215,7 +215,7 @@ export function IncomeVsExpenseReport({
                 )
               })}
             </ul>
-          </div>
+          </Card>
         </>
       )}
     </div>

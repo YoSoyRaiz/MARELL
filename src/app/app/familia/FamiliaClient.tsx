@@ -16,6 +16,7 @@ import { IconBadge } from '@/components/ui/IconBadge'
 import { IconButton } from '@/components/ui/IconButton'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { AlertBanner } from '@/components/ui/AlertBanner'
+import { Card } from '@/components/ui/Card'
 import {
   inviteToBudget,
   removeMember,
@@ -188,7 +189,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
 
       {/* Pending invitations */}
       {invitations.length > 0 && (
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+        <Card as="section" className="overflow-hidden">
           <header className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-2">
             <Clock size={14} strokeWidth={2.2} className="text-[var(--warn-text)]" />
             <h2 className="text-[14px] font-semibold text-[var(--text)]">
@@ -220,11 +221,11 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
               </li>
             ))}
           </ul>
-        </section>
+        </Card>
       )}
 
       {/* Members list */}
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+      <Card as="section" className="overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-2">
           <Users size={14} strokeWidth={2.2} className="text-[var(--brand-text)]" />
           <h2 className="text-[14px] font-semibold text-[var(--text)]">
@@ -281,7 +282,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
             </li>
           ))}
         </ul>
-      </section>
+      </Card>
     </div>
   )
 }

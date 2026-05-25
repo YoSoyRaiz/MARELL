@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { AlertBanner } from '@/components/ui/AlertBanner'
+import { Card } from '@/components/ui/Card'
 import {
   recordPayment,
   extendTrial,
@@ -270,8 +271,7 @@ export function AdminClient({ users }: Props) {
 
         {error && <AlertBanner tone="danger">{error}</AlertBanner>}
 
-        {/* Table */}
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="hidden md:grid grid-cols-[2fr_1fr_140px_140px_140px] gap-4 px-5 py-3 text-[10px] uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
             <div>Usuario</div>
             <div>Estado</div>
@@ -390,7 +390,7 @@ export function AdminClient({ users }: Props) {
               })}
             </ul>
           )}
-        </div>
+        </Card>
       </div>
 
       <PaymentDialog

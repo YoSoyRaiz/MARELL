@@ -12,6 +12,7 @@ import {
   Tag,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { Card } from '@/components/ui/Card'
 import { CategoryGroupModal, type ModalGroup, type ModalCategory } from './CategoryGroupModal'
 import { useFormatMoneyShort } from './CurrencyProvider'
 
@@ -86,7 +87,7 @@ export function CategoryCardsSection({
 
   return (
     <>
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+      <Card as="section" className="overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
           <div>
             <h2 className="text-[15px] font-semibold text-[var(--text)]">Categorías</h2>
@@ -163,7 +164,7 @@ export function CategoryCardsSection({
             )
           })}
         </div>
-      </section>
+      </Card>
 
       {openGroup && (
         <CategoryGroupModal

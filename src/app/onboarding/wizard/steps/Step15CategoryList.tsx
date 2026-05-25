@@ -4,6 +4,7 @@ import { Sparkles } from 'lucide-react'
 import { useOnboardingStore } from '../store'
 import { generateCategories } from '../categoryGenerator'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Card } from '@/components/ui/Card'
 
 export function Step15CategoryList() {
   const confirm = useConfirm()
@@ -38,10 +39,7 @@ export function Step15CategoryList() {
         {/* Lista de categorías */}
         <div className="space-y-4">
           {groups.map((g) => (
-            <div
-              key={g.name}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden"
-            >
+            <Card key={g.name} className="overflow-hidden">
               <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--overlay-1)] flex items-center justify-between">
                 <h3 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
                   {g.name}
@@ -63,7 +61,7 @@ export function Step15CategoryList() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </Card>
           ))}
         </div>
 

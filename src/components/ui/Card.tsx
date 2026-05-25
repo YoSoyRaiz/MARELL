@@ -30,6 +30,9 @@ interface CardProps extends Omit<ComponentProps<'div'>, 'children'> {
   variant?: Variant
   padding?: Padding
   hover?: boolean
+  /** Renderiza como `<section>` cuando es semánticamente apropiado
+   *  (list-section con header propio + body). Default `div`. */
+  as?: 'div' | 'section'
   children: ReactNode
 }
 
@@ -37,17 +40,18 @@ export function Card({
   variant = 'default',
   padding = 'none',
   hover = false,
+  as: Tag = 'div',
   className = '',
   children,
   ...rest
 }: CardProps) {
   const hoverClass = hover ? 'card-hover cursor-pointer' : ''
   return (
-    <div
+    <Tag
       {...rest}
       className={`rounded-2xl transition-[transform,border-color,box-shadow] duration-300 ${variantClasses[variant]} ${paddingClasses[padding]} ${hoverClass} ${className}`}
     >
       {children}
-    </div>
+    </Tag>
   )
 }

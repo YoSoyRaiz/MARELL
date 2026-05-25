@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { ArrowRight, Target } from 'lucide-react'
 import { AddTransactionButton } from './AddTransactionButton'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
 import {
@@ -777,7 +778,7 @@ export default async function ResumenPage() {
         {/* Mes pasado review — quick reflection card. Hidden when there's
             no activity to summarize (fresh accounts, future months). */}
         {prevMonthHadActivity && (
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+          <Card as="section" className="overflow-hidden">
             <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
               <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
                 Cierre de {formatMonthLabel(prevMonth)}
@@ -816,11 +817,11 @@ export default async function ResumenPage() {
                 </span>
               </li>
             </ul>
-          </section>
+          </Card>
         )}
 
         {/* Metas preview */}
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] overflow-hidden">
+        <Card as="section" className="overflow-hidden">
           <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target size={14} strokeWidth={2.2} className="text-[var(--brand-text)]" />
@@ -885,7 +886,7 @@ export default async function ResumenPage() {
               })}
             </ul>
           )}
-        </section>
+        </Card>
       </aside>
     </div>
   )

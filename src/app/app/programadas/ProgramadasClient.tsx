@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/Button'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -264,15 +265,14 @@ export function ProgramadasClient({
             title="Aún sin recurrencias"
             description="Agrega lo que pagas o cobras siempre: sueldo, alquiler, Netflix, gimnasio. MARELL crea cada movimiento automáticamente cuando toca."
             action={
-              <button
-                type="button"
+              <Button
+                size="tight"
                 onClick={() => setAddOpen(true)}
                 disabled={!hasBudget || noAccounts}
-                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-xl gradient-bg text-[#0B0B0C] font-semibold text-[13px] glow-on-hover hover:brightness-105 disabled:opacity-50 disabled:pointer-events-none transition-[filter]"
+                iconLeft={<Plus size={14} strokeWidth={2.4} />}
               >
-                <Plus size={14} strokeWidth={2.4} />
                 Programar primera
-              </button>
+              </Button>
             }
           />
         )}

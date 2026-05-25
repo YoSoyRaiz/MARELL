@@ -12,6 +12,7 @@ import { AlertBanner } from '@/components/ui/AlertBanner'
 import { ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/ModalHeader'
 import { Modal } from '@/components/ui/Modal'
 import { FormField } from '@/components/ui/FormField'
+import { TextInput } from '@/components/ui/TextInput'
 import { NativeSelect } from '@/components/ui/NativeSelect'
 
 interface AccountOption {
@@ -182,8 +183,9 @@ export function ExtraordinaryPaymentModal({
               </NativeSelect>
             </FormField>
             <FormField label="Día">
-              <input
+              <TextInput
                 type="number"
+                numeric
                 value={clampedDay}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const v = parseInt(e.target.value, 10)
@@ -193,7 +195,6 @@ export function ExtraordinaryPaymentModal({
                 }}
                 min={1}
                 max={lastDayOfMonth}
-                className="w-full !text-[14px] !py-3 !px-4 !rounded-xl tabular-nums"
               />
             </FormField>
           </div>
@@ -234,7 +235,7 @@ export function ExtraordinaryPaymentModal({
           </FormField>
 
           <FormField label="Pagado a">
-            <input
+            <TextInput
               type="text"
               value={payeeName}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -242,7 +243,6 @@ export function ExtraordinaryPaymentModal({
               }
               maxLength={80}
               placeholder="Ej: Seguro vehicular, Matrícula escolar…"
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
           </FormField>
 
@@ -251,13 +251,12 @@ export function ExtraordinaryPaymentModal({
           </FormField>
 
           <FormField label="Notas" hint="opcional">
-            <input
+            <TextInput
               type="text"
               value={memo}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setMemo(e.target.value)}
               maxLength={200}
               placeholder="Detalles adicionales…"
-              className="w-full !text-[14px] !py-3 !px-4 !rounded-xl"
             />
           </FormField>
 
