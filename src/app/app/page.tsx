@@ -4,6 +4,7 @@ import { ArrowRight, Target } from 'lucide-react'
 import { AddTransactionButton } from './AddTransactionButton'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
+import { CardHeader } from '@/components/ui/CardHeader'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
 import {
@@ -779,7 +780,7 @@ export default async function ResumenPage() {
             no activity to summarize (fresh accounts, future months). */}
         {prevMonthHadActivity && (
           <Card as="section" className="overflow-hidden">
-            <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
+            <CardHeader>
               <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
                 Cierre de {formatMonthLabel(prevMonth)}
               </h2>
@@ -790,7 +791,7 @@ export default async function ResumenPage() {
                 Ver análisis
                 <ArrowRight size={12} strokeWidth={2.4} />
               </Link>
-            </header>
+            </CardHeader>
             <ul className="divide-y divide-[var(--border)]">
               <li className="px-5 py-3 flex items-center justify-between">
                 <span className="text-[13px] text-[var(--text2)]">Ingresos</span>
@@ -822,7 +823,7 @@ export default async function ResumenPage() {
 
         {/* Metas preview */}
         <Card as="section" className="overflow-hidden">
-          <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+          <CardHeader gap="none">
             <div className="flex items-center gap-2">
               <Target size={14} strokeWidth={2.2} className="text-[var(--brand-text)]" />
               <h2 className="text-[14px] font-semibold text-[var(--text)]">Metas</h2>
@@ -835,7 +836,7 @@ export default async function ResumenPage() {
                 Todas <ArrowRight size={12} strokeWidth={2.4} />
               </Link>
             )}
-          </header>
+          </CardHeader>
 
           {goals.length === 0 ? (
             <div className="px-5 py-6 text-center space-y-3">

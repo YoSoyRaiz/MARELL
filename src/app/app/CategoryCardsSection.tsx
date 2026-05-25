@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { CardHeader } from '@/components/ui/CardHeader'
 import { CategoryGroupModal, type ModalGroup, type ModalCategory } from './CategoryGroupModal'
 import { useFormatMoneyShort } from './CurrencyProvider'
 
@@ -88,7 +89,7 @@ export function CategoryCardsSection({
   return (
     <>
       <Card as="section" className="overflow-hidden">
-        <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+        <CardHeader gap="none">
           <div>
             <h2 className="text-[15px] font-semibold text-[var(--text)]">Categorías</h2>
             <p className="text-[12px] text-[var(--muted)] mt-0.5">
@@ -101,7 +102,7 @@ export function CategoryCardsSection({
           >
             Ver plan completo <ArrowRight size={12} strokeWidth={2.4} />
           </Link>
-        </header>
+        </CardHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
           {displayGroups.map((g) => {
             const Icon = iconForGroup(g.name)

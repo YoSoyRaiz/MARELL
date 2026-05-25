@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronDown, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { Card } from '@/components/ui/Card'
+import { CardHeader } from '@/components/ui/CardHeader'
 import { useFormatMoney } from './CurrencyProvider'
 import { useReadyToAssign } from './ReadyToAssignProvider'
 import { InlineMoneyEdit } from './plan/InlineMoneyEdit'
@@ -157,7 +158,7 @@ export function CategoryAccordion({
 
   return (
     <Card as="section" className="overflow-hidden">
-      <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
+      <CardHeader>
         <h2 className="text-[14px] font-semibold text-[var(--text)]">Categorías</h2>
         <Link
           href="/app/plan"
@@ -166,7 +167,7 @@ export function CategoryAccordion({
           Ver plan
           <ArrowRight size={12} strokeWidth={2.4} />
         </Link>
-      </header>
+      </CardHeader>
 
       {error && (
         <div className="px-5 py-2 bg-[rgba(255,122,89,0.08)] border-b border-[var(--coral)]/30 text-[12px] text-[var(--coral-text)]">

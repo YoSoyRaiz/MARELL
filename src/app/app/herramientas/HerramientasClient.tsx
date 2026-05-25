@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Calculator, Briefcase, CreditCard, Info } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { CardHeader } from '@/components/ui/CardHeader'
 import { useFormatMoney } from '../CurrencyProvider'
 import { PageHeader } from '@/components/ui/PageHeader'
 
@@ -177,7 +178,7 @@ export function HerramientasClient() {
 
       {/* Salary calculator */}
       <Card as="section" className="overflow-hidden">
-        <header className="px-5 py-4 border-b border-[var(--border)] flex items-start justify-between gap-3">
+        <CardHeader align="start">
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] flex items-center justify-center shrink-0">
               <Briefcase size={16} strokeWidth={2} />
@@ -191,7 +192,7 @@ export function HerramientasClient() {
               </p>
             </div>
           </div>
-        </header>
+        </CardHeader>
 
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-3">
@@ -254,7 +255,7 @@ export function HerramientasClient() {
       {/* Cuotas calculator (standalone, deeper than the inline one in
           scheduled). */}
       <Card as="section" className="overflow-hidden">
-        <header className="px-5 py-4 border-b border-[var(--border)] flex items-start justify-between gap-3">
+        <CardHeader align="start">
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-[rgba(255,122,89,0.10)] text-[var(--coral-text)] flex items-center justify-center shrink-0">
               <CreditCard size={16} strokeWidth={2} />
@@ -268,7 +269,7 @@ export function HerramientasClient() {
               </p>
             </div>
           </div>
-        </header>
+        </CardHeader>
 
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-3">

@@ -10,6 +10,7 @@ import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Stat } from '@/components/ui/Stat'
 import { Card } from '@/components/ui/Card'
+import { CardHeader } from '@/components/ui/CardHeader'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
 // Brand-aligned palette for category segments. The 6th and beyond

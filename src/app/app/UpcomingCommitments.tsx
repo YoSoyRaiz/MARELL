@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight, CalendarClock, TrendingDown, TrendingUp } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { CardHeader } from '@/components/ui/CardHeader'
 import { useFormatMoney, useFormatMoneyShort } from './CurrencyProvider'
 import { MONTH_NAMES_SHORT } from '@/lib/dates'
 
@@ -48,7 +49,7 @@ export function UpcomingCommitments({
 
   return (
     <Card as="section" className="overflow-hidden">
-      <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
+      <CardHeader>
         <div className="flex items-center gap-2 min-w-0">
           <CalendarClock size={14} strokeWidth={2.2} className="text-[var(--brand-text)] shrink-0" />
           <h2 className="text-[14px] font-semibold text-[var(--text)] truncate">
@@ -62,7 +63,7 @@ export function UpcomingCommitments({
           Ver todas
           <ArrowRight size={12} strokeWidth={2.4} />
         </Link>
-      </header>
+      </CardHeader>
 
       {items.length === 0 ? (
         <div className="px-5 py-6 text-center">

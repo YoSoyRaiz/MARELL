@@ -15,6 +15,7 @@ import { ImportTransactionsModal } from './transacciones/ImportTransactionsModal
 import { SHORTCUT_EVENTS } from './KeyboardShortcuts'
 import { useFormatMoney } from './CurrencyProvider'
 import { Card } from '@/components/ui/Card'
+import { CardHeader } from '@/components/ui/CardHeader'
 
 export interface RecentTxn {
   id: string
@@ -63,7 +64,7 @@ export function RecentTransactionsSection({
   return (
     <>
       <Card as="section" className="overflow-hidden">
-        <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
+        <CardHeader>
           <div className="min-w-0">
             <h2 className="text-[15px] font-semibold text-[var(--text)]">
               Transacciones recientes
@@ -89,7 +90,7 @@ export function RecentTransactionsSection({
               Ver todas <ArrowRight size={12} strokeWidth={2.4} />
             </Link>
           </div>
-        </header>
+        </CardHeader>
 
         {transactions.length === 0 ? (
           <div className="p-10 text-center space-y-3">
