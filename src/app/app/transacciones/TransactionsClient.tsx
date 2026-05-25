@@ -109,12 +109,20 @@ export interface CategoryOption {
   group_name: string
 }
 
+export interface PaginationState {
+  page: number
+  totalPages: number
+  totalCount: number
+  pageSize: number
+}
+
 interface Props {
   transactions: ListTransaction[]
   accounts: AccountOption[]
   categories: CategoryOption[]
   hasBudget: boolean
   filters: FilterState
+  pagination?: PaginationState
 }
 
 const toInitial = (t: ListTransaction): InitialTransaction => {
@@ -162,6 +170,7 @@ export function TransactionsClient({
   categories,
   hasBudget,
   filters,
+  pagination,
 }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -812,6 +821,52 @@ export function TransactionsClient({
                 )
               })}
             </ul>
+          </div>
+        )}
+
+        {/* Paginador — solo aparece cuando hay más de 1 página. Se
+            controla por URL (?page=N) para que el usuario pueda
+            compartir un enlace específico o usar back/forward del
+            navegador. (Auditoría calidad L3.) */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between gap-3 px-1 py-3 text-[12px]">
+            <div className="text-[var(--muted)]">
+              {(pagination.page - 1) * pagination.pageSize + 1}–
+              {Math.min(
+                pagination.page * pagination.pageSize,
+                pagination.totalCount,
+              )}{' '}
+              de {pagination.totalCount.toLocaleString('en-US')}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  pushParams({
+                    page: pagination.page > 1 ? String(pagination.page - 1) : null,
+                  })
+                }
+                disabled={pagination.page <= 1 || navPending}
+                className="h-8 px-3 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
+              >
+                Anterior
+              </button>
+              <span className="text-[var(--muted)] tabular-nums num">
+                {pagination.page} / {pagination.totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  pushParams({ page: String(pagination.page + 1) })
+                }
+                disabled={
+                  pagination.page >= pagination.totalPages || navPending
+                }
+                className="h-8 px-3 rounded-lg bg-[var(--overlay-1)] hover:bg-[var(--overlay-3)] text-[var(--text)] disabled:opacity-40 disabled:pointer-events-none transition-colors"
+              >
+                Siguiente
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -25,15 +25,28 @@ const parseMonth = (raw: string | undefined): string => {
   return currentMonth()
 }
 
+const PAGE_SIZE = 100
+
+const parsePage = (raw: string | undefined): number => {
+  const n = parseInt(raw ?? '1', 10)
+  return Number.isFinite(n) && n >= 1 ? n : 1
+}
+
 export default async function TransaccionesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string; type?: string; q?: string }>
+  searchParams: Promise<{
+    month?: string
+    type?: string
+    q?: string
+    page?: string
+  }>
 }) {
   const params = await searchParams
   const month = parseMonth(params.month)
   const type = parseType(params.type)
   const q = (params.q ?? '').trim()
+  const page = parsePage(params.page)
 
   const supabase = await createClient()
   const {
@@ -61,12 +74,20 @@ export default async function TransaccionesPage({
     )
   }
 
-  // Build the filtered query — include subtransactions so split rows can be
-  // rendered with their child categories + amounts.
+  // Build la query filtrada con paginación server-side.
+  // Antes esto retornaba TODAS las transacciones del mes sin límite.
+  // Un usuario activo con 500+ transacciones/mes cargaba todo a la
+  // vez. Ahora PAGE_SIZE=100 con range() de Postgres. El client
+  // muestra paginador prev/next. (Auditoría calidad L3.)
+  //
+  // count='exact' agrega un costo de query (Postgres tiene que
+  // contar todas las filas) pero permite mostrar "página 2 de 5" en
+  // la UI sin un round-trip extra.
   let txnsQuery = supabase
     .from('transactions')
     .select(
       'id, date, payee_name, category_id, account_id, amount, memo, created_at, is_split, transfer_account_id, transfer_transaction_id, receipt_url, receipt_path, subtransactions(id, category_id, amount, memo)',
+      { count: 'exact' },
     )
     .eq('budget_id', budget.id)
 
@@ -91,6 +112,7 @@ export default async function TransaccionesPage({
   txnsQuery = txnsQuery
     .order('date', { ascending: false })
     .order('created_at', { ascending: false })
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
 
   const [txnsRes, accountsRes, categoriesRes, groupsRes] = await Promise.all([
     txnsQuery,
@@ -170,6 +192,8 @@ export default async function TransaccionesPage({
   })
 
   const filters: FilterState = { month, type, q }
+  const totalCount = txnsRes.count ?? transactions.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   return (
     <TransactionsClient
@@ -178,6 +202,7 @@ export default async function TransaccionesPage({
       categories={categories}
       hasBudget={true}
       filters={filters}
+      pagination={{ page, totalPages, totalCount, pageSize: PAGE_SIZE }}
     />
   )
 }

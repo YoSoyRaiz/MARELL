@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { convertAmount, parseCurrency, type Currency } from '@/lib/money'
+import { computeReadyToAssign } from '@/lib/budget'
 import { AppShell } from './AppShell'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -88,56 +88,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   if (budget) {
-    // Ready to Assign = total_cash − Σ(category.available_lifetime)
-    // where category.available = lifetime_assignments + lifetime_activity.
-    // This is the YNAB formula: cash that hasn't been earmarked to a
-    // category. Carry-over of unspent balances + overspending coverage
-    // both fall out of this naturally.
-    const [accountsRes, assignsRes, txnsRes, subsRes] = await Promise.all([
-      supabase
-        .from('accounts')
-        .select('balance, type, currency, closed')
-        .eq('budget_id', budget.id),
-      supabase.from('monthly_assignments').select('assigned').eq('budget_id', budget.id),
-      supabase
-        .from('transactions')
-        .select('amount, category_id')
-        .eq('budget_id', budget.id)
-        .not('category_id', 'is', null),
-      supabase
-        .from('subtransactions')
-        .select('amount, transactions!inner(budget_id)')
-        .eq('transactions.budget_id', budget.id)
-        .not('category_id', 'is', null),
-    ])
-
-    const cashTypes = ['checking', 'savings', 'cash']
-    const budgetCurrency: Currency = parseCurrency(budget.currency as string | null)
-    const fxRate = Number(
-      (budget as { usd_to_dop_rate?: number | null }).usd_to_dop_rate ?? 60,
-    )
-    // USD-denominated accounts in a DOP budget (or vice versa) get
-    // normalized into the budget's currency before summing so the topbar
-    // pill never lies about how much cash actually buys. Closed accounts
-    // are archived and their balance is irrelevant to current cash.
-    const totalCash = (accountsRes.data ?? [])
-      .filter((a) => cashTypes.includes(a.type as string) && a.closed !== true)
-      .reduce((s, a) => {
-        const accCurrency = parseCurrency(a.currency as string | null)
-        const native = Number(a.balance)
-        return s + convertAmount(native, accCurrency, budgetCurrency, fxRate)
-      }, 0)
-
-    const totalAssignedLifetime = (assignsRes.data ?? []).reduce(
-      (s, a) => s + Number(a.assigned),
-      0,
-    )
-    const totalCategorizedActivity =
-      (txnsRes.data ?? []).reduce((s, t) => s + Number(t.amount), 0) +
-      (subsRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0)
-
-    const sumCategoryAvailable = totalAssignedLifetime + totalCategorizedActivity
-    readyToAssign = Math.round((totalCash - sumCategoryAvailable) * 100) / 100
+    // Ready to Assign cálculo movido a @/lib/budget para deduplicar la
+    // misma computación que page.tsx hacía redundantemente.
+    // (Auditoría de calidad L1.)
+    const result = await computeReadyToAssign(supabase, {
+      id: budget.id as string,
+      currency: budget.currency as string | null,
+      usd_to_dop_rate: (budget as { usd_to_dop_rate?: number | null })
+        .usd_to_dop_rate,
+    })
+    readyToAssign = result.readyToAssign
 
     // Scheduled transactions firing in the next 3 days → bell.
     const todayStr = new Date(Date.now() - 4 * 60 * 60 * 1000)
