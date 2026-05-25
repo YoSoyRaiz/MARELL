@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, AlertCircle, Trash2, Archive, ArchiveRestore } from 'lucide-react'
+import { AlertCircle, Trash2, Archive, ArchiveRestore } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { AccountTypeSelect } from '@/app/onboarding/wizard/components/AccountTypeSelect'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import type { AccountType } from '@/app/onboarding/wizard/types'
 import {
   createAccount,
@@ -191,35 +192,22 @@ export function AccountFormModal({ isOpen, onClose, mode, initial }: AccountForm
         aria-labelledby="account-form-title"
         className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
-              {isEdit ? 'Editar cuenta' : 'Nueva cuenta'}
-            </div>
-            <h2
-              id="account-form-title"
-              className="text-[20px] font-bold mt-1 leading-tight tracking-tight"
-            >
-              {isEdit ? (
-                <>
-                  Edita los <span className="gradient-text">detalles</span>
-                </>
-              ) : (
-                <>
-                  Agrega una <span className="gradient-text">cuenta</span>
-                </>
-              )}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={onClose}>
+          <ModalTitle
+            id="account-form-title"
+            eyebrow={isEdit ? 'Editar cuenta' : 'Nueva cuenta'}
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            {isEdit ? (
+              <>
+                Edita los <span className="gradient-text">detalles</span>
+              </>
+            ) : (
+              <>
+                Agrega una <span className="gradient-text">cuenta</span>
+              </>
+            )}
+          </ModalTitle>
+        </ModalHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           <Field label="Nombre">

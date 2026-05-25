@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import {
-  X,
   AlertCircle,
   TrendingDown,
   TrendingUp,
@@ -16,6 +15,7 @@ import {
 } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 import { MONTH_NAMES_SHORT } from '@/lib/dates'
+import { ModalHeader } from '@/components/ui/ModalHeader'
 
 interface CategoryDrillModalProps {
   isOpen: boolean
@@ -124,7 +124,7 @@ export function CategoryDrillModal({
         aria-labelledby="drill-title"
         className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
+        <ModalHeader onClose={onClose}>
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-10 h-10 rounded-lg bg-[var(--overlay-1)] text-[var(--text2)] flex items-center justify-center shrink-0">
               <Icon size={18} strokeWidth={2} />
@@ -155,15 +155,7 @@ export function CategoryDrillModal({
               )}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
-          >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+        </ModalHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {loading && (

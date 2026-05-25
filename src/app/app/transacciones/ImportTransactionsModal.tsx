@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  X,
   Upload,
   FileText,
   AlertCircle,
@@ -19,6 +18,7 @@ import { suggestCategoryFromMerchantPattern } from './merchantPatterns'
 import { useFormatMoney } from '../CurrencyProvider'
 import { MONTH_NAMES_SHORT } from '@/lib/dates'
 import { Button } from '@/components/ui/Button'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 
 interface AccountOption {
   id: string
@@ -347,32 +347,21 @@ export function ImportTransactionsModal({
         aria-labelledby="import-tx-title"
         className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
-              Importar transacciones
-            </div>
-            <h2
-              id="import-tx-title"
-              className="text-[20px] font-bold mt-1 leading-tight tracking-tight"
-            >
-              Sube un <span className="gradient-text">estado de cuenta</span>
-            </h2>
-            <div className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
-              Acepta <span className="text-[var(--text2)]">CSV</span> y{' '}
-              <span className="text-[var(--text2)]">PDF</span>. Las categorías se
-              sugieren automáticamente con base en tu historial.
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={onClose}>
+          <ModalTitle
+            id="import-tx-title"
+            eyebrow="Importar transacciones"
+            description={
+              <>
+                Acepta <span className="text-[var(--text2)]">CSV</span> y{' '}
+                <span className="text-[var(--text2)]">PDF</span>. Las categorías se
+                sugieren automáticamente con base en tu historial.
+              </>
+            }
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            Sube un <span className="gradient-text">estado de cuenta</span>
+          </ModalTitle>
+        </ModalHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           {/* File drop zone */}

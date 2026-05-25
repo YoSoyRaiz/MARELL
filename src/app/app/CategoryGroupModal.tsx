@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './plan/InlineMoneyEdit'
 import { updateAssignment } from './plan/actions'
 import { useReadyToAssign } from './ReadyToAssignProvider'
 import { useFormatMoney } from './CurrencyProvider'
 import { Button } from '@/components/ui/Button'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 
 export interface ModalCategory {
   id: string
@@ -109,32 +109,17 @@ export function CategoryGroupModal({
         aria-labelledby="category-modal-title"
         className="relative w-full max-w-xl max-h-[85vh] flex flex-col rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] sm:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
       >
-        {/* Header */}
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
-              {group.name}
-            </div>
-            <h2
-              id="category-modal-title"
-              className="text-[20px] font-bold mt-1 leading-tight tracking-tight"
-            >
-              Asigna dinero a tus <span className="gradient-text">categorías</span>
-            </h2>
-            <div className="text-[12px] text-[var(--muted)] mt-1">
-              {group.categories.length}{' '}
-              {group.categories.length === 1 ? 'categoría' : 'categorías'}
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={onClose}>
+          <ModalTitle
+            id="category-modal-title"
+            eyebrow={group.name}
+            description={`${group.categories.length} ${
+              group.categories.length === 1 ? 'categoría' : 'categorías'
+            }`}
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            Asigna dinero a tus <span className="gradient-text">categorías</span>
+          </ModalTitle>
+        </ModalHeader>
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto">

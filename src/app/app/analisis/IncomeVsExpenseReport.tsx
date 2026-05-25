@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { TrendingUp, TrendingDown, Wallet, Percent, Scale } from 'lucide-react'
 import { IncomeExpenseChart } from './IncomeExpenseChart'
 import { ReportEmptyState } from './ReportEmptyState'
+import { Card } from '@/components/ui/Card'
 import { useCurrency, useFormatMoney } from '../CurrencyProvider'
 
 export type Range = 'six_months' | 'twelve_months' | 'twenty_four_months' | 'all'
@@ -259,7 +260,7 @@ interface KpiCardProps {
 
 function KpiCard({ label, value, Icon, iconBg, iconColor, valueClass }: KpiCardProps) {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
+    <Card padding="md">
       <div className="flex items-center justify-between mb-3">
         <div className={`w-9 h-9 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center`}>
           <Icon size={16} strokeWidth={2} />
@@ -275,6 +276,6 @@ function KpiCard({ label, value, Icon, iconBg, iconColor, valueClass }: KpiCardP
       >
         {value}
       </div>
-    </div>
+    </Card>
   )
 }

@@ -20,6 +20,7 @@ import {
   type ScheduledType,
 } from './actions'
 import { Button } from '@/components/ui/Button'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 
 interface Account {
   id: string
@@ -237,35 +238,22 @@ export function ScheduledFormModal({
         aria-labelledby="sched-form-title"
         className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] sm:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
-              {isEdit ? 'Editar programada' : 'Nueva programada'}
-            </div>
-            <h2
-              id="sched-form-title"
-              className="text-[20px] font-bold mt-1 leading-tight tracking-tight"
-            >
-              {isEdit ? (
-                <>
-                  Edita la <span className="gradient-text">recurrencia</span>
-                </>
-              ) : (
-                <>
-                  Programa un <span className="gradient-text">movimiento</span>
-                </>
-              )}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={onClose}>
+          <ModalTitle
+            id="sched-form-title"
+            eyebrow={isEdit ? 'Editar programada' : 'Nueva programada'}
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            {isEdit ? (
+              <>
+                Edita la <span className="gradient-text">recurrencia</span>
+              </>
+            ) : (
+              <>
+                Programa un <span className="gradient-text">movimiento</span>
+              </>
+            )}
+          </ModalTitle>
+        </ModalHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           {/* Plantillas RD — only visible in add mode to avoid surprising

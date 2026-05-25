@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from 'react'
-import { ArrowRight, X, ArrowLeftRight, AlertCircle } from 'lucide-react'
+import { ArrowRight, ArrowLeftRight, AlertCircle } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { moveMoneyBetweenCategories } from './actions'
 import { useReadyToAssign } from '../ReadyToAssignProvider'
 import { useFormatMoney } from '../CurrencyProvider'
 import { Button } from '@/components/ui/Button'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 import type { PlanGroup } from './PlanView'
 
 interface MoveMoneyModalProps {
@@ -139,31 +140,28 @@ export function MoveMoneyModal({
         aria-labelledby="move-money-title"
         className="relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] sm:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] inline-flex items-center gap-2">
-              <ArrowLeftRight size={12} strokeWidth={2.4} />
-              Mover dinero
-            </div>
-            <h2
-              id="move-money-title"
-              className="text-[18px] font-bold mt-1 leading-tight tracking-tight"
-            >
-              De <span className="gradient-text">{sourceCategory.name}</span> a otra categoría
-            </h2>
-            <div className="text-[12px] text-[var(--muted)] mt-1 num tabular-nums">
-              Disponible aquí: <span className="text-[var(--text2)]">{fmtMoney(fromAvailable)}</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={onClose}>
+          <ModalTitle
+            id="move-money-title"
+            size="compact"
+            eyebrow={
+              <span className="inline-flex items-center gap-2">
+                <ArrowLeftRight size={12} strokeWidth={2.4} />
+                Mover dinero
+              </span>
+            }
+            description={
+              <span className="num tabular-nums">
+                Disponible aquí:{' '}
+                <span className="text-[var(--text2)]">
+                  {fmtMoney(fromAvailable)}
+                </span>
+              </span>
+            }
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            De <span className="gradient-text">{sourceCategory.name}</span> a otra categoría
+          </ModalTitle>
+        </ModalHeader>
 
         <div className="px-6 py-4 space-y-4">
           {/* Source preview */}

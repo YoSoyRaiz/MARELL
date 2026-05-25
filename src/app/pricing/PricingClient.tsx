@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import {
   ArrowRight,
-  X,
   Copy,
   Check,
   Mail,
@@ -18,6 +17,7 @@ import {
   PRO_PRICE_YEAR_DOP,
   paymentReference,
 } from '@/lib/payment'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 
 const fmt = (n: number) =>
   `RD$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
@@ -127,24 +127,14 @@ function PaymentDialog({
         aria-labelledby="pay-title"
         className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4 sticky top-0 bg-[var(--s1)] z-10">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
-              Pago por transferencia
-            </div>
-            <h2 id="pay-title" className="text-[20px] font-bold mt-1 leading-tight tracking-tight">
-              Activa <span className="gradient-text">MARELL Pro</span>
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center transition-colors shrink-0"
-          >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+        <ModalHeader
+          onClose={onClose}
+          className="sticky top-0 bg-[var(--s1)] z-10"
+        >
+          <ModalTitle id="pay-title" eyebrow="Pago por transferencia">
+            Activa <span className="gradient-text">MARELL Pro</span>
+          </ModalTitle>
+        </ModalHeader>
 
         <div className="px-6 py-5 space-y-5">
           {/* Cycle toggle */}

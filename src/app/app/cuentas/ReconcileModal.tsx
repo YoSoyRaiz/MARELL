@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useTransition, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, AlertCircle, Scale, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, Scale, CheckCircle2 } from 'lucide-react'
 import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { reconcileAccount } from './actions'
 import { useFormatMoney } from '../CurrencyProvider'
 import { Button } from '@/components/ui/Button'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 
 interface ReconcileModalProps {
   isOpen: boolean
@@ -96,31 +97,21 @@ export function ReconcileModal({
         aria-labelledby="reconcile-title"
         className="relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_-24px_64px_rgba(0,0,0,0.6)] sm:shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] inline-flex items-center gap-2">
-              <Scale size={12} strokeWidth={2.4} />
-              Reconciliar
-            </div>
-            <h2
-              id="reconcile-title"
-              className="text-[18px] font-bold mt-1 leading-tight tracking-tight"
-            >
-              Cuadra <span className="gradient-text">{accountName}</span> con tu banco
-            </h2>
-            <p className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
-              Pon el balance que ves en tu app del banco. Cerramos cualquier diferencia con un ajuste y bloqueamos lo que ya pasó.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={onClose}>
+          <ModalTitle
+            id="reconcile-title"
+            size="compact"
+            eyebrow={
+              <span className="inline-flex items-center gap-2">
+                <Scale size={12} strokeWidth={2.4} />
+                Reconciliar
+              </span>
+            }
+            description="Pon el balance que ves en tu app del banco. Cerramos cualquier diferencia con un ajuste y bloqueamos lo que ya pasó."
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            Cuadra <span className="gradient-text">{accountName}</span> con tu banco
+          </ModalTitle>
+        </ModalHeader>
 
         {done ? (
           <>

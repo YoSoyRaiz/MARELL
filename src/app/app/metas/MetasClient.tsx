@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { Card } from '@/components/ui/Card'
 import { GoalFormModal, type InitialGoal } from './GoalFormModal'
 import { clearGoal, type GoalType } from './actions'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
@@ -417,7 +418,7 @@ function KpiCard({
   iconColor = 'text-[var(--text2)]',
 }: KpiCardProps) {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
+    <Card padding="md">
       <div className="flex items-center justify-between mb-3">
         <div
           className={`w-9 h-9 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center`}
@@ -432,6 +433,6 @@ function KpiCard({
         {value}
       </div>
       {sub && <div className="text-[11px] text-[var(--muted)] mt-1 num tabular-nums">{sub}</div>}
-    </div>
+    </Card>
   )
 }

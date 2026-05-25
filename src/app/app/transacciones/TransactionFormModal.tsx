@@ -23,6 +23,7 @@ import {
   type TransactionType,
 } from './actions'
 import { ReceiptCapture } from './ReceiptCapture'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 
 type EntryType = TransactionType | 'transfer'
 
@@ -416,32 +417,22 @@ export function TransactionFormModal({
         aria-labelledby="tx-form-title"
         className="relative w-full max-w-md max-h-[100dvh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step pb-[env(safe-area-inset-bottom)] sm:pb-0"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
-              {isEdit ? 'Editar transacción' : 'Nueva transacción'}
-            </div>
-            <h2 id="tx-form-title" className="text-[20px] font-bold mt-1 leading-tight tracking-tight">
-              {isEdit ? (
-                <>
-                  Edita el <span className="gradient-text">movimiento</span>
-                </>
-              ) : (
-                <>
-                  Agrega un <span className="gradient-text">movimiento</span>
-                </>
-              )}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={onClose}>
+          <ModalTitle
+            id="tx-form-title"
+            eyebrow={isEdit ? 'Editar transacción' : 'Nueva transacción'}
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            {isEdit ? (
+              <>
+                Edita el <span className="gradient-text">movimiento</span>
+              </>
+            ) : (
+              <>
+                Agrega un <span className="gradient-text">movimiento</span>
+              </>
+            )}
+          </ModalTitle>
+        </ModalHeader>
 
         {/* Error banner pinned just under the header so the user always
             sees what failed, even if they're scrolled to the bottom of

@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
-import { Apple, Smartphone, Share, Plus, X, Check } from 'lucide-react'
+import { Apple, Smartphone, Share, Plus, Check } from 'lucide-react'
 import { InteractiveCard } from './InteractiveCard'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 
 // Chrome/Edge fire `beforeinstallprompt` so we can offer an in-page
 // install button. Safari (iOS) doesn't — the user has to use the
@@ -257,29 +258,19 @@ function IosInstructions({ onClose }: { onClose: () => void }) {
         aria-labelledby="ios-title"
         className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] inline-flex items-center gap-2">
-              <Apple size={12} strokeWidth={2.4} />
-              iPhone / iPad
-            </div>
-            <h2
-              id="ios-title"
-              className="text-[20px] font-bold mt-1 leading-tight tracking-tight"
-            >
-              Instala MARELL en{' '}
-              <span className="gradient-text">3 pasos</span>
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={onClose}>
+          <ModalTitle
+            id="ios-title"
+            eyebrow={
+              <span className="inline-flex items-center gap-2">
+                <Apple size={12} strokeWidth={2.4} />
+                iPhone / iPad
+              </span>
+            }
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            Instala MARELL en <span className="gradient-text">3 pasos</span>
+          </ModalTitle>
+        </ModalHeader>
 
         <ol className="px-6 py-5 space-y-5">
           <Step

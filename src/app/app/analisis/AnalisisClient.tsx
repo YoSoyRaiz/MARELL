@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ChartPie, TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { MultiSegmentDonut } from './MultiSegmentDonut'
+import { Card } from '@/components/ui/Card'
 import { ReportEmptyState } from './ReportEmptyState'
 import { useFormatMoney, useFormatMoneyShort } from '../CurrencyProvider'
 
@@ -288,7 +289,7 @@ interface KpiCardProps {
 function KpiCard({ label, value, Icon, iconBg, iconColor, highlight, isCount }: KpiCardProps) {
   const fmtMoney = useFormatMoney()
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
+    <Card padding="md">
       <div className="flex items-center justify-between mb-3">
         <div
           className={`w-9 h-9 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center`}
@@ -306,6 +307,6 @@ function KpiCard({ label, value, Icon, iconBg, iconColor, highlight, isCount }: 
       >
         {isCount ? Math.round(value) : fmtMoney(value)}
       </div>
-    </div>
+    </Card>
   )
 }

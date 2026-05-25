@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Keyboard, X } from 'lucide-react'
+import { Keyboard } from 'lucide-react'
+import { ModalHeader, ModalTitle } from '@/components/ui/ModalHeader'
 
 interface ShortcutDef {
   keys: string
@@ -148,31 +149,29 @@ export function KeyboardShortcuts() {
         aria-labelledby="shortcuts-title"
         className="relative w-full max-w-md rounded-2xl border border-[var(--border2)] bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-step"
       >
-        <header className="px-6 pt-5 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] inline-flex items-center gap-2">
-              <Keyboard size={12} strokeWidth={2.4} />
-              Atajos
-            </div>
-            <h2
-              id="shortcuts-title"
-              className="text-[18px] font-bold mt-1 leading-tight tracking-tight"
-            >
-              Muévete <span className="gradient-text">rápido</span> por MARELL
-            </h2>
-            <p className="text-[12px] text-[var(--muted)] mt-1 leading-relaxed">
-              Presiona <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--overlay-1)] border border-[var(--border)] font-mono text-[10px]">g</kbd> seguido de la letra para navegar.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setHelpOpen(false)}
-            aria-label="Cerrar"
-            className="w-9 h-9 rounded-lg text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)] flex items-center justify-center transition-colors shrink-0"
+        <ModalHeader onClose={() => setHelpOpen(false)}>
+          <ModalTitle
+            id="shortcuts-title"
+            size="compact"
+            eyebrow={
+              <span className="inline-flex items-center gap-2">
+                <Keyboard size={12} strokeWidth={2.4} />
+                Atajos
+              </span>
+            }
+            description={
+              <>
+                Presiona{' '}
+                <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--overlay-1)] border border-[var(--border)] font-mono text-[10px]">
+                  g
+                </kbd>{' '}
+                seguido de la letra para navegar.
+              </>
+            }
           >
-            <X size={18} strokeWidth={2.2} />
-          </button>
-        </header>
+            Muévete <span className="gradient-text">rápido</span> por MARELL
+          </ModalTitle>
+        </ModalHeader>
         <ul className="px-6 py-4 divide-y divide-[var(--border)]">
           {HELP_LIST.map((s) => (
             <li

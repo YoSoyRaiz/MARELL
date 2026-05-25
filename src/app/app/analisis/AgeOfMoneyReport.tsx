@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Hourglass, Sparkles, Calendar, ArrowUp, ArrowDown } from 'lucide-react'
 import { AgeOfMoneyChart } from './AgeOfMoneyChart'
 import { ReportEmptyState } from './ReportEmptyState'
+import { Card } from '@/components/ui/Card'
 
 export type AomRange = 'six_months' | 'twelve_months' | 'twenty_four_months'
 
@@ -274,7 +275,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, sub, Icon, iconColor }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5">
+    <Card padding="md">
       <div className="flex items-center justify-between mb-3">
         <div
           className={`w-9 h-9 rounded-lg bg-[var(--overlay-1)] flex items-center justify-center ${
@@ -291,6 +292,6 @@ function StatCard({ label, value, sub, Icon, iconColor }: StatCardProps) {
         {value}
       </div>
       {sub && <div className="text-[11px] text-[var(--muted)] mt-1">{sub}</div>}
-    </div>
+    </Card>
   )
 }
