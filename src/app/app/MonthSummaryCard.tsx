@@ -11,7 +11,10 @@ interface MonthSummaryCardProps {
   prevMonthNet: number
   totalIncome: number
   totalExpenses: number
-  readyToAssign: number
+  /** Total presupuestado a categorías este mes. Reemplaza la fila
+   *  "Disponible para asignar" porque esa cifra ya vive en el TopBar
+   *  como source-of-truth global — duplicarla aquí era ruido. */
+  totalAssigned: number
   fmtMoney: (n: number) => string
 }
 
@@ -29,22 +32,18 @@ export function MonthSummaryCard({
   prevMonthNet,
   totalIncome,
   totalExpenses,
-  readyToAssign,
+  totalAssigned,
   fmtMoney,
 }: MonthSummaryCardProps) {
   // Color coding for "Disponible mes pasado" — negative carry-over (the
   // user overspent last month) shows in coral so it doesn't quietly
-  // blend with the rest. Same logic for Ready-to-Assign.
+  // blend with the rest.
   const prevNetTone =
     prevMonthNet < -0.005
       ? 'text-[var(--coral-text)]'
       : prevMonthNet > 0.005
         ? 'text-[var(--brand-text)]'
         : 'text-[var(--text2)]'
-  const rtaTone =
-    readyToAssign < -0.005
-      ? 'text-[var(--coral-text)]'
-      : 'text-[var(--brand-text)]'
 
   return (
     <Card as="section" className="overflow-hidden">
@@ -83,10 +82,10 @@ export function MonthSummaryCard({
           tone="text-[var(--coral-text)]"
         />
         <Row
-          label="Disponible para asignar"
-          hint="Dinero que aún no le has dado un trabajo"
-          value={fmtMoney(readyToAssign)}
-          tone={rtaTone}
+          label="Asignado este mes"
+          hint="Lo que ya tiene un trabajo asignado"
+          value={fmtMoney(totalAssigned)}
+          tone="text-[var(--text)]"
           bold
         />
       </ul>

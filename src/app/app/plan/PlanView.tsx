@@ -641,7 +641,7 @@ export function PlanView({
         <div
           role="status"
           aria-live="polite"
-          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border border-[var(--brand-2)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step pointer-events-none"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 lg:bottom-6 lg:left-auto lg:right-6 lg:translate-x-0 z-50 px-5 py-3 rounded-2xl border border-[var(--brand-2)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step pointer-events-none"
         >
           <CheckCircle2
             size={18}
@@ -656,7 +656,7 @@ export function PlanView({
       {payError && (
         <div
           role="alert"
-          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border border-[var(--coral)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 lg:bottom-6 lg:left-auto lg:right-6 lg:translate-x-0 z-50 px-5 py-3 rounded-2xl border border-[var(--coral)]/40 bg-[var(--s1)] shadow-[0_24px_64px_rgba(0,0,0,0.4)] inline-flex items-center gap-2.5 max-w-[92vw] animate-step"
         >
           <span className="text-body text-[var(--coral-text)] font-medium">
             {payError}

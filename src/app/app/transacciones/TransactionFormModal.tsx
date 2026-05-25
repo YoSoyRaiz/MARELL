@@ -205,9 +205,10 @@ export function TransactionFormModal({
     amount !== null && Math.abs(splitsSum - (amount ?? 0)) < 0.005
   const splitsRemainder = amount !== null ? Math.round((amount - splitsSum) * 100) / 100 : 0
 
-  // Compact mode (mobile FAB) lets the user save without a payee — we
-  // fill in a sensible fallback server-side. Outside compact mode the
-  // payee stays required as before.
+  // Payee/comercio es opcional siempre — si la categoría ya está elegida
+  // (flujo más común desde la card de categoría), pedir un comercio extra
+  // es fricción innecesaria. Cuando viene vacío, el server pone un
+  // fallback sensible ("Sin comercio" o similar).
   const valid = isTransfer
     ? accountId !== '' &&
       toAccountId !== '' &&
@@ -216,7 +217,6 @@ export function TransactionFormModal({
       amount > 0 &&
       /^\d{4}-\d{2}-\d{2}$/.test(date)
     : accountId !== '' &&
-      (compactMobile || payeeName.trim().length > 0) &&
       amount !== null &&
       amount > 0 &&
       /^\d{4}-\d{2}-\d{2}$/.test(date) &&
@@ -233,9 +233,6 @@ export function TransactionFormModal({
     if (toAccountId === '') missingFields.push('cuenta destino')
     if (accountId !== '' && accountId === toAccountId) missingFields.push('cuentas distintas')
   } else {
-    if (!compactMobile && payeeName.trim().length === 0) {
-      missingFields.push('comercio')
-    }
     if (splitMode) {
       if (splits.length < 2 || !splits.every((s) => s.amount > 0)) {
         missingFields.push('split completo')

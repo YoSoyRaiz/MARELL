@@ -718,7 +718,7 @@ export default async function ResumenPage() {
           prevMonthNet={prevMonthSavings}
           totalIncome={totalIncome}
           totalExpenses={totalExpenses}
-          readyToAssign={readyToAssign}
+          totalAssigned={totalAssigned}
           fmtMoney={fmtMoney}
         />
 

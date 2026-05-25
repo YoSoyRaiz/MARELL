@@ -71,7 +71,7 @@ export function AnalisisShell({ active, children }: AnalisisShellProps) {
               title={t.enabled ? undefined : 'Próximamente'}
               className={`h-9 px-4 text-body-sm font-medium rounded-lg inline-flex items-center gap-2 whitespace-nowrap transition-colors ${
                 isActive
-                  ? 'gradient-bg text-[#0B0B0C]'
+                  ? 'bg-[var(--s1)] text-[var(--text)] shadow-[inset_0_-2px_0_var(--brand-2)]'
                   : t.enabled
                     ? 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
                     : 'text-[var(--muted2)] cursor-not-allowed'
