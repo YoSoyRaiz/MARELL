@@ -811,7 +811,7 @@ export default async function ResumenPage() {
                 </span>
                 <span
                   className={`text-body tabular-nums num font-semibold ${
-                    prevMonthSavings >= 0 ? 'gradient-text' : 'text-[var(--coral-text)]'
+                    prevMonthSavings >= 0 ? 'text-[var(--brand-text)]' : 'text-[var(--coral-text)]'
                   }`}
                 >
                   {fmtMoney(Math.abs(prevMonthSavings))}

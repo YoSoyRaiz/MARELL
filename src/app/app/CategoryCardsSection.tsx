@@ -144,7 +144,7 @@ export function CategoryCardsSection({
                     </div>
                     <div
                       className={`text-h2 font-bold tabular-nums num leading-none mt-0.5 ${
-                        isOverspent ? 'text-[var(--coral-text)]' : 'gradient-text'
+                        isOverspent ? 'text-[var(--coral-text)]' : 'text-[var(--brand-text)]'
                       }`}
                     >
                       {fmtMoneyShort(g.available)}
@@ -155,7 +155,7 @@ export function CategoryCardsSection({
                     </div>
                     <div className="mt-2.5 h-1.5 rounded-full bg-[var(--overlay-1)] overflow-hidden">
                       <div
-                        className="h-full gradient-bg transition-[width] duration-500"
+                        className="h-full bg-[var(--brand-2)] transition-[width] duration-500"
                         style={{ width: `${pct * 100}%` }}
                       />
                     </div>

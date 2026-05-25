@@ -126,7 +126,7 @@ export function CategoryGroupModal({
               const available = c.available + delta
               const availColor =
                 available > 0.005
-                  ? 'gradient-text'
+                  ? 'text-[var(--brand-text)]'
                   : available < -0.005
                     ? 'text-[var(--coral-text)]'
                     : 'text-[var(--muted)]'

@@ -80,7 +80,7 @@ export function UpcomingCommitments({
               </div>
               <div
                 className={`text-emph font-bold tabular-nums num ${
-                  projectedCash < -0.005 ? 'text-[var(--coral-text)]' : 'gradient-text'
+                  projectedCash < -0.005 ? 'text-[var(--coral-text)]' : 'text-[var(--brand-text)]'
                 }`}
               >
                 {fmtMoneyShort(projectedCash)}

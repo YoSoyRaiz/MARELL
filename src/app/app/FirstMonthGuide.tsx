@@ -184,11 +184,11 @@ export function FirstMonthGuide({
           <h2 className="text-h3 font-bold leading-tight tracking-tight mt-1">
             {allDone ? (
               <>
-                Dominaste el <span className="gradient-text">flujo</span>.
+                Dominaste el <span className="text-[var(--brand-text)]">flujo</span>.
               </>
             ) : (
               <>
-                4 pasos para ponerle <span className="gradient-text">trabajo a cada peso</span>
+                4 pasos para ponerle <span className="text-[var(--brand-text)]">trabajo a cada peso</span>
               </>
             )}
           </h2>
