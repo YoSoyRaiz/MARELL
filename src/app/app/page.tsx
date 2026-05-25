@@ -18,7 +18,6 @@ import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { FirstMonthGuide } from './FirstMonthGuide'
 import { CategoryAccordion } from './CategoryAccordion'
 import { MonthSummaryCard } from './MonthSummaryCard'
-import { materializeDue } from './programadas/actions'
 import {
   currentMonthDR,
   monthBoundsISO,
@@ -73,15 +72,12 @@ export default async function ResumenPage() {
     )
   }
 
-  // Materialize any due scheduled transactions before fetching dashboard data
-  // so the recurring income/expenses are reflected in account balances and the
-  // current month's totals immediately when the user opens the app.
-  // Wrapped: a failure here shouldn't 500 the entire dashboard.
-  try {
-    await materializeDue(budget.id as string)
-  } catch (err) {
-    console.error('[materializeDue] failed', err)
-  }
+  // Antes el dashboard llamaba a materializeDue() aquí en cada page-load,
+  // escaneando scheduled_transactions y haciendo INSERTs en línea. Eso
+  // movido al cron /api/cron/materialize-scheduled (corre 4:30 AM DR).
+  // (Auditoría calidad L2.) El reflejo "inmediato" se sigue dando porque
+  // la pantalla de Programadas mantiene el call directo cuando el usuario
+  // entra a esa sección — el resto del tiempo el cron es suficiente.
 
   const currency = parseCurrency(budget.currency as string | null)
   const fmtMoney = (n: number) => fmtMoneyWithCurrency(n, currency)

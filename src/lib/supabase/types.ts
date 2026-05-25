@@ -405,6 +405,10 @@ export type Database = {
           year_month: string
         }>
       }
+      materialize_due_scheduled: {
+        Args: { p_budget_id: string }
+        Returns: number
+      }
     }
     Enums: Record<string, never>
   }

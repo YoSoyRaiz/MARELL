@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { safeError } from '@/lib/errors'
-import { todayISODR } from '@/lib/dates'
 import { ensurePro } from '@/lib/billing/check-server'
 
 export type Frequency =
@@ -244,42 +243,20 @@ export async function toggleScheduledActive(id: string, active: boolean) {
   return { success: true as const }
 }
 
-// ─── Frequency math ─────────────────────────────────────────────
-
-function parseISO(d: string): Date {
-  const [y, m, day] = d.split('-').map(Number)
-  return new Date(y, m - 1, day)
-}
-
-function toISO(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function advanceDate(iso: string, frequency: Frequency): string {
-  const d = parseISO(iso)
-  switch (frequency) {
-    case 'daily':
-      d.setDate(d.getDate() + 1)
-      break
-    case 'weekly':
-      d.setDate(d.getDate() + 7)
-      break
-    case 'every2weeks':
-      d.setDate(d.getDate() + 14)
-      break
-    case 'monthly':
-      d.setMonth(d.getMonth() + 1)
-      break
-    case 'yearly':
-      d.setFullYear(d.getFullYear() + 1)
-      break
-    case 'once':
-      return iso
-  }
-  return toISO(d)
-}
-
-// ─── Materialization (lazy: runs on /app load) ───────────────────
+// ─── Materialization ─────────────────────────────────────────────
+//
+// La materialización en sí vive en Postgres (RPC
+// materialize_due_scheduled) — corre como una sola transacción
+// atómica para evitar INSERTs huérfanos si la conexión muere entre
+// el INSERT de transactions y el UPDATE de next_date. (Auditoría
+// calidad L4.)
+//
+// Este wrapper sigue exportado porque hay 2 call-sites legítimos:
+//   1) /app/programadas/page.tsx — el usuario está mirando la lista
+//      de programadas, queremos garantizar que esté materializada.
+//   2) cron /api/cron/materialize-scheduled — ejecuta a diario para
+//      todos los budgets, sacándolo del hot path del dashboard.
+//      (Auditoría calidad L2.)
 
 export async function materializeDue(budgetId: string) {
   if (!budgetId) return { created: 0 }
@@ -290,7 +267,8 @@ export async function materializeDue(budgetId: string) {
   } = await supabase.auth.getUser()
   if (!user) return { created: 0 }
 
-  // Verify ownership
+  // Verify ownership before invoking the RPC. The RPC itself relies on
+  // RLS to scope the budget visible to this session.
   const { data: budget } = await supabase
     .from('budgets')
     .select('id')
@@ -299,77 +277,14 @@ export async function materializeDue(budgetId: string) {
     .single()
   if (!budget) return { created: 0 }
 
-  const today = todayISODR()
-
-  const { data: due } = await supabase
-    .from('scheduled_transactions')
-    .select(
-      'id, account_id, category_id, payee_name, memo, amount, frequency, next_date',
-    )
-    .eq('budget_id', budgetId)
-    .eq('active', true)
-    .lte('next_date', today)
-
-  if (!due || due.length === 0) return { created: 0 }
-
-  let created = 0
-
-  // Process each due scheduled txn — may fire multiple times if it's been
-  // many cycles since last materialization.
-  for (const s of due) {
-    let nextDate = s.next_date as string
-    const frequency = s.frequency as Frequency
-    let safety = 0
-    const cap = 366 // hard cap on iterations per scheduled per call
-
-    while (nextDate <= today && safety < cap) {
-      // The trigger maintains accounts.balance for us; no need to read
-      // it before each insert. Saves one query per fire — meaningful
-      // when materializing months of weekly schedules.
-      const amount = Number(s.amount)
-
-      const { error: insertErr } = await supabase.from('transactions').insert({
-        account_id: s.account_id,
-        budget_id: budgetId,
-        date: nextDate,
-        payee_name: s.payee_name,
-        category_id: s.category_id,
-        memo: s.memo,
-        amount,
-        cleared: 'uncleared',
-        approved: true,
-      })
-      if (insertErr) break
-
-      // Balance is updated by the `transactions_balance_sync` trigger
-      // when the row above is inserted.
-
-      created += 1
-
-      if (frequency === 'once') {
-        // Disable after firing once
-        await supabase
-          .from('scheduled_transactions')
-          .update({ active: false })
-          .eq('id', s.id as string)
-        break
-      }
-
-      nextDate = advanceDate(nextDate, frequency)
-      safety += 1
-    }
-
-    if (frequency !== 'once' && nextDate !== s.next_date) {
-      await supabase
-        .from('scheduled_transactions')
-        .update({ next_date: nextDate })
-        .eq('id', s.id as string)
-    }
+  const { data: created, error } = await supabase.rpc(
+    'materialize_due_scheduled',
+    { p_budget_id: budgetId },
+  )
+  if (error) {
+    console.error('[materializeDue] RPC failed', error)
+    return { created: 0 }
   }
 
-  // Note: callers from a server component (page.tsx) re-fetch their data
-  // in the same request, so revalidatePath here would be redundant and can
-  // throw "revalidatePath is only available inside server actions" on some
-  // Next.js versions. Skip it intentionally.
-  return { created }
+  return { created: typeof created === 'number' ? created : 0 }
 }

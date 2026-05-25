@@ -12,6 +12,10 @@
     {
       "path": "/api/cron/azul-renewals",
       "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/cron/materialize-scheduled",
+      "schedule": "30 4 * * *"
     }
   ]
 }
