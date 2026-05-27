@@ -1,9 +1,10 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { TrendingUp, TrendingDown, Wallet, Percent, Scale } from 'lucide-react'
+import { TrendingUp, TrendingDown, Wallet, Percent, Scale, ChevronRight } from 'lucide-react'
 import { IncomeExpenseChart } from './IncomeExpenseChart'
+import { MonthDetailModal } from './MonthDetailModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
@@ -52,6 +53,12 @@ export function IncomeVsExpenseReport({
   const [pending, startTransition] = useTransition()
   const fmtMoney = useFormatMoney()
   const currency = useCurrency()
+  // Estado del modal de detalle por mes. Click en una fila lo abre con
+  // el YYYY-MM correspondiente; el modal hace fetch lazy de las txns.
+  const [detailMonth, setDetailMonth] = useState<{
+    month: string
+    label: string
+  } | null>(null)
 
   const setRange = (next: Range) => {
     const sp = new URLSearchParams(searchParams?.toString() ?? '')
@@ -179,38 +186,63 @@ export function IncomeVsExpenseReport({
                 {months.length} {months.length === 1 ? 'mes' : 'meses'}
               </span>
             </div>
-            <div className="hidden md:grid grid-cols-[1fr_140px_140px_140px] gap-4 px-5 py-2 text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
+            <div className="hidden md:grid grid-cols-[1fr_140px_140px_140px_auto] gap-4 px-5 py-2 text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] border-b border-[var(--border)]">
               <div>Mes</div>
               <div className="text-right">Ingresos</div>
               <div className="text-right">Gastos</div>
               <div className="text-right">Neto</div>
+              <div className="w-[14px]" aria-hidden></div>
             </div>
             <ul className="divide-y divide-[var(--border)]">
               {[...months].reverse().map((m) => {
                 const monthNet = m.income - m.expense
+                const hasActivity = m.income > 0.005 || m.expense > 0.005
                 return (
-                  <li
-                    key={m.month}
-                    className="grid grid-cols-[1fr_140px_140px_140px] gap-4 px-5 py-3 items-center text-body-sm"
-                  >
-                    <div className="text-[var(--text)]">{m.label}</div>
-                    <div className="text-right tabular-nums num text-[var(--brand-text)]">
-                      {fmtMoney(m.income)}
-                    </div>
-                    <div className="text-right tabular-nums num text-[var(--text)]">
-                      {fmtMoney(m.expense)}
-                    </div>
-                    <div
-                      className={`text-right tabular-nums num font-semibold ${
-                        monthNet > 0.005
-                          ? 'gradient-text'
-                          : monthNet < -0.005
-                            ? 'text-[var(--coral-text)]'
-                            : 'text-[var(--muted)]'
+                  <li key={m.month}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        hasActivity &&
+                        setDetailMonth({ month: m.month, label: m.label })
+                      }
+                      disabled={!hasActivity}
+                      className={`w-full grid grid-cols-[1fr_140px_140px_140px_auto] gap-4 px-5 py-3 items-center text-body-sm text-left transition-colors ${
+                        hasActivity
+                          ? 'hover:bg-[var(--overlay-1)] cursor-pointer'
+                          : 'cursor-default opacity-60'
                       }`}
+                      aria-label={
+                        hasActivity
+                          ? `Ver detalle de ${m.label}`
+                          : `${m.label} sin actividad`
+                      }
                     >
-                      {fmtMoney(monthNet)}
-                    </div>
+                      <div className="text-[var(--text)]">{m.label}</div>
+                      <div className="text-right tabular-nums num text-[var(--brand-text)]">
+                        {fmtMoney(m.income)}
+                      </div>
+                      <div className="text-right tabular-nums num text-[var(--text)]">
+                        {fmtMoney(m.expense)}
+                      </div>
+                      <div
+                        className={`text-right tabular-nums num font-semibold ${
+                          monthNet > 0.005
+                            ? 'gradient-text'
+                            : monthNet < -0.005
+                              ? 'text-[var(--coral-text)]'
+                              : 'text-[var(--muted)]'
+                        }`}
+                      >
+                        {fmtMoney(monthNet)}
+                      </div>
+                      <ChevronRight
+                        size={14}
+                        strokeWidth={2.2}
+                        className={`shrink-0 ${
+                          hasActivity ? 'text-[var(--muted2)]' : 'text-transparent'
+                        }`}
+                      />
+                    </button>
                   </li>
                 )
               })}
@@ -218,6 +250,12 @@ export function IncomeVsExpenseReport({
           </Card>
         </>
       )}
+
+      <MonthDetailModal
+        month={detailMonth?.month ?? null}
+        monthLabel={detailMonth?.label ?? ''}
+        onClose={() => setDetailMonth(null)}
+      />
     </div>
   )
 }
