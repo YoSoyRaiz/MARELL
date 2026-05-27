@@ -488,14 +488,7 @@ function PayoffCalculator({
           <label className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
             Pago mensual (DOP)
           </label>
-          <input
-            type="number"
-            min={0}
-            step={100}
-            value={payment}
-            onChange={(e) => setPayment(Math.max(0, Number(e.target.value) || 0))}
-            className="w-full mt-1 !text-body !py-2.5 !px-3 !rounded-xl tabular-nums num"
-          />
+          <MoneyAmountInput value={payment} onChange={setPayment} step={100} />
         </div>
       </div>
 
@@ -612,14 +605,7 @@ function StrategyCompare({
         <label className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
           Pago mensual total (DOP)
         </label>
-        <input
-          type="number"
-          min={0}
-          step={500}
-          value={monthly}
-          onChange={(e) => setMonthly(Math.max(0, Number(e.target.value) || 0))}
-          className="w-full mt-1 !text-body !py-2.5 !px-3 !rounded-xl tabular-nums num"
-        />
+        <MoneyAmountInput value={monthly} onChange={setMonthly} step={500} />
       </div>
 
       <div className="grid sm:grid-cols-2 gap-3">
@@ -833,5 +819,71 @@ function formatMonths(months: number): string {
   const rem = months % 12
   const yearsLabel = `${years} ${years === 1 ? 'año' : 'años'}`
   if (rem === 0) return yearsLabel
-  return `${yearsLabel} ${rem} ${rem === 1 ? 'mes' : 'meses'}`
+  return `${yearsLabel} y ${rem} ${rem === 1 ? 'mes' : 'meses'}`
+}
+
+/**
+ * Input de monto que muestra el número con separador de miles
+ * (1,000 / 30,500) mientras el usuario tipea. Estado local string +
+ * value numérico controlado afuera. Usa text+inputMode=numeric para
+ * que las comas no rompan el control y el teclado numérico aparezca
+ * en mobile.
+ */
+function MoneyAmountInput({
+  value,
+  onChange,
+  step = 100,
+}: {
+  value: number
+  onChange: (n: number) => void
+  step?: number
+}) {
+  const [text, setText] = useState<string>(() =>
+    value > 0 ? value.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '',
+  )
+
+  // Re-sync si el parent resetea (ej. cambio de cuenta seleccionada)
+  useEffect(() => {
+    const parsed = Number(text.replace(/,/g, '')) || 0
+    if (parsed !== value) {
+      setText(value > 0 ? value.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^\d]/g, '')
+    if (raw === '') {
+      setText('')
+      onChange(0)
+      return
+    }
+    const num = Number(raw)
+    setText(num.toLocaleString('en-US', { maximumFractionDigits: 0 }))
+    onChange(num)
+  }
+
+  // Increment/decrement via teclado arrows — comportamiento estilo input number
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      onChange(value + step)
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      onChange(Math.max(0, value - step))
+    }
+  }
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      autoComplete="off"
+      value={text}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
+      placeholder="0"
+      className="w-full mt-1 !text-body !py-2.5 !px-3 !rounded-xl tabular-nums num"
+    />
+  )
 }
