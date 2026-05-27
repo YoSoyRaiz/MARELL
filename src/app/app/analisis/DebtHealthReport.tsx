@@ -831,6 +831,7 @@ function formatMonths(months: number): string {
   if (months < 12) return `${months} ${months === 1 ? 'mes' : 'meses'}`
   const years = Math.floor(months / 12)
   const rem = months % 12
-  if (rem === 0) return `${years} ${years === 1 ? 'año' : 'años'}`
-  return `${years}a ${rem}m`
+  const yearsLabel = `${years} ${years === 1 ? 'año' : 'años'}`
+  if (rem === 0) return yearsLabel
+  return `${yearsLabel} ${rem} ${rem === 1 ? 'mes' : 'meses'}`
 }
