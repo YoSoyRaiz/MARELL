@@ -520,5 +520,58 @@ export async function setTransactionCleared(
   return { success: true as const }
 }
 
+// ── Auto-generated monthly interest ─────────────────────────────
+//
+// Para cuentas de deuda con APR > 0, MARELL puede generar una txn
+// estimada de intereses cada mes. La cifra es una aproximación
+// (balance × APR / 12) que el usuario puede editar si su banco
+// calcula distinto. La implementación vive en src/lib/interest.ts
+// porque también la usa el cron mensual.
+
+export interface GenerateInterestResult {
+  error?: string
+  generated?: number
+  skipped?: number
+  details?: { accountName: string; status: 'generated' | 'skipped'; reason?: string; amount?: number }[]
+}
+
+/**
+ * Acción manual disparada desde la UI (botón en Cuentas o en el
+ * reporte de Salud de deudas). Sin parámetro = mes pasado.
+ */
+export async function generateMonthlyInterest(
+  monthYYYYMM?: string,
+): Promise<GenerateInterestResult> {
+  const { generateInterestForBudget, previousMonthDR } = await import('@/lib/interest')
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('created_by', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  if (!budget) return { error: 'Sin presupuesto' }
+
+  const month = monthYYYYMM ?? previousMonthDR()
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return { error: 'Mes inválido' }
+
+  // Cast: SupabaseClient<Database> es estructuralmente compatible con
+  // SupabaseClient genérico que pide el helper.
+  const result = await generateInterestForBudget(
+    supabase as unknown as Parameters<typeof generateInterestForBudget>[0],
+    budget.id as string,
+    month,
+  )
+  revalidatePath('/app', 'layout')
+  return result
+}
+
 // Helper exposed for the client component
 export { accountCategoryFromType }

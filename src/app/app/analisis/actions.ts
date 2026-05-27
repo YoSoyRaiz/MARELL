@@ -538,3 +538,272 @@ export async function fetchExportData(): Promise<ExportPayload> {
     },
   }
 }
+
+// ── Salud de deudas ─────────────────────────────────────────────
+//
+// Server action específico que reúne todo lo necesario para el
+// reporte de salud de deudas. Snapshot actual + serie histórica
+// de deuda + KPIs derivados (intereses/mes, razón deuda/ingresos,
+// APR ponderado).
+
+export interface DebtAccount {
+  id: string
+  name: string
+  type: string
+  /** Balance siempre devuelto positivo (magnitud de deuda). */
+  balanceDOP: number
+  balanceNative: number
+  nativeCurrency: 'DOP' | 'USD'
+  /** APR en % (ej. 22.5). null si la cuenta no tiene tasa. */
+  apr: number | null
+  /** Intereses estimados al mes en DOP. */
+  monthlyInterestDOP: number
+  cycleCloseDay: number | null
+}
+
+export interface DebtHealthResult {
+  error?: string
+  /** Total de deudas convertido a DOP. */
+  totalDebtDOP?: number
+  /** Tasa APR ponderada por balance (en %). */
+  weightedAvgApr?: number
+  /** Intereses estimados al mes sumando todas las cuentas. */
+  totalMonthlyInterest?: number
+  /** Promedio mensual de ingresos últimos 3 meses (para razones). */
+  avgMonthlyIncome?: number
+  /** Total cash disponible (para ratio deuda/cash). */
+  totalCashDOP?: number
+  /** Razón deuda/ingresos = (total deudas) / (ingresos anuales estimados). */
+  debtToIncomeRatio?: number | null
+  /** Razón deuda/cash = (total deudas) / (cash disponible). */
+  debtToCashRatio?: number | null
+  /** Lista detallada por cuenta. */
+  debts?: DebtAccount[]
+  /** Serie histórica de deuda total (12 meses). */
+  debtHistory?: { month: string; label: string; total: number }[]
+  /** Alertas activas. */
+  alerts?: { severity: 'high' | 'medium' | 'low'; message: string }[]
+}
+
+const DEBT_TYPES_HEALTH = new Set([
+  'credit_card',
+  'line_of_credit',
+  'mortgage',
+  'auto_loan',
+  'student_loan',
+  'personal_loan',
+  'medical_debt',
+  'other_debt',
+])
+
+export async function fetchDebtHealth(): Promise<DebtHealthResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id, usd_to_dop_rate')
+    .eq('created_by', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  if (!budget) return { error: 'Sin presupuesto' }
+
+  const usdToDopRate =
+    (budget as { usd_to_dop_rate?: number | null }).usd_to_dop_rate ??
+    DEFAULT_USD_TO_DOP_RATE
+
+  const today = todayLocalDate()
+  const todayISO = formatISODateLocal(today)
+  const monthCount = 12
+  const seriesFirst = new Date(today.getFullYear(), today.getMonth() - (monthCount - 1), 1)
+  const seriesFirstISO = formatISODateLocal(seriesFirst)
+  const threeMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 3, 1)
+  const threeMonthsAgoISO = formatISODateLocal(threeMonthsAgo)
+
+  const [accountsRes, allTxnsRes, incomeTxnsRes] = await Promise.all([
+    supabase
+      .from('accounts')
+      .select('id, name, type, balance, currency, interest_rate_apr, cycle_close_day, closed')
+      .eq('budget_id', budget.id),
+    // Toda la data de txns en debt accounts para reconstruir balance histórico
+    supabase
+      .from('transactions')
+      .select('date, account_id, amount')
+      .eq('budget_id', budget.id),
+    // Ingresos de los últimos 3 meses para calcular avg
+    supabase
+      .from('transactions')
+      .select('date, account_id, amount')
+      .eq('budget_id', budget.id)
+      .is('transfer_account_id', null)
+      .not('payee_name', 'in', `("${SYSTEM_PAYEES.join('","')}")`)
+      .gte('date', threeMonthsAgoISO)
+      .lte('date', todayISO)
+      .gt('amount', 0),
+  ])
+
+  if (accountsRes.error) {
+    return { error: safeError(accountsRes.error, 'analisis') }
+  }
+
+  const accounts = accountsRes.data ?? []
+  const accountsActive = accounts.filter((a) => !a.closed)
+
+  const accountCcyMap = new Map<string, Currency>()
+  for (const a of accounts) {
+    accountCcyMap.set(a.id as string, parseCurrency(a.currency as string | null))
+  }
+
+  // Cash disponible (DOP)
+  let totalCashDOP = 0
+  for (const acc of accountsActive) {
+    if (CASH_TYPES.has(acc.type as string)) {
+      totalCashDOP += convertAmount(
+        Number(acc.balance),
+        parseCurrency(acc.currency as string | null),
+        'DOP',
+        usdToDopRate,
+      )
+    }
+  }
+
+  // Build list of debt accounts con métricas por cuenta
+  const debts: DebtAccount[] = []
+  let totalDebtDOP = 0
+  let totalMonthlyInterest = 0
+  let weightedAprSum = 0 // numerator = Σ(balance × apr)
+
+  for (const acc of accountsActive) {
+    const type = acc.type as string
+    if (!DEBT_TYPES_HEALTH.has(type)) continue
+    const balanceNative = Math.abs(Number(acc.balance))
+    const currency = parseCurrency(acc.currency as string | null)
+    const balanceDOP = convertAmount(balanceNative, currency, 'DOP', usdToDopRate)
+    const apr = acc.interest_rate_apr != null ? Number(acc.interest_rate_apr) : null
+    const monthlyInterestDOP = apr != null && apr > 0 ? (balanceDOP * apr) / 100 / 12 : 0
+    debts.push({
+      id: acc.id as string,
+      name: acc.name as string,
+      type,
+      balanceDOP: Math.round(balanceDOP * 100) / 100,
+      balanceNative: Math.round(balanceNative * 100) / 100,
+      nativeCurrency: currency,
+      apr,
+      monthlyInterestDOP: Math.round(monthlyInterestDOP * 100) / 100,
+      cycleCloseDay: acc.cycle_close_day != null ? Number(acc.cycle_close_day) : null,
+    })
+    totalDebtDOP += balanceDOP
+    totalMonthlyInterest += monthlyInterestDOP
+    if (apr != null) weightedAprSum += balanceDOP * apr
+  }
+
+  // Sort por mayor balance primero (lo más relevante arriba)
+  debts.sort((a, b) => b.balanceDOP - a.balanceDOP)
+
+  const weightedAvgApr = totalDebtDOP > 0 ? weightedAprSum / totalDebtDOP : 0
+
+  // Ingresos avg mensual (últimos 3 meses)
+  const incomeTxns = incomeTxnsRes.data ?? []
+  let totalIncome3m = 0
+  for (const t of incomeTxns) {
+    const ccy = accountCcyMap.get(t.account_id as string) ?? 'DOP'
+    totalIncome3m += convertAmount(Number(t.amount), ccy, 'DOP', usdToDopRate)
+  }
+  const avgMonthlyIncome = totalIncome3m / 3
+
+  // Razones
+  const debtToIncomeRatio =
+    avgMonthlyIncome > 0.005
+      ? totalDebtDOP / (avgMonthlyIncome * 12)
+      : null
+  const debtToCashRatio =
+    totalCashDOP > 0.005 ? totalDebtDOP / totalCashDOP : null
+
+  // ── Historia mensual de deuda (12 puntos) ─────────────────
+  const txnsByAccount = new Map<string, Array<{ date: string; amount: number }>>()
+  for (const t of allTxnsRes.data ?? []) {
+    const id = t.account_id as string
+    const arr = txnsByAccount.get(id) ?? []
+    arr.push({ date: t.date as string, amount: Number(t.amount) })
+    txnsByAccount.set(id, arr)
+  }
+
+  const debtHistory: { month: string; label: string; total: number }[] = []
+  for (let i = monthCount - 1; i >= 0; i--) {
+    const monthFirst = new Date(today.getFullYear(), today.getMonth() - i, 1)
+    const monthLast = new Date(monthFirst.getFullYear(), monthFirst.getMonth() + 1, 0)
+    const cutoffDate = monthLast > today ? today : monthLast
+    const cutoffISO = formatISODateLocal(cutoffDate)
+    let monthDebtDOP = 0
+    for (const acc of accountsActive) {
+      const type = acc.type as string
+      if (!DEBT_TYPES_HEALTH.has(type)) continue
+      const accTxns = txnsByAccount.get(acc.id as string) ?? []
+      const future = accTxns
+        .filter((t) => t.date > cutoffISO)
+        .reduce((s, t) => s + t.amount, 0)
+      const reconstructedNative = Number(acc.balance) - future
+      const absNative = Math.abs(reconstructedNative)
+      monthDebtDOP += convertAmount(
+        absNative,
+        parseCurrency(acc.currency as string | null),
+        'DOP',
+        usdToDopRate,
+      )
+    }
+    debtHistory.push({
+      month: `${monthFirst.getFullYear()}-${String(monthFirst.getMonth() + 1).padStart(2, '0')}`,
+      label: `${MONTH_NAMES_SHORT[monthFirst.getMonth()]} ${monthFirst.getFullYear()}`,
+      total: Math.round(monthDebtDOP * 100) / 100,
+    })
+  }
+
+  // ── Alertas ──────────────────────────────────────────────
+  const alerts: NonNullable<DebtHealthResult['alerts']> = []
+  // APRs altos (>28% es predatorio en DR)
+  const highAprDebts = debts.filter((d) => d.apr != null && d.apr > 28)
+  for (const d of highAprDebts) {
+    alerts.push({
+      severity: 'high',
+      message: `${d.name} tiene APR ${d.apr?.toFixed(1)}% — sobre el promedio del mercado DR (24-28%). Prioriza pagarla.`,
+    })
+  }
+  // Razón deuda/ingresos > 0.5x = estrés financiero
+  if (debtToIncomeRatio !== null && debtToIncomeRatio > 0.5) {
+    alerts.push({
+      severity: debtToIncomeRatio > 1 ? 'high' : 'medium',
+      message: `Tu razón deuda/ingresos es ${debtToIncomeRatio.toFixed(2)}x — sobre 0.5x se considera estrés financiero. Sobre 1.0x el banco te ve como riesgo.`,
+    })
+  }
+  // Cycle close day próximo (3 días o menos)
+  const todayDay = today.getDate()
+  for (const d of debts) {
+    if (d.cycleCloseDay == null) continue
+    const daysUntil = (d.cycleCloseDay - todayDay + 30) % 30
+    if (daysUntil <= 3 && daysUntil > 0) {
+      alerts.push({
+        severity: 'low',
+        message: `${d.name}: corte día ${d.cycleCloseDay} — quedan ${daysUntil} ${daysUntil === 1 ? 'día' : 'días'}. Paga antes para evitar intereses.`,
+      })
+    }
+  }
+
+  return {
+    totalDebtDOP: Math.round(totalDebtDOP * 100) / 100,
+    weightedAvgApr: Math.round(weightedAvgApr * 100) / 100,
+    totalMonthlyInterest: Math.round(totalMonthlyInterest * 100) / 100,
+    avgMonthlyIncome: Math.round(avgMonthlyIncome * 100) / 100,
+    totalCashDOP: Math.round(totalCashDOP * 100) / 100,
+    debtToIncomeRatio:
+      debtToIncomeRatio === null ? null : Math.round(debtToIncomeRatio * 100) / 100,
+    debtToCashRatio:
+      debtToCashRatio === null ? null : Math.round(debtToCashRatio * 100) / 100,
+    debts,
+    debtHistory,
+    alerts,
+  }
+}

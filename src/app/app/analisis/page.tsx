@@ -44,6 +44,7 @@ import {
   type AomRange,
   type AgeOfMoneyPoint,
 } from './AgeOfMoneyReport'
+import { DebtHealthReport } from './DebtHealthReport'
 import { MONTH_NAMES_FULL, MONTH_NAMES_SHORT } from '@/lib/dates'
 
 const todayLocal = () => {
@@ -284,7 +285,8 @@ const parseReport = (raw: string | undefined): ReportKey => {
     raw === 'income_expense' ||
     raw === 'trends' ||
     raw === 'networth' ||
-    raw === 'age_of_money'
+    raw === 'age_of_money' ||
+    raw === 'debt_health'
   ) {
     return raw
   }
@@ -332,6 +334,8 @@ export default async function AnalisisPage({
             hasBudget={false}
             hasData={false}
           />
+        ) : report === 'debt_health' ? (
+          <DebtHealthReport hasBudget={false} />
         ) : (
           <AnalisisClient
             period="month"
@@ -861,7 +865,16 @@ export default async function AnalisisPage({
     )
   }
 
-  // Catch-all (shouldn't happen — all 5 reports are wired)
+  // ── Salud de deudas ──────────────────────────────────────
+  if (report === 'debt_health') {
+    return (
+      <AnalisisShell active="debt_health">
+        <DebtHealthReport hasBudget={true} />
+      </AnalisisShell>
+    )
+  }
+
+  // Catch-all (shouldn't happen — all 6 reports are wired)
   return (
     <AnalisisShell active={report}>
       <PageHeader eyebrow="Análisis">Próximamente.</PageHeader>

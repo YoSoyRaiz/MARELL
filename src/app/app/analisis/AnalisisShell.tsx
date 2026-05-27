@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Wallet,
   Hourglass,
+  ShieldAlert,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { ExportButton } from './ExportButton'
@@ -18,6 +19,7 @@ export type ReportKey =
   | 'trends'
   | 'networth'
   | 'age_of_money'
+  | 'debt_health'
 
 interface Tab {
   id: ReportKey
@@ -32,6 +34,7 @@ const TABS: Tab[] = [
   { id: 'trends', label: 'Tendencias', Icon: TrendingUp, enabled: true },
   { id: 'networth', label: 'Patrimonio', Icon: Wallet, enabled: true },
   { id: 'age_of_money', label: 'Edad del dinero', Icon: Hourglass, enabled: true },
+  { id: 'debt_health', label: 'Salud de deudas', Icon: ShieldAlert, enabled: true },
 ]
 
 interface AnalisisShellProps {
