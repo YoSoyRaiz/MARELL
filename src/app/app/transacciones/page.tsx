@@ -13,14 +13,30 @@ const currentMonth = currentMonthDR
 const monthBounds = monthBoundsISO
 
 const isValidMonth = (s: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
+const isValidYear = (s: string) => /^\d{4}$/.test(s)
 
 const parseType = (raw: string | undefined): 'all' | 'income' | 'expense' => {
   if (raw === 'income' || raw === 'expense') return raw
   return 'all'
 }
 
-const parseMonth = (raw: string | undefined): string => {
+const parseView = (raw: string | undefined): 'mensual' | 'anual' => {
+  return raw === 'anual' ? 'anual' : 'mensual'
+}
+
+/**
+ * El param `month` cumple doble función según `view`:
+ *   - view=mensual → 'YYYY-MM' (mes específico) o 'all'
+ *   - view=anual  → 'YYYY' (año específico) o 'all'
+ *
+ * Default según el modo: mes actual / año actual.
+ */
+const parseMonth = (raw: string | undefined, view: 'mensual' | 'anual'): string => {
   if (raw === 'all') return 'all'
+  if (view === 'anual') {
+    if (raw && isValidYear(raw)) return raw
+    return String(new Date().getFullYear())
+  }
   if (raw && isValidMonth(raw)) return raw
   return currentMonth()
 }
@@ -36,6 +52,7 @@ export default async function TransaccionesPage({
   searchParams,
 }: {
   searchParams: Promise<{
+    view?: string
     month?: string
     type?: string
     q?: string
@@ -43,7 +60,8 @@ export default async function TransaccionesPage({
   }>
 }) {
   const params = await searchParams
-  const month = parseMonth(params.month)
+  const view = parseView(params.view)
+  const month = parseMonth(params.month, view)
   const type = parseType(params.type)
   const q = (params.q ?? '').trim()
   const page = parsePage(params.page)
@@ -69,7 +87,7 @@ export default async function TransaccionesPage({
         accounts={[]}
         categories={[]}
         hasBudget={false}
-        filters={{ month, type, q }}
+        filters={{ view, month, type, q }}
       />
     )
   }
@@ -99,8 +117,13 @@ export default async function TransaccionesPage({
   }
 
   if (month !== 'all') {
-    const { first, last } = monthBounds(month)
-    txnsQuery = txnsQuery.gte('date', first).lte('date', last)
+    if (view === 'anual') {
+      // month aquí es 'YYYY' en modo anual. Año completo.
+      txnsQuery = txnsQuery.gte('date', `${month}-01-01`).lte('date', `${month}-12-31`)
+    } else {
+      const { first, last } = monthBounds(month)
+      txnsQuery = txnsQuery.gte('date', first).lte('date', last)
+    }
   }
 
   if (type === 'income') {
@@ -191,7 +214,7 @@ export default async function TransaccionesPage({
     }
   })
 
-  const filters: FilterState = { month, type, q }
+  const filters: FilterState = { view, month, type, q }
   const totalCount = txnsRes.count ?? transactions.length
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 

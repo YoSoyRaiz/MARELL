@@ -45,6 +45,8 @@ const formatDate = (iso: string) => {
 
 const formatMonthLabel = (month: string) => {
   if (month === 'all') return 'Todas las fechas'
+  // En modo anual el value es solo 'YYYY'; mensual es 'YYYY-MM'.
+  if (/^\d{4}$/.test(month)) return month
   const [y, m] = month.split('-').map(Number)
   return `${MONTH_NAMES_FULL[m - 1]} ${y}`
 }
@@ -68,10 +70,20 @@ const adjustMonth = (month: string, delta: number) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
+const adjustYear = (year: string, delta: number) => {
+  if (year === 'all') return String(new Date().getFullYear())
+  const y = parseInt(year, 10)
+  return String(Number.isFinite(y) ? y + delta : new Date().getFullYear())
+}
+
 export type FilterType = 'all' | 'income' | 'expense'
+export type FilterView = 'mensual' | 'anual'
 
 export interface FilterState {
-  month: string // YYYY-MM | 'all'
+  /** Periodicidad de filtrado: 'mensual' usa month='YYYY-MM',
+   *  'anual' reusa el campo month con 'YYYY'. */
+  view: FilterView
+  month: string // YYYY-MM (mensual) | YYYY (anual) | 'all'
   type: FilterType
   q: string
 }
@@ -318,7 +330,7 @@ export function TransactionsClient({
 
   const clearFilters = () => {
     setSearchInput('')
-    pushParams({ q: null, type: null, month: null })
+    pushParams({ q: null, type: null, month: null, view: null })
   }
 
   return (
@@ -421,11 +433,54 @@ export function TransactionsClient({
             })}
           </div>
 
-          {/* Month nav */}
-          <div className="flex items-center gap-1 ml-auto">
+          {/* View toggle (Mensual / Anual). Al cambiar resetea el
+              valor del período para que no haya YYYY-MM en modo anual
+              ni YYYY suelto en mensual — y volvemos a página 1 porque
+              el nuevo set de resultados es distinto. */}
+          <div className="flex items-center gap-1 p-1 bg-[var(--overlay-1)] rounded-xl ml-auto">
+            {(
+              [
+                { id: 'mensual', label: 'Mensual' },
+                { id: 'anual', label: 'Anual' },
+              ] as { id: FilterView; label: string }[]
+            ).map((v) => {
+              const active = filters.view === v.id
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => {
+                    if (active) return
+                    pushParams({
+                      view: v.id === 'mensual' ? null : v.id,
+                      month: null,
+                      page: null,
+                    })
+                  }}
+                  className={`h-8 px-3 text-meta font-medium rounded-lg transition-colors ${
+                    active
+                      ? 'gradient-bg text-[#0B0B0C]'
+                      : 'text-[var(--text2)] hover:text-[var(--text)]'
+                  }`}
+                >
+                  {v.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Period nav — handlers cambian según view (mes ‹ › o año ‹ ›). */}
+          <div className="flex items-center gap-1">
             <IconButton
-              onClick={() => pushParams({ month: adjustMonth(filters.month, -1) })}
-              aria-label="Mes anterior"
+              onClick={() =>
+                pushParams({
+                  month:
+                    filters.view === 'anual'
+                      ? adjustYear(filters.month, -1)
+                      : adjustMonth(filters.month, -1),
+                })
+              }
+              aria-label={filters.view === 'anual' ? 'Año anterior' : 'Mes anterior'}
             >
               <ChevronLeft size={16} strokeWidth={2.2} />
             </IconButton>
@@ -439,8 +494,15 @@ export function TransactionsClient({
               {formatMonthLabel(filters.month)}
             </button>
             <IconButton
-              onClick={() => pushParams({ month: adjustMonth(filters.month, 1) })}
-              aria-label="Mes siguiente"
+              onClick={() =>
+                pushParams({
+                  month:
+                    filters.view === 'anual'
+                      ? adjustYear(filters.month, 1)
+                      : adjustMonth(filters.month, 1),
+                })
+              }
+              aria-label={filters.view === 'anual' ? 'Año siguiente' : 'Mes siguiente'}
               disabled={filters.month === 'all'}
             >
               <ChevronRight size={16} strokeWidth={2.2} />
