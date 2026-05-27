@@ -132,6 +132,10 @@ export function HerramientasClient() {
   const [cuotaTotal, setCuotaTotal] = useState('')
   const [cuotaCount, setCuotaCount] = useState('')
   const [cuotaRate, setCuotaRate] = useState('')
+  // 'annual' o 'monthly'. Algunos bancos cotizan mensual, otros anual.
+  // Toggle al lado del input para que el usuario meta el número tal cual
+  // le aparece en el contrato sin convertir mentalmente.
+  const [cuotaRateMode, setCuotaRateMode] = useState<'annual' | 'monthly'>('annual')
 
   const cuotaTotalNum = parseMoneyInput(cuotaTotal)
   const cuotaCountNum = parseInt(cuotaCount, 10) || 0
@@ -158,13 +162,18 @@ export function HerramientasClient() {
     if (cuotaRateNum <= 0) {
       monthly = cuotaTotalNum / cuotaCountNum
     } else {
-      const i = cuotaRateNum / 100 / 12
+      // i siempre es tasa mensual decimal. Si el usuario metió anual,
+      // dividimos entre 12; si metió mensual, la usamos tal cual.
+      const i =
+        cuotaRateMode === 'annual'
+          ? cuotaRateNum / 100 / 12
+          : cuotaRateNum / 100
       monthly = (i * cuotaTotalNum) / (1 - Math.pow(1 + i, -cuotaCountNum))
     }
     const totalPaid = monthly * cuotaCountNum
     const interest = totalPaid - cuotaTotalNum
     return { monthly, totalPaid, interest }
-  }, [cuotaTotalNum, cuotaCountNum, cuotaRateNum])
+  }, [cuotaTotalNum, cuotaCountNum, cuotaRateNum, cuotaRateMode])
 
   return (
     <div className="space-y-7">
@@ -319,8 +328,43 @@ export function HerramientasClient() {
                 )}
               </label>
               <label className="block">
-                <span className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
-                  Tasa anual %
+                <span className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-eyebrow uppercase tracking-[0.12em] text-[var(--muted)] font-semibold">
+                    Tasa {cuotaRateMode === 'annual' ? 'anual' : 'mensual'} %
+                  </span>
+                  {/* Toggle anual/mensual — segmented chico para que no
+                      compita con el input. Cambia solo cómo se interpreta
+                      el número, no el número en sí. */}
+                  <span
+                    role="group"
+                    aria-label="Periodicidad de la tasa"
+                    className="inline-flex p-0.5 bg-[var(--overlay-1)] rounded-md gap-0.5 text-tiny font-semibold"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setCuotaRateMode('annual')}
+                      aria-pressed={cuotaRateMode === 'annual'}
+                      className={`px-2 py-0.5 rounded uppercase tracking-[0.10em] transition-colors ${
+                        cuotaRateMode === 'annual'
+                          ? 'bg-[var(--s1)] text-[var(--text)] shadow-[inset_0_-2px_0_var(--brand-2)]'
+                          : 'text-[var(--text2)] hover:text-[var(--text)]'
+                      }`}
+                    >
+                      Anual
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCuotaRateMode('monthly')}
+                      aria-pressed={cuotaRateMode === 'monthly'}
+                      className={`px-2 py-0.5 rounded uppercase tracking-[0.10em] transition-colors ${
+                        cuotaRateMode === 'monthly'
+                          ? 'bg-[var(--s1)] text-[var(--text)] shadow-[inset_0_-2px_0_var(--brand-2)]'
+                          : 'text-[var(--text2)] hover:text-[var(--text)]'
+                      }`}
+                    >
+                      Mensual
+                    </button>
+                  </span>
                 </span>
                 <input
                   type="text"
@@ -329,7 +373,7 @@ export function HerramientasClient() {
                   onChange={(e) => setCuotaRate(e.target.value)}
                   placeholder="0"
                   aria-invalid={missingRate || undefined}
-                  className={`w-full mt-1 !text-emph !py-2.5 !px-3 !rounded-xl tabular-nums num ${
+                  className={`w-full !text-emph !py-2.5 !px-3 !rounded-xl tabular-nums num ${
                     missingRate ? '!border-[var(--coral)]/50' : ''
                   }`}
                 />
@@ -339,7 +383,10 @@ export function HerramientasClient() {
                   </span>
                 ) : (
                   <span className="block mt-1 text-eyebrow text-[var(--muted)]">
-                    Escribe 0 si el préstamo es sin interés
+                    {cuotaRateMode === 'annual'
+                      ? 'Tasa anual nominal (ej: 24 para 24% al año)'
+                      : 'Tasa mensual (ej: 2 para 2% al mes)'}{' '}
+                    · Escribe 0 si es sin interés
                   </span>
                 )}
               </label>
@@ -357,7 +404,7 @@ export function HerramientasClient() {
                     const missing: string[] = []
                     if (missingTotal) missing.push('Total a financiar')
                     if (missingCount) missing.push('Cuotas')
-                    if (missingRate) missing.push('Tasa anual')
+                    if (missingRate) missing.push(`Tasa ${cuotaRateMode === 'annual' ? 'anual' : 'mensual'}`)
                     if (missing.length === 1)
                       return `Falta ${missing[0]}.`
                     if (missing.length === 2)
