@@ -10,6 +10,10 @@ export interface RawTxnWithSubs {
   category_id?: string | null
   amount: number | string
   is_split?: boolean | null
+  // Optional: cuando viene presente, las contributions hijas heredan
+  // el account_id del parent. Necesario para conversión multi-currency
+  // en reportes de Análisis (cada cuenta tiene su propia moneda).
+  account_id?: string | null
   // The Supabase typed client doesn't infer the join shape because the
   // generated Database type has no Relationships declared. Accept the field
   // loosely so call sites don't need to cast away SelectQueryError sentinels.
@@ -20,6 +24,9 @@ export interface CategoryContribution {
   date: string
   category_id: string | null
   amount: number // signed: + income, − expense
+  // Hereda del parent. Vacío si el caller no incluyó account_id en la
+  // query. Los reportes de Análisis lo usan para currency conversion.
+  account_id: string
 }
 
 /**
@@ -46,6 +53,7 @@ export function expandToCategoryContributions(
 ): CategoryContribution[] {
   const out: CategoryContribution[] = []
   for (const t of txns) {
+    const accountId = (t.account_id ?? '') as string
     const subs = isSubArray(t.subtransactions) ? t.subtransactions : null
     if (t.is_split && subs && subs.length > 0) {
       for (const s of subs) {
@@ -53,6 +61,7 @@ export function expandToCategoryContributions(
           date: t.date,
           category_id: s.category_id ?? null,
           amount: Number(s.amount),
+          account_id: accountId,
         })
       }
     } else {
@@ -60,6 +69,7 @@ export function expandToCategoryContributions(
         date: t.date,
         category_id: t.category_id ?? null,
         amount: Number(t.amount),
+        account_id: accountId,
       })
     }
   }

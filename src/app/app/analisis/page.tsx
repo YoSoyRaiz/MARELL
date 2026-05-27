@@ -1,9 +1,28 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { expandToCategoryContributions } from '@/lib/splits'
+import {
+  convertAmount,
+  parseCurrency,
+  DEFAULT_USD_TO_DOP_RATE,
+  type Currency,
+} from '@/lib/money'
 import { AnalisisShell, type ReportKey } from './AnalisisShell'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { AnalisisClient, type CategoryRow, type Period } from './AnalisisClient'
+
+// ── System-generated transactions to exclude from flow reports ──
+//
+// MARELL crea automáticamente dos tipos de txns que NO son hechos
+// económicos del usuario y no deben aparecer en Income/Expense ni
+// Spending Breakdown:
+//   - 'Saldo inicial': opening balance al crear cuenta con balance ≠ 0
+//   - 'Ajuste de reconciliación': inserción al reconciliar cuenta
+//
+// Sí cuentan para Net Worth (afectan balance real) pero NO para
+// flow reports (no representan ingresos o gastos genuinos).
+const SYSTEM_PAYEES = ['Saldo inicial', 'Ajuste de reconciliación']
+const SYSTEM_PAYEES_NOT_IN = `(${SYSTEM_PAYEES.map((p) => `"${p}"`).join(',')})`
 import {
   IncomeVsExpenseReport,
   type Range,
@@ -223,6 +242,41 @@ const DEBT_TYPES_SET = new Set([
   'other_debt',
 ])
 
+/**
+ * Construye un lookup account_id → currency desde un fetch único de
+ * todas las cuentas del budget. Evita N+1 cuando agregamos cientos
+ * de transacciones convirtiendo cada una a DOP.
+ */
+async function loadAccountCurrencies(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  budgetId: string,
+): Promise<Map<string, Currency>> {
+  const { data } = await supabase
+    .from('accounts')
+    .select('id, currency')
+    .eq('budget_id', budgetId)
+  const map = new Map<string, Currency>()
+  for (const a of data ?? []) {
+    map.set(a.id as string, parseCurrency(a.currency as string | null))
+  }
+  return map
+}
+
+/**
+ * Factory: dada la tabla de currencies y la tasa, devuelve un
+ * converter que normaliza cualquier amount a DOP. Si no encuentra la
+ * cuenta (data inconsistente), trata como DOP — fail-soft.
+ */
+function makeToDOP(
+  accountCurrency: Map<string, Currency>,
+  usdToDopRate: number,
+) {
+  return (amount: number, accountId: string): number => {
+    const ccy = accountCurrency.get(accountId) ?? 'DOP'
+    return convertAmount(amount, ccy, 'DOP', usdToDopRate)
+  }
+}
+
 // ── Report dispatch ─────────────────────────────────────────
 
 const parseReport = (raw: string | undefined): ReportKey => {
@@ -253,11 +307,17 @@ export default async function AnalisisPage({
 
   const { data: budget } = await supabase
     .from('budgets')
-    .select('id')
+    .select('id, usd_to_dop_rate')
     .eq('created_by', user.id)
     .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle()
+
+  // Tasa USD↔DOP del budget. Fallback al default si el budget no la
+  // tiene seteada (rare; usually solo durante onboarding).
+  const usdToDopRate =
+    (budget as { usd_to_dop_rate?: number | null } | null)?.usd_to_dop_rate ??
+    DEFAULT_USD_TO_DOP_RATE
 
   if (!budget) {
     return (
@@ -292,46 +352,64 @@ export default async function AnalisisPage({
   if (report === 'breakdown') {
     const period = parsePeriod(params.period)
     const range = computePeriod(period)
+    const todayISO = formatISODate(todayLocal())
 
     let txnsQuery = supabase
       .from('transactions')
       .select(
-        'id, date, category_id, amount, is_split, subtransactions(category_id, amount)',
+        'id, date, account_id, category_id, amount, is_split, subtransactions(category_id, amount)',
       )
       .eq('budget_id', budget.id)
       // Transfers move money between accounts and don't represent income or
       // spending — exclude them so totals + the donut don't double-count.
       .is('transfer_account_id', null)
+      // Filter system-generated txns (opening balance / reconciliation
+      // adjustments) que no son flujos económicos reales.
+      .not('payee_name', 'in', SYSTEM_PAYEES_NOT_IN)
+      // Cap al día actual — txns futuras ya materializadas (scheduled)
+      // distorsionarían el breakdown del mes en curso.
+      .lte('date', todayISO)
 
     if (range.first) txnsQuery = txnsQuery.gte('date', range.first)
-    if (range.last) txnsQuery = txnsQuery.lte('date', range.last)
+    if (range.last) {
+      // El cutoff del rango nunca debe pasar de hoy aunque el range.last
+      // sea el fin de mes en el futuro (ej. 31 de mayo cuando es 15).
+      const cap = range.last > todayISO ? todayISO : range.last
+      txnsQuery = txnsQuery.lte('date', cap)
+    }
 
-    const [txnsRes, catsRes] = await Promise.all([
+    const [txnsRes, catsRes, accountCurrency] = await Promise.all([
       txnsQuery,
       supabase.from('categories').select('id, name').eq('budget_id', budget.id),
+      loadAccountCurrencies(supabase, budget.id),
     ])
 
     const txns = txnsRes.data ?? []
     const cats = catsRes.data ?? []
+    const toDOP = makeToDOP(accountCurrency, usdToDopRate)
 
     const categoryNameById = new Map(cats.map((c) => [c.id as string, c.name as string]))
 
     // Income / total expense use parent totals (a split touches multiple
     // categories but contributes a single signed amount to the cash flow).
+    // Todos los montos convertidos a DOP via toDOP() para no mezclar
+    // monedas — un USD $100 ingreso ahora se suma como ~5,850 DOP.
     let totalIncome = 0
     let totalExpenses = 0
     for (const t of txns) {
-      const amount = Number(t.amount)
+      const amount = toDOP(Number(t.amount), t.account_id as string)
       if (amount > 0) totalIncome += amount
       else if (amount < 0) totalExpenses += Math.abs(amount)
     }
 
     // Per-category expenses must use the split children when present.
+    // expandToCategoryContributions retorna {category_id, amount, date,
+    // account_id}; convertimos cada contribución a DOP individualmente.
     const expensesByCategory = new Map<string, number>()
     let uncategorized = 0
     for (const c of expandToCategoryContributions(txns)) {
       if (c.amount >= 0) continue
-      const abs = Math.abs(c.amount)
+      const abs = Math.abs(toDOP(c.amount, c.account_id))
       const catId = c.category_id
       if (catId && categoryNameById.has(catId)) {
         expensesByCategory.set(catId, (expensesByCategory.get(catId) ?? 0) + abs)
@@ -368,6 +446,7 @@ export default async function AnalisisPage({
   if (report === 'income_expense') {
     const range = parseRange(params.range)
     const today = todayLocal()
+    const todayISO = formatISODate(today)
     const monthCount = rangeToMonthCount[range]
 
     let firstISO: string | null = null
@@ -378,22 +457,32 @@ export default async function AnalisisPage({
 
     let txnsQuery = supabase
       .from('transactions')
-      .select('date, amount')
+      .select('date, account_id, amount')
       .eq('budget_id', budget.id)
       // Exclude transfers — they're not income or expense, just money moving
       // between accounts. Without this filter both sides of every transfer
       // pair would inflate the corresponding bar.
       .is('transfer_account_id', null)
+      // Excluir saldos iniciales y ajustes de reconciliación — no son
+      // flujos económicos reales del usuario.
+      .not('payee_name', 'in', SYSTEM_PAYEES_NOT_IN)
+      // Cap a hoy: una txn scheduled materializada con fecha futura
+      // inflaría el mes en curso o agregaría un mes que aún no existe.
+      .lte('date', todayISO)
 
     if (firstISO) txnsQuery = txnsQuery.gte('date', firstISO)
 
-    const { data: txns } = await txnsQuery
+    const [{ data: txns }, accountCurrency] = await Promise.all([
+      txnsQuery,
+      loadAccountCurrencies(supabase, budget.id),
+    ])
+    const toDOP = makeToDOP(accountCurrency, usdToDopRate)
 
-    // Aggregate per YYYY-MM
+    // Aggregate per YYYY-MM, convirtiendo cada amount a DOP primero.
     const byMonth = new Map<string, { income: number; expense: number }>()
     for (const t of txns ?? []) {
       const date = (t.date as string).slice(0, 7) // YYYY-MM
-      const amount = Number(t.amount)
+      const amount = toDOP(Number(t.amount), t.account_id as string)
       const cur = byMonth.get(date) ?? { income: 0, expense: 0 }
       if (amount > 0) cur.income += amount
       else if (amount < 0) cur.expense += Math.abs(amount)
@@ -471,27 +560,33 @@ export default async function AnalisisPage({
     const trendsRange = parseTrendsRange(params.range)
     const monthCount = trendsRangeMonthCount[trendsRange]
     const today = todayLocal()
+    const todayISO = formatISODate(today)
 
     const first = new Date(today.getFullYear(), today.getMonth() - (monthCount - 1), 1)
     const firstISO = formatISODate(first)
 
-    const [txnsRes, catsRes] = await Promise.all([
+    const [txnsRes, catsRes, accountCurrency] = await Promise.all([
       supabase
         .from('transactions')
         .select(
-          'id, date, category_id, amount, is_split, subtransactions(category_id, amount)',
+          'id, date, account_id, category_id, amount, is_split, subtransactions(category_id, amount)',
         )
         .eq('budget_id', budget.id)
         .gte('date', firstISO)
-        // Pull the universe of in-range transactions; we filter to expense
-        // contributions in JS so split children that are negative still count
-        // even when the parent might be a different sign for transfers.
-        .lt('amount', 0),
+        .lte('date', todayISO) // cap a hoy: futuras programadas no deben contar
+        // Excluir transferencias internas y txns sistema. El filtro
+        // `.lt('amount', 0)` anterior se removió: era demasiado agresivo
+        // (excluía splits con parent positivo que tienen sub negativos).
+        // Ahora dejamos pasar todo y filtramos en JS post-expand.
+        .is('transfer_account_id', null)
+        .not('payee_name', 'in', SYSTEM_PAYEES_NOT_IN),
       supabase.from('categories').select('id, name').eq('budget_id', budget.id),
+      loadAccountCurrencies(supabase, budget.id),
     ])
 
     const txns = txnsRes.data ?? []
     const cats = catsRes.data ?? []
+    const toDOP = makeToDOP(accountCurrency, usdToDopRate)
     const categoryNameById = new Map(cats.map((c) => [c.id as string, c.name as string]))
 
     // Build per-category, per-month aggregation.
@@ -504,7 +599,7 @@ export default async function AnalisisPage({
       const catId = c.category_id
       if (!catId || !categoryNameById.has(catId)) continue
       const month = c.date.slice(0, 7)
-      const abs = Math.abs(c.amount)
+      const abs = Math.abs(toDOP(c.amount, c.account_id))
       let mp = totalsByCat.get(catId)
       if (!mp) {
         mp = new Map<string, number>()
@@ -564,7 +659,10 @@ export default async function AnalisisPage({
     const today = todayLocal()
 
     const [accountsRes, txnsRes] = await Promise.all([
-      supabase.from('accounts').select('id, type, balance').eq('budget_id', budget.id),
+      supabase
+        .from('accounts')
+        .select('id, type, balance, currency')
+        .eq('budget_id', budget.id),
       supabase
         .from('transactions')
         .select('date, account_id, amount')
@@ -583,6 +681,30 @@ export default async function AnalisisPage({
       txnsByAccount.set(id, arr)
     }
 
+    // Helper: convertir el balance reconstruido de una cuenta a DOP
+    // según su currency. Aplicado en cada punto de la serie y en KPIs.
+    const balanceToDOP = (amount: number, currency: string | null) =>
+      convertAmount(amount, parseCurrency(currency), 'DOP', usdToDopRate)
+
+    // Helper: clasifica la contribución de UNA cuenta al patrimonio.
+    // Reglas (consistentes entre serie histórica y snapshot):
+    //   - cash/asset accounts: suman al patrimonio
+    //   - debt accounts (credit_card, *_loan, mortgage, *_debt):
+    //     balance guardado como negativo. abs() y restamos.
+    //   - liability (tracked-only): balance positivo. Restamos directo.
+    // El bug anterior usaba += sobre balance crudo, que solo funcionaba
+    // por la coincidencia de signos almacenados — frágil y divergía
+    // entre serie y snapshot KPI.
+    const accountToNetWorthContribution = (
+      type: string,
+      reconstructedNative: number,
+    ): number => {
+      if (DEBT_TYPES_SET.has(type)) return -Math.abs(reconstructedNative)
+      if (type === 'liability') return -reconstructedNative
+      // cash, asset, y cualquier otro tipo: suma al patrimonio
+      return reconstructedNative
+    }
+
     // Build monthly series (oldest → newest)
     const series: NetWorthPoint[] = []
     for (let i = monthCount - 1; i >= 0; i--) {
@@ -597,14 +719,15 @@ export default async function AnalisisPage({
         const futureSum = accTxns
           .filter((t) => t.date > cutoffISO)
           .reduce((s, t) => s + t.amount, 0)
-        const reconstructed = Number(acc.balance) - futureSum
-        // Cast type to string — generated Supabase types lag behind the
-        // schema's CHECK constraint expansion (see cuentas/actions.ts note).
-        if ((acc.type as string) === 'liability') {
-          netWorth -= reconstructed
-        } else {
-          netWorth += reconstructed
-        }
+        // Reconstrucción en la currency NATIVA de la cuenta primero,
+        // después convertimos a DOP para sumar al total. Si convertimos
+        // antes, futureSum quedaría desfasado por cambios de tasa.
+        const reconstructedNative = Number(acc.balance) - futureSum
+        const contributionNative = accountToNetWorthContribution(
+          acc.type as string,
+          reconstructedNative,
+        )
+        netWorth += balanceToDOP(contributionNative, acc.currency as string | null)
       }
 
       series.push({
@@ -614,21 +737,25 @@ export default async function AnalisisPage({
       })
     }
 
-    // Current snapshot for KPIs
+    // Current snapshot for KPIs — todos convertidos a DOP para que el
+    // total cuadre con la serie histórica.
     let totalCash = 0
     let totalAssets = 0
     let totalDebts = 0
     for (const acc of accounts) {
-      const balance = Number(acc.balance)
+      const balanceDOP = balanceToDOP(
+        Number(acc.balance),
+        acc.currency as string | null,
+      )
       const type = acc.type as string
       if (CASH_TYPES.has(type)) {
-        totalCash += balance
+        totalCash += balanceDOP
       } else if (type === 'asset') {
-        totalAssets += balance
+        totalAssets += balanceDOP
       } else if (type === 'liability') {
-        totalDebts += balance // stored positive but counts as debt
+        totalDebts += balanceDOP // stored positive but counts as debt
       } else if (DEBT_TYPES_SET.has(type)) {
-        totalDebts += Math.abs(balance) // stored negative
+        totalDebts += Math.abs(balanceDOP) // stored negative
       }
     }
 
@@ -653,23 +780,37 @@ export default async function AnalisisPage({
     const aomRange = parseAomRange(params.range)
     const monthCount = aomMonthCount[aomRange]
     const today = todayLocal()
+    const todayISO = formatISODate(today)
 
     // FIFO needs the full transaction history to build the lot queue
     // correctly. Transfers are excluded: they don't represent fresh income
-    // or actual spending, so they shouldn't affect Age of Money.
-    const { data: txns } = await supabase
-      .from('transactions')
-      .select('date, amount')
-      .eq('budget_id', budget.id)
-      .is('transfer_account_id', null)
-      .order('date', { ascending: true })
+    // or actual spending, so they shouldn't affect Age of Money. Saldos
+    // iniciales y ajustes de reconciliación tampoco — son contables, no
+    // económicos.
+    const [{ data: txns }, accountCurrency] = await Promise.all([
+      supabase
+        .from('transactions')
+        .select('date, account_id, amount')
+        .eq('budget_id', budget.id)
+        .is('transfer_account_id', null)
+        .not('payee_name', 'in', SYSTEM_PAYEES_NOT_IN)
+        .lte('date', todayISO)
+        .order('date', { ascending: true }),
+      loadAccountCurrencies(supabase, budget.id),
+    ])
+    const toDOP = makeToDOP(accountCurrency, usdToDopRate)
 
+    // Todos los amounts se convierten a DOP antes de entrar al FIFO.
+    // Esto resuelve el bug donde un income USD $1000 creaba un lot de
+    // "1000" que luego se consumía con gastos DOP — mezclando unidades.
+    // Ahora el lot es de $1000·tasa DOP (~58,500) y los gastos DOP se
+    // consumen contra el equivalente real.
     type Lot = { date: string; remaining: number }
     const lots: Lot[] = []
     const monthly = new Map<string, { spent: number; weightedAge: number }>()
 
     for (const t of txns ?? []) {
-      const amount = Number(t.amount)
+      const amount = toDOP(Number(t.amount), t.account_id as string)
       const date = t.date as string
       if (amount > 0) {
         lots.push({ date, remaining: amount })

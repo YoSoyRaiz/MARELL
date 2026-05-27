@@ -69,16 +69,21 @@ export async function createAccount(input: AccountInput) {
   const isTracking = input.type === 'asset' || input.type === 'liability'
   const isDebt = isDebtType(input.type)
   const balance = isDebt ? -Math.abs(input.balance) : input.balance
+  const roundedBalance = Math.round(balance * 100) / 100
 
-  // The Supabase generated types lag behind the schema's CHECK constraint
-  // expansion (line_of_credit / *_loan / asset / liability), so we widen the
-  // type here. The DB constraint enforces validity at runtime.
+  // Insertamos la cuenta con balance=0. Si hay balance inicial ≠ 0,
+  // creamos después una txn 'Saldo inicial' — el trigger
+  // transactions_balance_sync actualiza accounts.balance al monto
+  // correcto. Esto permite que la serie histórica de Net Worth muestre
+  // la cuenta apareciendo en su fecha de creación en vez de
+  // proyectarse hacia el pasado (que es lo que pasaba antes con balance
+  // hardcoded sin txn correspondiente).
   const insertRow = {
     budget_id: budget.id,
     name: input.name.trim(),
     type: input.type,
     currency: input.currency ?? 'DOP',
-    balance: Math.round(balance * 100) / 100,
+    balance: 0,
     is_budget_account: !isTracking,
     sort_order: nextSort,
     note: input.note?.trim() || null,
@@ -90,9 +95,44 @@ export async function createAccount(input: AccountInput) {
       input.cycleCloseDay != null ? Math.trunc(input.cycleCloseDay) : null,
   }
 
-  const { error } = await supabase.from('accounts').insert(insertRow)
+  const { data: newAccount, error } = await supabase
+    .from('accounts')
+    .insert(insertRow)
+    .select('id')
+    .single()
 
-  if (error) return { error: safeError(error, 'cuentas') }
+  if (error || !newAccount) return { error: safeError(error, 'cuentas') }
+
+  // Opening balance txn — solo si el balance inicial es ≠ 0. La
+  // marcamos con payee_name='Saldo inicial' + category_id=null para
+  // que los reportes de flujo (Income/Expense, Trends, Age of Money)
+  // la excluyan via el filtro SYSTEM_PAYEES. Sí cuenta para Net Worth
+  // porque mueve el balance real de la cuenta. Approved+reconciled
+  // para que no aparezca como pending en la lista.
+  if (Math.abs(roundedBalance) >= 0.005) {
+    // Fecha DR-aware: el servidor de Vercel corre UTC pero el usuario
+    // espera ver "hoy" en DR (UTC-4).
+    const now = new Date()
+    const drNow = new Date(now.getTime() - 4 * 60 * 60 * 1000)
+    const todayDR = `${drNow.getUTCFullYear()}-${String(drNow.getUTCMonth() + 1).padStart(2, '0')}-${String(drNow.getUTCDate()).padStart(2, '0')}`
+
+    const { error: openErr } = await supabase.from('transactions').insert({
+      budget_id: budget.id,
+      account_id: newAccount.id,
+      date: todayDR,
+      payee_name: 'Saldo inicial',
+      category_id: null,
+      amount: roundedBalance,
+      cleared: 'reconciled' as const,
+      approved: true,
+    })
+    if (openErr) {
+      // Best-effort cleanup si la txn falla: borramos la cuenta para
+      // no dejarla en estado inconsistente (cuenta sin balance esperado).
+      await supabase.from('accounts').delete().eq('id', newAccount.id)
+      return { error: safeError(openErr, 'cuentas') }
+    }
+  }
 
   revalidatePath('/app', 'layout')
   return { success: true as const }

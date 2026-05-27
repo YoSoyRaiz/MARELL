@@ -21,6 +21,7 @@ import { InsightsSection, type InsightInputs } from './InsightsSection'
 import { FirstMonthGuide } from './FirstMonthGuide'
 import { CategoryAccordion } from './CategoryAccordion'
 import { MonthSummaryCard } from './MonthSummaryCard'
+import { MonthKpiCards } from './MonthKpiCards'
 import {
   currentMonthDR,
   monthBoundsISO,
@@ -104,6 +105,18 @@ export default async function ResumenPage() {
   })()
   const prevBounds = monthBounds(prevMonth)
 
+  // Window de 3 meses calendario (mes actual y los 2 anteriores) para
+  // calcular el runway. Necesitamos un promedio mensual robusto de
+  // gastos — un solo mes puede estar distorsionado por gastos one-off.
+  const runwayWindow = (() => {
+    const [y, m] = month.split('-').map(Number)
+    const firstD = new Date(y, m - 3, 1) // 2 meses antes del actual
+    return {
+      first: `${firstD.getFullYear()}-${String(firstD.getMonth() + 1).padStart(2, '0')}-01`,
+      // last = fin del mes actual ya lo tenemos en `last`
+    }
+  })()
+
   const [
     groupsRes,
     catsRes,
@@ -116,6 +129,7 @@ export default async function ResumenPage() {
     txnsRecentRes,
     upcomingRes,
     txnsPrevMonthRes,
+    txnsRunwayRes,
   ] = await Promise.all([
     supabase
       .from('category_groups')
@@ -148,10 +162,13 @@ export default async function ResumenPage() {
       .select('category_id, assigned')
       .eq('budget_id', budget.id),
     // Full month — drives totals (income / expense) and per-category activity.
+    // Incluye account_id + payee_name para que los KPIs hagan conversión
+    // multi-currency y filtren saldos iniciales/ajustes (igual que
+    // /app/analisis), garantizando congruencia entre las dos vistas.
     supabase
       .from('transactions')
       .select(
-        'date, category_id, amount, is_split, transfer_account_id, subtransactions(category_id, amount)',
+        'date, account_id, payee_name, category_id, amount, is_split, transfer_account_id, subtransactions(category_id, amount)',
       )
       .eq('budget_id', budget.id)
       .gte('date', first)
@@ -191,10 +208,18 @@ export default async function ResumenPage() {
     // review we want headline ingresos vs gastos, not per-category math.
     supabase
       .from('transactions')
-      .select('amount, category_id, transfer_account_id')
+      .select('amount, account_id, payee_name, category_id, transfer_account_id')
       .eq('budget_id', budget.id)
       .gte('date', prevBounds.first)
       .lte('date', prevBounds.last),
+    // 3-month window de gastos para el cálculo de runway. Solo
+    // necesitamos amount + account_id + flags de filtrado.
+    supabase
+      .from('transactions')
+      .select('amount, account_id, payee_name, transfer_account_id, date')
+      .eq('budget_id', budget.id)
+      .gte('date', runwayWindow.first)
+      .lte('date', last),
   ])
 
   const groupsData = groupsRes.data ?? []
@@ -274,17 +299,39 @@ export default async function ResumenPage() {
 
   const netWorth = totalCash + totalInvestments - totalDebt
 
-  // Income / expense come from the *full* month. Transfers (rows with
-  // transfer_account_id set) are excluded — they just move money between
-  // accounts and shouldn't inflate either side. Splits don't change parent
-  // sign, so counting parents is correct for these aggregates.
-  const nonTransfer = txnsMonthData.filter((t) => !t.transfer_account_id)
-  const totalIncome = nonTransfer
+  // Income / expense come from the *full* month. Excluímos:
+  //   - Transfers (transfer_account_id no-null): solo mueven dinero
+  //   - 'Saldo inicial' y 'Ajuste de reconciliación': no son flujos
+  //     económicos reales — son contables/de sistema. Excluirlos
+  //     evita que la creación de cuenta con balance ≠ 0 aparezca como
+  //     "ingreso" del mes en KPIs y reportes.
+  // Cada amount se convierte a la currency del budget antes de sumar
+  // (multi-currency: USD checking + DOP checking no se mezclan crudo).
+  // Esto garantiza congruencia con los reportes de /app/analisis.
+  const SYSTEM_PAYEES_SET = new Set(['Saldo inicial', 'Ajuste de reconciliación'])
+  const accountCurrencyById = new Map<string, MoneyCurrency>(
+    accountsData.map((a) => [
+      a.id as string,
+      parseCurrency((a.currency as string | null) ?? null),
+    ]),
+  )
+  const txnAmountInBudget = (t: { amount: number | string; account_id: string }) => {
+    const accCcy = accountCurrencyById.get(t.account_id) ?? budgetMoneyCurrency
+    return convertAmount(Number(t.amount), accCcy, budgetMoneyCurrency, fxRate)
+  }
+  const isFlowTxn = (t: {
+    transfer_account_id?: string | null
+    payee_name?: string | null
+  }) =>
+    !t.transfer_account_id && !SYSTEM_PAYEES_SET.has((t.payee_name ?? '') as string)
+
+  const flowTxns = txnsMonthData.filter(isFlowTxn)
+  const totalIncome = flowTxns
     .filter((t) => Number(t.amount) > 0)
-    .reduce((s, t) => s + Number(t.amount), 0)
-  const totalExpenses = nonTransfer
+    .reduce((s, t) => s + txnAmountInBudget({ amount: t.amount as number | string, account_id: t.account_id as string }), 0)
+  const totalExpenses = flowTxns
     .filter((t) => Number(t.amount) < 0)
-    .reduce((s, t) => s + Math.abs(Number(t.amount)), 0)
+    .reduce((s, t) => s + Math.abs(txnAmountInBudget({ amount: t.amount as number | string, account_id: t.account_id as string })), 0)
 
   const totalAssigned = assignmentsData.reduce((s, a) => s + Number(a.assigned), 0)
 
@@ -577,17 +624,56 @@ export default async function ResumenPage() {
     }
   }
 
-  // Previous-month review numbers for the "Mes pasado" card.
+  // Previous-month review numbers para la "Mes pasado" card. Aplica
+  // mismos filtros que el mes actual (system payees fuera, multi-
+  // currency convertido) para que las comparaciones sean apples-to-
+  // apples.
   const prevMonthData = txnsPrevMonthRes.data ?? []
-  const prevMonthNonTransfer = prevMonthData.filter((t) => !t.transfer_account_id)
-  const prevMonthIncome = prevMonthNonTransfer
+  const prevFlowTxns = prevMonthData.filter(isFlowTxn)
+  const prevMonthIncome = prevFlowTxns
     .filter((t) => Number(t.amount) > 0)
-    .reduce((s, t) => s + Number(t.amount), 0)
-  const prevMonthExpenses = prevMonthNonTransfer
+    .reduce((s, t) => s + txnAmountInBudget({ amount: t.amount as number | string, account_id: t.account_id as string }), 0)
+  const prevMonthExpenses = prevFlowTxns
     .filter((t) => Number(t.amount) < 0)
-    .reduce((s, t) => s + Math.abs(Number(t.amount)), 0)
+    .reduce((s, t) => s + Math.abs(txnAmountInBudget({ amount: t.amount as number | string, account_id: t.account_id as string })), 0)
   const prevMonthSavings = prevMonthIncome - prevMonthExpenses
   const prevMonthHadActivity = prevMonthData.length > 0
+
+  // Runway: cuántos meses aguanta el cash actual al ritmo promedio de
+  // gasto de los últimos 3 meses. Es la métrica más visceral del set —
+  // responde "¿cuánto puedo vivir si paro de ganar mañana?" Excluye
+  // transfers y system payees igual que el resto de KPIs.
+  const runwayTxns = (txnsRunwayRes.data ?? []).filter(isFlowTxn)
+  const runwayExpensesTotal = runwayTxns
+    .filter((t) => Number(t.amount) < 0)
+    .reduce(
+      (s, t) =>
+        s + Math.abs(txnAmountInBudget({ amount: t.amount as number | string, account_id: t.account_id as string })),
+      0,
+    )
+  // Dividimos entre 3 (meses calendario). Si el rango cubre <3 meses
+  // de data real (usuario nuevo), igualmente dividimos entre 3 — el
+  // resultado es conservador (subestima el gasto), lo cual prefiero
+  // sobre inflar el runway artificialmente.
+  const avgMonthlyExpense = runwayExpensesTotal / 3
+  const runwayMonths =
+    avgMonthlyExpense > 0.005 ? totalCash / avgMonthlyExpense : null
+
+  // Tasa de ahorro del mes actual. Si no hay ingresos, null (no tiene
+  // sentido el ratio).
+  const savingsRate =
+    totalIncome > 0.005 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : null
+
+  // Delta vs mes pasado para ingresos y gastos — la card lo muestra
+  // como '+12%' / '−4%' bajo el número principal.
+  const incomeDeltaPct =
+    prevMonthIncome > 0.005
+      ? ((totalIncome - prevMonthIncome) / prevMonthIncome) * 100
+      : null
+  const expenseDeltaPct =
+    prevMonthExpenses > 0.005
+      ? ((totalExpenses - prevMonthExpenses) / prevMonthExpenses) * 100
+      : null
 
   // Upcoming scheduled transactions (next 14 days).
   const accountNameById = new Map<string, string>()
@@ -683,6 +769,19 @@ export default async function ResumenPage() {
           hasTransaction={guideHasTransaction}
           hasGoal={guideHasGoal}
           hasReconciled={guideHasReconciled}
+        />
+
+        {/* 4 KPI cards de salud financiera del mes — recomendados por
+            la auditoría 2026-05-27. Los números usan los MISMOS filtros
+            y conversión multi-currency que los reportes de /analisis
+            para que la lectura sea congruente entre vistas. */}
+        <MonthKpiCards
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          savingsRate={savingsRate}
+          runwayMonths={runwayMonths}
+          incomeDeltaPct={incomeDeltaPct}
+          expenseDeltaPct={expenseDeltaPct}
         />
 
         {/* Orden por feedback del usuario: primero Categorías
