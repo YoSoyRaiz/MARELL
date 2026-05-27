@@ -324,6 +324,7 @@ export function TransactionFormModal({
                 amount,
                 date,
                 memo,
+                categoryId: categoryId || null,
               })
             : await createTransfer({
                 fromAccountId: accountId,
@@ -331,6 +332,7 @@ export function TransactionFormModal({
                 amount,
                 date,
                 memo,
+                categoryId: categoryId || null,
               })
         if (result && 'error' in result && result.error) {
           setError(result.error)
@@ -475,7 +477,7 @@ export function TransactionFormModal({
                 }`}
               >
                 <ArrowLeftRight size={14} strokeWidth={2.2} />
-                Transferencia
+                Transferencia interna
               </button>
             )}
           </div>
@@ -581,9 +583,33 @@ export function TransactionFormModal({
 
           {/* Categoría + split: ocultos solo cuando el modal abre desde
               el FAB (compactMobile=true). En el flujo normal de
-              /movimientos siempre se ven, también en móvil. */}
+              /movimientos siempre se ven, también en móvil.
+              Para transferencias internas: la categoría se guarda
+              solo en la pierna SOURCE (el lado que sale), funciona
+              como un tag — útil para pagos de tarjeta o moves a
+              ahorro etiquetados. Sin botón de split: dividir una
+              transferencia no tiene semántica clara. */}
           <div className={compactMobile ? 'hidden lg:block' : ''}>
-          {!isTransfer && (!splitMode ? (
+          {isTransfer ? (
+            <FormField label="Categoría" hint="opcional">
+              <NativeSelect
+                value={categoryId}
+                onChange={(v) => setCategoryId(v)}
+                ariaLabel="Categoría"
+              >
+                <option value="">Sin categoría</option>
+                {Object.entries(groupedCategories).map(([groupName, cats]) => (
+                  <optgroup key={groupName} label={groupName}>
+                    {cats.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </NativeSelect>
+            </FormField>
+          ) : !splitMode ? (
             <FormField
               label="Categoría"
               hint={
@@ -765,7 +791,7 @@ export function TransactionFormModal({
                 )}
               </div>
             </div>
-          ))}
+          )}
           </div>
 
           <div className={compactMobile ? 'hidden lg:block' : ''}>

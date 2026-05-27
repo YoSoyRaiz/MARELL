@@ -134,6 +134,9 @@ const toInitial = (t: ListTransaction): InitialTransaction => {
   if (t.is_transfer) {
     // For transfer edits, treat the SOURCE leg (negative amount) as the
     // "from" so the form's accountId/toAccountId match user mental model.
+    // categoryId vive solo en la pierna source — si estamos editando
+    // desde la destination row no la vemos pre-cargada (limitación
+    // aceptada: el usuario puede re-seleccionarla y se guarda igual).
     const isSource = t.amount < 0
     return {
       id: t.id,
@@ -141,7 +144,7 @@ const toInitial = (t: ListTransaction): InitialTransaction => {
       date: t.date,
       accountId: isSource ? t.account_id : (t.transfer_account_id ?? t.account_id),
       toAccountId: isSource ? (t.transfer_account_id ?? '') : t.account_id,
-      categoryId: null,
+      categoryId: isSource ? t.category_id : null,
       payeeName: t.payee_name ?? '',
       amount: Math.abs(t.amount),
       memo: t.memo,

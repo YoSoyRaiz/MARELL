@@ -1060,6 +1060,11 @@ export interface CreateTransferInput {
   amount: number // positive
   date: string // YYYY-MM-DD
   memo: string | null
+  /** Categoría opcional — solo se guarda en la pierna source (la
+   *  que tiene amount negativo) para que cuente como actividad de
+   *  esa categoría. La pierna destination siempre queda null. Útil
+   *  para etiquetar pagos de tarjeta, moves a ahorro, etc. */
+  categoryId?: string | null
 }
 
 export async function createTransfer(input: CreateTransferInput) {
@@ -1104,6 +1109,20 @@ export async function createTransfer(input: CreateTransferInput) {
   const amount = Math.round(input.amount * 100) / 100
   const memo = input.memo?.trim() || null
 
+  // Validar que la categoría (si se pasa) pertenezca al mismo budget.
+  // Si no valida, fallback a null sin error para no bloquear el guardado.
+  let sourceCategoryId: string | null = null
+  if (input.categoryId) {
+    const { data: cat } = await supabase
+      .from('categories')
+      .select('id, budget_id')
+      .eq('id', input.categoryId)
+      .single()
+    if (cat && cat.budget_id === budget.id) {
+      sourceCategoryId = cat.id as string
+    }
+  }
+
   // Insert the source row first so we have its id for the destination's
   // transfer_transaction_id.
   const { data: srcRow, error: srcErr } = await supabase
@@ -1113,7 +1132,7 @@ export async function createTransfer(input: CreateTransferInput) {
       budget_id: budget.id,
       date: input.date,
       payee_name: `Transferencia a ${toAcct.name}`,
-      category_id: null,
+      category_id: sourceCategoryId,
       memo,
       amount: -amount,
       cleared: 'uncleared',
@@ -1244,6 +1263,20 @@ export async function updateTransfer(input: UpdateTransferInput) {
   const newAmount = Math.round(input.amount * 100) / 100
   const memo = input.memo?.trim() || null
 
+  // Validar categoría opcional contra el mismo budget. Cualquier valor
+  // inválido (o no provisto) → null en la pierna source.
+  let sourceCategoryId: string | null = null
+  if (input.categoryId) {
+    const { data: cat } = await supabase
+      .from('categories')
+      .select('id, budget_id')
+      .eq('id', input.categoryId)
+      .single()
+    if (cat && cat.budget_id === seed.budget_id) {
+      sourceCategoryId = cat.id as string
+    }
+  }
+
   // Update both legs in-place. The `transactions_balance_sync`
   // trigger handles the four-way balance dance automatically: when
   // an UPDATE changes account_id, it subtracts OLD.amount from the
@@ -1258,6 +1291,7 @@ export async function updateTransfer(input: UpdateTransferInput) {
       date: input.date,
       memo,
       payee_name: `Transferencia a ${toAcct.name}`,
+      category_id: sourceCategoryId,
     })
     .eq('id', sourceLeg.id as string)
   if (srcUpdErr) return { error: safeError(srcUpdErr, 'transacciones') }
