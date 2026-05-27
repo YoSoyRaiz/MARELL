@@ -374,7 +374,7 @@ export function HerramientasClient() {
                   value={fmtMoney(cuotaResult.totalPaid)}
                 />
                 <Row
-                  label="Intereses"
+                  label="Intereses totales"
                   value={fmtMoney(cuotaResult.interest)}
                   tone={cuotaResult.interest > 0 ? 'warn' : 'default'}
                   hint={
