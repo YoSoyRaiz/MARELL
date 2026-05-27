@@ -98,7 +98,7 @@ export function MonthKpiCards({
       />
       <KpiCard
         Icon={Wallet}
-        label="Runway"
+        label="Colchón"
         value={
           runwayMonths === null
             ? '—'
@@ -106,7 +106,11 @@ export function MonthKpiCards({
               ? '100+ meses'
               : `${runwayMonths.toFixed(1)} meses`
         }
-        hint={runwayMonths === null ? 'sin historial de gasto' : 'cash ÷ gasto prom. 3m'}
+        hint={
+          runwayMonths === null
+            ? 'sin historial de gasto'
+            : 'cuánto aguantas si paras de ganar'
+        }
         tone={runwayTone}
       />
     </div>
