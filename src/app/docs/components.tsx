@@ -25,13 +25,13 @@ const CALLOUT_STYLES: Record<
   tip: {
     bg: 'bg-[rgba(61,220,151,0.06)]',
     border: 'border-[var(--brand-2)]/30',
-    text: 'text-[var(--brand-2)]',
+    text: 'text-[var(--brand-text)]',
     Icon: Sparkles,
   },
   success: {
     bg: 'bg-[rgba(61,220,151,0.06)]',
     border: 'border-[var(--brand-2)]/30',
-    text: 'text-[var(--brand-2)]',
+    text: 'text-[var(--brand-text)]',
     Icon: CheckCircle2,
   },
 }
@@ -111,7 +111,7 @@ export function FeatureCard({
 }) {
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-5 space-y-2">
-      <div className="w-10 h-10 rounded-xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)] flex items-center justify-center">
+      <div className="w-10 h-10 rounded-xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] flex items-center justify-center">
         <Icon size={18} strokeWidth={2.2} />
       </div>
       <div className="text-emph font-semibold text-[var(--text)] leading-snug">

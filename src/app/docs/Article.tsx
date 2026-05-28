@@ -21,7 +21,7 @@ export function Article({ pathname, eyebrow, title, lead, children }: ArticlePro
     <article data-doc className="docs-article">
       <header className="mb-8 pb-6 border-b border-[var(--border)]">
         {eyebrow && (
-          <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)] mb-3">
+          <div className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)] mb-3">
             {eyebrow}
           </div>
         )}
@@ -48,7 +48,7 @@ export function Article({ pathname, eyebrow, title, lead, children }: ArticlePro
                 <ArrowLeft size={11} strokeWidth={2.4} />
                 Anterior
               </div>
-              <div className="text-emph font-semibold text-[var(--text)] group-hover:text-[var(--brand-2)] transition-colors">
+              <div className="text-emph font-semibold text-[var(--text)] group-hover:text-[var(--brand-text)] transition-colors">
                 {prev.label}
               </div>
             </Link>
@@ -64,7 +64,7 @@ export function Article({ pathname, eyebrow, title, lead, children }: ArticlePro
                 Siguiente
                 <ArrowRight size={11} strokeWidth={2.4} />
               </div>
-              <div className="text-emph font-semibold text-[var(--text)] group-hover:text-[var(--brand-2)] transition-colors">
+              <div className="text-emph font-semibold text-[var(--text)] group-hover:text-[var(--brand-text)] transition-colors">
                 {next.label}
               </div>
             </Link>

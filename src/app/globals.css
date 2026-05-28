@@ -155,17 +155,20 @@
   --muted:         #6E6E66;
   --muted2:        #4F4F48;
 
-  /* Brand-as-text — darker, saturated stops so they hit ≥4.5:1 on
-     paper white. The vivid gradient (--gradient) keeps living on
-     buttons / icon tiles / decorative surfaces. */
-  --brand-text:    #0E9C68;
+  /* Brand-as-text — stops dark enough para AA en paper white.
+     Antes era #0E9C68 (~3.3:1 contra blanco) que pasaba como
+     "verde brand" pero el ojo lo leía como pálido / decorativo.
+     #0A6E48 (~5.4:1) lee como texto sólido. La gradient (--gradient)
+     viva sigue habitando botones / íconos / superficies decorativas. */
+  --brand-text:    #0A6E48;
   --coral-text:    #C24A2C;
   --warn-text:     #8A6A00;
   --info-text:     #0F6FCF;
 
-  /* Text-only gradient: darker mid stops so .gradient-text is
-     legible on light surfaces. */
-  --gradient-text: linear-gradient(135deg, #138B82 0%, #0E9C68 55%, #5B8A19 100%);
+  /* Text-only gradient: stops darkened para que .gradient-text
+     pase contraste en superficies claras. Mantiene la progresión
+     teal → verde → oliva del brand. */
+  --gradient-text: linear-gradient(135deg, #0E6E68 0%, #0A6E48 55%, #4F7515 100%);
 }
 
 /* ─────────────────────────────────────────────
@@ -512,14 +515,14 @@
    Tailwind utility classes (gradient-bg, rounded-2xl, h-9/h-10/h-11)
    from getting their colors overridden. */
 .docs-prose a:not([class*="gradient-bg"]):not([class*="rounded-xl"]):not([class*="rounded-2xl"]):not([class*="rounded-3xl"]):not([class*="border-"]):not([class*="h-9"]):not([class*="h-10"]):not([class*="h-11"]):not([class*="h-12"]) {
-  color: var(--brand-2);
+  color: var(--brand-text);
   text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--brand-2) 60%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-text) 60%, transparent);
   transition: border-color .15s, color .15s;
 }
 .docs-prose a:not([class*="gradient-bg"]):not([class*="rounded-xl"]):not([class*="rounded-2xl"]):not([class*="rounded-3xl"]):not([class*="border-"]):not([class*="h-9"]):not([class*="h-10"]):not([class*="h-11"]):not([class*="h-12"]):hover {
-  border-bottom-color: var(--brand-2);
-  color: #5fe67b;
+  border-bottom-color: var(--brand-text);
+  color: color-mix(in srgb, var(--brand-text) 80%, var(--text));
 }
 .docs-prose ul, .docs-prose ol {
   padding-left: 1.4em;
@@ -528,7 +531,7 @@
 .docs-prose ul { list-style-type: disc; }
 .docs-prose ol { list-style-type: decimal; }
 .docs-prose li + li { margin-top: 0.35em; }
-.docs-prose li::marker { color: var(--brand-2); }
+.docs-prose li::marker { color: var(--brand-text); }
 .docs-prose code:not(pre code) {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.86em;
@@ -536,7 +539,7 @@
   border-radius: 6px;
   background: rgba(61,220,151,0.10);
   border: 1px solid rgba(61,220,151,0.25);
-  color: #5fe67b;
+  color: var(--brand-text);
   font-weight: 500;
 }
 .docs-prose pre {

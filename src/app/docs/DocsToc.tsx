@@ -67,7 +67,7 @@ export function DocsToc() {
               href={`#${item.id}`}
               className={`block py-0.5 leading-snug transition-colors ${
                 activeId === item.id
-                  ? 'text-[var(--brand-2)] font-medium'
+                  ? 'text-[var(--brand-text)] font-medium'
                   : 'text-[var(--text2)] hover:text-[var(--text)]'
               }`}
             >

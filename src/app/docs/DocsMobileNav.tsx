@@ -40,7 +40,7 @@ export function DocsMobileNav() {
           />
           <aside className="absolute inset-y-0 left-0 w-[88vw] max-w-[340px] bg-[var(--s1)]/95 backdrop-blur-md border-r border-[var(--border)] flex flex-col animate-step">
             <header className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-              <span className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-2)]">
+              <span className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--brand-text)]">
                 Documentación
               </span>
               <button

@@ -31,7 +31,7 @@ export function DocsSidebar({ onNavigate }: DocsSidebarProps) {
                     onClick={onNavigate}
                     className={`block px-3 py-1.5 rounded-lg transition-colors ${
                       active
-                        ? 'bg-[rgba(61,220,151,0.10)] text-[var(--brand-2)] font-semibold'
+                        ? 'bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] font-semibold'
                         : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-white/[0.04]'
                     }`}
                   >
