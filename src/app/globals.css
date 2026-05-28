@@ -126,8 +126,12 @@
 }
 
 /* ─────────────────────────────────────────────
-   Light theme — opt-in via data-theme="light".
-   The dark theme above is still the default.
+   Light theme — default para first-time visitors.
+   El bloque dark de arriba sigue siendo la base
+   (variables que NO se sobrescriban acá heredan
+   sus valores dark), pero el script de init en
+   ThemeProvider setea data-theme="light" como
+   default para que la app arranque clara.
    ───────────────────────────────────────────── */
 :root[data-theme='light'] {
   /* Surfaces — paper-white with very soft greens to keep the brand

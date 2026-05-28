@@ -60,9 +60,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Set data-theme before paint so light-mode users don't see
-            a dark flash on first load. The script reads localStorage
-            and falls back to OS preference. */}
+        {/* Set data-theme before paint para que MARELL arranque en
+            modo claro sin flash. El script lee localStorage primero
+            (si el usuario eligió dark, respeta su elección) y cae a
+            'light' como default para first-time visitors. */}
         <script
           dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
         />

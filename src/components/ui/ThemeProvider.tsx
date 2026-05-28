@@ -24,33 +24,29 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 const STORAGE_KEY = 'marell:theme'
 
-function readSystemPref(): ResolvedTheme {
-  if (typeof window === 'undefined') return 'dark'
-  return window.matchMedia('(prefers-color-scheme: light)').matches
-    ? 'light'
-    : 'dark'
-}
-
 function readStoredMode(): ThemeMode {
-  if (typeof window === 'undefined') return 'dark'
+  if (typeof window === 'undefined') return 'light'
   const v = window.localStorage.getItem(STORAGE_KEY)
   if (v === 'light' || v === 'dark') return v
-  // First-time visitors: seed from OS preference, then it's explicit
-  // light/dark from there on — no live OS-pref reactivity.
-  return readSystemPref()
+  // First-time visitors arrancan en LIGHT por decisión de producto —
+  // antes seedeábamos desde prefers-color-scheme pero el ojo
+  // dominicano espera ver el primer paint en claro (más confianza,
+  // menos sensación de "app oscura"). El toggle a dark queda a 1
+  // click en el TopBar.
+  return 'light'
 }
 
 /**
  * ThemeProvider keeps a `data-theme="light|dark"` attribute on
  * <html> so CSS variables (defined in globals.css) flip themselves.
- * Two modes only — light or dark. First-time visitors are seeded from
- * the OS preference; after that the choice is sticky in localStorage.
+ * Two modes — light (default) o dark. First-time visitors arrancan
+ * en light; después la elección se persiste en localStorage.
  *
  * The matching pre-hydration script in <head> sets the attribute
- * before paint to avoid a dark→light flash on light-mode users.
+ * before paint to avoid a flash on first paint.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>('dark')
+  const [mode, setModeState] = useState<ThemeMode>('light')
 
   // Initial read after hydration.
   useEffect(() => {
@@ -78,10 +74,11 @@ export function useTheme() {
   const ctx = useContext(ThemeContext)
   if (!ctx) {
     // Fallback when used outside the provider — safe defaults so
-    // server components don't crash.
+    // server components don't crash. Default light matching el
+    // default real del provider.
     return {
-      mode: 'dark' as ThemeMode,
-      resolved: 'dark' as ResolvedTheme,
+      mode: 'light' as ThemeMode,
+      resolved: 'light' as ResolvedTheme,
       setMode: () => {},
     }
   }
@@ -90,8 +87,11 @@ export function useTheme() {
 
 /**
  * Inline script string injected in the <head> of the root layout. It
- * runs before React hydrates and sets the data-theme attribute, so
- * users who chose light mode don't see a dark flash on first paint.
- * Falls back to OS preference for first-time visitors.
+ * runs before React hydrates y setea el data-theme attribute para
+ * evitar flash en first paint.
+ *
+ * Política: default LIGHT para first-time visitors (no leemos
+ * prefers-color-scheme). Si el usuario hizo toggle a dark, la
+ * preferencia vive en localStorage y la respetamos.
  */
-export const THEME_INIT_SCRIPT = `(function(){try{var v=localStorage.getItem('marell:theme');var m=(v==='light'||v==='dark')?v:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',m);var sb=localStorage.getItem('marell:sidebar-collapsed');document.documentElement.style.setProperty('--sidebar-w',sb==='true'?'72px':'240px');}catch(e){document.documentElement.setAttribute('data-theme','dark');document.documentElement.style.setProperty('--sidebar-w','240px');}})();`
+export const THEME_INIT_SCRIPT = `(function(){try{var v=localStorage.getItem('marell:theme');var m=(v==='light'||v==='dark')?v:'light';document.documentElement.setAttribute('data-theme',m);var sb=localStorage.getItem('marell:sidebar-collapsed');document.documentElement.style.setProperty('--sidebar-w',sb==='true'?'72px':'240px');}catch(e){document.documentElement.setAttribute('data-theme','light');document.documentElement.style.setProperty('--sidebar-w','240px');}})();`
