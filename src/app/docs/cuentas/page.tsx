@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Article } from '../Article'
 import { Callout } from '../components'
 
@@ -74,6 +75,43 @@ export default function CuentasDocs() {
         historial.
       </Callout>
 
+      <p>
+        Cuando creas una cuenta con balance ≠ 0, MARELL inserta
+        automáticamente una transacción llamada <strong>"Saldo inicial"</strong>{' '}
+        por ese monto. Esto permite que la serie histórica de Patrimonio
+        muestre la cuenta apareciendo en su fecha real de creación, no
+        proyectada hacia el pasado.
+      </p>
+      <p>
+        Esa transacción <em>no aparece</em> en los reportes de flujo
+        (Ingresos vs Gastos, Tendencias, Edad del dinero) porque no es un
+        gasto o ingreso económico — solo es una foto del momento.
+      </p>
+
+      <h2>Tarjetas de crédito y préstamos</h2>
+      <p>
+        Para cuentas de tipo crédito, préstamo o hipoteca puedes configurar
+        una <strong>tasa anual (APR)</strong>. Si la registras, MARELL
+        genera automáticamente una transacción mensual de{' '}
+        <strong>"Intereses estimados"</strong> el día 1 de cada mes con
+        monto <code>balance × APR / 12</code>. La transacción aparece como
+        gasto en Ingresos vs Gastos — porque lo es: tu deuda creció por
+        ese monto.
+      </p>
+      <p>
+        Si tu banco cobra diferente al estimado, edita o borra la
+        transacción como cualquier otra. También puedes generar las del
+        mes pasado manualmente desde{' '}
+        <Link href="/docs/analisis">Análisis → Salud de deudas → Generar
+        intereses</Link>.
+      </p>
+
+      <p>
+        Para tarjetas de crédito, también puedes registrar el{' '}
+        <strong>día de corte</strong> (cycle close day). MARELL te avisa
+        en Salud de deudas cuando se acerca (3 días o menos).
+      </p>
+
       <h2>Reconciliar contra tu banco</h2>
       <p>
         Reconciliar es cuadrar el balance de MARELL con el balance real del
@@ -87,15 +125,28 @@ export default function CuentasDocs() {
           Introduce el balance que dice tu banco hoy.
         </li>
         <li>
-          Si no cuadra, MARELL te pregunta si quieres crear un{' '}
+          <strong>Preview de transacciones a bloquear</strong>: antes de
+          confirmar, MARELL te muestra exactamente qué transacciones se
+          van a marcar como reconciliadas. Click en "Se van a bloquear N
+          transacciones" para expandir la lista.
+        </li>
+        <li>
+          Si no cuadra el balance, MARELL crea un{' '}
           <strong>Ajuste de reconciliación</strong> automático por la
-          diferencia.
+          diferencia (transacción sin categoría con payee
+          "Ajuste de reconciliación").
         </li>
         <li>
           Confirma. Todas las transacciones existentes pasan a estado{' '}
           <em>reconciliada</em> y ya no se editan accidentalmente.
         </li>
       </ol>
+      <p>
+        Los ajustes de reconciliación <em>no</em> aparecen en los reportes
+        de flujo (Ingresos vs Gastos, Tendencias, etc.) porque no son
+        eventos económicos reales — son correcciones contables. Sí afectan
+        el balance real de la cuenta y por lo tanto el Patrimonio.
+      </p>
 
       <Callout tone="warning" title="Si te equivocaste reconciliando">
         Desde Cuentas → menú (⋯) puedes <strong>Desreconciliar</strong>. Las
@@ -114,9 +165,23 @@ export default function CuentasDocs() {
       <h2>Tasas y monedas</h2>
       <p>
         Por defecto MARELL usa pesos dominicanos (RD$). Si tienes una cuenta
-        en USD, la balanceas en su moneda original y MARELL la convierte a
-        RD$ usando la tasa BCRD del día (actualizada por cron diario) para
-        mostrar tu patrimonio neto en pesos.
+        en USD, la balanceas en su moneda original — el balance se guarda
+        en USD y las transacciones también — y MARELL la convierte a RD$
+        usando la tasa USD↔DOP de tu presupuesto cuando construye los
+        reportes (Patrimonio, Ingresos vs Gastos, Salud de deudas, etc).
+      </p>
+      <p>
+        La tasa se actualiza automáticamente desde el BCRD por cron diario
+        a las 15:00 UTC. Puedes verla y ajustarla manualmente en{' '}
+        <code>/app/ajustes</code> si necesitas usar otra referencia (ej.
+        tasa de tu banco para préstamos en USD).
+      </p>
+      <p>
+        En la vista de Cuentas las cifras de cada cuenta se muestran en su
+        moneda nativa (US$ para cuentas USD, RD$ para DOP). Los KPIs de
+        arriba (Disponible / Inversiones / Deudas / Patrimonio neto) se
+        muestran convertidos a la moneda base del presupuesto para que
+        sean comparables.
       </p>
     </Article>
   )

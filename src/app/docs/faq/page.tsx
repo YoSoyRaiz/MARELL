@@ -132,11 +132,86 @@ export default function FaqDocs() {
 
       <h2>¿Cómo trato los gastos en USD?</h2>
       <p>
-        Si la cuenta es en USD (ej. Banco Popular USD), créala como{' '}
-        <strong>Seguimiento</strong> con balance en USD. MARELL la convierte
-        a RD$ usando la tasa BCRD del día solo para el cálculo de patrimonio
-        neto. Las transacciones individuales se guardan en USD y no afectan
-        Por asignar (porque Seguimiento no es presupuestada).
+        Cualquier tipo de cuenta (corriente, ahorros, tarjeta de crédito,
+        préstamo, etc.) puede ser USD. Al crearla, elige{' '}
+        <strong>USD</strong> como moneda. El balance y las transacciones
+        se guardan en USD. MARELL convierte automáticamente a RD$ usando
+        la tasa USD↔DOP de tu presupuesto al construir los reportes
+        (Patrimonio, Ingresos vs Gastos, Salud de deudas, etc.).
+      </p>
+      <p>
+        La tasa se actualiza diariamente desde el BCRD por cron. Puedes
+        ajustarla manualmente en <code>/app/ajustes</code>.
+      </p>
+
+      <h2>¿Por qué aparecen "Intereses estimados" en mis gastos?</h2>
+      <p>
+        MARELL genera el día 1 de cada mes una transacción estimada de
+        intereses en cada cuenta de deuda (tarjeta, préstamo, hipoteca)
+        que tenga APR configurada. El monto es{' '}
+        <code>balance × APR / 12</code>. Aparecen en Ingresos vs Gastos
+        como gasto porque <em>lo son</em> — tu deuda creció ese mes por
+        ese monto.
+      </p>
+      <p>
+        Si tu banco cobra diferente al estimado, edita o borra la
+        transacción como cualquier otra. Para back-fill de meses
+        anteriores, usa{' '}
+        <Link href="/docs/analisis">Análisis → Salud de deudas → Generar
+        intereses</Link>.
+      </p>
+
+      <h2>¿Qué es el "Colchón" en el Resumen?</h2>
+      <p>
+        Es cuántos meses aguantas con tu cash actual si paras de ganar
+        mañana, calculado al ritmo de tus gastos promedio últimos 3 meses.
+        Es el indicador más visceral de salud financiera personal. Menos
+        de 3 meses = emergencia; 3-6 meses = aceptable; 6-12 meses = sano;
+        12+ meses = excelente.
+      </p>
+
+      <h2>¿Cómo exporto mis reportes para el contador?</h2>
+      <p>
+        En <code>/app/analisis</code>, botón <strong>Exportar</strong> en
+        la cabecera. Dos opciones:
+      </p>
+      <ul>
+        <li>
+          <strong>PDF</strong>: 6 páginas con portada, KPIs, gráficas y
+          tablas. Branded MARELL, listo para archivo o entrega.
+        </li>
+        <li>
+          <strong>CSV (.zip)</strong>: 5 archivos separados con la data
+          cruda + README con notas metodológicas. Para análisis en
+          Excel/Sheets.
+        </li>
+      </ul>
+      <p>
+        El período del export es fijo: últimos 12 meses (mes actual para
+        Gastos). Si necesitas otro rango, dímelo y lo agregamos.
+      </p>
+
+      <h2>¿Qué es el "Saldo inicial" que aparece al crear una cuenta?</h2>
+      <p>
+        Cuando creas una cuenta con balance ≠ 0, MARELL inserta
+        automáticamente una transacción "Saldo inicial" por ese monto.
+        Esto permite que la serie histórica de Patrimonio muestre la
+        cuenta apareciendo en su fecha real de creación, no proyectada
+        hacia el pasado.
+      </p>
+      <p>
+        Esta transacción <em>no aparece</em> en los reportes de flujo
+        (Ingresos vs Gastos, etc.) porque no es un evento económico — es
+        una foto del momento. Sí afecta el balance real y el Patrimonio.
+      </p>
+
+      <h2>¿Por qué mis gastos del mes no coinciden entre Resumen y Análisis?</h2>
+      <p>
+        Deben coincidir exactamente. Ambas vistas aplican los mismos
+        filtros (transferencias internas fuera, saldos iniciales fuera,
+        ajustes de reconciliación fuera) y la misma conversión
+        multi-moneda. Si ves divergencia, repórtanos un screenshot a{' '}
+        <a href="mailto:soporte@marell.app">soporte@marell.app</a>.
       </p>
 
       <h2>¿Borrar una cuenta borra las transacciones?</h2>

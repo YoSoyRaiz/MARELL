@@ -182,6 +182,42 @@ export default function Conceptos() {
         </li>
       </ol>
 
+      <h2>7. Tu salud financiera en el Resumen</h2>
+      <p>
+        En el dashboard de Resumen, debajo del saludo y la guía de primer
+        mes, hay 4 cards con tus indicadores clave del mes actual:
+      </p>
+      <ul>
+        <li>
+          <strong>Ingresos del mes</strong>: suma de todo lo que entró
+          (excluyendo transferencias internas y saldos iniciales). Con
+          delta vs mes pasado para que veas si subes o bajas.
+        </li>
+        <li>
+          <strong>Gastos del mes</strong>: suma de todo lo que salió. Mismo
+          filtro que ingresos para que la comparación sea apples-to-apples.
+        </li>
+        <li>
+          <strong>Tasa de ahorro</strong>: <code>(ingresos − gastos) ÷
+          ingresos × 100</code>. El estándar internacional de personal
+          finance: bajo 0% = gastas más de lo que ganas, 0-10% =
+          empatando, 10-20% = sano, 20%+ = excelente (estándar FIRE).
+        </li>
+        <li>
+          <strong>Colchón</strong>: cuántos meses aguantas con tu cash
+          actual si paras de ganar mañana, calculado al ritmo de tus
+          gastos promedio últimos 3 meses. Menos de 3 meses = emergencia;
+          3-6 meses = cobertura razonable; 6-12 meses = sano; 12+ meses =
+          excelente.
+        </li>
+      </ul>
+
+      <Callout tone="tip" title="¿Por qué &quot;Colchón&quot; y no &quot;Runway&quot;?">
+        Runway es jerga financiera en inglés. <em>Colchón</em> captura el
+        mismo concepto en español natural — el "respaldo" que tienes
+        contra imprevistos.
+      </Callout>
+
       <Callout tone="tip" title="Siguiente paso">
         Lee <Link href="/docs/empezar">Cómo empezar</Link> para configurar tu
         primer presupuesto en 10 minutos.

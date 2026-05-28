@@ -26,11 +26,22 @@ export default function MovimientosDocs() {
           decidas cómo repartirlo.
         </li>
         <li>
-          <strong>Transferencia</strong>: dinero que se mueve de una cuenta
-          tuya a otra. No afecta Por asignar ni se cuenta como gasto. Crea
-          un par de transacciones espejo automáticamente.
+          <strong>Transferencia interna</strong>: dinero que se mueve de
+          una cuenta tuya a otra (ej. corriente → ahorros, o checking →
+          tarjeta de crédito para pagarla). No afecta Por asignar ni se
+          cuenta como gasto en los reportes — solo es movimiento de
+          dinero. Crea un par de transacciones espejo automáticamente.
         </li>
       </ul>
+
+      <p>
+        <strong>Categoría opcional en transferencias internas</strong>:
+        puedes asignarle una categoría a una transferencia (útil para
+        etiquetar pagos de tarjeta como "Pago tarjeta" o moves a ahorro
+        como "Ahorro mensual"). La categoría solo se guarda en la pierna
+        que sale (la del monto negativo) — la pierna de destino siempre
+        queda sin categoría para no doble-contar la actividad.
+      </p>
 
       <h2>Registrar un movimiento</h2>
       <p>Hay varias maneras, todas abren el mismo modal sin sacarte de la página actual:</p>
@@ -85,9 +96,10 @@ export default function MovimientosDocs() {
 
       <h3>Pagado a</h3>
       <p>
-        Nombre del comercio o persona. <strong>Opcional desde el FAB</strong>;{' '}
-        si lo dejas vacío, MARELL guarda automáticamente "Recibo del 27 abr"
-        (con la fecha) para que la fila tenga texto legible. Editas después.
+        Nombre del comercio o persona. <strong>Siempre opcional</strong>:
+        si lo dejas vacío, MARELL guarda automáticamente "Recibo del 27
+        mayo" (con la fecha) para que la fila tenga texto legible. Editas
+        después.
       </p>
       <p>
         Si escribes un nombre que ya usaste antes con una categoría
@@ -99,6 +111,11 @@ export default function MovimientosDocs() {
       <p>
         Opcional. Si no eliges, el gasto cuenta como "Sin categoría" y queda
         pendiente de clasificar — visible en filtros de Movimientos.
+      </p>
+      <p>
+        En el formulario hay un <strong>combobox con búsqueda</strong>:
+        empieza a escribir el nombre o el grupo y MARELL filtra la lista.
+        Útil cuando tienes 30+ categorías.
       </p>
 
       <h3>Split (dividir)</h3>
@@ -135,8 +152,15 @@ export default function MovimientosDocs() {
           <strong>Tipo</strong>: Todas, Ingresos, Gastos.
         </li>
         <li>
-          <strong>Mes</strong>: navegación con flechas. Toca el nombre del
-          mes para alternar a "Todas las fechas".
+          <strong>Mensual / Anual</strong>: toggle que cambia la
+          periodicidad del navegador. En Mensual navegas ‹ Mayo 2026 ›
+          mes a mes; en Anual ‹ 2026 › año completo. Útil para revisar el
+          consolidado de un año.
+        </li>
+        <li>
+          <strong>Navegador de período</strong>: flechas para mover de
+          mes/año, click en el label central para alternar a "Todas las
+          fechas".
         </li>
       </ul>
 
