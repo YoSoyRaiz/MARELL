@@ -8,6 +8,7 @@ import {
   ChevronDown,
   CheckCircle2,
   Plus,
+  Pencil,
 } from 'lucide-react'
 import { iconForCategoryName } from '@/lib/categoryIcons'
 import { InlineMoneyEdit } from './InlineMoneyEdit'
@@ -15,6 +16,7 @@ import { AnimatedNumber } from './AnimatedNumber'
 import { MoveMoneyModal } from './MoveMoneyModal'
 import { CategoryDrillModal } from './CategoryDrillModal'
 import { NewCategoryModal } from './NewCategoryModal'
+import { EditCategoryModal } from './EditCategoryModal'
 import { PlanTabs } from './PlanTabs'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs'
@@ -100,6 +102,13 @@ export function PlanView({
   const [moveSourceId, setMoveSourceId] = useState<string | null>(null)
   const [drillCategoryId, setDrillCategoryId] = useState<string | null>(null)
   const [newCategoryOpen, setNewCategoryOpen] = useState(false)
+  // Edición de categoría: guardamos los datos necesarios para
+  // hidratar la modal (nombre + grupo actual). Cerrar = null.
+  const [editingCategory, setEditingCategory] = useState<{
+    id: string
+    name: string
+    groupId: string
+  } | null>(null)
   const [, startPay] = useTransition()
   const [payToast, setPayToast] = useState<string | null>(null)
   const [payError, setPayError] = useState<string | null>(null)
@@ -479,7 +488,7 @@ export function PlanView({
                   return (
                     <li
                       key={c.id}
-                      className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--overlay-1)] transition-colors"
+                      className="group/row border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--overlay-1)] transition-colors"
                     >
                       {/* Mobile layout: stacked rows */}
                       <div className="md:hidden px-4 py-3 space-y-2">
@@ -505,6 +514,20 @@ export function PlanView({
                                 meta: ${c.goal_amount.toLocaleString('en-US')}
                               </div>
                             )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditingCategory({
+                                id: c.id,
+                                name: c.name,
+                                groupId: g.id,
+                              })
+                            }
+                            aria-label={`Editar ${c.name}`}
+                            className="shrink-0 w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center transition-colors"
+                          >
+                            <Pencil size={13} strokeWidth={2} />
                           </button>
                           <div className="shrink-0">
                             <InlineMoneyEdit
@@ -553,6 +576,20 @@ export function PlanView({
                                 </div>
                               )}
                             </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditingCategory({
+                                id: c.id,
+                                name: c.name,
+                                groupId: g.id,
+                              })
+                            }
+                            aria-label={`Editar ${c.name}`}
+                            className="shrink-0 w-8 h-8 rounded-lg text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center transition-colors opacity-0 group-hover/row:opacity-100 focus:opacity-100"
+                          >
+                            <Pencil size={13} strokeWidth={2} />
                           </button>
                           <PayFromAccountMenu
                             accounts={accounts}
@@ -616,6 +653,13 @@ export function PlanView({
           groups={groups.map((g) => ({ id: g.id, name: g.name }))}
         />
       )}
+
+      <EditCategoryModal
+        isOpen={editingCategory !== null}
+        onClose={() => setEditingCategory(null)}
+        category={editingCategory}
+        groups={groups.map((g) => ({ id: g.id, name: g.name }))}
+      />
 
       {moveSourceId && budgetId && (() => {
         const sourceCat = groups

@@ -21,6 +21,117 @@ export type CreateCategoryResult =
   | { error: string }
   | { success: true; id: string }
 
+export interface UpdateCategoryInput {
+  categoryId: string
+  /** Si se omite, no cambia el nombre. */
+  name?: string
+  /** Si se omite, no cambia el grupo. */
+  groupId?: string
+  /** Si se omite, no cambia el estado oculto. */
+  hidden?: boolean
+}
+
+export interface UpdateCategoryResult {
+  error?: string
+  success?: boolean
+}
+
+/**
+ * Edita campos básicos de una categoría: nombre, grupo y estado
+ * oculto. No toca metas/targets — eso vive en la modal de meta.
+ *
+ * Ocultar una categoría la saca de Plan, Resumen y de los selects
+ * de transacciones pero NO borra su historial. Es la salida limpia
+ * para categorías que ya no usas. Para devolverla a uso, hoy se
+ * hace por SQL — UI de "categorías ocultas" queda pendiente.
+ */
+export async function updateCategory(
+  input: UpdateCategoryInput,
+): Promise<UpdateCategoryResult> {
+  if (!input.categoryId) return { error: 'Categoría requerida' }
+  const hasAnyChange =
+    input.name !== undefined ||
+    input.groupId !== undefined ||
+    input.hidden !== undefined
+  if (!hasAnyChange) return { success: true }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Ownership check vía budget. Traemos la categoría con su budget
+  // para hacer un solo round-trip.
+  const { data: cat } = await supabase
+    .from('categories')
+    .select('id, budget_id, group_id')
+    .eq('id', input.categoryId)
+    .single()
+  if (!cat) return { error: 'Categoría no encontrada' }
+
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', cat.budget_id as string)
+    .eq('created_by', user.id)
+    .single()
+  if (!budget) return { error: 'Sin acceso al presupuesto' }
+
+  // Construye el patch — solo incluye campos provistos. Tipado
+  // explícito porque Supabase rechaza Record<string, unknown> en el
+  // overload de .update() (espera Partial<Category>).
+  const patch: {
+    name?: string
+    group_id?: string
+    sort_order?: number
+    hidden?: boolean
+  } = {}
+
+  if (input.name !== undefined) {
+    const trimmed = input.name.trim()
+    if (!trimmed) return { error: 'Nombre requerido' }
+    if (trimmed.length > 60) return { error: 'Nombre demasiado largo (máx. 60)' }
+    patch.name = trimmed
+  }
+
+  if (input.groupId !== undefined && input.groupId !== cat.group_id) {
+    // Verifica que el grupo destino pertenezca al mismo budget.
+    const { data: targetGroup } = await supabase
+      .from('category_groups')
+      .select('id')
+      .eq('id', input.groupId)
+      .eq('budget_id', cat.budget_id as string)
+      .single()
+    if (!targetGroup) return { error: 'Grupo destino no válido' }
+    patch.group_id = input.groupId
+    // Al cambiar de grupo, ponemos al final del nuevo grupo para que
+    // no choque sort_order con uno existente.
+    const { data: maxRow } = await supabase
+      .from('categories')
+      .select('sort_order')
+      .eq('budget_id', cat.budget_id as string)
+      .eq('group_id', input.groupId)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    patch.sort_order = (maxRow?.sort_order ?? 0) + 1
+  }
+
+  if (input.hidden !== undefined) {
+    patch.hidden = input.hidden
+  }
+
+  const { error: updErr } = await supabase
+    .from('categories')
+    .update(patch)
+    .eq('id', input.categoryId)
+  if (updErr) return { error: updErr.message }
+
+  revalidatePath('/app', 'layout')
+  return { success: true }
+}
+
 export async function createCategory(
   input: CreateCategoryInput,
 ): Promise<CreateCategoryResult> {
