@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { MetasClient, type ListGoal } from './MetasClient'
 import type { GoalType } from './actions'
 import { currentMonthDR } from '@/lib/dates'
@@ -13,13 +14,14 @@ export default async function MetasPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { budgetId: activeBudgetId } = await getActiveBudgetId(supabase)
+  const { data: budget } = activeBudgetId
+    ? await supabase
+        .from('budgets')
+        .select('id')
+        .eq('id', activeBudgetId)
+        .maybeSingle()
+    : { data: null }
 
   if (!budget) {
     return <MetasClient goals={[]} hasBudget={false} />

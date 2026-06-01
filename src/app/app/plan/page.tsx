@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { expandToCategoryContributions } from '@/lib/splits'
 import { PlanView, type PlanCategory, type PlanGroup } from './PlanView'
 import { PlanAnnualView, type AnnualOneOff } from './PlanAnnualView'
@@ -31,13 +32,14 @@ export default async function PlanPage({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, name, currency')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { budgetId: activeBudgetId } = await getActiveBudgetId(supabase)
+  const { data: budget } = activeBudgetId
+    ? await supabase
+        .from('budgets')
+        .select('id, name, currency')
+        .eq('id', activeBudgetId)
+        .maybeSingle()
+    : { data: null }
 
   if (!budget) {
     return <PlanView budgetId={null} month={month} groups={[]} />
@@ -211,13 +213,14 @@ async function AnnualPage({ rawYear }: { rawYear?: string }) {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { budgetId: annualBudgetId } = await getActiveBudgetId(supabase)
+  const { data: budget } = annualBudgetId
+    ? await supabase
+        .from('budgets')
+        .select('id')
+        .eq('id', annualBudgetId)
+        .maybeSingle()
+    : { data: null }
 
   if (!budget) {
     return (

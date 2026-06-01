@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { AjustesClient } from './AjustesClient'
 import type { Currency } from './actions'
 
@@ -10,19 +11,20 @@ export default async function AjustesPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const { budgetId: activeBudgetId } = await getActiveBudgetId(supabase)
   const [profileRes, budgetRes] = await Promise.all([
     supabase
       .from('profiles')
       .select('display_name, plan, onboarded, email_notifications')
       .eq('id', user.id)
       .single(),
-    supabase
-      .from('budgets')
-      .select('id, name, currency, usd_to_dop_rate')
-      .eq('created_by', user.id)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle(),
+    activeBudgetId
+      ? supabase
+          .from('budgets')
+          .select('id, name, currency, usd_to_dop_rate')
+          .eq('id', activeBudgetId)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
 
   return (

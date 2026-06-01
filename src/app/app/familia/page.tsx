@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { FamiliaClient, type ListMember, type ListInvite } from './FamiliaClient'
 
 export default async function FamiliaPage() {
@@ -10,13 +11,14 @@ export default async function FamiliaPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, name')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { budgetId: activeBudgetId } = await getActiveBudgetId(supabase)
+  const { data: budget } = activeBudgetId
+    ? await supabase
+        .from('budgets')
+        .select('id, name')
+        .eq('id', activeBudgetId)
+        .maybeSingle()
+    : { data: null }
 
   if (!budget) {
     return <FamiliaClient budgetName={null} ownerId={user.id} members={[]} invitations={[]} />

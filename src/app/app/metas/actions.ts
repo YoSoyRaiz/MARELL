@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { safeError } from '@/lib/errors'
 import { ensurePro } from '@/lib/billing/check-server'
 
@@ -130,13 +131,15 @@ export async function createMeta(input: CreateMetaInput) {
   if (!user) return { error: 'No autenticado' }
 
   // Primer budget del user (mismo patrón que el resto del archivo).
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { error: 'Sin presupuesto' }
 
   // Find-or-create del grupo "Metas". El onboarding solo crea este
@@ -242,13 +245,15 @@ export async function suggestEmergencyFundAmount(): Promise<EmergencyFundSuggest
   } = await supabase.auth.getUser()
   if (!user) return empty
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return empty
 
   // Pull last 12 months of expenses + the accounts they belong to, so

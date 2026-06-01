@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { computeReadyToAssign } from '@/lib/budget'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { AppShell } from './AppShell'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -24,13 +25,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // can show the "Admin" link only when relevant.
   const { data: isAdmin } = await supabase.rpc('is_admin')
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, name, currency, usd_to_dop_rate')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  // Active budget — usuario puede tener varios (propios + compartidos
+  // por familia o como auditor de clientes). El helper lee de cookie,
+  // valida membership y cae al primero por created_at para preservar
+  // comportamiento single-budget.
+  const { budgetId: activeBudgetId } = await getActiveBudgetId(supabase)
+  const { data: budget } = activeBudgetId
+    ? await supabase
+        .from('budgets')
+        .select('id, name, currency, usd_to_dop_rate')
+        .eq('id', activeBudgetId)
+        .maybeSingle()
+    : { data: null }
 
   let readyToAssign = 0
   // Notifications collected for the topbar bell. Computed alongside RtA

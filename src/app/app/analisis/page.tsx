@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { expandToCategoryContributions } from '@/lib/splits'
 import {
   convertAmount,
@@ -307,13 +308,14 @@ export default async function AnalisisPage({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, usd_to_dop_rate')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { budgetId: activeBudgetId } = await getActiveBudgetId(supabase)
+  const { data: budget } = activeBudgetId
+    ? await supabase
+        .from('budgets')
+        .select('id, usd_to_dop_rate')
+        .eq('id', activeBudgetId)
+        .maybeSingle()
+    : { data: null }
 
   // Tasa USD↔DOP del budget. Fallback al default si el budget no la
   // tiene seteada (rare; usually solo durante onboarding).

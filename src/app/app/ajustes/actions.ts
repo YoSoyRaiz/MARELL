@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { safeError } from '@/lib/errors'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -160,13 +161,15 @@ export async function exportBudgetJSON(): Promise<ExportResult> {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, name, currency, created_at')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id, name, currency, created_at')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { error: 'Sin presupuesto' }
 
   const [
@@ -226,13 +229,15 @@ export async function exportTransactionsCSV(): Promise<ExportResult> {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { error: 'Sin presupuesto' }
 
   const [accountsRes, catsRes, txnsRes, subsRes] = await Promise.all([

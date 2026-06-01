@@ -3,6 +3,7 @@
 import { randomBytes } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { safeError } from '@/lib/errors'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/send'
@@ -48,13 +49,15 @@ export async function inviteToBudget(input: InviteInput) {
     }
   }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, name')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id, name')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { error: 'Sin presupuesto' }
 
   // No te invites a ti mismo (causa confusión y abre puerta a auto-spam).

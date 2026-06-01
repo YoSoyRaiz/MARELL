@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { CardHeader } from '@/components/ui/CardHeader'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { expandToCategoryContributions } from '@/lib/splits'
 import {
   formatMoney as fmtMoneyWithCurrency,
@@ -46,13 +47,17 @@ export default async function ResumenPage() {
     .eq('id', user.id)
     .single()
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, name, currency')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  // Active budget — usuario puede tener varios (propios + compartidos
+  // por familia o como auditor de clientes). El helper preserva
+  // comportamiento single-budget si no hay cookie ni override.
+  const { budgetId: activeBudgetId } = await getActiveBudgetId(supabase)
+  const { data: budget } = activeBudgetId
+    ? await supabase
+        .from('budgets')
+        .select('id, name, currency, usd_to_dop_rate')
+        .eq('id', activeBudgetId)
+        .maybeSingle()
+    : { data: null }
 
   if (!budget) {
     return (

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { safeError } from '@/lib/errors'
 import { MONTH_NAMES_SHORT_LOWER, monthFromDate } from '@/lib/dates'
 import { validateSplits } from '@/lib/splits'
@@ -81,13 +82,15 @@ export async function suggestCategoryForPayee(
   } = await supabase.auth.getUser()
   if (!user) return { categoryId: null }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { categoryId: null }
 
   // Pull the last few categorized transactions matching this payee and
@@ -574,13 +577,15 @@ export async function suggestCategoriesForPayees(
   } = await supabase.auth.getUser()
   if (!user) return { suggestions: {} }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { suggestions: {} }
 
   // Pull every categorized historical row whose payee matches any input

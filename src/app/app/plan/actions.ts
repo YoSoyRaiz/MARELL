@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import { currentMonthDR } from '@/lib/dates'
 import { safeError } from '@/lib/errors'
 
@@ -232,13 +233,15 @@ export async function fetchAssignContext(): Promise<AssignContextResult> {
   } = await supabase.auth.getUser()
   if (!user) return { budgetId: null, month: currentMonthDR(), categories: [] }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { budgetId: null, month: currentMonthDR(), categories: [] }
 
   const month = currentMonthDR()

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getActiveBudgetId } from '@/lib/budget/active'
 import {
   convertAmount,
   parseCurrency,
@@ -77,13 +78,15 @@ export async function fetchMonthDetail(
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, usd_to_dop_rate')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id, usd_to_dop_rate')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { error: 'Sin presupuesto' }
 
   const usdToDopRate =
@@ -240,13 +243,15 @@ export async function fetchExportData(): Promise<ExportPayload> {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado', generatedAt: '', budgetCurrency: 'DOP', usdToDopRate: 0 }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, currency, usd_to_dop_rate')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id, currency, usd_to_dop_rate')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) {
     return { error: 'Sin presupuesto', generatedAt: '', budgetCurrency: 'DOP', usdToDopRate: 0 }
   }
@@ -603,13 +608,15 @@ export async function fetchDebtHealth(): Promise<DebtHealthResult> {
   } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  const { data: budget } = await supabase
-    .from('budgets')
-    .select('id, usd_to_dop_rate')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const { data: budget } = await (async () => {
+    const { budgetId: __activeBudgetId } = await getActiveBudgetId(supabase)
+    if (!__activeBudgetId) return { data: null }
+    return supabase
+      .from('budgets')
+      .select('id, usd_to_dop_rate')
+      .eq('id', __activeBudgetId)
+      .maybeSingle()
+  })()
   if (!budget) return { error: 'Sin presupuesto' }
 
   const usdToDopRate =
