@@ -127,3 +127,71 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 function isValidUUID(s: string): boolean {
   return UUID_RE.test(s)
 }
+
+/**
+ * Devuelve la lista completa de budgets a los que el usuario actual
+ * tiene acceso: los propios (created_by = user) + los compartidos
+ * (vía budget_members). Cada uno con el rol del usuario en ese
+ * budget (owner | editor | viewer | auditor).
+ *
+ * Útil para el BudgetSwitcher en TopBar y para el dashboard "Mis
+ * Clientes" del auditor.
+ */
+export interface UserBudgetListItem {
+  id: string
+  name: string
+  currency: 'DOP' | 'USD' | string | null
+  role: 'owner' | 'editor' | 'viewer' | 'auditor'
+  isOwn: boolean
+}
+
+export async function listUserBudgets(
+  supabase: SupabaseClient,
+): Promise<UserBudgetListItem[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return []
+
+  // RLS ya devuelve solo los budgets accesibles (propios + miembros).
+  // Hacemos la query de budgets + membership en paralelo y joineamos
+  // en JS para evitar dependencia de la sintaxis de Supabase joins.
+  const [budgetsRes, membersRes] = await Promise.all([
+    supabase
+      .from('budgets')
+      .select('id, name, currency, created_by')
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('budget_members')
+      .select('budget_id, role')
+      .eq('user_id', user.id),
+  ])
+
+  const memberRoles = new Map<string, string>()
+  for (const m of membersRes.data ?? []) {
+    memberRoles.set(m.budget_id as string, m.role as string)
+  }
+
+  const items: UserBudgetListItem[] = []
+  for (const b of budgetsRes.data ?? []) {
+    const isOwn = b.created_by === user.id
+    // Rol final: si es owner del row, role='owner'. Si no, lee de
+    // budget_members. Fallback a 'viewer' si por algún motivo no
+    // hay membership (no debería pasar — RLS lo bloquearía).
+    const role = isOwn
+      ? 'owner'
+      : ((memberRoles.get(b.id as string) ?? 'viewer') as
+          | 'owner'
+          | 'editor'
+          | 'viewer'
+          | 'auditor')
+    items.push({
+      id: b.id as string,
+      name: b.name as string,
+      currency: b.currency as string | null,
+      role,
+      isOwn,
+    })
+  }
+  return items
+}

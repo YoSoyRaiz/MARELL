@@ -13,6 +13,7 @@ import { OfflineBanner } from './OfflineBanner'
 import { MobileTabBar } from './MobileTabBar'
 import { TrialBanner } from './TrialBanner'
 import type { NotificationItem } from './NotificationBell'
+import type { UserBudgetListItem } from '@/lib/budget/active'
 
 interface AppShellProps {
   displayName: string | null
@@ -24,6 +25,10 @@ interface AppShellProps {
   isAdmin?: boolean
   notifications?: NotificationItem[]
   notificationsLastSeen?: string | null
+  /** Lista de budgets accesibles (propios + compartidos). Lo
+   *  pasamos desde el layout para que el TopBar pueda renderizar
+   *  el BudgetSwitcher sin un round-trip extra. */
+  budgets?: UserBudgetListItem[]
   children: ReactNode
 }
 
@@ -37,6 +42,7 @@ export function AppShell({
   isAdmin = false,
   notifications = [],
   notificationsLastSeen = null,
+  budgets = [],
   children,
 }: AppShellProps) {
   return (
@@ -64,6 +70,8 @@ export function AppShell({
               currency={budget?.currency ?? 'DOP'}
               notifications={notifications}
               notificationsLastSeen={notificationsLastSeen}
+              budgets={budgets}
+              activeBudgetId={budget?.id ?? null}
             />
             {/* Bottom padding on mobile clears the fixed MobileTabBar
                 (68px tall + iOS safe-area). On desktop the tab bar is

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { computeReadyToAssign } from '@/lib/budget'
-import { getActiveBudgetId } from '@/lib/budget/active'
+import { getActiveBudgetId, listUserBudgets } from '@/lib/budget/active'
 import { AppShell } from './AppShell'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -28,8 +28,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Active budget — usuario puede tener varios (propios + compartidos
   // por familia o como auditor de clientes). El helper lee de cookie,
   // valida membership y cae al primero por created_at para preservar
-  // comportamiento single-budget.
-  const { budgetId: activeBudgetId } = await getActiveBudgetId(supabase)
+  // comportamiento single-budget. Cargamos también la lista completa
+  // para el BudgetSwitcher en el TopBar.
+  const [{ budgetId: activeBudgetId }, allBudgets] = await Promise.all([
+    getActiveBudgetId(supabase),
+    listUserBudgets(supabase),
+  ])
   const { data: budget } = activeBudgetId
     ? await supabase
         .from('budgets')
@@ -158,6 +162,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       notificationsLastSeen={
         (profile?.notifications_last_seen as string | null) ?? null
       }
+      budgets={allBudgets}
     >
       {children}
     </AppShell>

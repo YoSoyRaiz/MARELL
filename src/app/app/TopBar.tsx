@@ -12,18 +12,26 @@ import { SHORTCUT_EVENTS } from './KeyboardShortcuts'
 import { NotificationBell, type NotificationItem } from './NotificationBell'
 import { markNotificationsSeen } from './ajustes/actions'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { BudgetSwitcher } from '@/components/budget/BudgetSwitcher'
+import type { UserBudgetListItem } from '@/lib/budget/active'
 
 interface TopBarProps {
   displayName: string | null
   currency: string
   notifications?: NotificationItem[]
   notificationsLastSeen?: string | null
+  /** Lista de todos los budgets accesibles. Si tiene 1 solo, el
+   *  switcher se renderiza como texto plano (sin dropdown). */
+  budgets?: UserBudgetListItem[]
+  activeBudgetId?: string | null
 }
 
 export function TopBar({
   displayName,
   notifications = [],
   notificationsLastSeen = null,
+  budgets = [],
+  activeBudgetId = null,
 }: TopBarProps) {
   const ctx = useReadyToAssign()
   const readyToAssign = ctx?.readyToAssign ?? 0
@@ -64,10 +72,13 @@ export function TopBar({
             <Menu size={18} strokeWidth={2.2} />
           </button>
 
-          <div className="hidden lg:block min-w-0">
+          <div className="hidden lg:flex items-center gap-3 min-w-0">
             <div className="text-[16px] sm:text-h2 md:text-[24px] font-bold leading-tight tracking-tight text-[var(--text)] truncate">
               Hola, {firstName ?? 'amigo'} <span aria-hidden>👋</span>
             </div>
+            {budgets.length > 1 && (
+              <BudgetSwitcher budgets={budgets} activeBudgetId={activeBudgetId} />
+            )}
           </div>
         </div>
 
