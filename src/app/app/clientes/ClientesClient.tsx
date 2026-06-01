@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -8,8 +8,11 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUp,
+  BarChart3,
   Building2,
-  ChevronRight,
+  ListChecks,
+  MoreVertical,
+  PieChart,
   Plus,
   Search,
   TrendingDown,
@@ -18,7 +21,6 @@ import {
 import { setActiveBudget } from '@/lib/budget/actions'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { useFormatMoney } from '../CurrencyProvider'
 import type { ClientDashboardRow } from './dashboard-action'
 
@@ -86,31 +88,75 @@ export function ClientesClient({ rows, totals, canCreate }: Props) {
     })
   }
 
+  /** Quick-link: cambia el active budget y salta directo a la ruta
+   *  pedida (Plan/Transacciones/Análisis) sin pasar por el Resumen. */
+  const openClientAt = (budgetId: string, path: string) => {
+    startTransition(async () => {
+      await setActiveBudget(budgetId)
+      router.push(path)
+      router.refresh()
+    })
+  }
+
   if (rows.length === 0) {
     return (
-      <div className="space-y-7">
+      <div className="space-y-7 max-w-2xl">
         <PageHeader
           eyebrow="Clientes"
           description="Crea y administra los clientes que auditas. Cada uno tiene su propio login y solo ve su propio presupuesto."
         >
           Tus <span className="gradient-text">clientes</span>.
         </PageHeader>
-        <EmptyState
-          Icon={Building2}
-          title="Aún no tienes clientes"
-          description="Crea tu primer cliente para empezar. MARELL le envía un email con acceso y tú ves su data en read-only desde tu cuenta."
-          action={
-            canCreate ? (
-              <Link
-                href="/app/clientes/nuevo"
-                className="inline-flex items-center gap-2 h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl"
+
+        {/* Empty state mejorado — vende el feature en vez de solo
+            avisar que no hay nada. El allowlisted que entra por
+            primera vez aterriza aquí y necesita entender qué pasa. */}
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-8 sm:p-10 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-[rgba(61,220,151,0.10)] text-[var(--brand-text)] flex items-center justify-center mx-auto mb-5">
+            <Building2 size={28} strokeWidth={1.8} />
+          </div>
+          <h2 className="text-h3 font-bold text-[var(--text)]">
+            Aún no gestionas clientes
+          </h2>
+          <p className="text-body text-[var(--text2)] mt-3 leading-relaxed max-w-md mx-auto">
+            Como auditor puedes crear presupuestos para familias, amigos o
+            personas que asesoras. Cada cliente tiene su propio plan,
+            transacciones y reportes — totalmente separados del tuyo.
+          </p>
+          <ul className="mt-5 space-y-2 text-meta text-[var(--text2)] text-left max-w-xs mx-auto">
+            <li className="inline-flex items-start gap-2">
+              <span className="text-[var(--brand-text)] mt-0.5">✓</span>
+              <span>El cliente NO necesita crear cuenta antes</span>
+            </li>
+            <li className="inline-flex items-start gap-2">
+              <span className="text-[var(--brand-text)] mt-0.5">✓</span>
+              <span>Tú lo configuras y le mandas un magic link</span>
+            </li>
+            <li className="inline-flex items-start gap-2">
+              <span className="text-[var(--brand-text)] mt-0.5">✓</span>
+              <span>Cambias entre tu cuenta y la de él en 1 click</span>
+            </li>
+          </ul>
+          {canCreate ? (
+            <Link
+              href="/app/clientes/nuevo"
+              className="mt-6 inline-flex items-center gap-2 h-11 px-5 gradient-bg text-[#0B0B0C] font-semibold text-body-sm rounded-xl glow-on-hover hover:brightness-105 transition-[filter]"
+            >
+              <Plus size={14} strokeWidth={2.4} />
+              Crear mi primer cliente
+            </Link>
+          ) : (
+            <p className="mt-6 text-meta text-[var(--muted)]">
+              Pídenos acceso a este feature escribiendo a{' '}
+              <a
+                href="mailto:soporte@marell.app"
+                className="text-[var(--brand-text)] hover:underline underline-offset-4"
               >
-                <Plus size={14} strokeWidth={2.4} />
-                Crear primer cliente
-              </Link>
-            ) : null
-          }
-        />
+                soporte@marell.app
+              </a>
+            </p>
+          )}
+        </div>
       </div>
     )
   }
@@ -223,6 +269,7 @@ export function ClientesClient({ rows, totals, canCreate }: Props) {
               row={c}
               fmtMoney={fmtMoney}
               onOpen={() => openClient(c.clientBudgetId)}
+              onQuickLink={(path) => openClientAt(c.clientBudgetId, path)}
               pending={pending}
             />
           ))}
@@ -268,15 +315,20 @@ function ClientCard({
   row,
   fmtMoney,
   onOpen,
+  onQuickLink,
   pending,
 }: {
   row: ClientDashboardRow
   fmtMoney: (n: number) => string
   onOpen: () => void
+  onQuickLink: (path: string) => void
   pending: boolean
 }) {
   return (
-    <Card className="overflow-hidden hover:border-[var(--brand-2)]/40 transition-colors">
+    <Card className="relative overflow-hidden hover:border-[var(--brand-2)]/40 transition-colors">
+      {/* Main click area — abre el Resumen del cliente. Es el comportamiento
+          por defecto; el kebab de acciones rápidas (posicionado absolute
+          encima) salta directo a Plan/Transacciones/Análisis. */}
       <button
         type="button"
         onClick={onOpen}
@@ -284,7 +336,8 @@ function ClientCard({
         className="w-full text-left disabled:opacity-50 disabled:pointer-events-none"
       >
         <header className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
+          {/* pr-9 deja espacio para el kebab posicionado absolute */}
+          <div className="min-w-0 flex-1 pr-9">
             <div className="text-emph font-semibold text-[var(--text)] truncate">
               {row.clientLabel}
             </div>
@@ -308,11 +361,6 @@ function ClientCard({
               )}
             </div>
           </div>
-          <ChevronRight
-            size={14}
-            strokeWidth={2.2}
-            className="text-[var(--muted2)] shrink-0"
-          />
         </header>
         <div className="px-4 py-3 grid grid-cols-2 gap-3">
           <KpiCell
@@ -346,11 +394,103 @@ function ClientCard({
           />
         </div>
       </button>
+      {/* Kebab: sibling del button para no anidar <button> dentro de
+          <button>. Absolute top-right del header. */}
+      <ClientCardMenu
+        onSelect={onQuickLink}
+        disabled={pending}
+      />
       <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--overlay-1)] text-tiny text-[var(--muted)] inline-flex items-center gap-1.5 w-full">
         Click para abrir su presupuesto
         <ArrowRight size={10} strokeWidth={2.4} />
       </div>
     </Card>
+  )
+}
+
+/**
+ * Menú de acciones rápidas por cliente. Posicionado absolute en la
+ * esquina superior derecha de la card. Cada opción salta directo a
+ * una ruta del cliente (cambia active budget + push).
+ */
+function ClientCardMenu({
+  onSelect,
+  disabled,
+}: {
+  onSelect: (path: string) => void
+  disabled: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const items: { label: string; path: string; Icon: typeof ListChecks }[] = [
+    { label: 'Ir a Plan', path: '/app/plan', Icon: ListChecks },
+    { label: 'Ver Transacciones', path: '/app/transacciones', Icon: BarChart3 },
+    { label: 'Ver Análisis', path: '/app/analisis', Icon: PieChart },
+  ]
+
+  return (
+    <div ref={ref} className="absolute top-2.5 right-2.5 z-10">
+      <button
+        type="button"
+        aria-label="Acciones rápidas"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation()
+          setOpen((v) => !v)
+        }}
+        className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-[var(--muted2)] hover:bg-[var(--overlay-2)] hover:text-[var(--text)] transition-colors disabled:opacity-40 disabled:pointer-events-none"
+      >
+        <MoreVertical size={14} strokeWidth={2.2} />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute top-full right-0 mt-1.5 w-52 rounded-xl border border-[var(--border)] bg-[var(--s1)] shadow-xl p-1.5 z-20"
+        >
+          {items.map((item) => (
+            <button
+              key={item.path}
+              type="button"
+              role="menuitem"
+              onClick={(e) => {
+                e.stopPropagation()
+                setOpen(false)
+                onSelect(item.path)
+              }}
+              className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm text-[var(--text)] hover:bg-[var(--overlay-2)] transition-colors"
+            >
+              <item.Icon
+                size={13}
+                strokeWidth={2.2}
+                className="text-[var(--muted)]"
+              />
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

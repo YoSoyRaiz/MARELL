@@ -265,7 +265,10 @@ export function Sidebar({
       >
         {!collapsed && (
           <div className="text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold px-3.5 mb-2 mt-1">
-            Esencial
+            {/* Cambia a "Mi Cuenta" cuando el usuario es auditor — la
+                distinción "mi data" vs "auditoría" se vuelve crítica
+                porque ambas conviven en el mismo sidebar. */}
+            {isAuditor ? 'Mi Cuenta' : 'Esencial'}
           </div>
         )}
         <div className="space-y-1.5 lg:space-y-1">
@@ -310,7 +313,7 @@ export function Sidebar({
             />
             {!collapsed && (
               <div className="text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold px-3.5 mb-2">
-                Auditor
+                Auditoría
               </div>
             )}
             <div className="space-y-1.5 lg:space-y-1">

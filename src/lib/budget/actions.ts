@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { writeActiveBudgetCookie } from './active'
 
@@ -39,4 +40,34 @@ export async function setActiveBudget(budgetId: string): Promise<
   await writeActiveBudgetCookie(budgetId)
   revalidatePath('/app', 'layout')
   return { success: true }
+}
+
+/**
+ * Vuelve al primer budget propio del usuario (created_by = user.id).
+ * Usado por el botón "Volver a mi cuenta" del banner cuando el
+ * auditor está viendo data de un cliente. Si el usuario no tiene
+ * budgets propios, deja la cookie como está (no le robamos contexto).
+ *
+ * Redirect a /app después de setear — un solo round-trip.
+ */
+export async function setActiveBudgetToOwn(): Promise<void> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: ownBudget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('created_by', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (ownBudget) {
+    await writeActiveBudgetCookie(ownBudget.id as string)
+  }
+  revalidatePath('/app', 'layout')
+  redirect('/app')
 }

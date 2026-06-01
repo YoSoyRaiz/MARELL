@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { isInAuditorAllowlist } from '@/lib/auth/auditor'
 import { ClientesClient } from './ClientesClient'
 import { fetchClientsDashboard } from './dashboard-action'
 
@@ -30,12 +31,7 @@ export default async function ClientesPage() {
   }
 
   // Allowlist para botón "Crear cliente"
-  const allowlist = (process.env.MARELL_AUDITOR_ALLOWLIST ?? '')
-    .split(',')
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean)
-  const canCreate =
-    allowlist.length === 0 || allowlist.includes(user.email?.toLowerCase() ?? '')
+  const canCreate = isInAuditorAllowlist(user.email)
 
   return (
     <ClientesClient

@@ -14,6 +14,7 @@ import { MobileTabBar } from './MobileTabBar'
 import { TrialBanner } from './TrialBanner'
 import type { NotificationItem } from './NotificationBell'
 import type { UserBudgetListItem } from '@/lib/budget/active'
+import { AuditorContextBanner } from '@/components/auditor/AuditorContextBanner'
 
 interface AppShellProps {
   displayName: string | null
@@ -32,6 +33,12 @@ interface AppShellProps {
   /** True si el usuario tiene al menos una relación activa como
    *  auditor — muestra "Mis Clientes" en el sidebar. */
   isAuditor?: boolean
+  /** Si el active budget no es del usuario, info del contexto para
+   *  el banner global. null = budget propio (sin banner). */
+  auditorContext?: {
+    contextLabel: string
+    contextType: 'auditor' | 'shared'
+  } | null
   children: ReactNode
 }
 
@@ -47,6 +54,7 @@ export function AppShell({
   notificationsLastSeen = null,
   budgets = [],
   isAuditor = false,
+  auditorContext = null,
   children,
 }: AppShellProps) {
   return (
@@ -70,6 +78,12 @@ export function AppShell({
           <div className="flex flex-col min-w-0 transition-[margin] duration-300 ease-out lg:ml-[var(--sidebar-w,240px)]">
             <OfflineBanner />
             <TrialBanner plan={plan} trialEndsAt={trialEndsAt} />
+            {auditorContext && (
+              <AuditorContextBanner
+                contextLabel={auditorContext.contextLabel}
+                contextType={auditorContext.contextType}
+              />
+            )}
             <TopBar
               displayName={displayName}
               currency={budget?.currency ?? 'DOP'}

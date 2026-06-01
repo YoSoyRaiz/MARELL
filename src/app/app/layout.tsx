@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { computeReadyToAssign } from '@/lib/budget'
 import { getActiveBudgetId, listUserBudgets } from '@/lib/budget/active'
 import { logBudgetAccess } from '@/lib/budget/access-log'
+import { isInAuditorAllowlist } from '@/lib/auth/auditor'
 import { AppShell } from './AppShell'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -61,10 +62,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         .eq('status', 'active'),
     ])
   const isAuditor = (auditorCount.count ?? 0) > 0
+  // El sidebar muestra "Mis Clientes" si el usuario YA tiene clientes
+  // O está en el allowlist (aún sin clientes). Resuelve el catch-22
+  // de "no veo el link" para auditores recién agregados.
+  const showAuditorSection = isAuditor || isInAuditorAllowlist(user.email)
   const { data: budget } = activeBudgetId
     ? await supabase
         .from('budgets')
-        .select('id, name, currency, usd_to_dop_rate')
+        .select('id, name, currency, usd_to_dop_rate, created_by')
         .eq('id', activeBudgetId)
         .maybeSingle()
     : { data: null }
@@ -75,6 +80,61 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // genera spam ni se loggea uno mismo. Fire-and-forget.
   if (budget && activeBudgetId) {
     void logBudgetAccess(supabase, { budgetId: activeBudgetId, action: 'viewed' })
+  }
+
+  // Context banner: si el active budget NO es del usuario, calculamos
+  // qué texto mostrar. Para budgets de clientes (auditor) buscamos el
+  // client_label en agency_relationships; para budgets compartidos
+  // (familia) usamos budget.name directo. Resultado: { contextLabel,
+  // contextType } o null si es budget propio.
+  let auditorContext:
+    | { contextLabel: string; contextType: 'auditor' | 'shared' }
+    | null = null
+  if (budget && budget.created_by !== user.id) {
+    // Lookup client_label si hay agency_relationship activa. Tabla nueva
+    // → cast a unknown porque types generados aún no la conocen.
+    const arLookup = await (
+      supabase as unknown as {
+        from: (t: string) => {
+          select: (s: string) => {
+            eq: (
+              k: string,
+              v: string,
+            ) => {
+              eq: (
+                k: string,
+                v: string,
+              ) => {
+                eq: (k: string, v: string) => {
+                  maybeSingle: () => Promise<{
+                    data: { client_label: string | null } | null
+                  }>
+                }
+              }
+            }
+          }
+        }
+      }
+    )
+      .from('agency_relationships')
+      .select('client_label')
+      .eq('auditor_user_id', user.id)
+      .eq('client_budget_id', activeBudgetId!)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (arLookup.data) {
+      auditorContext = {
+        contextLabel: arLookup.data.client_label ?? (budget.name as string),
+        contextType: 'auditor',
+      }
+    } else {
+      // No es relación de auditor → familia / compartido normal
+      auditorContext = {
+        contextLabel: budget.name as string,
+        contextType: 'shared',
+      }
+    }
   }
 
   let readyToAssign = 0
@@ -198,7 +258,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         (profile?.notifications_last_seen as string | null) ?? null
       }
       budgets={allBudgets}
-      isAuditor={isAuditor}
+      isAuditor={showAuditorSection}
+      auditorContext={auditorContext}
     >
       {children}
     </AppShell>
