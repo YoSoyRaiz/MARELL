@@ -45,6 +45,12 @@ export const DOCS_NAV: DocsSection[] = [
     ],
   },
   {
+    title: 'Para profesionales',
+    links: [
+      { href: '/docs/auditores', label: 'Auditores y clientes' },
+    ],
+  },
+  {
     title: 'Referencia',
     links: [
       { href: '/docs/atajos', label: 'Atajos de teclado' },
