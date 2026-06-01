@@ -10,6 +10,7 @@ import {
   Eye,
   Trash2,
   Clock,
+  ShieldAlert,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { IconBadge } from '@/components/ui/IconBadge'
@@ -23,15 +24,22 @@ import {
   changeMemberRole,
   revokeInvitation,
 } from './actions'
+import { endClientRelationship } from '../clientes/actions'
 
 export interface ListMember {
   id: string
   userId: string
-  role: 'owner' | 'editor' | 'viewer'
+  role: 'owner' | 'editor' | 'viewer' | 'auditor'
   email: string | null
   displayName: string | null
   joinedAt: string | null
   isYou: boolean
+  /** Última vez que este miembro accedió al budget (de
+   *  budget_access_log). Solo poblado para roles que NO son owner. */
+  lastAccessAt?: string | null
+  /** ID de la fila agency_relationships si role='auditor'. Necesario
+   *  para revocar el acceso. */
+  agencyRelationshipId?: string | null
 }
 
 export interface ListInvite {
@@ -58,7 +66,7 @@ const formatDate = (iso: string | null) => {
   })
 }
 
-const roleLabel = (role: 'owner' | 'editor' | 'viewer') => {
+const roleLabel = (role: 'owner' | 'editor' | 'viewer' | 'auditor') => {
   switch (role) {
     case 'owner':
       return 'Dueño'
@@ -66,7 +74,22 @@ const roleLabel = (role: 'owner' | 'editor' | 'viewer') => {
       return 'Editor'
     case 'viewer':
       return 'Solo ver'
+    case 'auditor':
+      return 'Auditor'
   }
+}
+
+const formatRelative = (iso: string | null) => {
+  if (!iso) return null
+  const diffMs = Date.now() - new Date(iso).getTime()
+  const minutes = Math.floor(diffMs / 60000)
+  if (minutes < 1) return 'ahora mismo'
+  if (minutes < 60) return `hace ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `hace ${hours} ${hours === 1 ? 'hora' : 'horas'}`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `hace ${days} ${days === 1 ? 'día' : 'días'}`
+  return formatDate(iso)
 }
 
 export function FamiliaClient({ budgetName, members, invitations }: Props) {
@@ -127,6 +150,22 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
     if (!ok) return
     startTransition(async () => {
       await revokeInvitation(inv.id)
+      router.refresh()
+    })
+  }
+
+  const handleRevokeAuditor = async (m: ListMember) => {
+    if (!m.agencyRelationshipId) return
+    const ok = await confirm({
+      title: `¿Revocar acceso de ${m.displayName ?? m.email ?? 'este auditor'}?`,
+      description:
+        'Pierde acceso inmediato a tu presupuesto. Su rol queda registrado en el historial. Puedes volver a darle acceso si te invita de nuevo.',
+      confirmLabel: 'Revocar acceso',
+      tone: 'danger',
+    })
+    if (!ok) return
+    startTransition(async () => {
+      await endClientRelationship(m.agencyRelationshipId!)
       router.refresh()
     })
   }
@@ -224,7 +263,58 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
         </Card>
       )}
 
-      {/* Members list */}
+      {/* Auditores con acceso — sección dedicada para transparencia.
+          Solo aparece si hay al menos un auditor en el budget. */}
+      {members.some((m) => m.role === 'auditor') && (
+        <Card as="section" className="overflow-hidden">
+          <header className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-2">
+            <ShieldAlert size={14} strokeWidth={2.2} className="text-[var(--info-text)]" />
+            <h2 className="text-body font-semibold text-[var(--text)]">
+              Auditores con acceso
+            </h2>
+          </header>
+          <ul className="divide-y divide-[var(--border)]">
+            {members
+              .filter((m) => m.role === 'auditor')
+              .map((m) => (
+                <li key={m.id} className="px-5 py-3 flex items-center gap-3">
+                  <IconBadge>
+                    <ShieldAlert size={14} strokeWidth={2} className="text-[var(--info-text)]" />
+                  </IconBadge>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-body-sm text-[var(--text)] truncate">
+                      {m.displayName ?? m.email ?? 'Sin nombre'}
+                    </div>
+                    <div className="text-eyebrow text-[var(--muted)] mt-0.5">
+                      {m.email && m.email !== m.displayName ? m.email + ' · ' : ''}
+                      Auditor (solo lectura)
+                      {m.joinedAt && ` · desde ${formatDate(m.joinedAt)}`}
+                    </div>
+                    <div className="text-tiny text-[var(--muted2)] mt-1 inline-flex items-center gap-1.5">
+                      <Clock size={10} strokeWidth={2.2} />
+                      {m.lastAccessAt
+                        ? `Último acceso ${formatRelative(m.lastAccessAt)}`
+                        : 'Aún no ha accedido'}
+                    </div>
+                  </div>
+                  {m.agencyRelationshipId && (
+                    <button
+                      type="button"
+                      onClick={() => handleRevokeAuditor(m)}
+                      disabled={pending}
+                      className="text-meta font-medium text-[var(--coral-text)] hover:underline underline-offset-4 disabled:opacity-50 disabled:pointer-events-none shrink-0"
+                    >
+                      Revocar acceso
+                    </button>
+                  )}
+                </li>
+              ))}
+          </ul>
+        </Card>
+      )}
+
+      {/* Members list (excluyendo auditores que tienen su propia
+          sección arriba para transparencia explícita). */}
       <Card as="section" className="overflow-hidden">
         <header className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-2">
           <Users size={14} strokeWidth={2.2} className="text-[var(--brand-text)]" />
@@ -233,7 +323,7 @@ export function FamiliaClient({ budgetName, members, invitations }: Props) {
           </h2>
         </header>
         <ul className="divide-y divide-[var(--border)]">
-          {members.map((m) => (
+          {members.filter((m) => m.role !== 'auditor').map((m) => (
             <li key={m.id} className="px-5 py-3 flex items-center gap-3">
               <IconBadge>
                 {m.role === 'owner' ? (

@@ -29,6 +29,9 @@ interface AppShellProps {
    *  pasamos desde el layout para que el TopBar pueda renderizar
    *  el BudgetSwitcher sin un round-trip extra. */
   budgets?: UserBudgetListItem[]
+  /** True si el usuario tiene al menos una relación activa como
+   *  auditor — muestra "Mis Clientes" en el sidebar. */
+  isAuditor?: boolean
   children: ReactNode
 }
 
@@ -43,6 +46,7 @@ export function AppShell({
   notifications = [],
   notificationsLastSeen = null,
   budgets = [],
+  isAuditor = false,
   children,
 }: AppShellProps) {
   return (
@@ -61,6 +65,7 @@ export function AppShell({
             plan={plan}
             trialEndsAt={trialEndsAt}
             isAdmin={isAdmin}
+            isAuditor={isAuditor}
           />
           <div className="flex flex-col min-w-0 transition-[margin] duration-300 ease-out lg:ml-[var(--sidebar-w,240px)]">
             <OfflineBanner />

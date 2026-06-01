@@ -37,6 +37,82 @@ export default async function FamiliaPage() {
       .order('created_at', { ascending: false }),
   ])
 
+  // Para mostrar "último acceso" de cada auditor en la sección de
+  // Auditores, traemos el log de accesos del budget. RLS asegura que
+  // solo miembros (incluido el cliente owner) pueden leerlo.
+  // Tabla nueva → cast a unknown.
+  const accessLogRes = await (
+    supabase as unknown as {
+      from: (t: string) => {
+        select: (s: string) => {
+          eq: (
+            k: string,
+            v: string,
+          ) => {
+            order: (
+              k: string,
+              o: { ascending: boolean },
+            ) => {
+              limit: (n: number) => Promise<{
+                data:
+                  | { actor_user_id: string; action: string; created_at: string }[]
+                  | null
+              }>
+            }
+          }
+        }
+      }
+    }
+  )
+    .from('budget_access_log')
+    .select('actor_user_id, action, created_at')
+    .eq('budget_id', budget.id)
+    .order('created_at', { ascending: false })
+    .limit(200)
+  const lastAccessByUser = new Map<string, string>()
+  for (const row of accessLogRes.data ?? []) {
+    if (!lastAccessByUser.has(row.actor_user_id)) {
+      lastAccessByUser.set(row.actor_user_id, row.created_at)
+    }
+  }
+
+  // ID de la agency_relationship correspondiente a cada auditor —
+  // necesario para llamar endClientRelationship desde la UI del
+  // cliente.
+  // Cast del role porque los types generados de Supabase no incluyen
+  // todavía 'auditor' en el enum (agregado en migration 2026_05_28).
+  const auditorMemberIds = (membersRes.data ?? [])
+    .filter((m) => (m.role as string) === 'auditor')
+    .map((m) => m.user_id as string)
+  const agencyByAuditor = new Map<string, string>()
+  if (auditorMemberIds.length > 0) {
+    const arRes = await (
+      supabase as unknown as {
+        from: (t: string) => {
+          select: (s: string) => {
+            eq: (
+              k: string,
+              v: string,
+            ) => {
+              in: (k: string, v: string[]) => Promise<{
+                data:
+                  | { id: string; auditor_user_id: string }[]
+                  | null
+              }>
+            }
+          }
+        }
+      }
+    )
+      .from('agency_relationships')
+      .select('id, auditor_user_id')
+      .eq('client_budget_id', budget.id)
+      .in('auditor_user_id', auditorMemberIds)
+    for (const r of arRes.data ?? []) {
+      agencyByAuditor.set(r.auditor_user_id, r.id)
+    }
+  }
+
   // Resolve user_id → email/name. Need admin client because auth.users
   // isn't directly readable.
   const memberIds = (membersRes.data ?? []).map((m) => m.user_id as string)
@@ -61,11 +137,13 @@ export default async function FamiliaPage() {
   const members: ListMember[] = (membersRes.data ?? []).map((m) => ({
     id: m.id as string,
     userId: m.user_id as string,
-    role: m.role as 'owner' | 'editor' | 'viewer',
+    role: m.role as 'owner' | 'editor' | 'viewer' | 'auditor',
     email: emailById.get(m.user_id as string) ?? null,
     displayName: nameById.get(m.user_id as string) ?? null,
     joinedAt: (m.joined_at as string | null) ?? null,
     isYou: m.user_id === user.id,
+    lastAccessAt: lastAccessByUser.get(m.user_id as string) ?? null,
+    agencyRelationshipId: agencyByAuditor.get(m.user_id as string) ?? null,
   }))
 
   const invitations: ListInvite[] = (invitesRes.data ?? []).map((i) => ({

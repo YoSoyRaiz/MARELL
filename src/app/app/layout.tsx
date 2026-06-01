@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { computeReadyToAssign } from '@/lib/budget'
 import { getActiveBudgetId, listUserBudgets } from '@/lib/budget/active'
+import { logBudgetAccess } from '@/lib/budget/access-log'
 import { AppShell } from './AppShell'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -29,11 +30,37 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // por familia o como auditor de clientes). El helper lee de cookie,
   // valida membership y cae al primero por created_at para preservar
   // comportamiento single-budget. Cargamos también la lista completa
-  // para el BudgetSwitcher en el TopBar.
-  const [{ budgetId: activeBudgetId }, allBudgets] = await Promise.all([
-    getActiveBudgetId(supabase),
-    listUserBudgets(supabase),
-  ])
+  // para el BudgetSwitcher en el TopBar y el flag isAuditor para
+  // condicionalmente mostrar "Mis Clientes" en el sidebar.
+  const [{ budgetId: activeBudgetId }, allBudgets, auditorCount] =
+    await Promise.all([
+      getActiveBudgetId(supabase),
+      listUserBudgets(supabase),
+      // Count de relaciones activas como auditor — head=true para no
+      // traer rows, solo el count. Tabla nueva → cast a unknown.
+      (
+        supabase as unknown as {
+          from: (t: string) => {
+            select: (
+              s: string,
+              o: { count: string; head: boolean },
+            ) => {
+              eq: (
+                k: string,
+                v: string,
+              ) => {
+                eq: (k: string, v: string) => Promise<{ count: number | null }>
+              }
+            }
+          }
+        }
+      )
+        .from('agency_relationships')
+        .select('id', { count: 'exact', head: true })
+        .eq('auditor_user_id', user.id)
+        .eq('status', 'active'),
+    ])
+  const isAuditor = (auditorCount.count ?? 0) > 0
   const { data: budget } = activeBudgetId
     ? await supabase
         .from('budgets')
@@ -41,6 +68,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         .eq('id', activeBudgetId)
         .maybeSingle()
     : { data: null }
+
+  // Audit log: si el usuario está accediendo a un budget que NO es
+  // suyo (auditor o miembro), registramos el acceso. logBudgetAccess
+  // hace debounce de 5min y skip silencioso si es owner — no se
+  // genera spam ni se loggea uno mismo. Fire-and-forget.
+  if (budget && activeBudgetId) {
+    void logBudgetAccess(supabase, { budgetId: activeBudgetId, action: 'viewed' })
+  }
 
   let readyToAssign = 0
   // Notifications collected for the topbar bell. Computed alongside RtA
@@ -163,6 +198,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         (profile?.notifications_last_seen as string | null) ?? null
       }
       budgets={allBudgets}
+      isAuditor={isAuditor}
     >
       {children}
     </AppShell>

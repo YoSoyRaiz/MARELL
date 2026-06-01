@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   PanelLeftClose,
   PanelLeftOpen,
+  Briefcase,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { logout } from '@/app/(auth)/actions'
@@ -55,6 +56,9 @@ interface SidebarProps {
   plan: string
   trialEndsAt: string | null
   isAdmin?: boolean
+  /** Si el usuario es auditor de al menos un cliente, mostramos
+   *  el link a /app/clientes en el sidebar. */
+  isAuditor?: boolean
 }
 
 export function Sidebar({
@@ -63,6 +67,7 @@ export function Sidebar({
   plan,
   trialEndsAt,
   isAdmin = false,
+  isAuditor = false,
 }: SidebarProps) {
   const pathname = usePathname() ?? ''
   const router = useRouter()
@@ -292,6 +297,45 @@ export function Sidebar({
             )
           })}
         </div>
+
+        {/* Auditor: aparece solo si el usuario tiene al menos una
+            relación activa como auditor. Sección dedicada para que
+            no se confunda con sus presupuestos personales. */}
+        {isAuditor && (
+          <>
+            <div
+              className={`my-3 border-t border-[var(--border)] ${
+                collapsed ? 'lg:mx-1' : 'mx-3.5'
+              }`}
+            />
+            {!collapsed && (
+              <div className="text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold px-3.5 mb-2">
+                Auditor
+              </div>
+            )}
+            <div className="space-y-1.5 lg:space-y-1">
+              <Link
+                href="/app/clientes"
+                title={collapsed ? 'Mis Clientes' : undefined}
+                aria-label={collapsed ? 'Mis Clientes' : undefined}
+                className={`flex items-center rounded-xl text-body transition-all duration-200 ${
+                  collapsed
+                    ? 'lg:justify-center lg:px-0 lg:py-2.5 px-3.5 py-3 gap-3'
+                    : 'gap-3 px-3.5 py-3 lg:py-2.5'
+                } ${
+                  pathname.startsWith('/app/clientes')
+                    ? 'gradient-bg text-[#0B0B0C] font-semibold shadow-[0_4px_16px_rgba(61,220,151,.18)]'
+                    : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-1)]'
+                }`}
+              >
+                <Briefcase size={16} strokeWidth={2} className="shrink-0" />
+                <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>
+                  Mis Clientes
+                </span>
+              </Link>
+            </div>
+          </>
+        )}
 
         {/* Divider: en colapsado es el único separador entre grupos */}
         <div
