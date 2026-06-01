@@ -1,14 +1,22 @@
 import Link from 'next/link'
 import {
   ArrowLeft,
-  Check,
-  Sparkles,
-  Wallet,
+  ArrowRight,
   BarChart3,
   Bell,
+  Briefcase,
+  Check,
+  Eye,
+  FileText,
+  Layers,
   Repeat,
+  ShieldCheck,
+  Sparkles,
   Split,
   Target,
+  Users,
+  Wallet,
+  Zap,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Logo } from '@/components/ui/Logo'
@@ -36,6 +44,25 @@ const PRO_FEATURES = [
   { Icon: Bell, text: 'Notificaciones por correo' },
   { Icon: Sparkles, text: 'Soporte prioritario' },
 ] as const
+
+const AUDITOR_FEATURES = [
+  { Icon: Users, text: 'Múltiples clientes bajo una sola cuenta' },
+  { Icon: Zap, text: 'Cambia entre tu cuenta y la de cada cliente en 1 click' },
+  { Icon: Eye, text: 'Banner contextual "Auditando: [cliente]" en toda la app' },
+  { Icon: Layers, text: 'Dashboard unificado con KPIs por cliente' },
+  { Icon: ArrowRight, text: 'Quick-links directos a Plan, Transacciones y Análisis' },
+  { Icon: ShieldCheck, text: 'Audit log de accesos a presupuestos de clientes' },
+  { Icon: FileText, text: 'Onboarding del cliente con magic link (sin registro previo)' },
+  { Icon: Sparkles, text: 'Soporte prioritario' },
+] as const
+
+const AUDITOR_TIERS = [
+  { clients: 5, priceMonth: 2990 },
+  { clients: 15, priceMonth: 6990 },
+  { clients: 40, priceMonth: 14990 },
+] as const
+
+const AUDITOR_CONTACT_EMAIL = 'maxtudiodesign@gmail.com'
 
 const fmt = (n: number) =>
   `RD$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
@@ -79,7 +106,7 @@ export default async function PricingPage() {
         </div>
 
         {/* Pricing grid */}
-        <div className="mt-14 grid gap-6 lg:grid-cols-2">
+        <div className="mt-14 grid gap-6 lg:grid-cols-3">
           {/* Free */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-7 sm:p-8 flex flex-col">
             <div>
@@ -155,6 +182,75 @@ export default async function PricingPage() {
             </ul>
 
             <PricingClient userId={user?.id ?? null} userEmail={user?.email ?? null} />
+          </div>
+
+          {/* Auditor Financiero — para asesores que gestionan múltiples
+              clientes. 3 tiers según volumen. CTA va a mailto porque
+              la activación es manual mientras validamos el feature. */}
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--s1)] p-7 sm:p-8 flex flex-col">
+            <div>
+              <div className="text-eyebrow font-bold uppercase tracking-[0.2em] text-[var(--muted)] inline-flex items-center gap-1.5">
+                <Briefcase size={11} strokeWidth={2.4} />
+                Auditor Financiero
+              </div>
+              <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+                <div className="text-[36px] sm:text-[40px] font-extrabold leading-none tracking-tight num">
+                  Desde {fmt(AUDITOR_TIERS[0].priceMonth)}
+                </div>
+                <div className="text-body text-[var(--muted)]">/ mes</div>
+              </div>
+              <p className="mt-3 text-body text-[var(--text2)] leading-relaxed">
+                Para auditores, contadores y asesores que gestionan
+                presupuestos de múltiples clientes desde una sola cuenta.
+              </p>
+            </div>
+
+            {/* Tier selector visual — muestra los 3 bundles disponibles */}
+            <div className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--bg)] divide-y divide-[var(--border)]">
+              {AUDITOR_TIERS.map((tier) => (
+                <div
+                  key={tier.clients}
+                  className="flex items-center justify-between gap-3 px-4 py-2.5"
+                >
+                  <div className="text-body-sm text-[var(--text2)]">
+                    Hasta{' '}
+                    <span className="font-semibold text-[var(--text)]">
+                      {tier.clients} clientes
+                    </span>
+                  </div>
+                  <div className="text-body-sm font-bold tabular-nums num text-[var(--text)]">
+                    {fmt(tier.priceMonth)}
+                    <span className="text-[var(--muted)] font-medium">/mes</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <ul className="mt-6 space-y-3 flex-1">
+              {AUDITOR_FEATURES.map(({ Icon, text }) => (
+                <li key={text} className="flex items-center gap-2.5 text-body">
+                  <span className="grid size-5 place-items-center rounded-full bg-[var(--success)]/[0.15] text-[var(--success)] shrink-0">
+                    <Icon size={11} strokeWidth={2.4} />
+                  </span>
+                  {text}
+                </li>
+              ))}
+            </ul>
+
+            <a
+              href={`mailto:${AUDITOR_CONTACT_EMAIL}?subject=${encodeURIComponent(
+                'Quiero activar el plan Auditor Financiero',
+              )}&body=${encodeURIComponent(
+                'Hola,\n\nEstoy interesado en activar el plan Auditor Financiero de MARELL.\n\nVolumen estimado de clientes: \n\nGracias.',
+              )}`}
+              className="mt-8 h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--overlay-2)] hover:bg-[var(--overlay-3)] text-[var(--text)] text-body font-semibold transition-colors"
+            >
+              Contactar para activar
+              <ArrowRight size={14} strokeWidth={2.4} />
+            </a>
+            <p className="mt-2 text-tiny text-center text-[var(--muted)]">
+              Activación manual · respondemos dentro de 24 h
+            </p>
           </div>
         </div>
 

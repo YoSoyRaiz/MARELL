@@ -3,6 +3,7 @@ import { LandingHero } from '@/components/landing/Hero'
 import { LandingHowItWorks } from '@/components/landing/HowItWorks'
 import { LandingProblem } from '@/components/landing/Problem'
 import { LandingAccounts } from '@/components/landing/Accounts'
+import { LandingPricing } from '@/components/landing/Pricing'
 import { LandingDownload } from '@/components/landing/Download'
 import { LandingCtaBanner } from '@/components/landing/CtaBanner'
 import { LandingFooter } from '@/components/landing/Footer'
@@ -29,6 +30,8 @@ export default function HomePage() {
       <LandingProblem />
       <SectionRule />
       <LandingAccounts />
+      <SectionRule />
+      <LandingPricing />
       <SectionRule />
       <LandingDownload />
       <SectionRule />

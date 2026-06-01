@@ -313,7 +313,7 @@ export function Sidebar({
             />
             {!collapsed && (
               <div className="text-tiny uppercase tracking-[0.18em] text-[var(--muted2)] font-semibold px-3.5 mb-2">
-                Auditoría
+                Auditor Financiero
               </div>
             )}
             <div className="space-y-1.5 lg:space-y-1">
