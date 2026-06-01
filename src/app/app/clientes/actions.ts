@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { safeError } from '@/lib/errors'
 import { writeActiveBudgetCookie } from '@/lib/budget/active'
+import { sendEmail } from '@/lib/email/send'
+import { clientInvitationEmail } from '@/lib/email/templates'
 
 // Presets de categorías por tipo de negocio. Mantenemos cortos —
 // el auditor ajusta después. La idea es que la primera vista del
@@ -125,33 +127,67 @@ export async function createClientBudget(
 
   const admin = createAdminClient()
 
-  // ── 1. Invitar al cliente (crea user + envía magic link) ───
-  // inviteUserByEmail manda email con link de confirmación; al
-  // click el cliente queda autenticado y aterriza en /app.
+  // ── 1. Invitar al cliente (crea user + email branded) ─────
+  // generateLink({ type: 'invite' }) crea el user en auth.users SIN
+  // enviar el correo default de Supabase; nosotros mandamos el email
+  // branded via Resend usando clientInvitationEmail. Match al patrón
+  // que usa signup() en (auth)/actions.ts. Si el send falla hacemos
+  // rollback del user para que el email quede disponible al reintentar.
   const APP_URL =
     process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.marell.do'
-  const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(
-    email,
-    {
-      redirectTo: `${APP_URL}/app`,
-      data: {
-        invited_by_auditor_id: auditor.id,
-        client_label: label,
+  const { data: linkData, error: linkErr } =
+    await admin.auth.admin.generateLink({
+      type: 'invite',
+      email,
+      options: {
+        redirectTo: `${APP_URL}/app`,
+        data: {
+          invited_by_auditor_id: auditor.id,
+          client_label: label,
+        },
       },
-    },
-  )
-  if (invErr || !invited?.user) {
-    // Diferenciamos "usuario ya existe" para mensaje más útil.
-    const msg = invErr?.message?.toLowerCase() ?? ''
-    if (msg.includes('already') || msg.includes('exists')) {
+    })
+  if (linkErr || !linkData?.user || !linkData?.properties?.action_link) {
+    const msg = linkErr?.message?.toLowerCase() ?? ''
+    if (msg.includes('already') || msg.includes('exists') || msg.includes('registered')) {
       return {
         error:
           'Ese email ya tiene una cuenta MARELL. Pídele que te invite desde su sección Familia con rol Auditor.',
       }
     }
-    return { error: safeError(invErr, 'clientes') }
+    return { error: safeError(linkErr, 'clientes') }
   }
-  const clientUserId = invited.user.id
+  const clientUserId = linkData.user.id
+  const inviteUrl = linkData.properties.action_link
+
+  // Nombre del auditor para el subject del correo ("X te invitó…").
+  // Si no hay display_name caemos al email del auditor.
+  const { data: auditorProfile } = await admin
+    .from('profiles')
+    .select('display_name')
+    .eq('id', auditor.id)
+    .maybeSingle()
+  const inviterName =
+    (auditorProfile?.display_name as string | null)?.trim() ||
+    auditor.email ||
+    'Tu auditor'
+
+  const inviteTpl = clientInvitationEmail(inviterName, label, inviteUrl)
+  const emailSent = await sendEmail({
+    to: email,
+    subject: inviteTpl.subject,
+    html: inviteTpl.html,
+    text: inviteTpl.text,
+  })
+  if (!emailSent) {
+    // Rollback: borra el user para que se pueda reintentar sin
+    // chocar contra "already registered".
+    await admin.auth.admin.deleteUser(clientUserId)
+    return {
+      error:
+        'No pudimos enviar el correo de invitación al cliente. Intenta de nuevo en unos minutos.',
+    }
+  }
 
   // ── 2. Marcar profile como onboarded (skip wizard) ─────────
   // Necesitamos esperar a que el trigger handle_new_user haya

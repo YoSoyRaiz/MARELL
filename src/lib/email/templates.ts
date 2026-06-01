@@ -302,6 +302,54 @@ ${buttonHtml('Confirmar mi cuenta', confirmUrl)}
 }
 
 /**
+ * Branded invitation email enviado cuando un auditor crea un cliente
+ * nuevo. Reemplaza el email default de Supabase ("You have been
+ * invited") con el mismo look & feel del confirm de signup. El
+ * inviteUrl viene de `supabase.auth.admin.generateLink({ type: 'invite' })`.
+ */
+export function clientInvitationEmail(
+  inviterName: string,
+  clientLabel: string,
+  inviteUrl: string,
+): EmailContent {
+  const subject = `${inviterName} te invitó a MARELL`
+  const firstName = clientLabel.split(' ')[0] ?? clientLabel
+
+  const body = `
+<h1 style="margin:0 0 12px;font-size:24px;font-weight:800;color:${TEXT_PRIMARY};">Hola, ${escapeHtml(firstName)} 👋</h1>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:${TEXT_PRIMARY};">
+  <strong>${escapeHtml(inviterName)}</strong> te invitó a <strong>MARELL</strong>, la app
+  de presupuestos personales pensada para República Dominicana.
+</p>
+<p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:${TEXT_PRIMARY};">
+  Tu auditor ya configuró tu presupuesto con cuentas y categorías
+  iniciales. Solo te falta confirmar tu cuenta para empezar.
+</p>
+${buttonHtml('Activar mi cuenta', inviteUrl)}
+<p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:${TEXT_MUTED};">
+  Si el botón no funciona, copia y pega este enlace en tu navegador:<br/>
+  <span style="word-break:break-all;color:${BRAND_GREEN};">${escapeHtml(inviteUrl)}</span>
+</p>
+<p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:${TEXT_MUTED};">
+  Si no esperabas esta invitación, puedes ignorar este correo.
+</p>
+`.trim()
+
+  const text = [
+    `Hola, ${firstName}`,
+    '',
+    `${inviterName} te invitó a MARELL.`,
+    'Tu auditor ya configuró tu presupuesto con cuentas y categorías iniciales.',
+    '',
+    `Activar mi cuenta: ${inviteUrl}`,
+    '',
+    'Si no esperabas esta invitación, ignora este correo.',
+  ].join('\n')
+
+  return { subject, html: shell(subject, body), text }
+}
+
+/**
  * Heads-up to the founder/admin every time someone new signs up.
  * Plain, scannable — meant to be read on a phone notification preview.
  */
