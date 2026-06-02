@@ -19,6 +19,7 @@ import {
   type AccountSeed,
   type PendingTxn,
 } from '../actions'
+import { MoneyInput } from '@/app/onboarding/wizard/components/MoneyInput'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -636,17 +637,18 @@ export function NuevoClienteWizard() {
                   <label className="text-tiny uppercase tracking-[0.12em] text-[var(--muted2)] font-semibold">
                     Balance
                   </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={a.balance}
-                    onChange={(e) =>
-                      updateAccount(i, {
-                        balance: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full mt-1 !text-body-sm !py-2 !px-3 !rounded-lg tabular-nums num"
-                  />
+                  <div className="mt-1">
+                    <MoneyInput
+                      // 0 → null para que el input muestre placeholder
+                      // limpio en vez de un "0" literal que confunde al
+                      // empezar a tipear.
+                      value={a.balance === 0 ? null : a.balance}
+                      onChange={(v) =>
+                        updateAccount(i, { balance: v ?? 0 })
+                      }
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
                 <button
                   type="button"
