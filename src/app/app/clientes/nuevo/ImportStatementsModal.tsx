@@ -733,7 +733,7 @@ export function ImportStatementsModal({
       isOpen={isOpen}
       onClose={handleClose}
       ariaLabelledBy="import-statements-title"
-      size="3xl"
+      size="5xl"
       maxHeight="92vh"
       scrollable={false}
     >
@@ -854,7 +854,7 @@ export function ImportStatementsModal({
                   <DragChip
                     label={
                       state.selectedIds.size > 1
-                        ? `${state.selectedIds.size} txns seleccionadas`
+                        ? `${state.selectedIds.size} movimientos seleccionados`
                         : state.txns[draggingId]?.payeeName ?? draggingId
                     }
                     amount={
@@ -908,7 +908,7 @@ export function ImportStatementsModal({
                   disabled={totalTxns === 0}
                   className="h-10 px-5 gradient-bg text-[#0B0B0C] text-body-sm font-semibold rounded-xl inline-flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none"
                 >
-                  Confirmar {totalTxns} txns
+                  Confirmar {totalTxns} {totalTxns === 1 ? 'movimiento' : 'movimientos'}
                   <ArrowRight size={14} strokeWidth={2.4} />
                 </button>
               </div>
@@ -964,7 +964,8 @@ function StepBar({
         {step !== 'upload' && fileCount > 0 && (
           <span className="ml-auto text-[var(--muted)]">
             {fileCount}{' '}
-            {fileCount === 1 ? 'archivo' : 'archivos'} · {totalTxns} txns
+            {fileCount === 1 ? 'archivo' : 'archivos'} · {totalTxns}{' '}
+            {totalTxns === 1 ? 'movimiento' : 'movimientos'}
             {step === 'assign' && (
               <>
                 {' '}· {unassignedCount} sin asignar
@@ -1575,7 +1576,7 @@ function CategoryCard({
           type="button"
           onClick={onToggleExpanded}
           aria-label={expanded ? 'Colapsar' : 'Expandir'}
-          className="w-7 h-7 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center"
+          className="w-7 h-7 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center shrink-0"
         >
           {expanded ? (
             <ChevronUp size={12} strokeWidth={2.2} />
@@ -1584,7 +1585,7 @@ function CategoryCard({
           )}
         </button>
         <div className="min-w-0 flex-1">
-          <div className="text-tiny uppercase tracking-[0.12em] text-[var(--muted2)] font-semibold">
+          <div className="text-tiny uppercase tracking-[0.12em] text-[var(--muted2)] font-semibold truncate">
             {draft.groupName}
           </div>
           <div className="text-body-sm font-semibold text-[var(--text)] truncate">
@@ -1593,7 +1594,7 @@ function CategoryCard({
         </div>
         <div className="text-right shrink-0">
           <div
-            className={`text-body-sm font-bold tabular-nums num ${
+            className={`text-body-sm font-bold tabular-nums num whitespace-nowrap ${
               total < 0
                 ? 'text-[var(--coral-text)]'
                 : 'text-[var(--brand-text)]'
@@ -1601,16 +1602,16 @@ function CategoryCard({
           >
             {fmtMoney(total)}
           </div>
-          <div className="text-tiny text-[var(--muted)]">
+          <div className="text-tiny text-[var(--muted)] whitespace-nowrap">
             {draft.txnIds.length}{' '}
-            {draft.txnIds.length === 1 ? 'txn' : 'txns'}
+            {draft.txnIds.length === 1 ? 'movimiento' : 'movimientos'}
           </div>
         </div>
         <button
           type="button"
           onClick={onRemove}
           aria-label="Quitar categoría"
-          className="w-7 h-7 rounded-md text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[var(--overlay-2)] flex items-center justify-center"
+          className="w-7 h-7 rounded-md text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[var(--overlay-2)] flex items-center justify-center shrink-0"
         >
           <Trash2 size={11} strokeWidth={2.2} />
         </button>
