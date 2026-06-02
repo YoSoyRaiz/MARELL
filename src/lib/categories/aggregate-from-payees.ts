@@ -116,3 +116,86 @@ export function aggregatePayeesToCategories(
   }
   return result
 }
+
+// ── Versión con txns vinculadas ──────────────────────────────────
+//
+// Mientras `aggregatePayeesToCategories` solo devolvía nombres, este
+// helper preserva el link txn → categoría para que el modal de import
+// pueda mostrar las txns dentro de cada card y sumar totales en vivo.
+
+export interface TxnWithMeta {
+  /** ID estable (generado en cliente). */
+  id: string
+  /** Para vincular con la cuenta destino en el server action. */
+  fileId: string
+  date: string
+  payeeName: string
+  /** Signed: negativo = gasto, positivo = ingreso. */
+  amount: number
+  memo: string | null
+}
+
+export interface CategoryDraftWithTxns {
+  /** Key estable usado por el drag-drop. Para auto-detectadas =
+   *  `${group}::${label}`; para manuales = uuid. */
+  key: string
+  groupName: string
+  categoryName: string
+  source: 'auto' | 'manual'
+  txnIds: string[]
+}
+
+export interface AggregateTxnsResult {
+  drafts: CategoryDraftWithTxns[]
+  /** IDs de txns que no matchearon ningún kind del dictionary. Se
+   *  muestran a la izquierda como "Sin asignar". */
+  unassignedTxnIds: string[]
+}
+
+/**
+ * Auto-categoriza una lista de txns usando el dictionary RD. Cada txn
+ * cuyo payee matchea un kind queda asignada a una `CategoryDraft`
+ * auto-generada. Las que no matchean van a `unassignedTxnIds` para
+ * que el auditor las arrastre a mano.
+ */
+export function aggregateTxnsToCategories(
+  txns: TxnWithMeta[],
+): AggregateTxnsResult {
+  const draftsByKey = new Map<string, CategoryDraftWithTxns>()
+  const unassigned: string[] = []
+
+  for (const t of txns) {
+    const kind = t.payeeName ? suggestKindFromPayee(t.payeeName) : null
+    if (!kind) {
+      unassigned.push(t.id)
+      continue
+    }
+    const meta = KIND_META[kind]
+    const key = `${meta.group}::${meta.label}`
+    let draft = draftsByKey.get(key)
+    if (!draft) {
+      draft = {
+        key,
+        groupName: meta.group,
+        categoryName: meta.label,
+        source: 'auto',
+        txnIds: [],
+      }
+      draftsByKey.set(key, draft)
+    }
+    draft.txnIds.push(t.id)
+  }
+
+  // Devolver drafts en orden de GROUP_ORDER (estable para la UI).
+  const drafts: CategoryDraftWithTxns[] = []
+  for (const groupName of GROUP_ORDER) {
+    for (const d of draftsByKey.values()) {
+      if (d.groupName === groupName) drafts.push(d)
+    }
+  }
+  return { drafts, unassignedTxnIds: unassigned }
+}
+
+/** Lista de grupos sugeridos para el datalist del form "Crear
+ *  categoría" en el modal de import. */
+export const SUGGESTED_GROUPS = GROUP_ORDER

@@ -61,6 +61,12 @@ grant execute on function public.admin_set_auditor(uuid, boolean) to authenticat
 -- 3. Extender admin_list_users() para incluir is_auditor ────────
 -- Replace de la función para devolver la columna extra. El client del
 -- admin panel la usa para pintar el toggle.
+--
+-- DROP necesario antes del CREATE porque CREATE OR REPLACE no permite
+-- cambiar el return type (Postgres 42P13). El drop es seguro: la
+-- función se recrea inmediatamente abajo con la misma firma + col extra.
+drop function if exists public.admin_list_users();
+
 create or replace function public.admin_list_users()
 returns table (
   id              uuid,

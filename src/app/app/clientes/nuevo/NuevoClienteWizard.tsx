@@ -14,13 +14,20 @@ import {
   X,
   Layers,
 } from 'lucide-react'
-import { createClientBudget, type AccountSeed } from '../actions'
+import {
+  createClientBudget,
+  type AccountSeed,
+  type PendingTxn,
+} from '../actions'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { AlertBanner } from '@/components/ui/AlertBanner'
-import { ImportCategoriesFromStatementModal } from './ImportCategoriesFromStatementModal'
+import {
+  ImportStatementsModal,
+  type ImportedStatementsPayload,
+} from './ImportStatementsModal'
 import type { CategoryGroupSeed } from '@/lib/categories/aggregate-from-payees'
 
 /**
@@ -51,6 +58,9 @@ export function NuevoClienteWizard() {
   const [accounts, setAccounts] = useState<AccountSeed[]>([
     { name: '', type: 'checking', balance: 0, currency: 'DOP' },
   ])
+  // Transacciones importadas — vacío hasta que el modal devuelva
+  // payload. accountTempId vincula con accounts[].tempId.
+  const [importedTxns, setImportedTxns] = useState<PendingTxn[]>([])
 
   const [importOpen, setImportOpen] = useState(false)
   const [addingTo, setAddingTo] = useState<{
@@ -86,6 +96,31 @@ export function NuevoClienteWizard() {
       return next
     })
   }
+
+  /** Handler para el modal nuevo: recibe cuentas auto-detectadas,
+   *  categorías propuestas y txns con sus vínculos. Reemplaza la
+   *  primera cuenta vacía si existe, sino mergea. */
+  const handleImportComplete = (payload: ImportedStatementsPayload) => {
+    // Mergea cuentas: si la primera cuenta del wizard está vacía la
+    // tiramos. El resto se concatena con tempId preservado.
+    setAccounts((prev) => {
+      const cleaned = prev.filter((a) => a.name.trim().length > 0)
+      const incoming: AccountSeed[] = payload.accounts.map((a) => ({
+        tempId: a.tempId,
+        name: a.name,
+        type: a.type,
+        balance: a.openingBalance,
+        currency: a.currency,
+      }))
+      return cleaned.length > 0 ? [...cleaned, ...incoming] : incoming
+    })
+    mergeImportedGroups(payload.categoryGroups)
+    setImportedTxns((prev) => [...prev, ...payload.transactions])
+  }
+
+  /** Quita todas las txns importadas (no toca cuentas ni categorías).
+   *  Útil si el auditor decide rehacer la asignación. */
+  const clearImportedTxns = () => setImportedTxns([])
 
   const addCategoryToGroup = (groupName: string, categoryName: string) => {
     const trimmed = categoryName.trim()
@@ -206,6 +241,7 @@ export function NuevoClienteWizard() {
             ? cleanGroups
             : [{ name: 'Otros', categoryNames: ['Por categorizar'] }],
         accounts: cleanAccounts,
+        transactions: importedTxns.length > 0 ? importedTxns : undefined,
       })
       if (r.error) {
         setError(r.error)
@@ -504,6 +540,34 @@ export function NuevoClienteWizard() {
           )}
         </Card>
 
+        {/* Banner: txns importadas pendientes */}
+        {importedTxns.length > 0 && (
+          <div className="rounded-2xl border border-[var(--brand-2)]/40 bg-[var(--brand-2)]/[0.06] px-4 py-3 flex items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2 text-body-sm text-[var(--text)]">
+              <Check
+                size={14}
+                strokeWidth={2.4}
+                className="text-[var(--brand-2)]"
+              />
+              <span>
+                <strong>{importedTxns.length}</strong>{' '}
+                {importedTxns.length === 1
+                  ? 'transacción lista'
+                  : 'transacciones listas'}{' '}
+                para importar. Se crearán al guardar el cliente.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={clearImportedTxns}
+              className="text-meta font-medium text-[var(--text2)] hover:text-[var(--coral-text)] inline-flex items-center gap-1"
+            >
+              <X size={12} strokeWidth={2.2} />
+              Quitar
+            </button>
+          </div>
+        )}
+
         {/* Step 3: cuentas iniciales */}
         <Card className="p-5 space-y-4">
           <div>
@@ -647,10 +711,10 @@ export function NuevoClienteWizard() {
         </div>
       </div>
 
-      <ImportCategoriesFromStatementModal
+      <ImportStatementsModal
         isOpen={importOpen}
         onClose={() => setImportOpen(false)}
-        onCategoriesGenerated={mergeImportedGroups}
+        onImportComplete={handleImportComplete}
       />
     </>
   )

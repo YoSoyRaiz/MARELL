@@ -13,17 +13,36 @@ import { clientInvitationEmail } from '@/lib/email/templates'
 // estos límites.
 const MAX_GROUPS = 30
 const MAX_CATEGORIES_TOTAL = 200
+const MAX_TXNS_IMPORTED = 5000
+const TXN_INSERT_BATCH = 500
 
 export interface AccountSeed {
   name: string
   type: string // checking | savings | cash | credit_card | etc.
   balance: number
   currency: 'DOP' | 'USD'
+  /** Opcional — solo lo setea el modal de importar para vincular las
+   *  transacciones a la cuenta correcta. UI manual no lo usa. */
+  tempId?: string
 }
 
 export interface CategoryGroupSeedInput {
   name: string
   categoryNames: string[]
+}
+
+/** Transacción pendiente de inserción al crear el cliente. La cuenta
+ *  destino se resuelve por `accountTempId` que vincula con
+ *  `AccountSeed.tempId`. La categoría se resuelve por nombre (group +
+ *  category); null = "Por categorizar". */
+export interface PendingTxn {
+  accountTempId: string
+  categoryGroupName: string | null
+  categoryName: string | null
+  date: string
+  payeeName: string
+  amount: number
+  memo: string | null
 }
 
 export interface CreateClientBudgetInput {
@@ -40,6 +59,9 @@ export interface CreateClientBudgetInput {
   categoryGroups: CategoryGroupSeedInput[]
   /** Cuentas iniciales — opcional, el auditor puede agregar después. */
   accounts?: AccountSeed[]
+  /** Txns a insertar al crear. Vinculan con accounts[].tempId y con
+   *  categoryGroups por nombre. El trigger DB recalcula balances. */
+  transactions?: PendingTxn[]
 }
 
 export interface CreateClientBudgetResult {
@@ -109,6 +131,14 @@ export async function createClientBudget(
   if (totalCats > MAX_CATEGORIES_TOTAL) {
     return {
       error: `Máximo ${MAX_CATEGORIES_TOTAL} categorías totales (recibimos ${totalCats})`,
+    }
+  }
+
+  // Cap de txns importadas. Si llegamos al límite es bug de UI — el
+  // modal debería bloquear antes de llegar al server action.
+  if ((input.transactions?.length ?? 0) > MAX_TXNS_IMPORTED) {
+    return {
+      error: `Máximo ${MAX_TXNS_IMPORTED} transacciones importadas por cliente`,
     }
   }
 
@@ -251,9 +281,10 @@ export async function createClientBudget(
   }
 
   // ── 6. Seed de category_groups + categories ────────────────
-  // Las categorías vienen del wizard (importadas del PDF o agregadas
-  // a mano por el auditor). Best-effort: si un grupo falla, seguimos
-  // con el resto en vez de rollback completo.
+  // Retenemos IDs para vincular las txns importadas después. Key
+  // usada: `${groupName}::${categoryName}`. Best-effort: si un
+  // grupo falla, seguimos con el resto.
+  const categoryIdByName = new Map<string, string>()
   for (let i = 0; i < finalGroups.length; i++) {
     const g = finalGroups[i]
     const { data: groupRow, error: gErr } = await admin
@@ -267,18 +298,38 @@ export async function createClientBudget(
       .single()
     if (gErr || !groupRow) continue
     const groupId = groupRow.id as string
-    const catRows = g.categoryNames.map((name, idx) => ({
-      budget_id: budgetId,
-      group_id: groupId,
-      name,
-      sort_order: idx + 1,
-    }))
-    if (catRows.length > 0) {
-      await admin.from('categories').insert(catRows)
+    if (g.categoryNames.length > 0) {
+      const catRows = g.categoryNames.map((name, idx) => ({
+        budget_id: budgetId,
+        group_id: groupId,
+        name,
+        sort_order: idx + 1,
+      }))
+      const { data: catData } = await admin
+        .from('categories')
+        .insert(catRows)
+        .select('id, name')
+      if (catData) {
+        for (const c of catData) {
+          categoryIdByName.set(
+            `${g.name}::${c.name as string}`,
+            c.id as string,
+          )
+        }
+      }
     }
   }
 
-  // ── 7. Accounts iniciales (con saldos iniciales si != 0) ───
+  // ── 7. Accounts iniciales ──────────────────────────────────
+  // Retenemos IDs por tempId (si vino del modal de importar) para
+  // poder vincular las txns importadas después. Si la cuenta NO
+  // tiene tempId (auditor la agregó a mano sin importar), aplicamos
+  // el patrón clásico de "Saldo inicial" txn.
+  const accountIdByTempId = new Map<string, string>()
+  const fileTempIdsWithTxns = new Set(
+    (input.transactions ?? []).map((t) => t.accountTempId),
+  )
+
   if (input.accounts && input.accounts.length > 0) {
     const DEBT_TYPES = [
       'credit_card',
@@ -296,16 +347,11 @@ export async function createClientBudget(
       const isDebt = DEBT_TYPES.includes(a.type)
       const isTracking = TRACKING_TYPES.includes(a.type)
       const signedBalance = isDebt ? -Math.abs(a.balance) : a.balance
-      // Insertamos cuenta con balance=0; si balance ≠ 0 luego
-      // creamos txn 'Saldo inicial' (igual patrón que createAccount)
       const { data: acctRow } = await admin
         .from('accounts')
         .insert({
           budget_id: budgetId,
           name: a.name.trim(),
-          // Cast a never porque AccountType es enum estricto pero el
-          // input viene como string desde el form. Validamos en el
-          // cliente que sea uno de ACCOUNT_TYPES.
           type: a.type as never,
           currency: a.currency,
           balance: 0,
@@ -314,7 +360,16 @@ export async function createClientBudget(
         })
         .select('id')
         .single()
-      if (acctRow && Math.abs(signedBalance) >= 0.005) {
+      if (!acctRow) continue
+      const acctId = acctRow.id as string
+      if (a.tempId) accountIdByTempId.set(a.tempId, acctId)
+
+      // "Saldo inicial" solo si la cuenta NO viene del modal de
+      // importar O el balance es != 0 sin txns asociadas. Si vienen
+      // txns importadas para esta cuenta, dejamos que el trigger
+      // recalcule de las txns reales — sino doblaríamos el saldo.
+      const hasImportedTxns = !!a.tempId && fileTempIdsWithTxns.has(a.tempId)
+      if (!hasImportedTxns && Math.abs(signedBalance) >= 0.005) {
         const todayDR = (() => {
           const now = new Date()
           const dr = new Date(now.getTime() - 4 * 60 * 60 * 1000)
@@ -322,7 +377,7 @@ export async function createClientBudget(
         })()
         await admin.from('transactions').insert({
           budget_id: budgetId,
-          account_id: acctRow.id as string,
+          account_id: acctId,
           date: todayDR,
           payee_name: 'Saldo inicial',
           category_id: null,
@@ -331,6 +386,57 @@ export async function createClientBudget(
           approved: true,
         })
       }
+    }
+  }
+
+  // ── 8. Txns importadas (bulk insert en batches) ───────────
+  // Best-effort: si una batch falla, log y seguimos. El budget +
+  // cuentas + categorías ya están creados; el auditor puede
+  // reimportar desde el dashboard del cliente si fuera necesario.
+  if (input.transactions && input.transactions.length > 0) {
+    const validTxns = input.transactions.filter((t) => {
+      const acctId = accountIdByTempId.get(t.accountTempId)
+      return !!acctId
+    })
+    let skipped = 0
+    for (let start = 0; start < validTxns.length; start += TXN_INSERT_BATCH) {
+      const batch = validTxns.slice(start, start + TXN_INSERT_BATCH)
+      const rows = batch.map((t) => {
+        const acctId = accountIdByTempId.get(t.accountTempId)!
+        let categoryId: string | null = null
+        if (t.categoryGroupName && t.categoryName) {
+          categoryId =
+            categoryIdByName.get(`${t.categoryGroupName}::${t.categoryName}`) ??
+            null
+        }
+        return {
+          budget_id: budgetId,
+          account_id: acctId,
+          date: t.date,
+          payee_name: t.payeeName,
+          category_id: categoryId,
+          amount: Math.round(t.amount * 100) / 100,
+          memo: t.memo,
+          cleared: 'cleared' as const,
+          approved: true,
+        }
+      })
+      const { error: insErr } = await admin
+        .from('transactions')
+        .insert(rows)
+      if (insErr) {
+        skipped += rows.length
+        console.error('[createClientBudget txn batch error]', {
+          batchStart: start,
+          batchSize: rows.length,
+          message: insErr.message,
+        })
+      }
+    }
+    if (skipped > 0) {
+      console.warn(
+        `[createClientBudget] ${skipped}/${validTxns.length} txns no se insertaron`,
+      )
     }
   }
 

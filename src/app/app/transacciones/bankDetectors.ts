@@ -45,7 +45,7 @@ export interface ColumnMap {
   signed?: number
 }
 
-const BANK_LABELS: Record<DRBank, string> = {
+export const BANK_LABELS: Record<DRBank, string> = {
   popular: 'Banco Popular',
   banreservas: 'Banreservas',
   bhd: 'BHD',
