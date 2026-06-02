@@ -37,7 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     await Promise.all([
       getActiveBudgetId(supabase),
       listUserBudgets(supabase),
-      isAuditorEnabled(supabase, user.id, user.email),
+      isAuditorEnabled(supabase, user.id),
     ])
   // Sidebar muestra "Auditor Financiero → Mis Clientes" solo si el
   // permiso DB está activo (admin lo otorga desde /admin). Revocación

@@ -14,7 +14,7 @@ export default async function NuevoClientePage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const enabled = await isAuditorEnabled(supabase, user.id, user.email)
+  const enabled = await isAuditorEnabled(supabase, user.id)
   if (!enabled) redirect('/app')
 
   return <NuevoClienteWizard />

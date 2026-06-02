@@ -68,7 +68,7 @@ export async function setActiveBudget(budgetId: string): Promise<
 
     if (arLookup.data) {
       // Es un budget de cliente → requiere permiso activo.
-      const enabled = await isAuditorEnabled(supabase, user.id, user.email ?? null)
+      const enabled = await isAuditorEnabled(supabase, user.id)
       if (!enabled) {
         return { error: 'Sin acceso a ese presupuesto' }
       }

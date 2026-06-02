@@ -19,7 +19,7 @@ export default async function ClientesPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const enabled = await isAuditorEnabled(supabase, user.id, user.email)
+  const enabled = await isAuditorEnabled(supabase, user.id)
   if (!enabled) redirect('/app')
 
   const result = await fetchClientsDashboard()
