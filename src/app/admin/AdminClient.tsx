@@ -14,6 +14,8 @@ import {
   Users,
   AlertTriangle,
   Trash2,
+  Briefcase,
+  BriefcaseBusiness,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/Button'
@@ -25,6 +27,7 @@ import {
   recordPayment,
   extendTrial,
   setApproved,
+  setAuditor,
   setFree,
   deleteUser,
 } from './actions'
@@ -38,6 +41,7 @@ export interface AdminUser {
   proExpiresAt: string | null
   approved: boolean
   onboarded: boolean
+  isAuditor: boolean
   signedUpAt: string
   lastSignInAt: string | null
 }
@@ -185,6 +189,27 @@ export function AdminClient({ users }: Props) {
     setError(null)
     startMutate(async () => {
       const r = await setApproved(u.id, !u.approved)
+      if (r.error) setError(r.error)
+      else refresh()
+    })
+  }
+
+  const handleToggleAuditor = async (u: AdminUser) => {
+    const turningOn = !u.isAuditor
+    const ok = await confirm({
+      title: turningOn
+        ? `¿Activar Auditor Financiero a ${u.email}?`
+        : `¿Quitar permiso de Auditor a ${u.email}?`,
+      description: turningOn
+        ? 'Podrá crear y gestionar presupuestos de clientes desde "Mis Clientes".'
+        : 'Pierde acceso a "Mis Clientes" y a budgets de cliente. Las relaciones quedan en pausa — si lo reactivas, recupera todo intacto.',
+      confirmLabel: turningOn ? 'Activar' : 'Quitar permiso',
+      tone: turningOn ? 'default' : 'danger',
+    })
+    if (!ok) return
+    setError(null)
+    startMutate(async () => {
+      const r = await setAuditor(u.id, turningOn)
       if (r.error) setError(r.error)
       else refresh()
     })
@@ -373,6 +398,12 @@ export function AdminClient({ users }: Props) {
                         />
                       )}
                       <ActionButton
+                        Icon={u.isAuditor ? BriefcaseBusiness : Briefcase}
+                        label={u.isAuditor ? 'Quitar Auditor' : 'Activar Auditor'}
+                        tone={u.isAuditor ? 'success' : 'default'}
+                        onClick={() => handleToggleAuditor(u)}
+                      />
+                      <ActionButton
                         Icon={u.approved ? ShieldOff : Shield}
                         label={u.approved ? 'Bloquear' : 'Aprobar'}
                         tone={u.approved ? 'danger' : 'default'}
@@ -454,19 +485,21 @@ function ActionButton({
   Icon: typeof Users
   label: string
   onClick: () => void
-  tone?: 'default' | 'danger'
+  tone?: 'default' | 'danger' | 'success'
 }) {
+  const toneClass =
+    tone === 'danger'
+      ? 'text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]'
+      : tone === 'success'
+        ? 'text-[var(--success)] hover:bg-[var(--success)]/[0.10]'
+        : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'
   return (
     <button
       type="button"
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-eyebrow font-medium transition-colors ${
-        tone === 'danger'
-          ? 'text-[var(--coral)] hover:bg-[rgba(255,122,89,0.10)]'
-          : 'text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'
-      }`}
+      className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-eyebrow font-medium transition-colors ${toneClass}`}
     >
       <Icon size={12} strokeWidth={2} />
       <span className="hidden lg:inline">{label}</span>

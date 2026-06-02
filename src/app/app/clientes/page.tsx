@@ -1,19 +1,16 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { isInAuditorAllowlist } from '@/lib/auth/auditor'
+import { isAuditorEnabled } from '@/lib/auth/auditor'
 import { ClientesClient } from './ClientesClient'
 import { fetchClientsDashboard } from './dashboard-action'
 
 /**
  * Dashboard "Mis Clientes" — vista del auditor.
  *
- * Accesibilidad: cualquier usuario que tenga al menos una row activa
- * en agency_relationships como auditor ve esta página. No es un
- * "rol de cuenta" — es derivado del estado.
- *
- * Allowlist gate solo para CREAR clientes (esa ruta es la que
- * realmente importa controlar). Listar lo que ya tienes es siempre
- * accesible.
+ * Gate: profiles.is_auditor=true (controlado desde /admin). Sin permiso
+ * activo, redirigimos a /app. Revocación = pausa: las relaciones
+ * quedan intactas pero el acceso se bloquea hasta que el admin
+ * reactive.
  */
 export default async function ClientesPage() {
   const supabase = await createClient()
@@ -22,22 +19,21 @@ export default async function ClientesPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const enabled = await isAuditorEnabled(supabase, user.id, user.email)
+  if (!enabled) redirect('/app')
+
   const result = await fetchClientsDashboard()
   if (result.error) {
-    // No bloqueamos render — mostramos estado vacío con error chip
     return (
-      <ClientesClient rows={[]} totals={emptyTotals()} canCreate={false} />
+      <ClientesClient rows={[]} totals={emptyTotals()} canCreate={true} />
     )
   }
-
-  // Allowlist para botón "Crear cliente"
-  const canCreate = isInAuditorAllowlist(user.email)
 
   return (
     <ClientesClient
       rows={result.rows ?? []}
       totals={result.totals ?? emptyTotals()}
-      canCreate={canCreate}
+      canCreate={true}
     />
   )
 }

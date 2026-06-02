@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { isAuditorEnabled } from '@/lib/auth/auditor'
 import { writeActiveBudgetCookie } from './active'
 
 /**
@@ -32,10 +33,47 @@ export async function setActiveBudget(budgetId: string): Promise<
   // evita confusión de "cambié de budget pero todo está vacío".
   const { data: budget } = await supabase
     .from('budgets')
-    .select('id')
+    .select('id, created_by')
     .eq('id', budgetId)
     .maybeSingle()
   if (!budget) return { error: 'Sin acceso a ese presupuesto' }
+
+  // Hardening de revocación: si el budget viene por una relación de
+  // auditoría (no familia, no propio), validamos is_auditor=true. Los
+  // budgets compartidos por familia (rol editor/viewer en
+  // budget_members sin agency_relationships) NO requieren este check.
+  // Tabla agency_relationships → cast a unknown (types no la conocen).
+  if (budget.created_by && budget.created_by !== user.id) {
+    const arLookup = await (
+      supabase as unknown as {
+        from: (t: string) => {
+          select: (s: string) => {
+            eq: (k: string, v: string) => {
+              eq: (k: string, v: string) => {
+                eq: (k: string, v: string) => {
+                  maybeSingle: () => Promise<{ data: { id: string } | null }>
+                }
+              }
+            }
+          }
+        }
+      }
+    )
+      .from('agency_relationships')
+      .select('id')
+      .eq('auditor_user_id', user.id)
+      .eq('client_budget_id', budgetId)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (arLookup.data) {
+      // Es un budget de cliente → requiere permiso activo.
+      const enabled = await isAuditorEnabled(supabase, user.id, user.email ?? null)
+      if (!enabled) {
+        return { error: 'Sin acceso a ese presupuesto' }
+      }
+    }
+  }
 
   await writeActiveBudgetCookie(budgetId)
   revalidatePath('/app', 'layout')

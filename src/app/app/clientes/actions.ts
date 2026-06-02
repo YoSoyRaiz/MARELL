@@ -8,51 +8,11 @@ import { writeActiveBudgetCookie } from '@/lib/budget/active'
 import { sendEmail } from '@/lib/email/send'
 import { clientInvitationEmail } from '@/lib/email/templates'
 
-// Presets de categorías por tipo de negocio. Mantenemos cortos —
-// el auditor ajusta después. La idea es que la primera vista del
-// cliente ya tenga estructura usable, no un wizard de 15 pasos.
-const PRESETS: Record<string, { groups: { name: string; categories: string[] }[] }> = {
-  servicios: {
-    groups: [
-      { name: 'Ingresos', categories: ['Honorarios', 'Reembolsos'] },
-      { name: 'Operación', categories: ['Renta oficina', 'Servicios', 'Suministros'] },
-      { name: 'Personal', categories: ['Nómina', 'Comisiones'] },
-      { name: 'Impuestos', categories: ['ITBIS', 'ISR'] },
-      { name: 'Otros', categories: ['Imprevistos', 'Gastos personales'] },
-    ],
-  },
-  comercio: {
-    groups: [
-      { name: 'Ingresos', categories: ['Ventas', 'Otros ingresos'] },
-      { name: 'Inventario', categories: ['Compra mercancía', 'Fletes'] },
-      { name: 'Operación', categories: ['Renta local', 'Servicios', 'Empaque'] },
-      { name: 'Personal', categories: ['Nómina'] },
-      { name: 'Impuestos', categories: ['ITBIS', 'ISR'] },
-      { name: 'Otros', categories: ['Imprevistos'] },
-    ],
-  },
-  restaurante: {
-    groups: [
-      { name: 'Ingresos', categories: ['Ventas comida', 'Ventas bebida', 'Delivery'] },
-      { name: 'Inventario', categories: ['Insumos', 'Bebidas', 'Empaques'] },
-      { name: 'Operación', categories: ['Renta', 'Servicios', 'Mantenimiento'] },
-      { name: 'Personal', categories: ['Nómina cocina', 'Nómina salón'] },
-      { name: 'Impuestos', categories: ['ITBIS', 'ISR'] },
-      { name: 'Otros', categories: ['Imprevistos'] },
-    ],
-  },
-  generico: {
-    groups: [
-      { name: 'Ingresos', categories: ['Entradas principales'] },
-      { name: 'Operación', categories: ['Renta', 'Servicios', 'Suministros'] },
-      { name: 'Personal', categories: ['Nómina'] },
-      { name: 'Impuestos', categories: ['ITBIS', 'ISR'] },
-      { name: 'Otros', categories: ['Imprevistos'] },
-    ],
-  },
-}
-
-export type BusinessType = keyof typeof PRESETS
+// Sanity caps para evitar abuse / errores de UI (auditor pega 10K
+// categorías por accidente). El usuario normal va a estar lejos de
+// estos límites.
+const MAX_GROUPS = 30
+const MAX_CATEGORIES_TOTAL = 200
 
 export interface AccountSeed {
   name: string
@@ -61,15 +21,23 @@ export interface AccountSeed {
   currency: 'DOP' | 'USD'
 }
 
+export interface CategoryGroupSeedInput {
+  name: string
+  categoryNames: string[]
+}
+
 export interface CreateClientBudgetInput {
-  /** Nombre comercial del cliente (ej. "Restaurante Don Pepe"). */
+  /** Nombre del cliente (ej. "Ana Pérez"). */
   clientLabel: string
   /** Email del cliente — recibe magic link para reclamar su cuenta. */
   email: string
-  /** Tipo de negocio — determina las categorías iniciales. */
-  businessType: BusinessType
   /** Moneda base del budget. */
   currency: 'DOP' | 'USD'
+  /** Categorías iniciales del cliente, agrupadas. Pueden venir del
+   *  modal de importar estado de cuenta o agregadas a mano por el
+   *  auditor. Si llega vacío, sembramos un único grupo "Otros > Por
+   *  categorizar" como fallback. */
+  categoryGroups: CategoryGroupSeedInput[]
   /** Cuentas iniciales — opcional, el auditor puede agregar después. */
   accounts?: AccountSeed[]
 }
@@ -109,11 +77,39 @@ export async function createClientBudget(
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { error: 'Email inválido' }
   }
-  if (!PRESETS[input.businessType]) {
-    return { error: 'Tipo de negocio inválido' }
-  }
   if (!['DOP', 'USD'].includes(input.currency)) {
     return { error: 'Moneda inválida' }
+  }
+
+  // Sanitiza categorías: trim, dedupe por grupo, descarta vacíos.
+  // Fallback a "Otros > Por categorizar" si el auditor procedió con 0.
+  const sanitizedGroups: CategoryGroupSeedInput[] = (input.categoryGroups ?? [])
+    .map((g) => ({
+      name: g.name.trim(),
+      categoryNames: Array.from(
+        new Set(
+          (g.categoryNames ?? [])
+            .map((c) => c.trim())
+            .filter((c) => c.length > 0),
+        ),
+      ),
+    }))
+    .filter((g) => g.name.length > 0 && g.categoryNames.length > 0)
+  const finalGroups: CategoryGroupSeedInput[] =
+    sanitizedGroups.length > 0
+      ? sanitizedGroups
+      : [{ name: 'Otros', categoryNames: ['Por categorizar'] }]
+  if (finalGroups.length > MAX_GROUPS) {
+    return { error: `Máximo ${MAX_GROUPS} grupos de categorías` }
+  }
+  const totalCats = finalGroups.reduce(
+    (s, g) => s + g.categoryNames.length,
+    0,
+  )
+  if (totalCats > MAX_CATEGORIES_TOTAL) {
+    return {
+      error: `Máximo ${MAX_CATEGORIES_TOTAL} categorías totales (recibimos ${totalCats})`,
+    }
   }
 
   const supabase = await createClient()
@@ -255,9 +251,11 @@ export async function createClientBudget(
   }
 
   // ── 6. Seed de category_groups + categories ────────────────
-  const preset = PRESETS[input.businessType]
-  for (let i = 0; i < preset.groups.length; i++) {
-    const g = preset.groups[i]
+  // Las categorías vienen del wizard (importadas del PDF o agregadas
+  // a mano por el auditor). Best-effort: si un grupo falla, seguimos
+  // con el resto en vez de rollback completo.
+  for (let i = 0; i < finalGroups.length; i++) {
+    const g = finalGroups[i]
     const { data: groupRow, error: gErr } = await admin
       .from('category_groups')
       .insert({
@@ -267,9 +265,9 @@ export async function createClientBudget(
       })
       .select('id')
       .single()
-    if (gErr || !groupRow) continue // best-effort; no rollback
+    if (gErr || !groupRow) continue
     const groupId = groupRow.id as string
-    const catRows = g.categories.map((name, idx) => ({
+    const catRows = g.categoryNames.map((name, idx) => ({
       budget_id: budgetId,
       group_id: groupId,
       name,

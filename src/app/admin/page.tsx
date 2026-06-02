@@ -22,18 +22,24 @@ export default async function AdminPage() {
 
   const { data: rows, error } = await supabase.rpc('admin_list_users')
 
-  const users: AdminUser[] = (rows ?? []).map((r) => ({
-    id: r.id,
-    email: r.email,
-    displayName: r.display_name,
-    plan: r.plan,
-    trialEndsAt: r.trial_ends_at,
-    proExpiresAt: r.pro_expires_at,
-    approved: r.approved,
-    onboarded: r.onboarded,
-    signedUpAt: r.signed_up_at,
-    lastSignInAt: r.last_sign_in_at,
-  }))
+  // Cast a unknown porque la migration 2026_06_02 agregó is_auditor a
+  // admin_list_users(); los types generados aún no la conocen.
+  const users: AdminUser[] = (rows ?? []).map((r) => {
+    const row = r as typeof r & { is_auditor?: boolean | null }
+    return {
+      id: r.id,
+      email: r.email,
+      displayName: r.display_name,
+      plan: r.plan,
+      trialEndsAt: r.trial_ends_at,
+      proExpiresAt: r.pro_expires_at,
+      approved: r.approved,
+      onboarded: r.onboarded,
+      isAuditor: row.is_auditor ?? false,
+      signedUpAt: r.signed_up_at,
+      lastSignInAt: r.last_sign_in_at,
+    }
+  })
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">

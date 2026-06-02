@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { computeReadyToAssign } from '@/lib/budget'
 import { getActiveBudgetId, listUserBudgets } from '@/lib/budget/active'
 import { logBudgetAccess } from '@/lib/budget/access-log'
-import { isInAuditorAllowlist } from '@/lib/auth/auditor'
+import { isAuditorEnabled } from '@/lib/auth/auditor'
 import { AppShell } from './AppShell'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -31,41 +31,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // por familia o como auditor de clientes). El helper lee de cookie,
   // valida membership y cae al primero por created_at para preservar
   // comportamiento single-budget. Cargamos también la lista completa
-  // para el BudgetSwitcher en el TopBar y el flag isAuditor para
+  // para el BudgetSwitcher en el TopBar y el flag is_auditor para
   // condicionalmente mostrar "Mis Clientes" en el sidebar.
-  const [{ budgetId: activeBudgetId }, allBudgets, auditorCount] =
+  const [{ budgetId: activeBudgetId }, allBudgets, auditorEnabled] =
     await Promise.all([
       getActiveBudgetId(supabase),
       listUserBudgets(supabase),
-      // Count de relaciones activas como auditor — head=true para no
-      // traer rows, solo el count. Tabla nueva → cast a unknown.
-      (
-        supabase as unknown as {
-          from: (t: string) => {
-            select: (
-              s: string,
-              o: { count: string; head: boolean },
-            ) => {
-              eq: (
-                k: string,
-                v: string,
-              ) => {
-                eq: (k: string, v: string) => Promise<{ count: number | null }>
-              }
-            }
-          }
-        }
-      )
-        .from('agency_relationships')
-        .select('id', { count: 'exact', head: true })
-        .eq('auditor_user_id', user.id)
-        .eq('status', 'active'),
+      isAuditorEnabled(supabase, user.id, user.email),
     ])
-  const isAuditor = (auditorCount.count ?? 0) > 0
-  // El sidebar muestra "Mis Clientes" si el usuario YA tiene clientes
-  // O está en el allowlist (aún sin clientes). Resuelve el catch-22
-  // de "no veo el link" para auditores recién agregados.
-  const showAuditorSection = isAuditor || isInAuditorAllowlist(user.email)
+  // Sidebar muestra "Auditor Financiero → Mis Clientes" solo si el
+  // permiso DB está activo (admin lo otorga desde /admin). Revocación
+  // = pausa: agency_relationships quedan intactas pero la sección
+  // desaparece del sidebar.
+  const showAuditorSection = auditorEnabled
   const { data: budget } = activeBudgetId
     ? await supabase
         .from('budgets')

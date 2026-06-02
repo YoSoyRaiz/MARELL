@@ -73,6 +73,26 @@ export async function setApproved(
   return { ok: true }
 }
 
+export async function setAuditor(
+  targetId: string,
+  value: boolean,
+): Promise<ActionResult> {
+  const { supabase, error } = await requireAdmin()
+  if (error) return { error }
+  if (!targetId) return { error: 'ID requerido' }
+  // RPC nueva (migration 2026_06_02); los types generados aún no la
+  // conocen. Cast a unknown para evitar TS error sin regenerar types.
+  const { error: rpcErr } = await (
+    supabase.rpc as unknown as (
+      name: string,
+      args: { target_id: string; value: boolean },
+    ) => Promise<{ error: { message: string } | null }>
+  )('admin_set_auditor', { target_id: targetId, value })
+  if (rpcErr) return { error: rpcErr.message }
+  revalidatePath('/admin', 'page')
+  return { ok: true }
+}
+
 export async function setFree(targetId: string): Promise<ActionResult> {
   const { supabase, error } = await requireAdmin()
   if (error) return { error }

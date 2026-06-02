@@ -1,29 +1,53 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 /**
- * Helper para chequear si un email está en el allowlist de auditores.
+ * Helper para chequear si un usuario tiene permiso de Auditor Financiero.
  *
- * Allowlist controla quién puede ver el feature de gestión de clientes
- * antes de tener clientes activos. Una vez que el auditor crea ≥1
- * cliente, ya queda registrado en `agency_relationships` y el feature
- * se descubre por estado de la DB, no por env var.
+ * Fuente de verdad: columna `profiles.is_auditor` (migration
+ * 2026_06_02_auditor_permission.sql). El admin la togglea desde
+ * `/admin`. Revocación = pausa: las agency_relationships quedan
+ * intactas, solo se bloquea el acceso al feature.
  *
- * Lógica: env var `MARELL_AUDITOR_ALLOWLIST` como CSV de emails. Vacía
- * o ausente = allowlist desactivado (development / testing). En
- * producción siempre se define.
+ * Fallback temporal: si el flag de DB está en false pero el email
+ * sigue en `MARELL_AUDITOR_ALLOWLIST`, devolvemos true. Esto evita
+ * cortar acceso a usuarios actualmente allowlisted mientras seedamos
+ * profiles.is_auditor. Remover la env var + esta rama después de la
+ * migración completa.
  *
- * Llamadas previas a este helper estaban duplicadas en:
- *   - src/app/app/clientes/page.tsx
- *   - src/app/app/clientes/nuevo/page.tsx
- * Ahora consolidadas aquí.
+ * @deprecated MARELL_AUDITOR_ALLOWLIST — usar admin panel para gestionar
+ * permisos. La env var se mantiene como fallback transicional.
  */
-export function isInAuditorAllowlist(email: string | null | undefined): boolean {
+export async function isAuditorEnabled(
+  supabase: SupabaseClient,
+  userId: string,
+  email: string | null | undefined,
+): Promise<boolean> {
+  // Fuente principal: DB.
+  const { data } = await supabase
+    .from('profiles')
+    .select('is_auditor')
+    .eq('id', userId)
+    .maybeSingle()
+  if (data?.is_auditor === true) return true
+
+  // Fallback transicional: env var allowlist.
+  return isInAuditorAllowlistEnv(email)
+}
+
+/**
+ * Lee el allowlist legacy de la env var. Solo lo usa `isAuditorEnabled`
+ * como fallback; las páginas no deberían llamarlo directamente.
+ *
+ * @deprecated Removerse cuando todos los allowlisted estén seedados en
+ * profiles.is_auditor.
+ */
+function isInAuditorAllowlistEnv(email: string | null | undefined): boolean {
   if (!email) return false
   const raw = process.env.MARELL_AUDITOR_ALLOWLIST ?? ''
   const list = raw
     .split(',')
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)
-  // Allowlist vacío = sin restricción (caso development). En prod
-  // siempre se define, así que esta rama "true" cubre solo el dev.
-  if (list.length === 0) return true
+  if (list.length === 0) return false
   return list.includes(email.toLowerCase())
 }
