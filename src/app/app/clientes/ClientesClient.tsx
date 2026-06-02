@@ -10,6 +10,7 @@ import {
   ArrowUp,
   BarChart3,
   Building2,
+  FileUp,
   ListChecks,
   MoreVertical,
   PieChart,
@@ -19,8 +20,14 @@ import {
   Wallet,
 } from 'lucide-react'
 import { setActiveBudget } from '@/lib/budget/actions'
+import { importStatementsToBudget } from './actions'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
+import { AlertBanner } from '@/components/ui/AlertBanner'
+import {
+  ImportStatementsModal,
+  type ImportedStatementsPayload,
+} from './nuevo/ImportStatementsModal'
 import { useFormatMoney } from '../CurrencyProvider'
 import type { ClientDashboardRow } from './dashboard-action'
 
@@ -53,6 +60,49 @@ export function ClientesClient({ rows, totals, canCreate }: Props) {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortMode>('recent')
   const [pending, startTransition] = useTransition()
+
+  // Estado para el modal "Importar estado de cuenta" lanzado desde
+  // el kebab de un cliente. clientBudgetId = budget destino.
+  const [importTarget, setImportTarget] = useState<{
+    budgetId: string
+    clientLabel: string
+  } | null>(null)
+  const [importResult, setImportResult] = useState<{
+    label: string
+    inserted: number
+    accountsCreated: number
+    categoriesCreated: number
+  } | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
+
+  const handleImportToClient = (payload: ImportedStatementsPayload) => {
+    if (!importTarget) return
+    setImporting(true)
+    setImportError(null)
+    startTransition(async () => {
+      const r = await importStatementsToBudget({
+        budgetId: importTarget.budgetId,
+        accounts: payload.accounts,
+        categoryGroups: payload.categoryGroups,
+        transactions: payload.transactions,
+      })
+      setImporting(false)
+      if (r.error) {
+        setImportError(r.error)
+        return
+      }
+      const s = r.summary
+      setImportResult({
+        label: importTarget.clientLabel,
+        inserted: s?.transactionsInserted ?? 0,
+        accountsCreated: s?.accountsCreated ?? 0,
+        categoriesCreated: s?.categoriesCreated ?? 0,
+      })
+      setImportTarget(null)
+      router.refresh()
+    })
+  }
 
   const filtered = useMemo(() => {
     const normalize = (s: string) =>
@@ -162,7 +212,60 @@ export function ClientesClient({ rows, totals, canCreate }: Props) {
   }
 
   return (
+    <>
     <div className={`space-y-7 ${pending ? 'opacity-60' : ''} transition-opacity`}>
+      {/* Banner de resultado de import — desaparece al cerrar */}
+      {importResult && (
+        <AlertBanner tone="success">
+          <span className="inline-flex items-center justify-between gap-3 w-full">
+            <span>
+              Importamos <strong>{importResult.inserted}</strong>{' '}
+              {importResult.inserted === 1
+                ? 'movimiento'
+                : 'movimientos'}{' '}
+              a <strong>{importResult.label}</strong>
+              {importResult.accountsCreated > 0 && (
+                <>
+                  {' '}· {importResult.accountsCreated}{' '}
+                  {importResult.accountsCreated === 1
+                    ? 'cuenta nueva'
+                    : 'cuentas nuevas'}
+                </>
+              )}
+              {importResult.categoriesCreated > 0 && (
+                <>
+                  {' '}· {importResult.categoriesCreated}{' '}
+                  {importResult.categoriesCreated === 1
+                    ? 'categoría nueva'
+                    : 'categorías nuevas'}
+                </>
+              )}
+              .
+            </span>
+            <button
+              type="button"
+              onClick={() => setImportResult(null)}
+              className="text-meta font-medium opacity-70 hover:opacity-100"
+            >
+              Cerrar
+            </button>
+          </span>
+        </AlertBanner>
+      )}
+      {importError && (
+        <AlertBanner tone="danger">
+          <span className="inline-flex items-center justify-between gap-3 w-full">
+            <span>{importError}</span>
+            <button
+              type="button"
+              onClick={() => setImportError(null)}
+              className="text-meta font-medium opacity-70 hover:opacity-100"
+            >
+              Cerrar
+            </button>
+          </span>
+        </AlertBanner>
+      )}
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
@@ -270,12 +373,32 @@ export function ClientesClient({ rows, totals, canCreate }: Props) {
               fmtMoney={fmtMoney}
               onOpen={() => openClient(c.clientBudgetId)}
               onQuickLink={(path) => openClientAt(c.clientBudgetId, path)}
+              onImport={() =>
+                setImportTarget({
+                  budgetId: c.clientBudgetId,
+                  clientLabel: c.clientLabel,
+                })
+              }
               pending={pending}
             />
           ))}
         </div>
       )}
     </div>
+
+    {/* Modal de importar estado de cuenta a un cliente existente.
+        Se monta a nivel root para que su backdrop cubra todo. */}
+    {importTarget && (
+      <ImportStatementsModal
+        isOpen={true}
+        onClose={() => {
+          if (importing) return
+          setImportTarget(null)
+        }}
+        onImportComplete={handleImportToClient}
+      />
+    )}
+    </>
   )
 }
 
@@ -316,12 +439,14 @@ function ClientCard({
   fmtMoney,
   onOpen,
   onQuickLink,
+  onImport,
   pending,
 }: {
   row: ClientDashboardRow
   fmtMoney: (n: number) => string
   onOpen: () => void
   onQuickLink: (path: string) => void
+  onImport: () => void
   pending: boolean
 }) {
   return (
@@ -398,6 +523,7 @@ function ClientCard({
           <button>. Absolute top-right del header. */}
       <ClientCardMenu
         onSelect={onQuickLink}
+        onImport={onImport}
         disabled={pending}
       />
       <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--overlay-1)] text-tiny text-[var(--muted)] inline-flex items-center gap-1.5 w-full">
@@ -415,9 +541,11 @@ function ClientCard({
  */
 function ClientCardMenu({
   onSelect,
+  onImport,
   disabled,
 }: {
   onSelect: (path: string) => void
+  onImport: () => void
   disabled: boolean
 }) {
   const [open, setOpen] = useState(false)
@@ -466,8 +594,29 @@ function ClientCardMenu({
       {open && (
         <div
           role="menu"
-          className="absolute top-full right-0 mt-1.5 w-52 rounded-xl border border-[var(--border)] bg-[var(--s1)] shadow-xl p-1.5 z-20"
+          className="absolute top-full right-0 mt-1.5 w-60 rounded-xl border border-[var(--border)] bg-[var(--s1)] shadow-xl p-1.5 z-20"
         >
+          {/* Acción primaria: importar nuevo estado de cuenta. La
+              destacamos arriba porque es el flow mensual recurrente
+              del auditor (vs los "Ir a..." que son navegación). */}
+          <button
+            type="button"
+            role="menuitem"
+            onClick={(e) => {
+              e.stopPropagation()
+              setOpen(false)
+              onImport()
+            }}
+            className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm font-semibold text-[var(--brand-text)] hover:bg-[var(--brand-2)]/[0.10] transition-colors"
+          >
+            <FileUp
+              size={13}
+              strokeWidth={2.4}
+              className="text-[var(--brand-text)]"
+            />
+            Importar estado de cuenta
+          </button>
+          <div className="my-1 h-px bg-[var(--border)]" />
           {items.map((item) => (
             <button
               key={item.path}

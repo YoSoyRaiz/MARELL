@@ -449,6 +449,339 @@ export async function createClientBudget(
 }
 
 /**
+ * Importa estados de cuenta a un budget que YA existe (uso mensual
+ * del auditor o del propio cliente).
+ *
+ * Diferencia con createClientBudget:
+ *   - No crea user ni budget
+ *   - Dedup: cuentas y categorías existentes se reusan en vez de
+ *     duplicarse (match por nombre + moneda + tipo en cuentas; nombre
+ *     en categorías)
+ *
+ * Auth: cualquier miembro del budget puede importar. Validamos via
+ * lectura RLS sobre budget_members (si no eres miembro, no devuelve
+ * row y abortamos).
+ */
+export interface ImportStatementsToBudgetInput {
+  budgetId: string
+  accounts: {
+    tempId: string
+    name: string
+    type: string
+    currency: 'DOP' | 'USD'
+    openingBalance: number
+  }[]
+  categoryGroups: CategoryGroupSeedInput[]
+  transactions: PendingTxn[]
+}
+
+export interface ImportStatementsResult {
+  error?: string
+  /** Resumen de lo que efectivamente se creó/reusó. Útil para mostrar
+   *  un toast al auditor. */
+  summary?: {
+    accountsCreated: number
+    accountsReused: number
+    categoriesCreated: number
+    categoriesReused: number
+    transactionsInserted: number
+    transactionsSkipped: number
+  }
+}
+
+export async function importStatementsToBudget(
+  input: ImportStatementsToBudgetInput,
+): Promise<ImportStatementsResult> {
+  if (!input.budgetId) return { error: 'budgetId requerido' }
+
+  // Cap antes de tocar la DB.
+  const txnsIn = input.transactions ?? []
+  if (txnsIn.length > MAX_TXNS_IMPORTED) {
+    return {
+      error: `Máximo ${MAX_TXNS_IMPORTED} transacciones por importación`,
+    }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Membership check via lectura del budget. RLS filtra a miembros.
+  const { data: budget } = await supabase
+    .from('budgets')
+    .select('id')
+    .eq('id', input.budgetId)
+    .maybeSingle()
+  if (!budget) return { error: 'Sin acceso a este presupuesto' }
+
+  const admin = createAdminClient()
+  const budgetId = input.budgetId
+
+  // ── Dedup helpers ───────────────────────────────────────────
+  // Normalizo trim + lowercase para los matches sin sobreescribir el
+  // nombre del usuario (preservamos casing original al crear).
+  const norm = (s: string) => s.trim().toLowerCase()
+
+  // ── 1. Accounts ─────────────────────────────────────────────
+  const accountIdByTempId = new Map<string, string>()
+  let accountsCreated = 0
+  let accountsReused = 0
+
+  if (input.accounts.length > 0) {
+    // Trae cuentas existentes del budget para matchear.
+    const { data: existingAccts } = await admin
+      .from('accounts')
+      .select('id, name, type, currency')
+      .eq('budget_id', budgetId)
+    const existing = existingAccts ?? []
+
+    const DEBT_TYPES = [
+      'credit_card',
+      'line_of_credit',
+      'mortgage',
+      'auto_loan',
+      'student_loan',
+      'personal_loan',
+      'medical_debt',
+      'other_debt',
+    ]
+    const TRACKING_TYPES = ['asset', 'liability']
+
+    // Asegura que sort_order de cuentas nuevas no choque con las que
+    // ya tiene el budget.
+    const maxSort = existing.reduce(
+      (m, a) =>
+        Math.max(m, (a as { sort_order?: number }).sort_order ?? 0),
+      0,
+    )
+    let nextSort = maxSort + 1
+
+    for (const a of input.accounts) {
+      const match = existing.find(
+        (e) =>
+          norm(e.name as string) === norm(a.name) &&
+          (e.currency as string) === a.currency &&
+          (e.type as string) === a.type,
+      )
+      if (match) {
+        accountIdByTempId.set(a.tempId, match.id as string)
+        accountsReused++
+        continue
+      }
+
+      const isTracking = TRACKING_TYPES.includes(a.type)
+      const { data: row } = await admin
+        .from('accounts')
+        .insert({
+          budget_id: budgetId,
+          name: a.name.trim(),
+          type: a.type as never,
+          currency: a.currency,
+          balance: 0,
+          is_budget_account: !isTracking,
+          sort_order: nextSort++,
+        })
+        .select('id')
+        .single()
+      if (!row) continue
+      accountsCreated++
+      accountIdByTempId.set(a.tempId, row.id as string)
+
+      // openingBalance solo se aplica si NO hay txns asociadas (el
+      // trigger recalcula del histórico de txns y duplicaría sino).
+      const hasTxns = txnsIn.some((t) => t.accountTempId === a.tempId)
+      const isDebt = DEBT_TYPES.includes(a.type)
+      const signed = isDebt ? -Math.abs(a.openingBalance) : a.openingBalance
+      if (!hasTxns && Math.abs(signed) >= 0.005) {
+        const todayDR = (() => {
+          const now = new Date()
+          const dr = new Date(now.getTime() - 4 * 60 * 60 * 1000)
+          return `${dr.getUTCFullYear()}-${String(dr.getUTCMonth() + 1).padStart(2, '0')}-${String(dr.getUTCDate()).padStart(2, '0')}`
+        })()
+        await admin.from('transactions').insert({
+          budget_id: budgetId,
+          account_id: row.id as string,
+          date: todayDR,
+          payee_name: 'Saldo inicial',
+          category_id: null,
+          amount: Math.round(signed * 100) / 100,
+          cleared: 'reconciled' as const,
+          approved: true,
+        })
+      }
+    }
+  }
+
+  // ── 2. Category groups + categories ─────────────────────────
+  const categoryIdByName = new Map<string, string>()
+  let categoriesCreated = 0
+  let categoriesReused = 0
+
+  if (input.categoryGroups.length > 0) {
+    // Sanitiza igual que createClientBudget.
+    const sanitized = input.categoryGroups
+      .map((g) => ({
+        name: g.name.trim(),
+        categoryNames: Array.from(
+          new Set(
+            g.categoryNames.map((c) => c.trim()).filter(Boolean),
+          ),
+        ),
+      }))
+      .filter((g) => g.name && g.categoryNames.length > 0)
+
+    if (sanitized.length > 0) {
+      const { data: existingGroups } = await admin
+        .from('category_groups')
+        .select('id, name')
+        .eq('budget_id', budgetId)
+      const groupsByNorm = new Map<string, string>()
+      for (const g of existingGroups ?? []) {
+        groupsByNorm.set(norm(g.name as string), g.id as string)
+      }
+
+      // Categorías existentes (todas del budget, agrupadas por groupId).
+      const { data: existingCats } = await admin
+        .from('categories')
+        .select('id, name, group_id')
+        .eq('budget_id', budgetId)
+      const catsByGroup = new Map<string, Map<string, string>>()
+      for (const c of existingCats ?? []) {
+        const gid = c.group_id as string
+        const m = catsByGroup.get(gid) ?? new Map<string, string>()
+        m.set(norm(c.name as string), c.id as string)
+        catsByGroup.set(gid, m)
+      }
+
+      // Sort order incremental para grupos nuevos.
+      const maxGroupSort = (existingGroups ?? []).reduce(
+        (m, g) =>
+          Math.max(m, (g as { sort_order?: number }).sort_order ?? 0),
+        0,
+      )
+      let nextGroupSort = maxGroupSort + 1
+
+      for (const g of sanitized) {
+        let groupId = groupsByNorm.get(norm(g.name))
+        if (!groupId) {
+          const { data: row } = await admin
+            .from('category_groups')
+            .insert({
+              budget_id: budgetId,
+              name: g.name,
+              sort_order: nextGroupSort++,
+            })
+            .select('id')
+            .single()
+          if (!row) continue
+          groupId = row.id as string
+          groupsByNorm.set(norm(g.name), groupId)
+        }
+
+        const existingInGroup = catsByGroup.get(groupId) ?? new Map<string, string>()
+        const newCats: { name: string; sortOrder: number }[] = []
+        let nextCatSort = existingInGroup.size + 1
+        for (const cname of g.categoryNames) {
+          const reusedId = existingInGroup.get(norm(cname))
+          if (reusedId) {
+            categoryIdByName.set(`${g.name}::${cname}`, reusedId)
+            categoriesReused++
+            continue
+          }
+          newCats.push({ name: cname, sortOrder: nextCatSort++ })
+        }
+
+        if (newCats.length > 0) {
+          const { data: created } = await admin
+            .from('categories')
+            .insert(
+              newCats.map((c) => ({
+                budget_id: budgetId,
+                group_id: groupId!,
+                name: c.name,
+                sort_order: c.sortOrder,
+              })),
+            )
+            .select('id, name')
+          for (const c of created ?? []) {
+            categoryIdByName.set(
+              `${g.name}::${c.name as string}`,
+              c.id as string,
+            )
+            categoriesCreated++
+          }
+        }
+      }
+    }
+  }
+
+  // ── 3. Transactions (bulk batches) ──────────────────────────
+  let transactionsInserted = 0
+  let transactionsSkipped = 0
+
+  if (txnsIn.length > 0) {
+    const validTxns = txnsIn.filter((t) => {
+      const acctId = accountIdByTempId.get(t.accountTempId)
+      if (!acctId) {
+        transactionsSkipped++
+        return false
+      }
+      return true
+    })
+
+    for (let start = 0; start < validTxns.length; start += TXN_INSERT_BATCH) {
+      const batch = validTxns.slice(start, start + TXN_INSERT_BATCH)
+      const rows = batch.map((t) => {
+        const acctId = accountIdByTempId.get(t.accountTempId)!
+        let categoryId: string | null = null
+        if (t.categoryGroupName && t.categoryName) {
+          categoryId =
+            categoryIdByName.get(
+              `${t.categoryGroupName}::${t.categoryName}`,
+            ) ?? null
+        }
+        return {
+          budget_id: budgetId,
+          account_id: acctId,
+          date: t.date,
+          payee_name: t.payeeName,
+          category_id: categoryId,
+          amount: Math.round(t.amount * 100) / 100,
+          memo: t.memo,
+          cleared: 'cleared' as const,
+          approved: true,
+        }
+      })
+      const { error: insErr } = await admin.from('transactions').insert(rows)
+      if (insErr) {
+        transactionsSkipped += rows.length
+        console.error('[importStatementsToBudget batch error]', {
+          batchStart: start,
+          batchSize: rows.length,
+          message: insErr.message,
+        })
+      } else {
+        transactionsInserted += rows.length
+      }
+    }
+  }
+
+  revalidatePath('/app', 'layout')
+  return {
+    summary: {
+      accountsCreated,
+      accountsReused,
+      categoriesCreated,
+      categoriesReused,
+      transactionsInserted,
+      transactionsSkipped,
+    },
+  }
+}
+
+/**
  * Termina la relación auditor↔cliente: el auditor pierde acceso
  * al budget del cliente. La relación queda registrada con
  * status='ended' para historial. El cliente conserva su budget
