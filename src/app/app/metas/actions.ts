@@ -61,8 +61,7 @@ export async function updateGoal(input: UpdateGoalInput) {
     .from('budgets')
     .select('id')
     .eq('id', cat.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const rounded = Math.round(input.goalAmount * 100) / 100
@@ -345,8 +344,7 @@ export async function clearGoal(categoryId: string) {
     .from('budgets')
     .select('id')
     .eq('id', cat.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const { error } = await supabase

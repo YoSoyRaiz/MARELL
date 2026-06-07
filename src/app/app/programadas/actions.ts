@@ -78,8 +78,7 @@ export async function createScheduled(input: CreateScheduledInput) {
     .from('budgets')
     .select('id')
     .eq('id', account.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   if (input.categoryId) {
@@ -134,8 +133,7 @@ export async function updateScheduled(input: UpdateScheduledInput) {
     .from('budgets')
     .select('id')
     .eq('id', existing.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const { data: account } = await supabase
@@ -195,8 +193,7 @@ export async function deleteScheduled(id: string) {
     .from('budgets')
     .select('id')
     .eq('id', existing.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const { error } = await supabase
@@ -229,8 +226,7 @@ export async function toggleScheduledActive(id: string, active: boolean) {
     .from('budgets')
     .select('id')
     .eq('id', existing.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const { error } = await supabase
@@ -273,8 +269,7 @@ export async function materializeDue(budgetId: string) {
     .from('budgets')
     .select('id')
     .eq('id', budgetId)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { created: 0 }
 
   const { data: created, error } = await supabase.rpc(

@@ -169,8 +169,7 @@ export async function updateAccount(input: UpdateAccountInput) {
     .from('budgets')
     .select('id')
     .eq('id', existing.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const isTracking = input.type === 'asset' || input.type === 'liability'
@@ -221,8 +220,7 @@ export async function setAccountClosed(accountId: string, closed: boolean) {
     .from('budgets')
     .select('id')
     .eq('id', existing.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const { error } = await supabase
@@ -253,8 +251,7 @@ export async function deleteAccount(accountId: string) {
     .from('budgets')
     .select('id')
     .eq('id', existing.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   // Cascade deletes transactions through the FK on transactions.account_id
@@ -336,8 +333,7 @@ export async function fetchPendingReconcileTxns(
     .from('budgets')
     .select('id')
     .eq('id', account.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   // Devolvemos hasta 50 — más que eso satura la UI y el usuario
@@ -387,8 +383,7 @@ export async function reconcileAccount(
     .from('budgets')
     .select('id')
     .eq('id', account.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const accountType = account.type as string
@@ -505,8 +500,7 @@ export async function setTransactionCleared(
     .from('budgets')
     .select('id')
     .eq('id', txn.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   if (txn.cleared === 'reconciled') {

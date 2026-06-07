@@ -75,8 +75,7 @@ export async function updateCategory(
     .from('budgets')
     .select('id')
     .eq('id', cat.budget_id as string)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   // Construye el patch — solo incluye campos provistos. Tipado
@@ -153,8 +152,7 @@ export async function createCategory(
     .from('budgets')
     .select('id')
     .eq('id', input.budgetId)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Presupuesto no encontrado' }
 
   // El grupo debe pertenecer al mismo budget — bloquea inserciones
@@ -329,8 +327,7 @@ export async function quickAssign(
     .from('budgets')
     .select('id')
     .eq('id', budgetId)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Presupuesto no encontrado' }
 
   const { data: category } = await supabase
@@ -416,8 +413,7 @@ export async function applyAutoAssign(
     .from('budgets')
     .select('id')
     .eq('id', budgetId)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Presupuesto no encontrado' }
 
   // Get this month's existing assignments so we can compute deltas.
@@ -581,8 +577,7 @@ export async function fetchCategoryHistory(
     .from('budgets')
     .select('id')
     .eq('id', cat.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const { data: group } = await supabase
@@ -759,8 +754,7 @@ export async function moveMoneyBetweenCategories(
     .from('budgets')
     .select('id')
     .eq('id', budgetId)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Presupuesto no encontrado' }
 
   const { data: cats } = await supabase
@@ -833,8 +827,7 @@ export async function updateAssignment(
     .from('budgets')
     .select('id')
     .eq('id', budgetId)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Presupuesto no encontrado' }
 
   // Verificar que la categoría pertenezca al budget.

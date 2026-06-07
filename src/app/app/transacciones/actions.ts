@@ -150,8 +150,7 @@ export async function createTransaction(input: CreateTransactionInput) {
     .from('budgets')
     .select('id')
     .eq('id', account.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const split = isSplit(input)
@@ -294,8 +293,7 @@ export async function updateTransaction(input: UpdateTransactionInput) {
     .from('budgets')
     .select('id')
     .eq('id', existing.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   // The new account must belong to the same budget.
@@ -505,8 +503,7 @@ export async function bulkCreateTransactions(input: BulkCreateInput) {
     .from('budgets')
     .select('id')
     .eq('id', account.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   // Collect every category id referenced (bulk default + per-row) and
@@ -704,8 +701,7 @@ export async function deleteTransaction(transactionId: string) {
     .from('budgets')
     .select('id')
     .eq('id', txn.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   // Collect all rows to delete (this txn + its transfer twin if any) so we
@@ -822,8 +818,7 @@ export async function bulkUpdateCategory(
       .from('budgets')
       .select('id')
       .eq('id', cat.budget_id as string)
-      .eq('created_by', user.id)
-      .single()
+      .maybeSingle()
     if (!bud) return { error: 'Sin acceso al presupuesto' }
     budgetId = cat.budget_id as string
   }
@@ -1107,8 +1102,7 @@ export async function createTransfer(input: CreateTransferInput) {
     .from('budgets')
     .select('id')
     .eq('id', fromAcct.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const amount = Math.round(input.amount * 100) / 100
@@ -1232,8 +1226,7 @@ export async function updateTransfer(input: UpdateTransferInput) {
     .from('budgets')
     .select('id')
     .eq('id', seed.budget_id)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const { data: twin } = await supabase

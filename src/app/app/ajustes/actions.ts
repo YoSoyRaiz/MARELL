@@ -64,8 +64,7 @@ export async function updateBudgetSettings(input: {
     .from('budgets')
     .select('id')
     .eq('id', input.budgetId)
-    .eq('created_by', user.id)
-    .single()
+    .maybeSingle()
   if (!budget) return { error: 'Sin acceso al presupuesto' }
 
   const { error } = await supabase
