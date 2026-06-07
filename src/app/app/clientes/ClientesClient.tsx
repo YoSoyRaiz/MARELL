@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -587,23 +588,51 @@ function ClientCardMenu({
   disabled: boolean
 }) {
   const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const [anchor, setAnchor] = useState<{ top: number; right: number } | null>(
+    null,
+  )
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Posición fija en viewport calculada del bounding rect del botón.
+  // Necesaria porque la Card tiene overflow-hidden que recorta cualquier
+  // dropdown posicionado absolute dentro de ella. Portaleamos a body.
+  const updateAnchor = () => {
+    const btn = buttonRef.current
+    if (!btn) return
+    const rect = btn.getBoundingClientRect()
+    setAnchor({
+      top: rect.bottom + 6, // 6px mt
+      right: window.innerWidth - rect.right,
+    })
+  }
 
   useEffect(() => {
     if (!open) return
+    updateAnchor()
     const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
+      const target = e.target as Node
+      if (
+        buttonRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
+      ) {
+        return
       }
+      setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
     }
+    const onResize = () => updateAnchor()
     document.addEventListener('mousedown', onDown)
     document.addEventListener('keydown', onKey)
+    window.addEventListener('resize', onResize)
+    window.addEventListener('scroll', onResize, true)
     return () => {
       document.removeEventListener('mousedown', onDown)
       document.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', onResize)
+      window.removeEventListener('scroll', onResize, true)
     }
   }, [open])
 
@@ -614,8 +643,9 @@ function ClientCardMenu({
   ]
 
   return (
-    <div ref={ref} className="absolute top-2.5 right-2.5 z-10">
+    <div className="absolute top-2.5 right-2.5 z-10">
       <button
+        ref={buttonRef}
         type="button"
         aria-label="Acciones rápidas"
         aria-haspopup="menu"
@@ -629,70 +659,77 @@ function ClientCardMenu({
       >
         <MoreVertical size={14} strokeWidth={2.2} />
       </button>
-      {open && (
-        <div
-          role="menu"
-          className="absolute top-full right-0 mt-1.5 w-60 rounded-xl border border-[var(--border)] bg-[var(--s1)] shadow-xl p-1.5 z-20"
-        >
-          {/* Acción primaria: importar nuevo estado de cuenta. La
-              destacamos arriba porque es el flow mensual recurrente
-              del auditor (vs los "Ir a..." que son navegación). */}
-          <button
-            type="button"
-            role="menuitem"
-            onClick={(e) => {
-              e.stopPropagation()
-              setOpen(false)
-              onImport()
+      {open &&
+        anchor &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            style={{
+              position: 'fixed',
+              top: anchor.top,
+              right: anchor.right,
+              zIndex: 50,
             }}
-            className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm font-semibold text-[var(--brand-text)] hover:bg-[var(--brand-2)]/[0.10] transition-colors"
+            className="w-60 rounded-xl border border-[var(--border)] bg-[var(--s1)] shadow-xl p-1.5"
+            onClick={(e) => e.stopPropagation()}
           >
-            <FileUp
-              size={13}
-              strokeWidth={2.4}
-              className="text-[var(--brand-text)]"
-            />
-            Importar estado de cuenta
-          </button>
-          <div className="my-1 h-px bg-[var(--border)]" />
-          {items.map((item) => (
             <button
-              key={item.path}
               type="button"
               role="menuitem"
               onClick={(e) => {
                 e.stopPropagation()
                 setOpen(false)
-                onSelect(item.path)
+                onImport()
               }}
-              className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm text-[var(--text)] hover:bg-[var(--overlay-2)] transition-colors"
+              className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm font-semibold text-[var(--brand-text)] hover:bg-[var(--brand-2)]/[0.10] transition-colors"
             >
-              <item.Icon
+              <FileUp
                 size={13}
-                strokeWidth={2.2}
-                className="text-[var(--muted)]"
+                strokeWidth={2.4}
+                className="text-[var(--brand-text)]"
               />
-              {item.label}
+              Importar estado de cuenta
             </button>
-          ))}
-          {/* Divisor + acción destructiva. La separación visual evita
-              click accidental en la opción peligrosa. */}
-          <div className="my-1 h-px bg-[var(--border)]" />
-          <button
-            type="button"
-            role="menuitem"
-            onClick={(e) => {
-              e.stopPropagation()
-              setOpen(false)
-              onDelete()
-            }}
-            className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm text-[var(--coral-text)] hover:bg-[var(--coral)]/[0.10] transition-colors"
-          >
-            <Trash2 size={13} strokeWidth={2.2} />
-            Eliminar cliente
-          </button>
-        </div>
-      )}
+            <div className="my-1 h-px bg-[var(--border)]" />
+            {items.map((item) => (
+              <button
+                key={item.path}
+                type="button"
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setOpen(false)
+                  onSelect(item.path)
+                }}
+                className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm text-[var(--text)] hover:bg-[var(--overlay-2)] transition-colors"
+              >
+                <item.Icon
+                  size={13}
+                  strokeWidth={2.2}
+                  className="text-[var(--muted)]"
+                />
+                {item.label}
+              </button>
+            ))}
+            <div className="my-1 h-px bg-[var(--border)]" />
+            <button
+              type="button"
+              role="menuitem"
+              onClick={(e) => {
+                e.stopPropagation()
+                setOpen(false)
+                onDelete()
+              }}
+              className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm text-[var(--coral-text)] hover:bg-[var(--coral)]/[0.10] transition-colors"
+            >
+              <Trash2 size={13} strokeWidth={2.2} />
+              Eliminar cliente
+            </button>
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }
