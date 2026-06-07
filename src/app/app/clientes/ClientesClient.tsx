@@ -16,14 +16,16 @@ import {
   PieChart,
   Plus,
   Search,
+  Trash2,
   TrendingDown,
   Wallet,
 } from 'lucide-react'
 import { setActiveBudget } from '@/lib/budget/actions'
-import { importStatementsToBudget } from './actions'
+import { endClientRelationship, importStatementsToBudget } from './actions'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { AlertBanner } from '@/components/ui/AlertBanner'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 import {
   ImportStatementsModal,
   type ImportedStatementsPayload,
@@ -56,6 +58,7 @@ type SortMode = 'name' | 'netWorth' | 'recent' | 'alerts'
  */
 export function ClientesClient({ rows, totals, canCreate }: Props) {
   const router = useRouter()
+  const confirm = useConfirm()
   const fmtMoney = useFormatMoney()
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortMode>('recent')
@@ -75,6 +78,33 @@ export function ClientesClient({ rows, totals, canCreate }: Props) {
   } | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
+
+  /** Termina la relación auditor↔cliente. Confirma antes y muestra
+   *  un banner de éxito al volver. NO borra al cliente ni su data —
+   *  solo el auditor pierde acceso. */
+  const handleDeleteClient = async (
+    agencyRelationshipId: string,
+    clientLabel: string,
+  ) => {
+    const ok = await confirm({
+      title: `¿Dejar de auditar a ${clientLabel}?`,
+      description:
+        'Vas a perder acceso a su presupuesto, cuentas y transacciones. El cliente conserva toda su data y su acceso a MARELL.',
+      confirmLabel: 'Sí, eliminar relación',
+      cancelLabel: 'Cancelar',
+      tone: 'danger',
+    })
+    if (!ok) return
+    setImportError(null)
+    startTransition(async () => {
+      const r = await endClientRelationship(agencyRelationshipId)
+      if (r.error) {
+        setImportError(r.error)
+        return
+      }
+      router.refresh()
+    })
+  }
 
   const handleImportToClient = (payload: ImportedStatementsPayload) => {
     if (!importTarget) return
@@ -379,6 +409,9 @@ export function ClientesClient({ rows, totals, canCreate }: Props) {
                   clientLabel: c.clientLabel,
                 })
               }
+              onDelete={() =>
+                handleDeleteClient(c.agencyRelationshipId, c.clientLabel)
+              }
               pending={pending}
             />
           ))}
@@ -440,6 +473,7 @@ function ClientCard({
   onOpen,
   onQuickLink,
   onImport,
+  onDelete,
   pending,
 }: {
   row: ClientDashboardRow
@@ -447,6 +481,7 @@ function ClientCard({
   onOpen: () => void
   onQuickLink: (path: string) => void
   onImport: () => void
+  onDelete: () => void
   pending: boolean
 }) {
   return (
@@ -524,6 +559,7 @@ function ClientCard({
       <ClientCardMenu
         onSelect={onQuickLink}
         onImport={onImport}
+        onDelete={onDelete}
         disabled={pending}
       />
       <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--overlay-1)] text-tiny text-[var(--muted)] inline-flex items-center gap-1.5 w-full">
@@ -542,10 +578,12 @@ function ClientCard({
 function ClientCardMenu({
   onSelect,
   onImport,
+  onDelete,
   disabled,
 }: {
   onSelect: (path: string) => void
   onImport: () => void
+  onDelete: () => void
   disabled: boolean
 }) {
   const [open, setOpen] = useState(false)
@@ -637,6 +675,22 @@ function ClientCardMenu({
               {item.label}
             </button>
           ))}
+          {/* Divisor + acción destructiva. La separación visual evita
+              click accidental en la opción peligrosa. */}
+          <div className="my-1 h-px bg-[var(--border)]" />
+          <button
+            type="button"
+            role="menuitem"
+            onClick={(e) => {
+              e.stopPropagation()
+              setOpen(false)
+              onDelete()
+            }}
+            className="w-full text-left inline-flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-body-sm text-[var(--coral-text)] hover:bg-[var(--coral)]/[0.10] transition-colors"
+          >
+            <Trash2 size={13} strokeWidth={2.2} />
+            Eliminar cliente
+          </button>
         </div>
       )}
     </div>
