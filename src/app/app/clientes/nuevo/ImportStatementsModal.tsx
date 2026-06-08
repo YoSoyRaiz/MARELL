@@ -22,6 +22,7 @@ import {
 } from '@dnd-kit/core'
 import {
   AlertCircle,
+  ArrowLeftRight,
   ArrowRight,
   Check,
   ChevronDown,
@@ -74,13 +75,19 @@ export interface ImportedAccount {
 
 export interface ImportedTransaction {
   accountTempId: string
-  /** Null = "Por categorizar" (queda sin categoryId en el insert). */
+  /** Null = "Por categorizar" (queda sin categoryId en el insert).
+   *  Ignorado cuando is_transfer=true (las transferencias no llevan
+   *  categoría — su contrapartida vive en la Cuenta Puente). */
   categoryGroupName: string | null
   categoryName: string | null
   date: string
   payeeName: string
   amount: number
   memo: string | null
+  /** Si true, el server action lazy-crea la Cuenta Puente y agrega
+   *  una pareja con monto opuesto. La txn original se preserva en su
+   *  cuenta source con transfer_account_id = clearing.id. */
+  is_transfer?: boolean
 }
 
 export interface ImportedStatementsPayload {
@@ -134,6 +141,10 @@ interface State {
   txns: Record<string, TxnWithMeta>
   drafts: DraftState[]
   unassignedTxnIds: string[]
+  // Txns marcadas como transferencia entre cuentas (van a la Cuenta
+  // Puente al confirmar). NO se categorizan ni cuentan como ingreso
+  // o gasto. El auditor las arrastra al drop-zone "Transferencia".
+  transferTxnIds: string[]
   selectedIds: Set<string>
   globalError: string | null
 }
@@ -153,7 +164,12 @@ type Action =
   | { type: 'set_step'; step: Step }
   | { type: 'create_draft'; draft: DraftState }
   | { type: 'remove_draft'; key: string }
-  | { type: 'move_txns'; txnIds: string[]; toKey: string | null /* null = unassigned */ }
+  | {
+      type: 'move_txns'
+      txnIds: string[]
+      /** null = sin asignar, 'transfer' = a transferencia, otra string = key de draft */
+      toKey: string | null | 'transfer'
+    }
   | { type: 'select_set'; ids: string[]; mode: 'replace' | 'toggle' | 'add' }
   | { type: 'clear_selection' }
   | { type: 'set_global_error'; error: string | null }
@@ -164,6 +180,7 @@ const initialState: State = {
   txns: {},
   drafts: [],
   unassignedTxnIds: [],
+  transferTxnIds: [],
   selectedIds: new Set(),
   globalError: null,
 }
@@ -258,6 +275,9 @@ function reducer(state: State, action: Action): State {
         unassignedTxnIds: state.unassignedTxnIds.filter(
           (id) => !removedTxnIds.has(id),
         ),
+        transferTxnIds: state.transferTxnIds.filter(
+          (id) => !removedTxnIds.has(id),
+        ),
       }
     }
     case 'set_step':
@@ -275,6 +295,7 @@ function reducer(state: State, action: Action): State {
     }
     case 'move_txns': {
       const moving = new Set(action.txnIds)
+      // Saca las txns de TODOS los buckets antes de re-asignar
       const newDrafts = state.drafts.map((d) => ({
         ...d,
         txnIds: d.txnIds.filter((id) => !moving.has(id)),
@@ -282,8 +303,13 @@ function reducer(state: State, action: Action): State {
       let newUnassigned = state.unassignedTxnIds.filter(
         (id) => !moving.has(id),
       )
+      let newTransfers = state.transferTxnIds.filter(
+        (id) => !moving.has(id),
+      )
       if (action.toKey === null) {
         newUnassigned = [...newUnassigned, ...action.txnIds]
+      } else if (action.toKey === 'transfer') {
+        newTransfers = [...newTransfers, ...action.txnIds]
       } else {
         const idx = newDrafts.findIndex((d) => d.key === action.toKey)
         if (idx >= 0) {
@@ -297,6 +323,7 @@ function reducer(state: State, action: Action): State {
         ...state,
         drafts: newDrafts,
         unassignedTxnIds: newUnassigned,
+        transferTxnIds: newTransfers,
         selectedIds: new Set(),
       }
     }
@@ -388,6 +415,7 @@ export function ImportStatementsModal({
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [creatingCategory, setCreatingCategory] = useState(false)
   const [expandedDrafts, setExpandedDrafts] = useState<Set<string>>(new Set())
+  const [transferExpanded, setTransferExpanded] = useState(false)
   const [mobileTarget, setMobileTarget] = useState<string | null>(null)
   const fmtMoney = useFormatMoney()
   const lastSelectedRef = useRef<string | null>(null)
@@ -617,6 +645,10 @@ export function ImportStatementsModal({
       dispatch({ type: 'move_txns', txnIds: idsToMove, toKey: null })
       return
     }
+    if (overId === 'dropzone-transfer') {
+      dispatch({ type: 'move_txns', txnIds: idsToMove, toKey: 'transfer' })
+      return
+    }
     if (overId.startsWith('category-')) {
       const key = overId.slice('category-'.length)
       dispatch({ type: 'move_txns', txnIds: idsToMove, toKey: key })
@@ -700,6 +732,22 @@ export function ImportStatementsModal({
           payeeName: t.payeeName,
           amount: t.amount,
           memo: t.memo,
+        })
+      }
+      // Transferencias — sin categoría; el server lazy-crea Puente
+      // y agrega la pareja con monto opuesto.
+      for (const id of state.transferTxnIds) {
+        const t = state.txns[id]
+        if (!t) continue
+        transactions.push({
+          accountTempId: t.fileId,
+          categoryGroupName: null,
+          categoryName: null,
+          date: t.date,
+          payeeName: t.payeeName,
+          amount: t.amount,
+          memo: t.memo,
+          is_transfer: true,
         })
       }
     }
@@ -809,6 +857,7 @@ export function ImportStatementsModal({
                 txns={state.txns}
                 drafts={state.drafts}
                 unassignedTxnIds={state.unassignedTxnIds}
+                transferTxnIds={state.transferTxnIds}
                 selectedIds={state.selectedIds}
                 visibleTxnIds={visibleTxnIds}
                 visibleCount={visibleCount}
@@ -843,9 +892,14 @@ export function ImportStatementsModal({
                     return next
                   })
                 }
+                transferExpanded={transferExpanded}
+                toggleTransferExpanded={() => setTransferExpanded((v) => !v)}
                 isTouch={isTouch}
                 onMobileAssign={(txnId) => setMobileTarget(txnId)}
                 onRemoveFromCategory={(txnId) =>
+                  dispatch({ type: 'move_txns', txnIds: [txnId], toKey: null })
+                }
+                onRemoveFromTransfer={(txnId) =>
                   dispatch({ type: 'move_txns', txnIds: [txnId], toKey: null })
                 }
               />
@@ -1248,6 +1302,7 @@ interface AssignProps {
   txns: Record<string, TxnWithMeta>
   drafts: DraftState[]
   unassignedTxnIds: string[]
+  transferTxnIds: string[]
   selectedIds: Set<string>
   visibleTxnIds: string[]
   visibleCount: number
@@ -1265,9 +1320,12 @@ interface AssignProps {
   setCreatingCategory: (v: boolean) => void
   expandedDrafts: Set<string>
   toggleExpanded: (key: string) => void
+  transferExpanded: boolean
+  toggleTransferExpanded: () => void
   isTouch: boolean
   onMobileAssign: (txnId: string) => void
   onRemoveFromCategory: (txnId: string) => void
+  onRemoveFromTransfer: (txnId: string) => void
 }
 
 function AssignStep(props: AssignProps) {
@@ -1395,6 +1453,17 @@ function AssignStep(props: AssignProps) {
           </button>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--bg)] p-2 space-y-2">
+          {/* Drop-zone especial para transferencias entre cuentas. No
+              es una categoría — al confirmar, el server crea la pareja
+              en la Cuenta Puente para no doblar ingreso/gasto. */}
+          <TransferDropzone
+            txnIds={props.transferTxnIds}
+            txns={txns}
+            fmtMoney={props.fmtMoney}
+            expanded={props.transferExpanded}
+            onToggleExpanded={props.toggleTransferExpanded}
+            onRemoveTxn={props.onRemoveFromTransfer}
+          />
           {props.creatingCategory && (
             <CreateCategoryForm
               onCancel={() => props.setCreatingCategory(false)}
@@ -1634,6 +1703,134 @@ function CategoryCard({
                 </span>
                 <span
                   className={`tabular-nums num shrink-0 ${
+                    t.amount < 0
+                      ? 'text-[var(--coral-text)]'
+                      : 'text-[var(--brand-text)]'
+                  }`}
+                >
+                  {fmtMoney(t.amount)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveTxn(id)}
+                  aria-label="Devolver a sin asignar"
+                  className="w-5 h-5 rounded-md text-[var(--muted)] hover:text-[var(--coral-text)] hover:bg-[var(--overlay-2)] flex items-center justify-center shrink-0"
+                >
+                  <X size={10} strokeWidth={2.4} />
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+/** Drop-zone especial al tope de la columna derecha. Visualmente
+ *  igual que un CategoryCard pero con tono amber y un ícono de
+ *  transferencia. Los txns que aterricen acá no quedan categorizados
+ *  — el server los marca via markTransactionAsTransfer al confirmar. */
+function TransferDropzone({
+  txnIds,
+  txns,
+  fmtMoney,
+  expanded,
+  onToggleExpanded,
+  onRemoveTxn,
+}: {
+  txnIds: string[]
+  txns: Record<string, TxnWithMeta>
+  fmtMoney: (n: number) => string
+  expanded: boolean
+  onToggleExpanded: () => void
+  onRemoveTxn: (id: string) => void
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id: 'dropzone-transfer' })
+
+  const total = useMemo(
+    () => txnIds.reduce((s, id) => s + (txns[id]?.amount ?? 0), 0),
+    [txnIds, txns],
+  )
+
+  const isEmpty = txnIds.length === 0
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`rounded-xl border transition-colors ${
+        isOver
+          ? 'border-[var(--warn)] bg-[var(--warn)]/[0.08]'
+          : isEmpty
+            ? 'border-dashed border-[var(--warn)]/40 bg-[var(--warn)]/[0.04]'
+            : 'border-[var(--warn)]/40 bg-[var(--warn)]/[0.06]'
+      }`}
+    >
+      <div className="px-3 py-2.5 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onToggleExpanded}
+          aria-label={expanded ? 'Colapsar' : 'Expandir'}
+          disabled={isEmpty}
+          className="w-7 h-7 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] flex items-center justify-center disabled:opacity-30 disabled:pointer-events-none shrink-0"
+        >
+          {expanded ? (
+            <ChevronUp size={12} strokeWidth={2.2} />
+          ) : (
+            <ChevronDown size={12} strokeWidth={2.2} />
+          )}
+        </button>
+        <ArrowLeftRight
+          size={14}
+          strokeWidth={2.2}
+          className="text-[var(--warn-text)] shrink-0"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="text-tiny uppercase tracking-[0.12em] text-[var(--warn-text)] font-semibold">
+            Transferencia entre cuentas
+          </div>
+          <div className="text-body-sm font-semibold text-[var(--text)] truncate">
+            {isEmpty
+              ? 'Arrastra movimientos que sean transferencias'
+              : 'Cuenta puente · no cuentan como gasto/ingreso'}
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <div
+            className={`text-body-sm font-bold tabular-nums num whitespace-nowrap ${
+              total < 0
+                ? 'text-[var(--coral-text)]'
+                : total > 0
+                  ? 'text-[var(--brand-text)]'
+                  : 'text-[var(--muted)]'
+            }`}
+          >
+            {fmtMoney(total)}
+          </div>
+          <div className="text-tiny text-[var(--muted)] whitespace-nowrap">
+            {txnIds.length}{' '}
+            {txnIds.length === 1 ? 'movimiento' : 'movimientos'}
+          </div>
+        </div>
+      </div>
+      {expanded && txnIds.length > 0 && (
+        <ul className="border-t border-[var(--warn)]/30 divide-y divide-[var(--warn)]/20">
+          {txnIds.map((id) => {
+            const t = txns[id]
+            if (!t) return null
+            return (
+              <li
+                key={id}
+                className="px-3 py-1.5 flex items-center gap-2 text-meta"
+              >
+                <span className="text-tiny text-[var(--muted)] tabular-nums num shrink-0">
+                  {t.date.slice(5).replace('-', '/')}
+                </span>
+                <span className="text-[var(--text)] truncate flex-1">
+                  {t.payeeName}
+                </span>
+                <span
+                  className={`tabular-nums num shrink-0 whitespace-nowrap ${
                     t.amount < 0
                       ? 'text-[var(--coral-text)]'
                       : 'text-[var(--brand-text)]'

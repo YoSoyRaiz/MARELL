@@ -1,10 +1,12 @@
 'use server'
 
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { safeError } from '@/lib/errors'
 import { writeActiveBudgetCookie } from '@/lib/budget/active'
+import { getOrCreateClearingAccount } from '@/lib/budget/clearing-account'
 import { sendEmail } from '@/lib/email/send'
 import { clientInvitationEmail } from '@/lib/email/templates'
 
@@ -43,6 +45,11 @@ export interface PendingTxn {
   payeeName: string
   amount: number
   memo: string | null
+  /** Si true, la txn se inserta en la cuenta source con
+   *  transfer_account_id = clearing.id y se crea una pareja con monto
+   *  opuesto en la Cuenta Puente. Las transferencias no llevan
+   *  categoría — el server ignora categoryGroupName/categoryName. */
+  is_transfer?: boolean
 }
 
 export interface CreateClientBudgetInput {
@@ -393,14 +400,23 @@ export async function createClientBudget(
   // Best-effort: si una batch falla, log y seguimos. El budget +
   // cuentas + categorías ya están creados; el auditor puede
   // reimportar desde el dashboard del cliente si fuera necesario.
+  //
+  // Las transferencias se procesan APARTE — cada una necesita una
+  // pareja en la Cuenta Puente (clearing) que se lazy-crea.
   if (input.transactions && input.transactions.length > 0) {
     const validTxns = input.transactions.filter((t) => {
       const acctId = accountIdByTempId.get(t.accountTempId)
       return !!acctId
     })
+
+    const normalTxns = validTxns.filter((t) => !t.is_transfer)
+    const transferTxns = validTxns.filter((t) => t.is_transfer)
+
     let skipped = 0
-    for (let start = 0; start < validTxns.length; start += TXN_INSERT_BATCH) {
-      const batch = validTxns.slice(start, start + TXN_INSERT_BATCH)
+
+    // 8a. Bulk insert de txns normales
+    for (let start = 0; start < normalTxns.length; start += TXN_INSERT_BATCH) {
+      const batch = normalTxns.slice(start, start + TXN_INSERT_BATCH)
       const rows = batch.map((t) => {
         const acctId = accountIdByTempId.get(t.accountTempId)!
         let categoryId: string | null = null
@@ -433,6 +449,93 @@ export async function createClientBudget(
         })
       }
     }
+
+    // 8b. Transferencias — una por una porque cada una necesita su
+    // pareja vinculada en la Cuenta Puente.
+    if (transferTxns.length > 0) {
+      // Lazy-create la Cuenta Puente. Usamos la primera moneda que
+      // veamos en las transferencias (los bancos en RD son DOP por
+      // default; las USD se manejan caso-a-caso).
+      const firstCurrency = (() => {
+        for (const t of transferTxns) {
+          const acct = input.accounts?.find((a) => a.tempId === t.accountTempId)
+          if (acct) return acct.currency
+        }
+        return input.currency
+      })()
+      // createClient ya está disponible (await del scope arriba); reuso.
+      const clearing = await getOrCreateClearingAccount(
+        admin as unknown as SupabaseClient,
+        budgetId,
+        firstCurrency,
+      )
+      if ('error' in clearing) {
+        console.error(
+          '[createClientBudget] no se pudo crear Cuenta Puente:',
+          clearing.error,
+        )
+        skipped += transferTxns.length
+      } else {
+        for (const t of transferTxns) {
+          const acctId = accountIdByTempId.get(t.accountTempId)!
+          const amount = Math.round(t.amount * 100) / 100
+          // Inserta la pareja en clearing primero (signo opuesto)
+          const { data: pair, error: pairErr } = await admin
+            .from('transactions')
+            .insert({
+              budget_id: budgetId,
+              account_id: clearing.id,
+              date: t.date,
+              payee_name: t.payeeName || 'Transferencia (puente)',
+              category_id: null,
+              amount: -amount,
+              memo: null,
+              cleared: 'reconciled' as const,
+              approved: true,
+              transfer_account_id: acctId,
+            })
+            .select('id')
+            .single()
+          if (pairErr || !pair) {
+            skipped++
+            continue
+          }
+          // Inserta la original linkeada
+          const { data: orig, error: origErr } = await admin
+            .from('transactions')
+            .insert({
+              budget_id: budgetId,
+              account_id: acctId,
+              date: t.date,
+              payee_name: t.payeeName,
+              category_id: null,
+              amount,
+              memo: t.memo,
+              cleared: 'cleared' as const,
+              approved: true,
+              transfer_account_id: clearing.id,
+              transfer_transaction_id: pair.id as string,
+            })
+            .select('id')
+            .single()
+          if (origErr || !orig) {
+            // Rollback de la pareja para no dejarla huérfana
+            await admin
+              .from('transactions')
+              .delete()
+              .eq('id', pair.id as string)
+            skipped++
+            continue
+          }
+          // Linkea la pareja de vuelta a la original
+          await admin
+            .from('transactions')
+            .update({ transfer_transaction_id: orig.id as string })
+            .eq('id', pair.id as string)
+        }
+      }
+    }
+
     if (skipped > 0) {
       console.warn(
         `[createClientBudget] ${skipped}/${validTxns.length} txns no se insertaron`,
@@ -731,8 +834,12 @@ export async function importStatementsToBudget(
       return true
     })
 
-    for (let start = 0; start < validTxns.length; start += TXN_INSERT_BATCH) {
-      const batch = validTxns.slice(start, start + TXN_INSERT_BATCH)
+    const normalTxns = validTxns.filter((t) => !t.is_transfer)
+    const transferTxns = validTxns.filter((t) => t.is_transfer)
+
+    // 3a. Bulk insert de txns normales
+    for (let start = 0; start < normalTxns.length; start += TXN_INSERT_BATCH) {
+      const batch = normalTxns.slice(start, start + TXN_INSERT_BATCH)
       const rows = batch.map((t) => {
         const acctId = accountIdByTempId.get(t.accountTempId)!
         let categoryId: string | null = null
@@ -764,6 +871,84 @@ export async function importStatementsToBudget(
         })
       } else {
         transactionsInserted += rows.length
+      }
+    }
+
+    // 3b. Transferencias — una por una con pareja en Cuenta Puente.
+    if (transferTxns.length > 0) {
+      const firstCurrency = (() => {
+        for (const t of transferTxns) {
+          const acct = input.accounts.find((a) => a.tempId === t.accountTempId)
+          if (acct) return acct.currency
+        }
+        return 'DOP' as const
+      })()
+      const clearing = await getOrCreateClearingAccount(
+        admin as unknown as SupabaseClient,
+        budgetId,
+        firstCurrency,
+      )
+      if ('error' in clearing) {
+        console.error(
+          '[importStatementsToBudget] no se pudo crear Cuenta Puente:',
+          clearing.error,
+        )
+        transactionsSkipped += transferTxns.length
+      } else {
+        for (const t of transferTxns) {
+          const acctId = accountIdByTempId.get(t.accountTempId)!
+          const amount = Math.round(t.amount * 100) / 100
+          const { data: pair, error: pairErr } = await admin
+            .from('transactions')
+            .insert({
+              budget_id: budgetId,
+              account_id: clearing.id,
+              date: t.date,
+              payee_name: t.payeeName || 'Transferencia (puente)',
+              category_id: null,
+              amount: -amount,
+              memo: null,
+              cleared: 'reconciled' as const,
+              approved: true,
+              transfer_account_id: acctId,
+            })
+            .select('id')
+            .single()
+          if (pairErr || !pair) {
+            transactionsSkipped++
+            continue
+          }
+          const { data: orig, error: origErr } = await admin
+            .from('transactions')
+            .insert({
+              budget_id: budgetId,
+              account_id: acctId,
+              date: t.date,
+              payee_name: t.payeeName,
+              category_id: null,
+              amount,
+              memo: t.memo,
+              cleared: 'cleared' as const,
+              approved: true,
+              transfer_account_id: clearing.id,
+              transfer_transaction_id: pair.id as string,
+            })
+            .select('id')
+            .single()
+          if (origErr || !orig) {
+            await admin
+              .from('transactions')
+              .delete()
+              .eq('id', pair.id as string)
+            transactionsSkipped++
+            continue
+          }
+          await admin
+            .from('transactions')
+            .update({ transfer_transaction_id: orig.id as string })
+            .eq('id', pair.id as string)
+          transactionsInserted += 2
+        }
       }
     }
   }
