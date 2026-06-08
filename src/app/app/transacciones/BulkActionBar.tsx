@@ -2,12 +2,19 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2, FolderInput, X, ChevronDown } from 'lucide-react'
+import {
+  ArrowLeftRight,
+  Trash2,
+  FolderInput,
+  X,
+  ChevronDown,
+} from 'lucide-react'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Spinner } from '@/components/ui/Spinner'
 import {
   bulkDeleteTransactions,
   bulkUpdateCategory,
+  markTransactionAsTransfer,
   type BulkResult,
 } from './actions'
 
@@ -30,7 +37,9 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hint, setHint] = useState<string | null>(null)
-  const [pendingAction, setPendingAction] = useState<'delete' | 'recategorize' | null>(null)
+  const [pendingAction, setPendingAction] = useState<
+    'delete' | 'recategorize' | 'transfer' | null
+  >(null)
 
   const handleDelete = async () => {
     const ok = await confirm({
@@ -79,6 +88,48 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
     })
   }
 
+  /** Marca cada txn seleccionada como transferencia a la Cuenta Puente.
+   *  Para imports donde la transacción es realmente un movimiento
+   *  entre cuentas del cliente — evita doblar ingreso/gasto. */
+  const handleMarkAsTransfer = async () => {
+    const ok = await confirm({
+      title: `¿Marcar ${ids.length} ${ids.length === 1 ? 'transacción' : 'transacciones'} como transferencia?`,
+      description:
+        'Cada transacción quedará como transferencia a la Cuenta Puente. Se sacan de ingresos/gastos del mes y de los reports. La Cuenta Puente debe quedar en cero cuando importás el otro lado.',
+      confirmLabel: 'Sí, marcar',
+      tone: 'default',
+    })
+    if (!ok) return
+    setError(null)
+    setHint(null)
+    setPendingAction('transfer')
+    startTransition(async () => {
+      let succeeded = 0
+      let skipped = 0
+      const firstErrors: string[] = []
+      for (const id of ids) {
+        const r = await markTransactionAsTransfer(id)
+        if (r.success) succeeded++
+        else {
+          skipped++
+          if (firstErrors.length < 3 && r.error) firstErrors.push(r.error)
+        }
+      }
+      setPendingAction(null)
+      if (succeeded === 0 && skipped > 0) {
+        setError(firstErrors[0] ?? 'No se pudieron marcar las transacciones')
+        return
+      }
+      if (skipped > 0) {
+        setHint(
+          `Marcadas ${succeeded}; ${skipped} omitidas (probablemente ya eran transferencias).`,
+        )
+      }
+      onClear()
+      router.refresh()
+    })
+  }
+
   // Group categories for the picker.
   const grouped = categories.reduce<Record<string, BulkCategoryOption[]>>(
     (acc, c) => {
@@ -107,7 +158,7 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <div className="relative">
             <button
               type="button"
@@ -161,6 +212,25 @@ export function BulkActionBar({ ids, categories, onClear }: BulkActionBarProps) 
               </div>
             )}
           </div>
+          <button
+            type="button"
+            onClick={handleMarkAsTransfer}
+            disabled={pending}
+            className="h-10 px-3 text-meta font-semibold rounded-xl bg-[var(--brand-2)]/[0.12] hover:bg-[var(--brand-2)]/[0.20] text-[var(--brand-text)] border border-[var(--brand-2)]/30 transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+            title="Marca cada txn como transferencia a la Cuenta Puente"
+          >
+            {pendingAction === 'transfer' ? (
+              <>
+                <Spinner tone="light" />
+                Marcando…
+              </>
+            ) : (
+              <>
+                <ArrowLeftRight size={13} strokeWidth={2.2} />
+                Transferencia
+              </>
+            )}
+          </button>
           <button
             type="button"
             onClick={handleDelete}

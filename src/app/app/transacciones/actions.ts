@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveBudgetId } from '@/lib/budget/active'
+import { getOrCreateClearingAccount } from '@/lib/budget/clearing-account'
 import { safeError } from '@/lib/errors'
 import { MONTH_NAMES_SHORT_LOWER, monthFromDate } from '@/lib/dates'
 import { validateSplits } from '@/lib/splits'
@@ -1309,4 +1310,148 @@ export async function updateTransfer(input: UpdateTransferInput) {
 
   revalidatePath('/app', 'layout')
   return { success: true as const }
+}
+
+/**
+ * Marca una transacción importada como "transferencia entre cuentas"
+ * apuntando a la Cuenta Puente (clearing). Reusa el modelo existente
+ * de MARELL: transactions.transfer_account_id + transfer_transaction_id.
+ *
+ * Flow:
+ *   1. La txn original se preserva (mismo monto, misma cuenta).
+ *   2. Se setea transfer_account_id = clearing.id en la original.
+ *   3. Se crea una pareja en clearing con monto opuesto.
+ *   4. Ambas se vinculan via transfer_transaction_id.
+ *
+ * Ejemplo: BHD -50K → Clearing +50K (pair). Cuando luego se marca el
+ * otro lado (Popular +50K), se crea Clearing -50K. Saldo Clearing = 0.
+ *
+ * Los reports ya filtran `transfer_account_id IS NULL` para excluir
+ * transfers automáticamente — sin cambios en dashboard/analisis.
+ */
+export async function markTransactionAsTransfer(
+  transactionId: string,
+): Promise<{ error?: string; success?: true }> {
+  if (!transactionId) return { error: 'ID requerido' }
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // 1. Trae la txn + valida acceso (RLS).
+  const { data: txn } = await supabase
+    .from('transactions')
+    .select(
+      'id, budget_id, account_id, amount, date, payee_name, transfer_account_id',
+    )
+    .eq('id', transactionId)
+    .maybeSingle()
+  if (!txn) return { error: 'Transacción no encontrada' }
+  if (txn.transfer_account_id) {
+    return { error: 'Esta transacción ya está marcada como transferencia' }
+  }
+
+  // 2. Get-or-create cuenta clearing del budget.
+  const { data: acct } = await supabase
+    .from('accounts')
+    .select('currency')
+    .eq('id', txn.account_id as string)
+    .maybeSingle()
+  const currency = (acct?.currency as 'DOP' | 'USD' | undefined) ?? 'DOP'
+
+  const clearing = await getOrCreateClearingAccount(
+    supabase,
+    txn.budget_id as string,
+    currency,
+  )
+  if ('error' in clearing) return { error: clearing.error }
+
+  // 3. Crear la pareja: monto opuesto en la cuenta clearing.
+  const pairAmount = -(txn.amount as number)
+  const originalAccountId = txn.account_id as string
+  const { data: pair, error: pairErr } = await supabase
+    .from('transactions')
+    .insert({
+      budget_id: txn.budget_id as string,
+      account_id: clearing.id,
+      date: txn.date as string,
+      payee_name: (txn.payee_name as string | null) || 'Transferencia (puente)',
+      category_id: null,
+      amount: pairAmount,
+      memo: null,
+      cleared: 'reconciled' as const,
+      approved: true,
+      transfer_account_id: originalAccountId,
+      transfer_transaction_id: transactionId,
+    })
+    .select('id')
+    .single()
+  if (pairErr || !pair) return { error: safeError(pairErr, 'transacciones') }
+
+  // 4. Update la original: transfer_account_id apunta a clearing,
+  //    transfer_transaction_id apunta a la pareja, categoría null.
+  const { error: origErr } = await supabase
+    .from('transactions')
+    .update({
+      category_id: null,
+      transfer_account_id: clearing.id,
+      transfer_transaction_id: pair.id as string,
+    })
+    .eq('id', transactionId)
+  if (origErr) {
+    // Rollback: borra la pareja para no dejar inconsistencia.
+    await supabase.from('transactions').delete().eq('id', pair.id as string)
+    return { error: safeError(origErr, 'transacciones') }
+  }
+
+  revalidatePath('/app', 'layout')
+  return { success: true }
+}
+
+/**
+ * Desmarca una transferencia: borra la pareja en clearing y limpia
+ * los flags. Si la txn original tenía categoría antes de marcarse,
+ * no la restauramos — el usuario tiene que recategorizar manual.
+ */
+export async function unmarkTransactionAsTransfer(
+  transactionId: string,
+): Promise<{ error?: string; success?: true }> {
+  if (!transactionId) return { error: 'ID requerido' }
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: txn } = await supabase
+    .from('transactions')
+    .select('id, transfer_account_id, transfer_transaction_id')
+    .eq('id', transactionId)
+    .maybeSingle()
+  if (!txn) return { error: 'Transacción no encontrada' }
+  if (!txn.transfer_account_id) {
+    return { error: 'Esta transacción no es una transferencia' }
+  }
+
+  // Borra la pareja si existe
+  if (txn.transfer_transaction_id) {
+    await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', txn.transfer_transaction_id as string)
+  }
+
+  // Limpia flags de la original
+  const { error } = await supabase
+    .from('transactions')
+    .update({
+      transfer_account_id: null,
+      transfer_transaction_id: null,
+    })
+    .eq('id', transactionId)
+  if (error) return { error: safeError(error, 'transacciones') }
+
+  revalidatePath('/app', 'layout')
+  return { success: true }
 }

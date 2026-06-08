@@ -194,16 +194,20 @@ export async function fetchClientsDashboard(): Promise<ClientDashboardResult> {
     kpiByBudget.set(id, { netWorthDOP: 0, monthIncomeDOP: 0, monthExpenseDOP: 0, alertCount: 0 })
   }
 
-  // Net worth — balance signed-aware
+  // Net worth — balance signed-aware. La cuenta clearing/puente se
+  // excluye porque representa transferencias en tránsito que no son
+  // patrimonio real (debería estar en 0; si no lo está, es un signal
+  // de transferencia pendiente, no patrimonio que el cliente tenga).
   for (const a of accounts ?? []) {
     const budgetId = a.budget_id as string
     const kpi = kpiByBudget.get(budgetId)
     if (!kpi) continue
+    const type = a.type as string
+    if (type === 'clearing') continue
     const ccy = parseCurrency(a.currency as string | null)
     const meta = budgetMeta.get(budgetId)
     const rate = meta?.rate ?? DEFAULT_USD_TO_DOP_RATE
     const balanceDOP = convertAmount(Number(a.balance), ccy, 'DOP', rate)
-    const type = a.type as string
     if (DEBT_TYPES.has(type)) {
       kpi.netWorthDOP -= Math.abs(balanceDOP)
     } else if (type === 'liability') {
